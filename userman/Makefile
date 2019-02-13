@@ -21,7 +21,6 @@
 #
 ###
 
-# $Revision: 621 $ $Date: 2009-11-09 10:19:12 +0100 (Mon, 09 Nov 2009) $ $LastChangedBy: dream $
 
 #
 # Makefile for the DREAM toolbox user manual.

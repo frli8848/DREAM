@@ -21,7 +21,6 @@
 *
 ***/
 
-// $Revision: 909 $ $Date: 2016-11-25 13:13:43 +0100 (Fri, 25 Nov 2016) $ $LastChangedBy: frli8848 $
 
 #include <string.h>
 #include <signal.h>

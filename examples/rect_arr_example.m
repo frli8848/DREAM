@@ -1,4 +1,3 @@
-% $Revision: 565 $ $Date: 2009-09-17 22:24:06 +0200 (Thu, 17 Sep 2009) $ $LastChangedBy: dream $
 
 % Are we running on a Linux machine?
 tmp_str = computer;

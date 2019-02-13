@@ -21,7 +21,6 @@
 *
 ***/
 
-// $Revision: 777 $ $Date: 2014-05-19 15:12:14 +0200 (Mon, 19 May 2014) $ $LastChangedBy: frli8848 $
 
 // Note this is a nonstandard GNU extensions.
 #define _GNU_SOURCE

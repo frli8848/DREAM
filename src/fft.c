@@ -21,7 +21,6 @@
 *
 ***/
 
-// $Revision: 890 $ $Date: 2016-09-27 16:56:06 +0200 (Tue, 27 Sep 2016) $ $LastChangedBy: frli8848 $
 
 #include <math.h>
 #include <stdlib.h>

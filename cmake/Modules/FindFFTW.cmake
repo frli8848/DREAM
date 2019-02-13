@@ -2,7 +2,6 @@
 # FFTW_LIBRARIES = libfftw3.a
 # FFTW_FOUND = true if FFTW3 is found
 
-# $Revision: 871 $ $Date: 2015-05-07 16:03:03 +0200 (Thu, 07 May 2015) $ $LastChangedBy: frli8848 $
 
 if (WIN32)
   set(CMAKE_PREFIX_PATH "C:/FFTW64")

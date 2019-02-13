@@ -21,7 +21,6 @@
 *
 ***/
 
-// $Revision: 910 $ $Date: 2019-02-06 07:51:39 +0100 (Wed, 06 Feb 2019) $ $LastChangedBy: frli8848 $
 
 #ifndef __DREAM__
 #define __DREAM__

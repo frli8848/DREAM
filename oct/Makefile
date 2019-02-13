@@ -19,7 +19,6 @@
 # Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301, USA.
 
-# $Revision: 826 $ $Date: 2015-04-29 08:05:47 +0200 (Wed, 29 Apr 2015) $ $LastChangedBy: frli8848 $
 
 ###################################
 #

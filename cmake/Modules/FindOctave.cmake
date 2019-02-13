@@ -12,7 +12,6 @@
 
 # This file is from: http://www.coolprop.org/coolprop/wrappers/Octave/index.html
 
-# $Revision: 827 $ $Date: 2015-04-29 12:25:42 +0200 (Wed, 29 Apr 2015) $ $LastChangedBy: frli8848 $
 
 cmake_minimum_required(VERSION 2.8)
 

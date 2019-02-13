@@ -21,7 +21,6 @@
 *
 ***/
 
-// $Revision: 857 $ $Date: 2015-05-05 21:22:14 +0200 (Tue, 05 May 2015) $ $LastChangedBy: frli8848 $
 
 #include "dream.h"
 

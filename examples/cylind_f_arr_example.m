@@ -2,7 +2,6 @@
 % Cylindrical Focused Array Transducer Example 1.
 %
 
-% $Revision: 565 $ $Date: 2009-09-17 22:24:06 +0200 (Thu, 17 Sep 2009) $ $LastChangedBy: dream $
 
 Fs = 10;   % Sampling freq. in MHz.
 Ts = 1/Fs;

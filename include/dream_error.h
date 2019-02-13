@@ -21,7 +21,6 @@
 *
 ***/
 
-// $Revision: 730 $ $Date: 2012-01-25 13:00:34 +0100 (Wed, 25 Jan 2012) $ $LastChangedBy: frli8848 $
 
 // Error levels.
 #define NONE   0

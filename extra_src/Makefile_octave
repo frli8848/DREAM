@@ -1,0 +1,182 @@
+#!/bin/make
+#
+# Copyright (C) 2006,2007,2008,2009 Fredrik Lingvall
+#
+# This file is part of the DREAM Toolbox.
+#
+# The DREAM Toolbox is free software; you can redistribute it and/or modify 
+# it under the terms of the GNU General Public License as published by the
+# Free Software Foundation; either version 2, or (at your option) any
+# later version.
+#
+# The DREAM Toolbox is distributed in the hope that it will be useful, but 
+# WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+# for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with the DREAM Toolbox; see the file COPYING.  If not, write to the 
+# Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+# 02110-1301, USA.
+
+# $Revision: 758 $ $Date: 2013-11-05 10:10:10 +0100 (Tue, 05 Nov 2013) $ $LastChangedBy: frli8848 $
+
+##################################
+#
+# Makefile for building DLD Octave 
+# files from the extra C-sources.
+#
+###################################
+
+include ../Make.inc
+
+DLDCC		= $(CXX)
+
+# Octave is compiled with -fPIC and when using -shared the DLD (.oct) functions
+# must thefore also be compiled with -fPIC (according to the gcc manual).
+FPIC 		= -fPIC
+
+DREAM_CFLAGS	= $(CFLAGS)
+DREAM_CXXFLAGS	= $(CXXFLAGS)
+
+# Octave options for g++/gcc linking.
+DLD_FLAGS	= -shared -Wl,-Bsymbolic
+
+
+#
+# LD flags
+#
+
+#        Note - if the linker is being invoked indirectly, via a compiler driver
+#        (eg gcc) then all the linker command line options should be prefixed by
+#        -Wl, (or whatever is appropriate for the  particular  compiler  driver)
+#        like this:
+#
+#                  gcc -Wl,--startgroup foo.o bar.o -Wl,--endgroup
+#
+#        This  is  important,  because otherwise the compiler driver program may
+#        silently drop the linker options, resulting in a bad link.
+#
+#       -Bsymbolic
+#            When  creating  a shared library, bind references to global symbols
+#            to the definition within the shared library, if any.  Normally,  it
+#            is  possible for a program linked against a shared library to over-
+#            ride the definition within the shared library.  This option is only
+#            meaningful on ELF platforms which support shared libraries.
+#
+
+DREAM_INCLUDE		= -I../include $(OCTAVE_HEADERS) 
+
+# Needed for *_p functions (don't forget to build Octave with -pthread flag).
+PARLIBS		= -lpthread
+
+LIBDIRS		= $(OCT_LIBS)
+FFTW		= -lfftw3 -lfftw3f
+
+#
+# Rules for the obj. files.
+#
+.c.o:
+	$(CC) $(DREAM_CFLAGS) -DOCTAVE  $(FPIC) $(DREAM_INCLUDE) -c $<
+
+.cc.o:
+	$(CXX) $(DREAM_CXXFLAGS) -DOCTAVE $(FPIC) $(DREAM_INCLUDE) $(OCTAVE_HEADERS) -c $<
+
+all: \
+	conv_p.oct \
+	fftconv_p.oct \
+	fftconv_ola_p.oct \
+	sum_fftconv_p.oct \
+	copy_p.oct \
+	circ_sir.oct \
+	scirc_sir.oct \
+	rect_sir.oct \
+	das.oct \
+	das_arr.oct \
+	saft.oct \
+	saft_p.oct
+
+#
+# Convolutions.
+#
+
+#conv_p.oct : oct_conv_p.o
+conv_p.oct : oct_conv_p.o conv.o $(AFFINITY_OBJ)
+	$(DLDCC) $(DLD_FLAGS) $(LIBDIRS) $(PARLIBS) $^ -o $@ 
+
+fftconv_p.oct : oct_fftconv_p.o $(AFFINITY_OBJ)
+	$(DLDCC) $(DLD_FLAGS) $(LIBDIRS) $(PARLIBS) $(FFTW)  $^ -o $@ 
+
+fftconv_ola_p.oct : oct_fftconv_ola_p.o $(AFFINITY_OBJ)
+	$(DLDCC) $(DLD_FLAGS) $(LIBDIRS) $(PARLIBS) $(FFTW)  $^ -o $@ 
+
+sum_fftconv_p.oct : oct_sum_fftconv_p.o  $(AFFINITY_OBJ)
+	$(DLDCC) $(DLD_FLAGS) $(LIBDIRS) $(PARLIBS) $(FFTW)  $^ -o $@ 
+
+#
+# Parallel copy.
+#
+
+copy_p.oct : oct_copy_p.o
+	$(DLDCC) $(DLD_FLAGS) $(LIBDIRS) $(PARLIBS) $^ -o $@ 
+
+#
+# Delay-and-sum processing.
+#
+
+das.oct : oct_das.o das.o dream_error.o
+	$(DLDCC) $(DLD_FLAGS) $(LIBDIRS) $^ -o $@
+
+das_arr.oct : oct_das_arr.o das_arr.o arr_functions.o dream_error.o
+	$(DLDCC) $(DLD_FLAGS) $(LIBDIRS) $^ -o $@
+
+saft.oct : oct_saft.o dream_error.o
+	$(DLDCC) $(DLD_FLAGS) $(LIBDIRS) $^ -o $@
+
+saft_p.oct : oct_saft_p.o dream_error.o  $(AFFINITY_OBJ)
+	$(DLDCC) $(DLD_FLAGS) $(PARLIBS) $(LIBDIRS) $^ -o $@
+
+#
+# Analytic methods.
+#
+
+circ_sir.oct : oct_circ_sir.o circ_sir.o dream_error.o
+	$(DLDCC) $(DLD_FLAGS) $(LIBDIRS)  $^ -o $@
+
+scirc_sir.oct : oct_scirc_sir.o scirc_sir.o dream_error.o
+	$(DLDCC) $(DLD_FLAGS) $(LIBDIRS)  $^ -o $@
+
+rect_sir.oct : oct_rect_sir.o rect_sir.o  dream_error.o
+	$(DLDCC) $(DLD_FLAGS) $(LIBDIRS)  $^ -o $@
+
+#
+# Install into the arch directory.
+#
+
+install:
+	cp -a conv_p.oct ../$(INSTALL_DIR)
+	cp -a fftconv_p.oct ../$(INSTALL_DIR)
+	cp -a fftconv_ola_p.oct ../$(INSTALL_DIR)
+	cp -a sum_fftconv_p.oct ../$(INSTALL_DIR)
+	cp -a copy_p.oct ../$(INSTALL_DIR)
+#
+	cp -a das.oct ../$(INSTALL_DIR)
+	cp -a das_arr.oct ../$(INSTALL_DIR)
+	cp -a saft.oct ../$(INSTALL_DIR)
+	cp -a saft_p.oct ../$(INSTALL_DIR)
+#
+	cp -a circ_sir.oct ../$(INSTALL_DIR)
+	cp -a scirc_sir.oct ../$(INSTALL_DIR)
+	cp -a rect_sir.oct ../$(INSTALL_DIR)
+#
+
+install_all:
+	cp -a *.oct ../$(INSTALL_DIR)
+
+.PHONY : clean
+
+clean:
+	rm -f  *.o *~ *.obj *.rsp
+
+distclean:
+	rm -f   *.o *~ *.obj *.rsp *.oct

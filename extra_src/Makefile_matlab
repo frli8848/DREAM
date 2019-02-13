@@ -1,0 +1,146 @@
+#!/usr/local/bin/make
+
+# Copyright (C) 2006,2007,2008,2009,2010 Fredrik Lingvall
+#
+# This file is part of the DREAM Toolbox.
+#
+# The DREAM Toolbox is free software; you can redistribute it and/or modify 
+# it under the terms of the GNU General Public License as published by the
+# Free Software Foundation; either version 2, or (at your option) any
+# later version.
+#
+# The DREAM Toolbox is distributed in the hope that it will be useful, but 
+# WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+# for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with the DREAM Toolbox; see the file COPYING. If not, write to the 
+# Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+# 02110-1301, USA.
+
+# $Revision: 673 $ $Date: 2010-12-16 10:46:56 +0100 (Thu, 16 Dec 2010) $ $LastChangedBy: dream $
+
+#########################################
+#
+# Makefile for the extra C-sources of 
+# the DREAM toolbox. 
+#
+#########################################
+
+include ../Make.inc
+
+
+DREAM_CFLAGS	= $(CFLAGS) $(MATLAB_FLAGS)
+
+
+LDFLAGS		= #-v
+MEXFLAGS	= -shared
+
+DREAM_INCLUDE	= -I  $(MEX_INCLUDE) -I ../include
+
+PARLIBS		= -lpthread
+FFTW		= -lfftw3
+
+all: \
+	conv_p.$(MEX_EXT) \
+	fftconv_p.$(MEX_EXT) \
+	sum_fftconv_p.$(MEX_EXT) \
+	copy_p.$(MEX_EXT) \
+	circ_sir.$(MEX_EXT) \
+	scirc_sir.$(MEX_EXT) \
+	rect_sir.$(MEX_EXT) \
+	das.$(MEX_EXT) \
+	das_arr.$(MEX_EXT) \
+	saft.$(MEX_EXT) \
+	saft_p.$(MEX_EXT)
+
+
+#
+# Rules for the obj. files.
+#
+.c.o:
+	$(CC) $(DREAM_CFLAGS) $(FPIC) $(DREAM_INCLUDE)  -c $<
+
+
+#
+# Rules for the mex-files.
+#
+
+#
+# Convolutions.
+#
+conv_p.$(MEX_EXT) :  mex_conv_p.o dream_error.o $(AFFINITY_OBJ)
+	$(CC) $(LIBDIRS) $(PARLIBS) $(LIBS) $(LDFLAGS) $(MEXFLAGS) $(BLAS) $^ -o  $@
+
+fftconv_p.$(MEX_EXT) :  mex_fftconv_p.o $(MEXLIBS) $(AFFINITY_OBJ)
+	$(CC) $(LIBDIRS) $(PARLIBS) $(FFTW) $(LIBS) $(LDFLAGS) $(MEXFLAGS) $^ -o  $@
+
+sum_fftconv_p.$(MEX_EXT) :  mex_sum_fftconv_p.o $(MEXLIBS) $(AFFINITY_OBJ)
+	$(CC) $(LIBDIRS) $(PARLIBS) $(FFTW) $(LIBS) $(LDFLAGS) $(MEXFLAGS) $^ -o  $@
+
+#
+# Parallel copy.
+#
+copy_p.$(MEX_EXT) :  mex_copy_p.o $(MEXLIBS) $(AFFINITY_OBJ)
+	$(CC) $(LIBDIRS) $(PARLIBS) $(LIBS) $(LDFLAGS) $(MEXFLAGS) $^ -o  $@
+
+
+#
+# Delay-and-sum processing.
+#
+das.$(MEX_EXT) : mex_das.o das.o dream_error.o   
+	$(CC) $(LIBDIRS) $(LIBS) $(LDFLAGS) $(MEXFLAGS) $^ -o  $@
+
+das_arr.$(MEX_EXT) : mex_das_arr.o das_arr.o arr_functions.o dream_error.o   
+	$(CC) $(LIBDIRS) $(LIBS) $(LDFLAGS) $(MEXFLAGS) $^ -o  $@
+
+saft.$(MEX_EXT) : mex_saft.o dream_error.o
+	$(CC) $(LIBDIRS) $(LIBS) $(LDFLAGS) $(MEXFLAGS) $^ -o $@
+
+saft_p.$(MEX_EXT) : mex_saft_p.o dream_error.o $(AFFINITY_OBJ)
+	$(CC) $(LIBDIRS) $(PARLIBS) $(LIBDIRS) $(LIBS) $(LDFLAGS) $(MEXFLAGS) $^ -o $@
+
+#
+# Analytic methods.
+#
+circ_sir.$(MEX_EXT) : mex_circ_sir.o circ_sir.o  dream_error.o
+	$(CC)  $(LIBDIRS) $(LIBS) $(LDFLAGS) $(MEXFLAGS) $^ -o  $@
+
+scirc_sir.$(MEX_EXT) : mex_scirc_sir.o scirc_sir.o  dream_error.o
+	$(CC)  $(LIBDIRS) $(LIBS) $(LDFLAGS) $(MEXFLAGS) $^ -o  $@
+
+rect_sir.$(MEX_EXT) : mex_rect_sir.o rect_sir.o dream_error.o
+	$(CC)  $(LIBDIRS) $(LIBS) $(LDFLAGS) $(MEXFLAGS) $^ -o  $@
+
+#
+# Install into the arch directory.
+#
+
+install:
+	cp -a conv_p.$(MEX_EXT) ../$(INSTALL_DIR)
+	cp -a fftconv_p.$(MEX_EXT) ../$(INSTALL_DIR)
+	cp -a sum_fftconv_p.$(MEX_EXT) ../$(INSTALL_DIR)
+	cp -a copy_p.$(MEX_EXT) ../$(INSTALL_DIR)
+#
+	cp -a das.$(MEX_EXT) ../$(INSTALL_DIR)
+	cp -a das_arr.$(MEX_EXT) ../$(INSTALL_DIR)
+	cp -a saft.$(MEX_EXT) ../$(INSTALL_DIR)
+	cp -a saft_p.$(MEX_EXT) ../$(INSTALL_DIR)
+#
+	cp -a circ_sir.$(MEX_EXT) ../$(INSTALL_DIR)
+	cp -a scirc_sir.$(MEX_EXT) ../$(INSTALL_DIR)
+	cp -a rect_sir.$(MEX_EXT) ../$(INSTALL_DIR)
+#	cp -a *.$(MEX_EXT) ../$(INSTALL_DIR)
+
+
+install_all:
+	cp -a *.$(MEX_EXT) ../$(INSTALL_DIR)
+
+.PHONY : clean
+
+clean:
+	rm -f  *.o *~ *.obj *.rsp
+
+distclean:
+	rm -f   *.o *~ *.obj *.rsp  *.mexlx  *.$(MEX_EXT)  *.dll

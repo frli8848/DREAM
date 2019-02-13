@@ -1,0 +1,219 @@
+#!/usr/local/bin/make
+
+# Copyright (C) 2006,2007,2008,2010 Fredrik Lingvall
+#
+# This file is part of the DREAM Toolbox.
+#
+# The DREAM Toolbox is free software; you can redistribute it and/or modify 
+# it under the terms of the GNU General Public License as published by the
+# Free Software Foundation; either version 2, or (at your option) any
+# later version.
+#
+# The DREAM Toolbox is distributed in the hope that it will be useful, but 
+# WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+# for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with the DREAM Toolbox; see the file COPYING. If not, write to the 
+# Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+# 02110-1301, USA.
+
+# $Revision: 678 $ $Date: 2010-12-26 14:10:43 +0100 (Sun, 26 Dec 2010) $ $LastChangedBy: dream $
+
+################################################
+#
+# Makefile for the DREAM transducer function
+# MEX-files.
+# 
+################################################
+
+include ../Make.inc
+
+DREAM_CFLAGS	= $(CFLAGS) $(MATLAB_FLAGS) $(ATT_FFTW)
+
+LDFLAGS		= #-v
+MEXFLAGS	= -shared
+
+DREAM_INCLUDE	= -I $(MEX_INCLUDE) -I ../include
+
+MEX_LIBS	= $(LIBS) $(FFW_LIB)
+
+PARLIBS		= -lpthread
+
+
+all: serial parallel 
+
+serial: \
+	dreamline.$(MEX_EXT) \
+	dreamrect.$(MEX_EXT) \
+	dreamrect_f.$(MEX_EXT) \
+	dreamcirc.$(MEX_EXT) \
+	dreamcirc_f.$(MEX_EXT) \
+	dreamsphere_f.$(MEX_EXT) \
+	dreamsphere_d.$(MEX_EXT) \
+	dreamcylind_f.$(MEX_EXT) \
+	dreamcylind_d.$(MEX_EXT) \
+	dream_arr_rect.$(MEX_EXT) \
+	dream_arr_circ.$(MEX_EXT) \
+	dream_arr_cylind_f.$(MEX_EXT) \
+	dream_arr_cylind_d.$(MEX_EXT) \
+	dream_arr_annu.$(MEX_EXT) \
+	dream_apodwin.$(MEX_EXT) \
+	dream_att.$(MEX_EXT) \
+
+parallel: \
+	dreamline_p.$(MEX_EXT) \
+	dreamrect_p.$(MEX_EXT) \
+	dreamrect_f_p.$(MEX_EXT) \
+	dreamcirc_p.$(MEX_EXT) \
+	dreamcirc_f_p.$(MEX_EXT) \
+	dreamsphere_f_p.$(MEX_EXT) \
+	dreamsphere_d_p.$(MEX_EXT) \
+	dreamcylind_f_p.$(MEX_EXT) \
+	dreamcylind_d_p.$(MEX_EXT) \
+	dream_arr_rect_p.$(MEX_EXT) \
+	dream_arr_circ_p.$(MEX_EXT) \
+	dream_arr_cylind_f_p.$(MEX_EXT) \
+	dream_arr_cylind_d_p.$(MEX_EXT) \
+	dream_arr_annu_p.$(MEX_EXT)
+
+
+#
+# Rules for the obj. files.
+#
+.c.o:
+	$(CC) $(DREAM_CFLAGS) $(FPIC) $(DREAM_INCLUDE) -c $<
+
+
+# Compile att.c with pthread support (uses pthread mutexes).
+att_pthread.o:	
+	$(CC) $(DREAM_CFLAGS) $(FPIC) $(DREAM_INCLUDE) -DPARALLEL -c att.c -o $@
+
+
+#
+# Rules for the MEX-files.
+#
+
+dreamline.$(MEX_EXT) : dreamline.o mex_dreamline.o att.o fft.o dream_error.o 
+	$(CC) $(LIBDIRS) $(MEX_LIBS) $(LDFLAGS) $(MEXFLAGS) $^ -o $@
+
+dreamcirc.$(MEX_EXT) : dreamcirc.o mex_dreamcirc.o att.o fft.o dream_error.o 
+	$(CC) $(LIBDIRS) $(MEX_LIBS) $(LDFLAGS) $(MEXFLAGS) $^ -o $@
+
+dreamcirc_f.$(MEX_EXT) : dreamcirc_f.o mex_dreamcirc_f.o att.o fft.o dream_error.o 
+	$(CC) $(LIBDIRS) $(MEX_LIBS) $(LDFLAGS) $(MEXFLAGS) $^ -o $@
+
+dreamrect.$(MEX_EXT) : dreamrect.o mex_dreamrect.o att.o fft.o dream_error.o 
+	$(CC) $(LIBDIRS) $(MEX_LIBS) $(LDFLAGS) $(MEXFLAGS) $^ -o $@
+
+dreamrect_f.$(MEX_EXT) : dreamrect_f.o mex_dreamrect_f.o att.o fft.o dream_error.o 
+	$(CC) $(LIBDIRS) $(MEX_LIBS) $(LDFLAGS) $(MEXFLAGS) $^ -o $@
+
+dreamsphere_f.$(MEX_EXT) : dreamsphere_f.o mex_dreamsphere_f.o att.o fft.o dream_error.o 
+	$(CC) $(LIBDIRS) $(MEX_LIBS) $(LDFLAGS) $(MEXFLAGS) $^ -o $@
+
+dreamsphere_d.$(MEX_EXT) : dreamsphere_d.o mex_dreamsphere_d.o att.o fft.o dream_error.o 
+	$(CC) $(LIBDIRS) $(MEX_LIBS) $(LDFLAGS) $(MEXFLAGS) $^ -o $@
+
+dreamcylind_f.$(MEX_EXT) : dreamcylind_f.o mex_dreamcylind_f.o att.o fft.o dream_error.o 
+	$(CC) $(LIBDIRS) $(MEX_LIBS) $(LDFLAGS) $(MEXFLAGS) $^ -o $@
+
+dreamcylind_d.$(MEX_EXT) : dreamcylind_d.o mex_dreamcylind_d.o att.o fft.o dream_error.o 
+	$(CC) $(LIBDIRS) $(MEX_LIBS) $(LDFLAGS) $(MEXFLAGS) $^ -o $@
+
+
+# Array routines.
+
+dream_arr_rect.$(MEX_EXT) : dream_arr_rect.o mex_dream_arr_rect.o arr_functions.o att.o fft.o dream_error.o  
+	$(CC) $(LIBDIRS) $(MEX_LIBS) $(LDFLAGS) $(MEXFLAGS) $^ -o $@
+
+
+dream_arr_circ.$(MEX_EXT) : dream_arr_circ.o mex_dream_arr_circ.o arr_functions.o att.o fft.o dream_error.o  
+	$(CC) $(LIBDIRS) $(MEX_LIBS) $(LDFLAGS) $(MEXFLAGS) $^ -o $@
+
+dream_arr_cylind_f.$(MEX_EXT) : dream_arr_cylind_f.o mex_dream_arr_cylind_f.o arr_functions.o att.o fft.o dream_error.o 
+	$(CC) $(LIBDIRS) $(MEX_LIBS) $(LDFLAGS) $(MEXFLAGS) $^ -o $@
+
+dream_arr_cylind_d.$(MEX_EXT) : dream_arr_cylind_d.o mex_dream_arr_cylind_d.o arr_functions.o att.o fft.o dream_error.o 
+	$(CC) $(LIBDIRS) $(MEX_LIBS) $(LDFLAGS) $(MEXFLAGS) $^ -o $@
+
+dream_arr_annu.$(MEX_EXT) : dream_arr_annu.o mex_dream_arr_annu.o att.o fft.o dream_error.o
+	$(CC) $(LIBDIRS) $(MEX_LIBS) $(LDFLAGS) $(MEXFLAGS) $^ -o $@
+
+#
+# Parallel Routines.
+#
+
+dreamline_p.$(MEX_EXT) : dreamline.o mex_dreamline_p.o att_pthread.o fft.o dream_error.o 
+	$(CC) $(LIBDIRS) $(PARLIBS) $(MEX_LIBS) $(LDFLAGS) $(MEXFLAGS) $^ -o $@
+
+dreamrect_p.$(MEX_EXT) : dreamrect.o mex_dreamrect_p.o att_pthread.o fft.o dream_error.o 
+	$(CC) $(LIBDIRS) $(PARLIBS) $(MEX_LIBS) $(LDFLAGS) $(MEXFLAGS) $^ -o $@
+
+dreamrect_f_p.$(MEX_EXT) : dreamrect_f.o mex_dreamrect_f_p.o att_pthread.o fft.o dream_error.o 
+	$(CC) $(LIBDIRS) $(PARLIBS) $(MEX_LIBS) $(LDFLAGS) $(MEXFLAGS) $^ -o $@
+
+dreamcirc_p.$(MEX_EXT) : dreamcirc.o mex_dreamcirc_p.o att_pthread.o fft.o dream_error.o 
+	$(CC) $(LIBDIRS) $(PARLIBS) $(MEX_LIBS) $(LDFLAGS) $(MEXFLAGS) $^ -o $@
+
+dreamcirc_f_p.$(MEX_EXT) : dreamcirc_f.o mex_dreamcirc_f_p.o att_pthread.o fft.o dream_error.o 
+	$(CC) $(LIBDIRS) $(PARLIBS) $(MEX_LIBS) $(LDFLAGS) $(MEXFLAGS) $^ -o $@
+
+dreamsphere_f_p.$(MEX_EXT) : dreamsphere_f.o mex_dreamsphere_f_p.o att_pthread.o fft.o dream_error.o 
+	$(CC) $(LIBDIRS) $(PARLIBS) $(MEX_LIBS) $(LDFLAGS) $(MEXFLAGS) $^ -o $@
+
+dreamsphere_d_p.$(MEX_EXT) : dreamsphere_d.o mex_dreamsphere_d_p.o att_pthread.o fft.o dream_error.o 
+	$(CC) $(LIBDIRS) $(PARLIBS) $(MEX_LIBS) $(LDFLAGS) $(MEXFLAGS) $^ -o $@
+
+dreamcylind_f_p.$(MEX_EXT) : dreamcylind_f.o mex_dreamcylind_f_p.o att_pthread.o fft.o dream_error.o 
+	$(CC) $(LIBDIRS) $(PARLIBS) $(MEX_LIBS) $(LDFLAGS) $(MEXFLAGS) $^ -o $@
+
+dreamcylind_d_p.$(MEX_EXT) : dreamcylind_d.o mex_dreamcylind_d_p.o att_pthread.o fft.o dream_error.o 
+	$(CC) $(LIBDIRS) $(PARLIBS) $(MEX_LIBS) $(LDFLAGS) $(MEXFLAGS) $^ -o $@
+
+# Arrays
+
+dream_arr_rect_p.$(MEX_EXT) : dream_arr_rect.o mex_dream_arr_rect_p.o arr_functions.o att_pthread.o fft.o dream_error.o  
+	$(CC) $(LIBDIRS) $(PARLIBS) $(MEX_LIBS) $(LDFLAGS) $(MEXFLAGS) $^ -o $@
+
+dream_arr_circ_p.$(MEX_EXT) : dream_arr_circ.o mex_dream_arr_circ_p.o arr_functions.o att_pthread.o fft.o dream_error.o  
+	$(CC) $(LIBDIRS) $(PARLIBS) $(MEX_LIBS) $(LDFLAGS) $(MEXFLAGS) $^ -o $@
+
+dream_arr_cylind_f_p.$(MEX_EXT) : dream_arr_cylind_f.o mex_dream_arr_cylind_f_p.o arr_functions.o att_pthread.o fft.o dream_error.o 
+	$(CC) $(LIBDIRS) $(PARLIBS) $(MEX_LIBS) $(LDFLAGS) $(MEXFLAGS) $^ -o $@
+
+dream_arr_cylind_d_p.$(MEX_EXT) : dream_arr_cylind_d.o mex_dream_arr_cylind_d_p.o arr_functions.o att_pthread.o fft.o dream_error.o 
+	$(CC) $(LIBDIRS) $(PARLIBS) $(MEX_LIBS) $(LDFLAGS) $(MEXFLAGS) $^ -o $@
+
+dream_arr_annu_p.$(MEX_EXT) : dream_arr_annu.o mex_dream_arr_annu_p.o att_pthread.o fft.o dream_error.o
+	$(CC) $(LIBDIRS) $(PARLIBS) $(MEX_LIBS) $(LDFLAGS) $(MEXFLAGS) $^ -o $@
+
+#
+# Misc routines.
+#
+
+dream_apodwin.$(MEX_EXT) : mex_dream_apodwin.o arr_functions.o dream_error.o 
+	$(CC) $(LIBDIRS) $(MEX_LIBS) $(LDFLAGS) $(MEXFLAGS) $^ -o $@
+
+dream_att.$(MEX_EXT) : mex_dream_att.o att.o fft.o dream_error.o 
+	$(CC) $(LIBDIRS) $(MEX_LIBS) $(LDFLAGS) $(MEXFLAGS) $^ -o $@
+
+#
+# Test stuff.
+#
+
+test_dreamrect: test_dreamrect.o 
+	$(CC) $(LIBDIRS) $(CFLAGS) $(MEX_LIBS) -lrt -lm $^ -o $@
+
+
+install:
+	cp -a *.$(MEX_EXT) ../$(INSTALL_DIR)
+
+.PHONY : clean
+
+clean:
+	rm -f *.o *~
+
+distclean:
+	rm -f  *.o *~ *.$(MEX_EXT)

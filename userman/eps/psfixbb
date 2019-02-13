@@ -1,0 +1,442 @@
+#!/usr/bin/perl
+#
+# psfixbb - Program to create or adjust BoundingBox in postscript(R) files.
+# Copyright (C) 1997 Carsten Dominik
+
+# Version: 3.2
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2, or (at your option)
+# any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# To obtain a copy of the GNU General Public License write to the
+# Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+# Boston, MA 02111-1307, USA.
+
+
+# TODO
+# ====
+# - larger files
+# - avoid rotation
+#   check for these comments to do autorotation
+#      %%Orientation           (the whole file)
+#      %%ViewingOrientation    (ditto)
+#      %%PageOrientation       (per page)
+
+
+
+# Libraries
+# ---------
+use Getopt::Std;
+use File::Copy;
+
+# Who am I anyway
+($me = $0) =~ s/.*\///;
+
+# Catch a few signals
+# -------------------
+$SIG{INT}  = 'handler';
+$SIG{QUIT} = 'handler';
+
+# External programs needed
+# ------------------------
+$gs         = "gs";
+$tmpdir     = ".";
+$tmpppmfile = "$tmpdir/pstoeps$$.ppm";
+$tmppsfile  = "$tmpdir/pstoeps$$.ps";
+$gsargs     = "-q -sDEVICE=ppmraw -r72 -dNOPAUSE -dSAFER -sOutputFile=$tmpppmfile -f";
+$pnmfile    = "pnmfile";
+$pnmcrop    = "pnmcrop -verbose";
+
+# Some constants
+# --------------
+$bbfmt = "$me: %-40s (%s)\n";
+
+# Default Parameters
+# ------------------
+# It is sometimes useful to make the BoundingBox a little larger than the
+# exact limit.  Here we set the default (in Postscript points).
+$extra = 0;
+# Which line is to become the bounding box comment, if there is none?
+# Should be larger than 1, less than the typical header size.
+$bbline = 2;
+
+# Check for command line options
+$opt_status = getopts('ceflrx:o:');
+
+if (!$opt_status || !@ARGV) {
+    print STDERR <<"EOF";
+usage: $me [-ceflr] [-x N] [-o outfile] filename [filename...]
+EOF
+    exit;
+}
+
+$extra = 0+$opt_x if (defined($opt_x) && $opt_x >= 0);
+$opt_c = 0 if $opt_l;
+$pipe  = $opt_c || $opt_o;
+
+# Get the files from the command line
+@files = @ARGV;
+if ($pipe && @files>1) {
+    warn "$me: processing only $files[0] because of -c or -o switch\n";
+    $#files = 0;
+}
+
+FILE:
+while (@files) {
+    # Get the file name.
+    $file    = shift @files;
+    if ($pipe) {
+	$infile  = $file;
+	$outfile = $opt_o || '-';
+    } else {
+	$infile  = $file;
+	$outfile = "$tmppsfile";
+    }
+
+    &cont("No such file $infile",1) unless $infile ne "" && -e $infile;
+
+    # Open the file and read a chunk of it.
+    open OLD,$infile or die "$me: Can't open file $infile: $!\n";
+    sysread OLD,$header, 65536;
+    unless (substr($header,0,2) eq "%!") {
+	&cont("$infile is not a Postscript file",1);
+    }
+
+    print STDERR "$me: Processing $file\n" unless $opt_l;
+
+    # Should we rotate the file before computing bounding box?
+
+    if ($opt_r) {
+	# print the prefix to $tmppsfile
+	write_landscape_prefix ($tmppsfile);
+	
+	# add the $infile
+	$cmd = "cat $infile >> $tmppsfile";
+	system ($cmd) == 0 or
+	  &cont("Couldn't append $infile to temporary file $tmppsfile for rotation.");
+
+	# the actual gs command now operates on $tmppsfile
+	$cmd = "$gs $gsargs $tmppsfile -c showpage quit";
+    } else {
+	# normally, just run gs on $infile:
+	$cmd = "$gs $gsargs $infile -c showpage quit";
+    }
+
+    # Run gs to convert to a portable bitmap.
+    system($cmd) == 0 or
+	&cont("Ghostscript failed on file $infile: $?");
+
+    # Run pnmfile to get size information.
+    $pnmfile_out = `$pnmfile $tmpppmfile`;
+    &cont("pnmfile failed.") if $?;
+    ($xsize,$ysize) = ($pnmfile_out =~ /(\d+)\s+by\s+(\d+)/);
+    &cont("pnmfile failed to give the image size")
+	unless defined($xsize) && defined($ysize);
+
+    # Run pnmcrop to get information about empty space.
+    # We need to capture sdterr for that.  It requires a shell, so this may
+    # fail on systems which don't have one.
+    $cmd = "$pnmcrop 3>&1 2>&3 1>/dev/null $tmpppmfile";
+    $cropinfo = `$cmd`;
+    &cont("pnmcrop failed") if $?;
+    $top = $bottom = $left = $right = 0;
+    foreach (split(/\n/,$cropinfo)) {
+	$top    = $1 if (/\brows\b/ && /\btop/    && /\bcropping\s+(\d+)/);
+	$bottom = $1 if (/\brows\b/ && /\bbottom/ && /\bcropping\s+(\d+)/);
+	$left   = $1 if (/\bcols\b/ && /\bleft/   && /\bcropping\s+(\d+)/);
+	$right  = $1 if (/\bcols\b/ && /\bright/  && /\bcropping\s+(\d+)/);
+    }
+
+    # Remove the temporary files.
+    unlink $tmpppmfile;
+    unlink $tmppsfile if $opt_r;
+
+    # Define the new BoundingBox.
+    if ($opt_r) {
+	# landscape
+	$bb{x1} = $bottom-$extra;
+	$bb{x2} = $ysize-$top+$extra;
+	$bb{y1} = $right-$extra;
+	$bb{y2} = $xsize-$left+$extra;
+    } else {
+	# portrait
+	$bb{x1} = $left-$extra;
+	$bb{x2} = $xsize-$right+$extra;
+	$bb{y1} = $bottom-$extra;
+	$bb{y2} = $ysize-$top+$extra;
+    }
+    $bb = sprintf("%%%%BoundingBox: %d %d %d %d",
+		  $bb{x1},$bb{y1},$bb{x2},$bb{y2});
+
+    # See if the file already has a bounding box
+    undef $oldbb;
+    if ($header =~
+	/[\n\r]%%BoundingBox:[ \t]+(\d+)[ \t]+(\d+)[ \t]+(\d+)[ \t]+(\d+)/) {
+	$oldbb = substr($&,1);
+	@oldbb{('x1','y1','x2','y2')} = ($1,$2,$3,$4);
+	if ($bb{x1} == $oldbb{x1} && $bb{x2} == $oldbb{x2} &&
+	    $bb{y1} == $oldbb{y1} && $bb{y2} == $oldbb{y2}) {
+	    printf STDERR $bbfmt,$oldbb,"unchanged" unless $opt_l;
+	    unless ($pipe || $opt_f || $opt_e) {
+		# We are done
+		&cleanup;
+		print "$file: $bb\r\n" if $opt_l;
+		next FILE;
+	    }
+	} else {
+	    printf STDERR $bbfmt,$bb,"adjusted" unless $opt_l;
+	}
+
+	# Change BB
+	$header = "$`\n$bb$'";
+    } else {
+	# Insert a BoundingBox as line number $bbline
+	@headerlines = split(/[\n\r]+/,$header);
+	&cont("Less than $bbline lines in the header. Can't insert.")
+	    if @headerlines < $bbline;
+	splice @headerlines,$bbline-1,0,$bb;
+	$header = join "\r\n",@headerlines;
+	printf STDERR $bbfmt,$bb,"added" unless $opt_l;
+    }
+
+    if ($opt_l) {
+	print "$file: $bb\n";
+	next FILE;
+    }
+
+    # Write a new version of the file
+    open NEW,">$outfile" or &cont("Can't write to $outfile: $!");
+    unless (length($header) == syswrite NEW,$header,length($header)) {
+	&cont("Failed to write new header: $!");
+    }
+    copy(\*OLD,\*NEW);
+    &cont("Failed to copy file: $!") if $!;
+    close OLD;
+    close NEW;
+
+    # If we don't have to change the file, we are done
+    next FILE if $pipe;
+
+    # Rename the new file to the old file name.
+    # But we first check if everything went ok.
+    $oldsize = (stat $infile)[7];
+    $newsize = (stat $outfile)[7];
+    &cont("File size change ($oldsize to $newsize) is suspicious")
+	if ($oldsize <=0 || $newsize<=0 || abs($oldsize-$newsize)>50);
+
+    # We can safely remove the old copy
+    rename $infile,"$infile.bak"
+	or &cont("Can't rename $infile to $infile.bak: $!");
+    if ($opt_e && $infile =~ /\.ps$/) {
+	($newfile = $infile) =~ s/\.ps$/.eps/;
+	if (-e $newfile && !$opt_f) {
+	    print STDERR "$me: Cannot change filename to $newfile\n";
+	    $newfile = $infile;
+	} else {
+	    print STDERR "$me: Changing filename to $newfile\n";
+	}
+    } else {
+	$newfile = $infile;
+    }
+    rename $outfile,$newfile
+	or &cont("Cannot rename $outfile to $newfile: $!");
+    unlink "$infile.bak"
+	or &cont("Can't remove $infile.bak: $!");
+}
+
+sub cont {
+    # Move on to next file, with an error message about current
+    print STDERR "$me: $_[0]\n";
+    print STDERR "$me: $file not changed\n" unless $_[1] || $opt_l;
+    &cleanup;
+    next FILE;
+}
+
+sub handler {
+    # Signal handler, doing cleanup before exiting
+    local($sig) = @_;
+    print STDERR "\n$me: Caught a SIG$sig\n";
+    &cleanup;
+    exit(1);
+}
+
+sub cleanup {
+    # Remove the temporary files
+    unlink $tmpppmfile if -e $tmpppmfile;
+    unlink $tmppsfile if -e $tmppsfile;
+}
+
+sub write_landscape_prefix {
+    # write the landscape.ps file as the header of the rotated file
+    my $file = $_[0];
+
+    open (NEW, ">$file") or die ("could not open $file for temp file creation\n");
+
+    print NEW <<'EOF';
+%!
+%  landscape.ps
+% This file can be prepended to most PostScript files to force 
+% rotation of all pages to \"landscape\" mode.
+%
+% There are (at least) four possible ways to reasonably position a
+% page after rotation.  Any of the four old corners (llx,lly e.g.)
+% can be moved to match the corresonding new corner.
+% By uncommmenting the appropriate line below (i.e., remove the 
+% leading '%'), any such positioning can be chosen for positive or
+% negative rotation.  The comments at the end of each \"rotate\" line
+% indicate the ORIGINAL corner to be aligned. For example, as given
+% below, the lower left hand corner is aligned.  When viewed, this 
+% corner will have moved to the urx,lly corner.
+%
+%  James E. Burns, 3/8/93, burns\@nova.bellcore.com
+%    Revised 11/9/93 for multi-page files
+%
+
+4 dict begin
+  gsave clippath pathbbox grestore
+  /ury exch def /urx exch def /lly exch def /llx exch def
+  [
+  % llx neg               ury neg               90  % llx,ury
+    llx neg               llx urx sub lly sub   90  % llx,lly
+  % ury lly sub urx sub   ury neg               90  % urx,ury
+  % ury lly sub urx sub   llx urx sub lly sub   90  % urx,lly
+  % urx neg               lly neg              -90  % urx,lly
+  % urx neg               urx llx sub ury sub  -90  % urx,ury
+  % llx lly add ury sub   urx llx sub ury sub  -90  % llx,ury
+  % llx lly add ury sub   lly neg              -90  % llx,lly
+  /rotate load /translate load ] 
+end
+
+cvx dup exec
+/showpage [ /showpage load 3 index /exec load ] cvx def
+% End of landscape.ps
+
+EOF
+    close NEW;
+}
+
+__END__
+
+=head1 NAME
+
+B<psfixbb> - fix the BoundingBox in a Postscript file.
+
+=head1 SYNOPSIS
+
+C<psfixbb [-ceflr] [-x N] [-o outfile] filename  [filename...]>
+
+=head1 DESCRIPTION
+
+B<psfixbb> is a tool to create a BoundingBox in Postscript(R) files
+which do not have one, or to fix an incorrect existing BoundingBox.
+
+Many applications write Postscript(R) files or Encapsulated
+Postscript(R) files with no or incorrect BoundingBox information.
+I.e. the box which contains the image or text on the page is often
+smaller than specified in the %%BoundingBox comment in the file.  This
+can be annoying when importing the file into other documents.
+B<psfixbb> computes the size of the used part of a page and inserts
+the information into the file.
+
+B<psfixbb> uses ghostscript (B<gs>) to transform the page into a
+portable bit map (pbm), then the B<pnmfile> and B<pnmcrop> utilities
+to determine the size of the non-white part of the page.  These three
+programs need to be installed for B<psfixbb> to work.
+
+Because B<psfixbb> really looks at the dark pixels of the page, it
+works even if the application which produced the Postscript file has
+painted the background of the whole page white.  Most other
+boundingbox-fixing utilities choose the entire page in such cases.
+When the BoundingBox is smaller then the white background, it may be
+necessary to tell your text program to clip the image when importing
+it.  For example, in LaTeX you need to specify "clip=" as a parameter
+to the \includegraphics macro.
+
+For landscape figures, it may or may not be necessary to rotate the
+page (using the B<-r> switch) before attempting to compute the
+bounding box .
+
+=head1 OPTIONS
+
+=over 5
+
+=item B<-c>
+
+Send a new file with the correct BoundingBox to stdout.  This will
+leave the original file untouched.  Only the first filename on the
+command line will be processed.
+
+=item B<-e>
+
+When the filename extension is F<.ps>, change it to F<.eps> (unless
+the resulting file name corresponds to an existing file).  See also
+the B<-f> flag.
+
+=item B<-f>
+
+When specified together with the B<-e> flag, existing F<.eps> files
+are overwritten when necessary.
+
+=item B<-l>
+
+List computed BoundingBoxes, do not change any files.
+
+=item B<-o outfile>
+
+Output to file OUTFILE.
+
+=item B<-r>
+
+Rotate the page for BoundingBox calculations.  This may or may not be
+needed for landscape figures.
+
+=item B<-x N>
+
+The BoundingBox created can be made larger than the actual image by N
+postscript points with this option.
+
+=back
+
+=head1 AUTHOR
+
+Carsten Dominik    <dominik@strw.LeidenUniv.nl>
+
+Holger Karl        <karl@informatik.hu-berlin.de>
+
+This program is free software.  See the source file for the full
+copyright notice.
+
+=head1 FILES
+
+For the file F<file.ps>, F<file.ps.bak> is used as a temporary file.
+
+=head1 SEE ALSO
+
+gs(1), pnmfile(1), pnmcrop(1), pnm(5)
+
+=head1 BUGS
+
+B<psfixbb> does not work for images larger than a normal page.
+
+Rotation of landscape files should really be automatic, but I don't
+know a general way to determine if this is necessary of not.
+Suggestions are welcome.
+
+The file F<file.ps.bak> is overwritten without checking.
+
+For multipage documents, only the first page determines the value of
+the BoundingBox.
+
+=head1 ACKNOWLEDGMENTS
+
+Thanks to Georg Drenkhahn for pointing out how to enforce a showpage
+command in gs.
+
+=cut

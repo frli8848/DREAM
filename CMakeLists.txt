@@ -14,10 +14,9 @@ set (DREAM_VERSION_MAJOR 3)
 set (DREAM_VERSION_MINOR 0)
 set (DREAM_VERSION_PATCH 0)
 
-option(BUILD_MEX "Enable building of the mex-files." ON)
+option(BUILD_MEX "Enable building of the mex-files." OFF)
 option(BUILD_OCT "Enable building of the oct-files." ON)
 option(BUILD_USERMAN "Enable building of the user manual." OFF)
-
 
 if (BUILD_OCT OR BUILD_MEX)
 

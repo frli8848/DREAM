@@ -4,18 +4,18 @@
 *
 * This file is part of the DREAM Toolbox.
 *
-* The DREAM Toolbox is free software; you can redistribute it and/or modify 
+* The DREAM Toolbox is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by the
 * Free Software Foundation; either version 2, or (at your option) any
 * later version.
 *
-* The DREAM Toolbox is distributed in the hope that it will be useful, but 
+* The DREAM Toolbox is distributed in the hope that it will be useful, but
 * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
 * for more details.
 *
 * You should have received a copy of the GNU General Public License
-* along with the DREAM Toolbox; see the file COPYING.  If not, write to the 
+* along with the DREAM Toolbox; see the file COPYING.  If not, write to the
 * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 * 02110-1301, USA.
 *
@@ -63,16 +63,16 @@ typedef struct
   octave_idx_type start;
   octave_idx_type stop;
   double *ro;
-  double a; 
+  double a;
   double b;
-  double dt; 
+  double dt;
   octave_idx_type nt;
   int delay_method;
   double *delay;
   double v;
   double cp;
   //double alpha;
-  double *h; 
+  double *h;
   //int err_level;
 } DATA;
 
@@ -80,7 +80,7 @@ typedef void (*sighandler_t)(int);
 
 /***
  *
- * Thread function. 
+ * Thread function.
  *
  ***/
 
@@ -96,39 +96,39 @@ void* smp_process(void *arg)
   double *delay=D.delay, *ro=D.ro, v=D.v, cp=D.cp; // alfa=D.alfa;
   octave_idx_type start=D.start, stop=D.stop;
 
-  // Let the thread finish and then catch the error. 
+  // Let the thread finish and then catch the error.
   /*
   if (err_level == STOP)
     tmp_lev = PARALLEL_STOP;
   else
     tmp_lev = err_level;
   */
-  
+
   if (D.delay_method == SINGLE) {
     for (n=start; n<stop; n++) {
-      xo = ro[n]; 
-      yo = ro[n+1*no]; 
+      xo = ro[n];
+      yo = ro[n+1*no];
       zo = ro[n+2*no];
-      
+
       rect_sir(xo,yo,zo,a,b,dt,nt,delay[0],v,cp,&h[n*nt]); // TODO: Add attenuation.
 
       if (!running) {
-	octave_stdout << "Thread for observation points " << start+1 << " -> " << stop << " bailing out!\n";
-	return(NULL);
+        octave_stdout << "Thread for observation points " << start+1 << " -> " << stop << " bailing out!\n";
+        return(NULL);
       }
 
     }
   } else { // MULTIPLE delays.
     for (n=start; n<stop; n++) {
-      xo = ro[n]; 
-      yo = ro[n+1*no]; 
+      xo = ro[n];
+      yo = ro[n+1*no];
       zo = ro[n+2*no];
-      
+
       rect_sir(xo,yo,zo,a,b,dt,nt,delay[n],v,cp,&h[n*nt]); // TODO: Add attenuation.
-      
+
       if (!running) {
-	octave_stdout << "Thread for observation points " << start+1 << " -> " << stop << " bailing out!\n";
-	return(NULL);
+        octave_stdout << "Thread for observation points " << start+1 << " -> " << stop << " bailing out!\n";
+        return(NULL);
       }
 
     }
@@ -137,13 +137,13 @@ void* smp_process(void *arg)
   // Lock out_err for update, update it, and unlock.
   /*
   err_lock.lock();
-  
+
   if ((tmp_err != NONE) && (out_err == NONE))
     out_err = tmp_err;
-  
+
   err_lock.unlock();
   */
-  
+
   return(NULL);
 }
 
@@ -174,7 +174,7 @@ void sig_keyint_handler(int signum) {
  ***/
 
 DEFUN_DLD (rect_sir, args, nlhs,
-	   "-*- texinfo -*-\n\
+           "-*- texinfo -*-\n\
 @deftypefn {Loadable Function} {}  [Y] = rect_sir(Ro,geom_par,delay,s_par,m_par).\n \
 \n\
 RECT_SIR Computes the time-continous (analytic) spatial impulse response(s) for a\n\
@@ -231,7 +231,7 @@ Copyright @copyright{} 2008-2016 Fredrik Lingvall.\n\
   double *ro,*geom_par,*s_par,*m_par;
   dream_idx_type nt, no;
   double  a, b, dt;
-  double *delay,v,cp;     
+  double *delay,v,cp;
   double *h;
   DATA   *D;
   octave_idx_type start, stop;
@@ -243,7 +243,7 @@ Copyright @copyright{} 2008-2016 Fredrik Lingvall.\n\
   int nrhs = args.length ();
 
   // Check for proper number of arguments
-    
+
   if (nrhs != 5) {
     dream_err_msg("rect_sir requires 5 input arguments!");
   }
@@ -251,17 +251,17 @@ Copyright @copyright{} 2008-2016 Fredrik Lingvall.\n\
     if (nlhs > 1) {
       dream_err_msg("Too many output arguments for rect_sir!");
     }
-  
+
   //
   // Observation point.
   //
-  
+
   // Check that arg (number of observation points) x 3 matrix
   if (mxGetN(0) != 3) {
     error("Argument 1 must be a (number of observation points) x 3 matrix!");
     return oct_retval;
   }
-  
+
   no = mxGetM(0); // Number of observation points.
   const Matrix tmp0 = args(0).matrix_value();
   ro = (double*) tmp0.fortran_vec();
@@ -273,9 +273,9 @@ Copyright @copyright{} 2008-2016 Fredrik Lingvall.\n\
   // Check that arg 2 is a two element vector.
   if (!((mxGetM(1)==2 && mxGetN(1)==1) || (mxGetM(1)==1 && mxGetN(1)==2))) {
     error("Argument 2 must be a two element vector!");
-    return oct_retval;  
+    return oct_retval;
   }
-  
+
   const Matrix tmp1 = args(1).matrix_value();
   geom_par = (double*) tmp1.fortran_vec();
   a  = geom_par[0];		// x-dim of the transducer.
@@ -284,7 +284,7 @@ Copyright @copyright{} 2008-2016 Fredrik Lingvall.\n\
   //
   // Temporal and spatial sampling parameters.
   //
-  
+
   // Check that arg 3 is a 2 element vector
   if (!((mxGetM(2)==2 && mxGetN(2)==1) || (mxGetM(2)==1 && mxGetN(2)==2))) {
     error("Argument 3 must be a vector of length 2!");
@@ -305,20 +305,20 @@ Copyright @copyright{} 2008-2016 Fredrik Lingvall.\n\
     error("Argument 4 must be a scalar or a vector with a length equal to the number of observation points!");
     return oct_retval;
   }
-  
+
   const Matrix tmp3 = args(3).matrix_value();
   delay = (double*) tmp3.fortran_vec();
-  
+
   //
   // Material parameters
   //
-  
+
   // Check that arg 5 is a 2 element vector.
   if (!((mxGetM(4)==2 && mxGetN(4)==1) || (mxGetM(4)==1 && mxGetN(4)==2))) {
     error("Argument 5 must be a vector of length 2!");
     return oct_retval;
   }
-  
+
   const Matrix tmp4 = args(4).matrix_value();
   m_par = (double*) tmp4.fortran_vec();
   v     = m_par[0]; // Normal velocity of transducer surface.
@@ -330,16 +330,16 @@ Copyright @copyright{} 2008-2016 Fredrik Lingvall.\n\
 
   // Get number of CPU cores (including hypethreading, C++11)
   nthreads = std::thread::hardware_concurrency();
-  
+
   // nthreads can't be larger then the number of observation points.
-  if (nthreads > (unsigned int) no) { 
+  if (nthreads > (unsigned int) no) {
     nthreads = no;
   }
-  
-  //  
+
+  //
   // Create an output matrix for the impulse response(s).
   //
-  
+
   Matrix h_mat(nt, no);
   h = h_mat.fortran_vec();
 
@@ -354,11 +354,11 @@ Copyright @copyright{} 2008-2016 Fredrik Lingvall.\n\
   if (( old_handler_abrt=signal(SIGABRT, &sighandler)) == SIG_ERR) {
     printf("Couldn't register SIGABRT signal handler.\n");
   }
-  
+
   if (( old_handler_keyint=signal(SIGINT, &sighandler)) == SIG_ERR) {
     printf("Couldn't register SIGINT signal handler.\n");
   }
-  
+
   //
   // Call the rect_sir subroutine.
   //
@@ -383,7 +383,7 @@ Copyright @copyright{} 2008-2016 Fredrik Lingvall.\n\
     D[thread_n].ro = ro;
     D[thread_n].a = a;
     D[thread_n].b = b;
-    D[thread_n].dt = dt; 
+    D[thread_n].dt = dt;
     D[thread_n].nt = nt;
 
     if (mxGetM(3) * mxGetN(3) == 1)
@@ -400,31 +400,31 @@ Copyright @copyright{} 2008-2016 Fredrik Lingvall.\n\
 
     // Starts the threads.
     threads[thread_n] = std::thread(smp_process, &D[thread_n]); // Start the threads.
-    
+
     // Set the affinity (eg. make it run on core 'thread_n' only).
-    //set_dream_thread_affinity(thread_n, nthreads, threads); 
-    
+    //set_dream_thread_affinity(thread_n, nthreads, threads);
+
   } // for (thread_n = 0; thread_n < nthreads; thread_n++)
 
   // Wait for all threads to finish.
   for (thread_n = 0; thread_n < nthreads; thread_n++)
     threads[thread_n].join();
-  
+
   // Free memory.
   free((void*) D);
-  
+
   //
   // Restore old signal handlers.
   //
-  
+
   if (signal(SIGTERM, old_handler) == SIG_ERR) {
     printf("Couldn't register old SIGTERM signal handler.\n");
   }
-   
+
   if (signal(SIGABRT,  old_handler_abrt) == SIG_ERR) {
     printf("Couldn't register old SIGABRT signal handler.\n");
   }
-  
+
   if (signal(SIGINT, old_handler_keyint) == SIG_ERR) {
     printf("Couldn't register old SIGINT signal handler.\n");
   }
@@ -434,7 +434,6 @@ Copyright @copyright{} 2008-2016 Fredrik Lingvall.\n\
   }
 
   oct_retval.append(h_mat);
-    
+
   return oct_retval;
 }
-      

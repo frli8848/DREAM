@@ -4,18 +4,18 @@
 *
 * This file is part of the DREAM Toolbox.
 *
-* The DREAM Toolbox is free software; you can redistribute it and/or modify 
+* The DREAM Toolbox is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by the
 * Free Software Foundation; either version 2, or (at your option) any
 * later version.
 *
-* The DREAM Toolbox is distributed in the hope that it will be useful, but 
+* The DREAM Toolbox is distributed in the hope that it will be useful, but
 * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
 * for more details.
 *
 * You should have received a copy of the GNU General Public License
-* along with the DREAM Toolbox; see the file COPYING.  If not, write to the 
+* along with the DREAM Toolbox; see the file COPYING.  If not, write to the
 * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 * 02110-1301, USA.
 *
@@ -95,7 +95,7 @@ void sig_keyint_handler(int signum);
 
 /***
  *
- * Thread function. 
+ * Thread function.
  *
  ***/
 
@@ -116,105 +116,105 @@ void* smp_process(void *arg)
 
   if (D.delay_method == SINGLE) {
     for (n=start; n<stop; n++) {
-      xo = ro[n]; 
-      yo = ro[n+1*no]; 
-      zo = ro[n+2*no]; 
-      
+      xo = ro[n];
+      yo = ro[n+1*no];
+      zo = ro[n+2*no];
+
       // The SAFT loop.
       for (l=0; l < (octave_idx_type) L; l++) {
-	
-	x_trans = r_trans[l];
-	y_trans = r_trans[l+1*L];
-	z_trans = r_trans[l+2*L];
-	
-	// Horizontal distance between transducer and observation point.
-	r_xy = sqrt( (x_trans - xo)*(x_trans - xo) + (y_trans - yo)*(y_trans - yo) );
-	
-	// if r_xy is inside the synthetic aperture.
-	if (r_xy <= a/2) {
-	  
-	  // Vertical distance between transducer and observation point.
-	  z = zo - z_trans;
-	  
-	  z_prim = sqrt(z*z + r_xy*r_xy);
-	  tmp = (2*z_prim/cp * 1e3 - 2*delay[0])/dt; 
 
-	  // Better to round just one time!
-	  k_shift = (int) rint(tmp);
-	  
-	  // Rounding err.
-	  d =  tmp - ((double) k_shift);
-	  
-	  // Linear interpolation.
-	  if ((k_shift+1 < K) && (k_shift-1 > 0) ) {
-	    if (d >=0) {
-	      Bsaft[n] += (1.0 - d) * B[k_shift     + l*K];
-	      Bsaft[n] += d * B[(k_shift+1) + l*K];
-	    }
-	    else {
-	      Bsaft[n] -= d * B[k_shift     + l*K];
-	      Bsaft[n] += (1.0 + d) * B[(k_shift-1) + l*K];
-	    }
-	  } // if
-	}
+        x_trans = r_trans[l];
+        y_trans = r_trans[l+1*L];
+        z_trans = r_trans[l+2*L];
+
+        // Horizontal distance between transducer and observation point.
+        r_xy = sqrt( (x_trans - xo)*(x_trans - xo) + (y_trans - yo)*(y_trans - yo) );
+
+        // if r_xy is inside the synthetic aperture.
+        if (r_xy <= a/2) {
+
+          // Vertical distance between transducer and observation point.
+          z = zo - z_trans;
+
+          z_prim = sqrt(z*z + r_xy*r_xy);
+          tmp = (2*z_prim/cp * 1e3 - 2*delay[0])/dt;
+
+          // Better to round just one time!
+          k_shift = (int) rint(tmp);
+
+          // Rounding err.
+          d =  tmp - ((double) k_shift);
+
+          // Linear interpolation.
+          if ((k_shift+1 < K) && (k_shift-1 > 0) ) {
+            if (d >=0) {
+              Bsaft[n] += (1.0 - d) * B[k_shift     + l*K];
+              Bsaft[n] += d * B[(k_shift+1) + l*K];
+            }
+            else {
+              Bsaft[n] -= d * B[k_shift     + l*K];
+              Bsaft[n] += (1.0 + d) * B[(k_shift-1) + l*K];
+            }
+          } // if
+        }
       }
-      
+
       if (!running) {
-	octave_stdout << "Thread for observation points " << start+1 << " -> " << stop  << " bailing out!\n";
-	return(NULL);
+        octave_stdout << "Thread for observation points " << start+1 << " -> " << stop  << " bailing out!\n";
+        return(NULL);
       }
-      
+
     }
 
   } else { // MULTIPLE delays.
 
     for (n=start; n<stop; n++) {
-      xo = ro[n]; 
-      yo = ro[n+1*no]; 
-      zo = ro[n+2*no]; 
-      
+      xo = ro[n];
+      yo = ro[n+1*no];
+      zo = ro[n+2*no];
+
       // The SAFT loop.
       for (l=0; l<L; l++) {
-	
-	x_trans = r_trans[l];
-	y_trans = r_trans[l+1*L];
-	z_trans = r_trans[l+2*L];
-	
-	// Horizontal distance between transducer and observation point.
-	r_xy = sqrt( (x_trans - xo)*(x_trans - xo) + (y_trans - yo)*(y_trans - yo) );
-	
-	// if r_xy is inside the synthetic aperture.
-	if (r_xy <= a/2) {
-	  
-	  // Vertical distance between transducer and observation point.
-	  z = zo - z_trans;
-	  
-	  z_prim = sqrt(z*z + r_xy*r_xy);
-	  tmp = (2*z_prim/cp * 1e3 - 2*delay[n])/dt; 
-	  
-	  // Better to round just one time!
-	  k_shift = (int) rint(tmp);
-	  
-	  // Rounding err.
-	  d =  tmp - ((double) k_shift);
-	  
-	  // Linear interpolation.
-	  if ((k_shift+1 < K) && (k_shift-1 > 0) ) {
-	    if (d >=0) {
-	      Bsaft[n] += (1.0 - d) * B[k_shift     + l*K];
-	      Bsaft[n] += d * B[(k_shift+1) + l*K];
-	    }
-	    else {
-	      Bsaft[n] -= d * B[k_shift     + l*K];
-	      Bsaft[n] += (1.0 + d) * B[(k_shift-1) + l*K];
-	    }
-	  } // if
-	}
+
+        x_trans = r_trans[l];
+        y_trans = r_trans[l+1*L];
+        z_trans = r_trans[l+2*L];
+
+        // Horizontal distance between transducer and observation point.
+        r_xy = sqrt( (x_trans - xo)*(x_trans - xo) + (y_trans - yo)*(y_trans - yo) );
+
+        // if r_xy is inside the synthetic aperture.
+        if (r_xy <= a/2) {
+
+          // Vertical distance between transducer and observation point.
+          z = zo - z_trans;
+
+          z_prim = sqrt(z*z + r_xy*r_xy);
+          tmp = (2*z_prim/cp * 1e3 - 2*delay[n])/dt;
+
+          // Better to round just one time!
+          k_shift = (int) rint(tmp);
+
+          // Rounding err.
+          d =  tmp - ((double) k_shift);
+
+          // Linear interpolation.
+          if ((k_shift+1 < K) && (k_shift-1 > 0) ) {
+            if (d >=0) {
+              Bsaft[n] += (1.0 - d) * B[k_shift     + l*K];
+              Bsaft[n] += d * B[(k_shift+1) + l*K];
+            }
+            else {
+              Bsaft[n] -= d * B[k_shift     + l*K];
+              Bsaft[n] += (1.0 + d) * B[(k_shift-1) + l*K];
+            }
+          } // if
+        }
       }
-      
+
       if (!running) {
-	octave_stdout << "Thread for observation points " << start+1 << " -> " << stop  << " bailing out!\n";
-	return(NULL);
+        octave_stdout << "Thread for observation points " << start+1 << " -> " << stop  << " bailing out!\n";
+        return(NULL);
       }
     }
   }
@@ -243,13 +243,13 @@ void sig_keyint_handler(int signum) {
 }
 
 /***
- * 
+ *
  * Octave (oct) gateway function for SAFT_P.
  *
  ***/
 
 DEFUN_DLD (saft, args, nlhs,
-	   "-*- texinfo -*-\n\
+           "-*- texinfo -*-\n\
 @deftypefn {Loadable Function} {}  [Y] = saft(B,To,delay,s_par,m_par,Ro,a).\n\
 \n\
 SAFT_P - The sythetic aperture focusing techique.\n\
@@ -318,7 +318,7 @@ Copyright @copyright{} 2008-2016 Fredrik Lingvall.\n\
   int nrhs = args.length ();
 
   // Check for proper number of arguments
-  
+
   if (nrhs != 7) {
     error("saft requires 7 input arguments!");
     return oct_retval;
@@ -328,7 +328,7 @@ Copyright @copyright{} 2008-2016 Fredrik Lingvall.\n\
       error("Too many output arguments for saft!");
       return oct_retval;
     }
-  
+
   //
   // B-scan.
   //
@@ -353,7 +353,7 @@ Copyright @copyright{} 2008-2016 Fredrik Lingvall.\n\
   //
   // Start point of impulse response vector ([us]).
   //
-  
+
   // Check that arg 3 is a scalar (or vector).
   if ( (mxGetM(2) * mxGetN(2) !=1) && ((mxGetM(2) * mxGetN(2)) != L)) {
     error("Argument 3 (delay(s)) must be a scalar or a vector with a length equal to the number of A-scans!");
@@ -390,7 +390,7 @@ Copyright @copyright{} 2008-2016 Fredrik Lingvall.\n\
   const Matrix tmp4 = args(4).matrix_value();
   m_par = (double*) tmp4.fortran_vec();
   cp    = m_par[0]; // Sound speed.
-  
+
   //
   // Observation point matrix.
   //
@@ -400,7 +400,7 @@ Copyright @copyright{} 2008-2016 Fredrik Lingvall.\n\
     error("Argument 6 must be a (number of observation points) x 3 matrix!");
     return oct_retval;
   }
-  
+
   no = mxGetM(5); // Number of observation points.
   const Matrix tmp5 = args(5).matrix_value();
   ro = (double*) tmp5.fortran_vec();
@@ -408,13 +408,13 @@ Copyright @copyright{} 2008-2016 Fredrik Lingvall.\n\
   //
   // Synthetic Aperture
   //
- 
+
   // Check that arg 7 is scalar.
   if ((mxGetM(6)!=1) && (mxGetN(6)!=1)) {
     error("Argument 7 must be a scalar!");
     return oct_retval;
   }
-  
+
   const Matrix tmp6 = args(6).matrix_value();
   a = (double) tmp6.fortran_vec()[0];
 
@@ -424,12 +424,12 @@ Copyright @copyright{} 2008-2016 Fredrik Lingvall.\n\
 
   // Get number of CPU cores (including hypethreading, C++11)
   nthreads = std::thread::hardware_concurrency();
-  
+
   // nthreads can't be larger then the number of observation points.
-  if (nthreads > (unsigned int) no) { 
+  if (nthreads > (unsigned int) no) {
     nthreads = no;
   }
-  
+
   //
   // Create an output matrix for the processed image.
   //
@@ -448,11 +448,11 @@ Copyright @copyright{} 2008-2016 Fredrik Lingvall.\n\
   if ((old_handler_abrt=signal(SIGABRT, &sighandler)) == SIG_ERR) {
     printf("Couldn't register signal handler.\n");
   }
-  
+
   if ((old_handler_keyint=signal(SIGINT, &sighandler)) == SIG_ERR) {
     printf("Couldn't register signal handler.\n");
   }
-  
+
   //
   // Call the SAFT subroutine.
   //
@@ -495,15 +495,15 @@ Copyright @copyright{} 2008-2016 Fredrik Lingvall.\n\
     threads[thread_n] = std::thread(smp_process, &D[thread_n]);
 
 #ifdef __linux__
-	// Make sure that each thread run on different CPU/core.
+        // Make sure that each thread run on different CPU/core.
     cpu_set_t cpuset;
     CPU_ZERO(&cpuset);
     CPU_SET(thread_n, &cpuset);
     int rc = pthread_setaffinity_np(threads[thread_n].native_handle(),
-				    sizeof(cpu_set_t), &cpuset);
+                                    sizeof(cpu_set_t), &cpuset);
 #endif
   } // for (thread_n = 0; thread_n < nthreads; thread_n++)
-  
+
   // Wait for all threads to finish.
   for (thread_n = 0; thread_n < nthreads; thread_n++)
     threads[thread_n].join();
@@ -518,11 +518,11 @@ Copyright @copyright{} 2008-2016 Fredrik Lingvall.\n\
   if (signal(SIGTERM, old_handler) == SIG_ERR) {
     printf("Couldn't register old signal handler.\n");
   }
-   
+
   if (signal(SIGABRT,  old_handler_abrt) == SIG_ERR) {
     printf("Couldn't register signal handler.\n");
   }
-  
+
   if (signal(SIGINT, old_handler_keyint) == SIG_ERR) {
     printf("Couldn't register signal handler.\n");
   }
@@ -536,4 +536,3 @@ Copyright @copyright{} 2008-2016 Fredrik Lingvall.\n\
 
   return oct_retval;
 }
-

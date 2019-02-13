@@ -4,18 +4,18 @@
 *
 * This file is part of the DREAM Toolbox.
 *
-* The DREAM Toolbox is free software; you can redistribute it and/or modify 
+* The DREAM Toolbox is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by the
 * Free Software Foundation; either version 2, or (at your option) any
 * later version.
 *
-* The DREAM Toolbox is distributed in the hope that it will be useful, but 
+* The DREAM Toolbox is distributed in the hope that it will be useful, but
 * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
 * for more details.
 *
 * You should have received a copy of the GNU General Public License
-* along with the DREAM Toolbox; see the file COPYING.  If not, write to the 
+* along with the DREAM Toolbox; see the file COPYING.  If not, write to the
 * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 * 02110-1301, USA.
 *
@@ -82,16 +82,16 @@ void sig_keyint_handler(int signum) {
 void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
   double *RESTRICT ro, *RESTRICT geom_par, *RESTRICT s_par, *RESTRICT m_par;
-  double xo,yo,zo,r,R,dx,dy,dt;   
+  double xo,yo,zo,r,R,dx,dy,dt;
   dream_idx_type    nt,no,n;
   double *RESTRICT delay,v,cp,alfa,*h, *err_p;
   int    err_level=STOP, err=NONE, out_err = NONE, set = FALSE;
   char   err_str[50];
   int    buflen;
   sighandler_t   old_handler, old_handler_abrt, old_handler_keyint;
-  
+
   // Check for proper number of arguments
-  
+
   if (!((nrhs == 5) || (nrhs == 6))) {
     dream_err_msg("dreamsphere_f requires 5 or 6 input arguments!");
   }
@@ -99,15 +99,15 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     if (nlhs > 2) {
       dream_err_msg("Too many output arguments for dreamsphere_f!");
     }
-  
+
   //
   // Observation point.
   //
-  
+
   // Check that arg (number of observation points) x 3 matrix
   if (!mxGetN(prhs[0])==3)
     dream_err_msg("Argument 1 must be a (number of observation points) x 3 matrix!");
-  
+
   no = mxGetM(prhs[0]); // Number of observation points.
   ro = mxGetPr(prhs[0]);
 
@@ -119,43 +119,43 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    // Check that arg 2 is a 2 element vector
   if (!((mxGetM(prhs[1])==2 && mxGetN(prhs[1])==1) || (mxGetM(prhs[1])==1 && mxGetN(prhs[1])==2)))
     dream_err_msg("Argument 2 must be a vector of length 2!");
-  
+
   geom_par = mxGetPr(prhs[1]);
   r = geom_par[0];		// Radius of the transducer.
   R = geom_par[1];		// Curvature radius of the transducer.
-  
+
   //
   // Temporal and spatial sampling parameters.
   //
-  
+
   // Check that arg 3 is a 4 element vector
   if (!((mxGetM(prhs[2])==4 && mxGetN(prhs[2])==1) || (mxGetM(prhs[2])==1 && mxGetN(prhs[2])==4)))
     dream_err_msg("Argument 3 must be a vector of length 4!");
-  
+
   s_par = mxGetPr(prhs[2]);
   dx    = s_par[0];		// Spatial x discretization size.
   dy    = s_par[1];		// Spatial dy iscretization size.
   dt    = s_par[2];		// Temporal discretization size (= 1/sampling freq).
   nt    = (dream_idx_type) s_par[3];	// Length of SIR.
-  
+
   //
-  // Start point of impulse response vector ([us]). 
+  // Start point of impulse response vector ([us]).
   //
-   
+
   // Check that arg 4 is a scalar.
   if ( (mxGetM(prhs[3]) * mxGetN(prhs[3]) !=1) && ((mxGetM(prhs[3]) * mxGetN(prhs[3])) != no))
     dream_err_msg("Argument 4 must be a scalar or a vector with a length equal to the number of observation points!");
 
   delay = mxGetPr(prhs[3]);
-  
+
   //
   // Material parameters
   //
-  
+
   // Check that arg 5 is a 3 element vector.
   if (!((mxGetM(prhs[4])==3 && mxGetN(prhs[4])==1) || (mxGetM(prhs[4])==1 && mxGetN(prhs[4])==3)))
     dream_err_msg("Argument 5 must be a vector of length 3!");
-  
+
   m_par = mxGetPr(prhs[4]);
   v     = m_par[0]; // Normal velocity of transducer surface.
   cp    = m_par[1]; // Sound speed.
@@ -163,25 +163,25 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
   // Error reporting.
   if (nrhs == 6) {
-    
+
     if (!mxIsChar(prhs[5]))
       dream_err_msg("Argument 6 must be a string");
-    
+
     buflen = (mxGetM(prhs[5]) * mxGetN(prhs[5]) * sizeof(mxChar)) + 1;
     mxGetString(prhs[5],err_str,buflen);
-    
+
     if (!strcmp(err_str,"ignore")) {
-      err_level = IGNORE; 
+      err_level = IGNORE;
       set = TRUE;
     }
 
     if (!strcmp(err_str,"warn")) {
-      err_level = WARN; 
+      err_level = WARN;
       set = TRUE;
     }
-    
+
     if (!strcmp(err_str,"stop")) {
-      err_level = STOP; 
+      err_level = STOP;
       set = TRUE;
     }
 
@@ -206,7 +206,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   if (( old_handler_abrt=signal(SIGABRT, &sighandler)) == SIG_ERR) {
     printf("Couldn't register SIGABRT signal handler.\n");
   }
-  
+
   if (( old_handler_keyint=signal(SIGINT, &sighandler)) == SIG_ERR) {
     printf("Couldn't register SIGINT signal handler.\n");
   }
@@ -224,36 +224,36 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
   if (mxGetM(prhs[3]) * mxGetN(prhs[3]) == 1) {
     for (n=0; n<no; n++) {
-      xo = ro[n]; 
-      yo = ro[n+1*no]; 
-      zo = ro[n+2*no]; 
-      
+      xo = ro[n];
+      yo = ro[n+1*no];
+      zo = ro[n+2*no];
+
       err = dreamsphere_f(xo,yo,zo,r,R,dx,dy,dt,nt,delay[0],v,cp,alfa,&h[n*nt],err_level);
       if (err != NONE)
-	out_err = err;
+        out_err = err;
 
       if (!running) {
-	break; // CTRL-C pressed.
+        break; // CTRL-C pressed.
       }
-      
+
     }
   } else {
     for (n=0; n<no; n++) {
-      xo = ro[n]; 
-      yo = ro[n+1*no]; 
-      zo = ro[n+2*no]; 
-      
+      xo = ro[n];
+      yo = ro[n+1*no];
+      zo = ro[n+2*no];
+
       err = dreamsphere_f(xo,yo,zo,r,R,dx,dy,dt,nt,delay[n],v,cp,alfa,&h[n*nt],err_level);
       if (err != NONE)
-	out_err = err;
+        out_err = err;
 
       if (!running) {
-	break; // CTRL-C pressed.
+        break; // CTRL-C pressed.
       }
 
     }
   }
-  
+
   //
   // Restore old signal handlers.
   //
@@ -261,11 +261,11 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   if (signal(SIGTERM, old_handler) == SIG_ERR) {
     printf("Couldn't register old SIGTERM signal handler.\n");
   }
-   
+
   if (signal(SIGABRT,  old_handler_abrt) == SIG_ERR) {
     printf("Couldn't register old SIGABRT signal handler.\n");
   }
-  
+
   if (signal(SIGINT, old_handler_keyint) == SIG_ERR) {
     printf("Couldn't register old SIGINT signal handler.\n");
   }
@@ -273,7 +273,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 #ifdef USE_FFTW
   if (alfa != (double) 0.0)
     att_close();
-#endif 
+#endif
 
   if (!running) {
     dream_err_msg("CTRL-C pressed!\n"); // Bail out.

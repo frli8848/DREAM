@@ -4,18 +4,18 @@
 *
 * This file is part of the DREAM Toolbox.
 *
-* The DREAM Toolbox is free software; you can redistribute it and/or modify 
+* The DREAM Toolbox is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by the
 * Free Software Foundation; either version 2, or (at your option) any
 * later version.
 *
-* The DREAM Toolbox is distributed in the hope that it will be useful, but 
+* The DREAM Toolbox is distributed in the hope that it will be useful, but
 * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
 * for more details.
 *
 * You should have received a copy of the GNU General Public License
-* along with the DREAM Toolbox; see the file COPYING.  If not, write to the 
+* along with the DREAM Toolbox; see the file COPYING.  If not, write to the
 * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 * 02110-1301, USA.
 *
@@ -86,7 +86,7 @@ void sig_keyint_handler(int signum);
 
 /***
  *
- * Thread function. 
+ * Thread function.
  *
  ***/
 
@@ -104,108 +104,108 @@ void* smp_process(void *arg)
   size_t start=D.start, stop=D.stop;
   double *RESTRICT r_trans = D.r_trans, a = D.a;
   double x_trans, y_trans, z_trans, d, z, z_prim, tmp;
-  
+
   if (D.delay_method == SINGLE) {
     for (n=start; n<stop; n++) {
-      xo = ro[n]; 
-      yo = ro[n+1*no]; 
-      zo = ro[n+2*no]; 
-      
+      xo = ro[n];
+      yo = ro[n+1*no];
+      zo = ro[n+2*no];
+
       // The SAFT loop.
       for (l=0; l< (size_t) L; l++) {
-	
-	x_trans = r_trans[l];
-	y_trans = r_trans[l+1*L];
-	z_trans = r_trans[l+2*L];
-	
-	// Horizontal distance between transducer and observation point.
-	r_xy = sqrt( (x_trans - xo)*(x_trans - xo) + (y_trans - yo)*(y_trans - yo) );
-	
-	// if r_xy is inside the synthetic aperture.
-	if (r_xy <= a/2) {
-	  
-	  // Vertical distance between transducer and observation point.
-	  z = zo - z_trans;
-	  
-	  z_prim = sqrt(z*z + r_xy*r_xy);
-	  tmp = (2*z_prim/cp * 1e3 - 2*delay[0])/dt; 
 
-	  // Better to round just one time!
-	  k_shift = (int) rint(tmp);
-	  
-	  // Rounding err.
-	  d =  tmp - ((double) k_shift);
-	  
-	  // Linear interpolation.
-	  if ((k_shift+1 < K) && (k_shift-1 > 0) ) {
-	    if (d >=0) {
-	      Bsaft[n] += (1.0 - d) * B[k_shift     + l*K];
-	      Bsaft[n] += d * B[(k_shift+1) + l*K];
-	    }
-	    else {
-	      Bsaft[n] -= d * B[k_shift     + l*K];
-	      Bsaft[n] += (1.0 + d) * B[(k_shift-1) + l*K];
-	    }
-	  } // if
-	}
+        x_trans = r_trans[l];
+        y_trans = r_trans[l+1*L];
+        z_trans = r_trans[l+2*L];
+
+        // Horizontal distance between transducer and observation point.
+        r_xy = sqrt( (x_trans - xo)*(x_trans - xo) + (y_trans - yo)*(y_trans - yo) );
+
+        // if r_xy is inside the synthetic aperture.
+        if (r_xy <= a/2) {
+
+          // Vertical distance between transducer and observation point.
+          z = zo - z_trans;
+
+          z_prim = sqrt(z*z + r_xy*r_xy);
+          tmp = (2*z_prim/cp * 1e3 - 2*delay[0])/dt;
+
+          // Better to round just one time!
+          k_shift = (int) rint(tmp);
+
+          // Rounding err.
+          d =  tmp - ((double) k_shift);
+
+          // Linear interpolation.
+          if ((k_shift+1 < K) && (k_shift-1 > 0) ) {
+            if (d >=0) {
+              Bsaft[n] += (1.0 - d) * B[k_shift     + l*K];
+              Bsaft[n] += d * B[(k_shift+1) + l*K];
+            }
+            else {
+              Bsaft[n] -= d * B[k_shift     + l*K];
+              Bsaft[n] += (1.0 + d) * B[(k_shift-1) + l*K];
+            }
+          } // if
+        }
       }
-      
+
       if (!running) {
-	mexPrintf("Thread for observation points %d -> %d bailing out!\n",start+1,stop);
-	return(NULL);
+        mexPrintf("Thread for observation points %d -> %d bailing out!\n",start+1,stop);
+        return(NULL);
       }
-      
+
     }
 
   } else { // MULTIPLE delays.
 
     for (n=start; n<stop; n++) {
-      xo = ro[n]; 
-      yo = ro[n+1*no]; 
-      zo = ro[n+2*no]; 
-      
+      xo = ro[n];
+      yo = ro[n+1*no];
+      zo = ro[n+2*no];
+
       // The SAFT loop.
       for (l=0; l < (size_t) L; l++) {
-	
-	x_trans = r_trans[l];
-	y_trans = r_trans[l+1*L];
-	z_trans = r_trans[l+2*L];
-	
-	// Horizontal distance between transducer and observation point.
-	r_xy = sqrt( (x_trans - xo)*(x_trans - xo) + (y_trans - yo)*(y_trans - yo) );
-	
-	// if r_xy is inside the synthetic aperture.
-	if (r_xy <= a/2) {
-	  
-	  // Vertical distance between transducer and observation point.
-	  z = zo - z_trans;
-	  
-	  z_prim = sqrt(z*z + r_xy*r_xy);
-	  tmp = (2*z_prim/cp * 1e3 - 2*delay[n])/dt; 
-	  
-	  // Better to round just one time!
-	  k_shift = (int) rint(tmp);
-	  
-	  // Rounding err.
-	  d =  tmp - ((double) k_shift);
-	  
-	  // Linear interpolation.
-	  if ((k_shift+1 < K) && (k_shift-1 > 0) ) {
-	    if (d >=0) {
-	      Bsaft[n] += (1.0 - d) * B[k_shift     + l*K];
-	      Bsaft[n] += d * B[(k_shift+1) + l*K];
-	    }
-	    else {
-	      Bsaft[n] -= d * B[k_shift     + l*K];
-	      Bsaft[n] += (1.0 + d) * B[(k_shift-1) + l*K];
-	    }
-	  } // if
-	}
+
+        x_trans = r_trans[l];
+        y_trans = r_trans[l+1*L];
+        z_trans = r_trans[l+2*L];
+
+        // Horizontal distance between transducer and observation point.
+        r_xy = sqrt( (x_trans - xo)*(x_trans - xo) + (y_trans - yo)*(y_trans - yo) );
+
+        // if r_xy is inside the synthetic aperture.
+        if (r_xy <= a/2) {
+
+          // Vertical distance between transducer and observation point.
+          z = zo - z_trans;
+
+          z_prim = sqrt(z*z + r_xy*r_xy);
+          tmp = (2*z_prim/cp * 1e3 - 2*delay[n])/dt;
+
+          // Better to round just one time!
+          k_shift = (int) rint(tmp);
+
+          // Rounding err.
+          d =  tmp - ((double) k_shift);
+
+          // Linear interpolation.
+          if ((k_shift+1 < K) && (k_shift-1 > 0) ) {
+            if (d >=0) {
+              Bsaft[n] += (1.0 - d) * B[k_shift     + l*K];
+              Bsaft[n] += d * B[(k_shift+1) + l*K];
+            }
+            else {
+              Bsaft[n] -= d * B[k_shift     + l*K];
+              Bsaft[n] += (1.0 + d) * B[(k_shift-1) + l*K];
+            }
+          } // if
+        }
       }
-      
+
       if (!running) {
-	mexPrintf("Thread for observation points %d -> %d bailing out!\n",start+1,stop);
-	return(NULL);
+        mexPrintf("Thread for observation points %d -> %d bailing out!\n",start+1,stop);
+        return(NULL);
       }
     }
   }
@@ -233,7 +233,7 @@ void sig_keyint_handler(int signum) {
 }
 
 /***
- * 
+ *
  * saft_p  - Matlab (MEX) gateway function for SAFT_P.
  *
  ***/
@@ -249,9 +249,9 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   unsigned int thread_n, nthreads;
   size_t start, stop;
   DATA   *D;
-  
+
   // Check for proper number of arguments
-  
+
   if (nrhs != 7) {
     mexErrMsgTxt("saft requires 7 input arguments!");
   }
@@ -259,7 +259,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     if (nlhs > 1) {
       mexErrMsgTxt("Too many output arguments for saft!");
     }
-  
+
   //
   // B-scan.
   //
@@ -277,17 +277,17 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     mexErrMsgTxt("Arg 2 must be a (number of transducer positions) x 3 matrix!");
 
   r_trans = mxGetPr(prhs[1]);
-  
+
   //
   // Start point of impulse response vector ([us]).
   //
-  
+
   // Check that arg 3 is a scalar (or vector).
   if ( (mxGetM(prhs[2]) * mxGetN(prhs[2]) !=1) && ((mxGetM(prhs[2]) * mxGetN(prhs[2])) != L))
     dream_err_msg("Argument 3 (delay(s)) must be a scalar or a vector with a length equal to the number of A-scans!");
-  
+
   delay = mxGetPr(prhs[2]);
-  
+
   //
   // Sampling parameter.
   //
@@ -295,7 +295,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Check that arg 4 is a scalar.
   if (!((mxGetM(prhs[3])==1 && mxGetN(prhs[3])==1)))
     dream_err_msg("Argument 4 (temporal sampling period) must be a scalar");
-  
+
   s_par = mxGetPr(prhs[3]);
   dt    = s_par[0]; // Temporal discretization size (= 1/sampling freq).
 
@@ -306,7 +306,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Check that arg 5 is a scalar.
   if (!((mxGetM(prhs[4])==1 && mxGetN(prhs[4])==1)))
     dream_err_msg("Argument 5 (sound speed) must be a scalar!");
-  
+
   m_par = mxGetPr(prhs[4]);
   cp    = m_par[0]; // Sound speed.
 
@@ -325,7 +325,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   //
   // Synthetic Aperture
   //
- 
+
   // Check that arg 7 is scalar.
   if ((mxGetM(prhs[6])!=1) && (mxGetN(prhs[6])!=1))
     mexErrMsgTxt("Argument 7 must be a scalar!");
@@ -338,12 +338,12 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
   // Get number of CPU cores (including hypethreading, C++11)
   nthreads = std::thread::hardware_concurrency();
-  
+
   // nthreads can't be larger then the number of observation points.
-  if (nthreads > (unsigned int) no) { 
+  if (nthreads > (unsigned int) no) {
     nthreads = no;
   }
-  
+
   //
   // Create an output matrix for the processed image.
   //
@@ -362,23 +362,23 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   if ((old_handler_abrt=signal(SIGABRT, &sighandler)) == SIG_ERR) {
     printf("Couldn't register signal handler.\n");
   }
-  
+
   if ((old_handler_keyint=signal(SIGINT, &sighandler)) == SIG_ERR) {
     printf("Couldn't register signal handler.\n");
   }
-  
+
   //
   // Call the SAFT subroutine.
   //
 
   running = true;
-  
+
   // Allocate local data.
   D = (DATA*) malloc(nthreads*sizeof(DATA));
 
   // Allocate mem for the threads.
   threads = new std::thread[nthreads]; // Init thread data.
-  
+
   for (thread_n = 0; thread_n < nthreads; thread_n++) {
 
     start = thread_n * no/nthreads;
@@ -414,12 +414,12 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     CPU_ZERO(&cpuset);
     CPU_SET(thread_n, &cpuset);
     int rc = pthread_setaffinity_np(threads[thread_n].native_handle(),
-				    sizeof(cpu_set_t), &cpuset);
+                                    sizeof(cpu_set_t), &cpuset);
 #endif
   } // for (thread_n = 0; thread_n < nthreads; thread_n++)
-  
+
   // Wait for all threads to finish.
-  for (thread_n = 0; thread_n < nthreads; thread_n++) 
+  for (thread_n = 0; thread_n < nthreads; thread_n++)
     threads[thread_n].join();
 
   // Free memory.
@@ -432,11 +432,11 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   if (signal(SIGTERM, old_handler) == SIG_ERR) {
     printf("Couldn't register old signal handler.\n");
   }
-   
+
   if (signal(SIGABRT,  old_handler_abrt) == SIG_ERR) {
     printf("Couldn't register signal handler.\n");
   }
-  
+
   if (signal(SIGINT, old_handler_keyint) == SIG_ERR) {
     printf("Couldn't register signal handler.\n");
   }
@@ -447,4 +447,3 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
   return;
 }
-

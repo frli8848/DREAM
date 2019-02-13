@@ -4,18 +4,18 @@
 #
 # This file is part of the DREAM Toolbox.
 #
-# The DREAM Toolbox is free software; you can redistribute it and/or modify 
+# The DREAM Toolbox is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by the
 # Free Software Foundation; either version 2, or (at your option) any
 # later version.
 #
-# The DREAM Toolbox is distributed in the hope that it will be useful, but 
+# The DREAM Toolbox is distributed in the hope that it will be useful, but
 # WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 # FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
 # for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with the DREAM Toolbox; see the file COPYING.  If not, write to the 
+# along with the DREAM Toolbox; see the file COPYING.  If not, write to the
 # Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301, USA.
 #
@@ -45,7 +45,7 @@ userman.dvi: userman_pre.tex userman_post.tex userman.bib
 	echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% " >> userman.tex
 	echo " " >> userman.tex
 	echo " " >> userman.tex
-	echo "\setboolean{TEX4HT}{false}" >> userman.tex	
+	echo "\setboolean{TEX4HT}{false}" >> userman.tex
 	echo " " >> userman.tex
 	echo "\usepackage[colorlinks=true,linkcolor=blue,ps2pdf]{hyperref}" >> userman.tex
 	echo "\title{\textbf{User Manual for the DREAM Toolbox\\\ " >> userman.tex
@@ -80,7 +80,7 @@ userman.pdf: userman.ps
 
 # tex4ht
 html:  userman_pre.tex userman_post.tex userman.bib
-	rm -f *~  *.dvi *.aux *.bbl *.blg *.log *.toc *.tmp *.lg *.idv *.png *.4ct *.4tc *.xref 
+	rm -f *~  *.dvi *.aux *.bbl *.blg *.log *.toc *.tmp *.lg *.idv *.png *.4ct *.4tc *.xref
 	cat userman_pre.tex > userman.tex
 	echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% " >> userman.tex
 	echo "% " >> userman.tex
@@ -89,7 +89,7 @@ html:  userman_pre.tex userman_post.tex userman.bib
 	echo "% " >> userman.tex
 	echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% " >> userman.tex
 	echo " " >> userman.tex
-	echo "\setboolean{TEX4HT}{true}" >> userman.tex	
+	echo "\setboolean{TEX4HT}{true}" >> userman.tex
 	echo " " >> userman.tex
 	echo "\usepackage[colorlinks=true,linkcolor=blue,tex4ht]{hyperref}" >> userman.tex
 	echo "\title{\textbf{User Manual for the DREAM Toolbox\\\ " >> userman.tex
@@ -97,10 +97,10 @@ html:  userman_pre.tex userman_post.tex userman.bib
 	cat ../VERSION  >> userman.tex
 	echo "}\\\ "  >> userman.tex
 	cat userman_post.tex >> userman.tex
-	mk4ht mzlatex  userman "xhtml,mathml-"	
+	mk4ht mzlatex  userman "xhtml,mathml-"
 	bibtex userman
-	mk4ht mzlatex  userman "xhtml,mathml-"	
-	mk4ht mzlatex  userman "xhtml,mathml-"	
+	mk4ht mzlatex  userman "xhtml,mathml-"
+	mk4ht mzlatex  userman "xhtml,mathml-"
 
 install:
 	echo "Install userman for Matlab and Octave"

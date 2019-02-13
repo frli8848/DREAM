@@ -1,8 +1,8 @@
 function [h,t,f_e,f,p_delay] = el_imp_resp(Ts)
 % [h,f_e,t,p_delay] = el_imp_resp(Ts)
 %
-% Get el. imp. resp. from hydrophone data.    
-% 
+% Get el. imp. resp. from hydrophone data.
+%
 %
 % Fredrik Lingvall 2005-10-18.
 
@@ -17,7 +17,7 @@ function [h,t,f_e,f,p_delay] = el_imp_resp(Ts)
 %B = B - bias;
 %h = B(177,64:130);
 %h = h(:);
-%h = conv(h,h); % Forward + backward el. imp. reponse (assumed to be identical). 
+%h = conv(h,h); % Forward + backward el. imp. reponse (assumed to be identical).
 
 
 %
@@ -46,7 +46,7 @@ h = -exp(-a_n.*(t-t0).^2).*cos(2.*pi.*f0.*t);
 
 % Don't need to deconv the SIR since its a dirac at focus!
 %h_sir = dreamcylind_f([0 0 190],[0.9 33 190],[0.05 0.05 Ts ...
-%	  100], 190/cp*1000, [1.0 cp 0]); 
+%	  100], 190/cp*1000, [1.0 cp 0]);
 
 %h_e = h(7:100);
 h_e = h;

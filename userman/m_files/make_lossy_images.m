@@ -1,6 +1,5 @@
-
 % Generate the figures for the Lossy Media Section
-% 
+%
 % Fredrik Lingvall 2007-03-30.
 
 Fs = 25;   % Sampling freq. in MHz.
@@ -19,15 +18,15 @@ Ro = [xo(:) yo(:) zo(:)];
 
 
 % Descretization parameters.
-dt = Ts; 				% us. 
-nt = 1600;   				% Length of spatial impulse response vector.
+dt = Ts;                                % us.
+nt = 1600;                              % Length of spatial impulse response vector.
 s_par = [dt nt];
 
 t = 0:Ts:Ts*(nt-1);
 
 % Material parameters.
-cp    = 1540; 			        % Sound speed.
-alfa  = 1.0; 				% Absorbtion (dB/cm MHz).
+cp    = 1540;                           % Sound speed.
+alfa  = 1.0;                            % Absorbtion (dB/cm MHz).
 m_par = [cp alfa];
 
 delay = 0;
@@ -42,22 +41,22 @@ clf;
 
 for n=1:size(H,2)
   switch (n)
-    
+
    case 1
     plot(t,H(:,n),'LineWidth',2);
-    
+
    case 2
     plot(t,H(:,n),'--','LineWidth',2);
-    
+
    case 3
     plot(t,H(:,n),'-.','LineWidth',2);
-    
+
    case 4
     plot(t,H(:,n),':','LineWidth',2);
-    
+
    case 5
     plot(t,H(:,n),'r--','LineWidth',2);
-    
+
   end
   str{n} = sprintf(['z = ' num2str(zo(n)) ' [mm]']);
   hold('on');
@@ -80,25 +79,25 @@ f = (0:size(H,1)-1)/size(H,1)*Fs;
 
 for n=1:size(H,2)
   switch (n)
-   
+
    case 1
     plot(f,20*log10(abs(Hf(:,n))),'LineWidth',2);
-    
+
    case 2
     plot(f,20*log10(abs(Hf(:,n))),'--','LineWidth',2);
-    
+
    case 3
     plot(f,20*log10(abs(Hf(:,n))),'-.','LineWidth',2);
-    
+
    case 4
     plot(f,20*log10(abs(Hf(:,n))),':','LineWidth',2);
-    
+
    case 5
     plot(f,20*log10(abs(Hf(:,n))),'r--','LineWidth',2);
-    
+
    otherwise
     plot(f,20*log10(abs(Hf(:,n))));
-    
+
   end
   str{n} = sprintf(['z = ' num2str(zo(n)) ' [mm]']);
   hold('on');

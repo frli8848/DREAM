@@ -4,18 +4,18 @@
 *
 * This file is part of the DREAM Toolbox.
 *
-* The DREAM Toolbox is free software; you can redistribute it and/or modify 
+* The DREAM Toolbox is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by the
 * Free Software Foundation; either version 2, or (at your option) any
 * later version.
 *
-* The DREAM Toolbox is distributed in the hope that it will be useful, but 
+* The DREAM Toolbox is distributed in the hope that it will be useful, but
 * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
 * for more details.
 *
 * You should have received a copy of the GNU General Public License
-* along with the DREAM Toolbox; see the file COPYING.  If not, write to the 
+* along with the DREAM Toolbox; see the file COPYING.  If not, write to the
 * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 * 02110-1301, USA.
 *
@@ -88,7 +88,7 @@ void sig_keyint_handler(int signum);
 
 /***
  *
- * Thread function. 
+ * Thread function.
  *
  ***/
 
@@ -100,14 +100,14 @@ void* smp_process(void *arg)
   octave_idx_type A_M = D.A_M, B_M = D.B_M, r = D.r, k = D.k, len = D.len;
 
   for (n=line_start; n<line_stop; n++) {
-    
+
     memcpy( &A[r+(k+n)*A_M], &B[0+n*B_M], len*sizeof(double));
-    
+
     if (running==false) {
       octave_stdout << "copy_p: thread for column " << line_start+1 << " -> " << line_stop << " bailing out!\n";
       break;
     }
- 
+
   }
   return(NULL);
 }
@@ -133,13 +133,13 @@ void sig_keyint_handler(int signum) {
 }
 
 /***
- * 
+ *
  * Octave (OCT) gateway function for copy_p.
  *
  ***/
 
 DEFUN_DLD (copy_p, args, nlhs,
-	   "-*- texinfo -*-\n\
+           "-*- texinfo -*-\n\
 @deftypefn {Loadable Function} {} copy_p(A,col_idx,row_idx,B);\n\
 \n\
 COPY_P Performs parallel (inplace) copy of the matrix B into the matrix A using threads.\n\
@@ -169,7 +169,7 @@ There are no output arguments for @code{copy_p}.\n\
 Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
 @end deftypefn")
 {
-  double         *A,*B; 
+  double         *A,*B;
   sighandler_t   old_handler, old_handler_abrt, old_handler_keyint;
   octave_idx_type line_start, line_stop, A_M, A_N, B_M, B_N;
   octave_idx_type r_M, r_N, k_M, k_N;
@@ -178,7 +178,7 @@ Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
   DATA           *D;
   std::thread     *threads;
   octave_idx_type  thread_n, nthreads;
-  octave_value_list oct_retval; 
+  octave_value_list oct_retval;
 
   int nrhs = args.length ();
 
@@ -193,7 +193,7 @@ Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
     error("Too many output arguments for copy_p, none required!");
     return oct_retval;
   }
-  
+
   const Matrix tmp = args(0).matrix_value();
   A_M = tmp.rows();
   A_N = tmp.cols();
@@ -214,7 +214,7 @@ Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
   B_N = tmp4.cols();
   B = (double*) tmp4.fortran_vec();
 
-  // Check that arg 2. 
+  // Check that arg 2.
   if ( r_M * r_N !=2 ) {
     error("Argument 2 must be a 2 element vector!");
     return oct_retval;
@@ -230,7 +230,7 @@ Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
     return oct_retval;
   }
 
-  // Check that arg 3. 
+  // Check that arg 3.
   if ( k_M * k_N !=2 ) {
     error("Argument 3 must be a 2 element vector!");
     return oct_retval;
@@ -240,13 +240,13 @@ Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
     error("1st element of argument 3 must be > 1!");
     return oct_retval;
   }
-  
+
   if (( (octave_idx_type) k[0] > A_N) || ( (octave_idx_type) k[1] > A_N)) {
     error("One element of argument 3 exceeds colomn dimension of arg 1!");
     return oct_retval;
   }
 
-  // Check that arg 4. 
+  // Check that arg 4.
   if (B_M < (octave_idx_type) (r[1]-r[0])+1 ) {
     error("Argument 4 has not the number of rows as given by arg 2!");
     return oct_retval;
@@ -257,18 +257,18 @@ Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
     return oct_retval;
   }
 
-    
+
   //
   // Number of threads.
   //
-  
+
   // Get number of CPU cores (including hypethreading, C++11)
   nthreads = std::thread::hardware_concurrency();
-  
+
   // nthreads can't be larger then the number of columns in the A matrix.
   if (nthreads > A_N)
     nthreads = A_N;
-  
+
   //
   // Register signal handlers.
   //
@@ -280,17 +280,17 @@ Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
   if ((old_handler_abrt=signal(SIGABRT, &sighandler)) == SIG_ERR) {
     printf("Couldn't register signal handler.\n");
   }
-  
+
   if ((old_handler_keyint=signal(SIGINT, &sighandler)) == SIG_ERR) {
     printf("Couldn't register signal handler.\n");
   }
-  
+
   //
   // Call the mem_copy subroutine.
   //
 
   running = true;
-  
+
   // Allocate local data.
   D = (DATA*) malloc(nthreads*sizeof(DATA));
   if (!D) {
@@ -299,7 +299,7 @@ Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
   }
 
   // Allocate mem for the threads.
-  threads = new std::thread[nthreads]; // Init thread data.  
+  threads = new std::thread[nthreads]; // Init thread data.
   if (!threads) {
     error("Failed to allocate memory for threads!");
     return oct_retval;
@@ -332,17 +332,17 @@ Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
     CPU_ZERO(&cpuset);
     CPU_SET(thread_n, &cpuset);
     int rc = pthread_setaffinity_np(threads[thread_n].native_handle(),
-				    sizeof(cpu_set_t), &cpuset);
+                                    sizeof(cpu_set_t), &cpuset);
 #endif
-  } // for (thread_n = 0; thread_n < nthreads; thread_n++)  
+  } // for (thread_n = 0; thread_n < nthreads; thread_n++)
 
   // Wait for all threads to finish.
   for (thread_n = 0; thread_n < nthreads; thread_n++)
     threads[thread_n].join();
-  
+
   // Free memory.
   free((void*) D);
-  
+
   //
   // Restore old signal handlers.
   //
@@ -350,11 +350,11 @@ Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
   if (signal(SIGTERM, old_handler) == SIG_ERR) {
     printf("Couldn't register old signal handler.\n");
   }
-   
+
   if (signal(SIGABRT,  old_handler_abrt) == SIG_ERR) {
     printf("Couldn't register signal handler.\n");
   }
-  
+
   if (signal(SIGINT, old_handler_keyint) == SIG_ERR) {
     printf("Couldn't register signal handler.\n");
   }
@@ -363,6 +363,6 @@ Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
     error("CTRL-C pressed!\n"); // Bail out.
     return oct_retval;
   }
-  
+
   return oct_retval;
 }

@@ -5,7 +5,7 @@
 
 
 if ~exist('foc_dep')
-  disp('Using foc_dep = 50 mm'); 
+  disp('Using foc_dep = 50 mm');
   foc_dep = 50;                            % Focus depth.
 end
 
@@ -15,7 +15,7 @@ fprintf('Array focused at  = %1.1f [mm]\n',foc_dep);
 % Focusing parameters.
 if ~exist('theta')
   disp('Using theta = 0 ');
-  theta = 0; 			        % Steering angle.
+  theta = 0;                            % Steering angle.
 end
 
 fprintf('Array steered = %1.1f [deg]\n',theta);
@@ -31,8 +31,8 @@ K = 1000;
 %
 
 % Spacing between array elements.
-%arr_samp = 0.25; % [mm] 
-arr_samp = 1; % [mm] 
+%arr_samp = 0.25; % [mm]
+arr_samp = 1; % [mm]
 
 a = 0.9;
 %a = 0.9/2;
@@ -60,7 +60,7 @@ L = size(xt,2);
 
 % Load data just to get us vector.
 %dp = '/disk2/users/staff/fl/projects/articles/opt_foc/data/pulse_echo_data';
-%[D,xd,yd,us] = ndt2mat([dp '/16foc_st20_1_2_scatt_50mm_32av.ndt']);    
+%[D,xd,yd,us] = ndt2mat([dp '/16foc_st20_1_2_scatt_50mm_32av.ndt']);
 %Ts = us(2) - us(1);
 %idx_z_min = 150;
 %idx_z_max = 450;
@@ -78,34 +78,34 @@ us = (0:Ts:Ts*40000);
 if strcmp(grid_size,'large')
   x_max = 40;
   x_max = 25;
-  
+
   %idx_z_min = 1501;
   %idx_z_max = 2001-166;
   idx_z_min = 1;
   idx_z_max = 2001-166;
-  
+
   %spat_samp = 0.125; % 1 mm.
   %spat_samp_z = 0.05; % Samples / mm.
   spat_samp = 0.3; % 1 mm.
   spat_samp_z = 0.3; % Samples / mm.
 end
-  
+
 if strcmp(grid_size,'normal')
   x_max = 25;
-  
+
   idx_z_min = 1501;
   idx_z_max = 2001-166;
-  
+
   spat_samp = 1; % 1 mm.
   spat_samp_z = 1/10; % Samples / mm.
 end
 
 if strcmp(grid_size,'all')
   x_max = 25;
-  
+
   idx_z_min = 1;
   idx_z_max = 2678; % 80 mm
-  
+
   spat_samp = 0.5; % 1 mm.
   spat_samp_z = 1; % Samples / mm.
 end
@@ -120,7 +120,7 @@ N = length(x)
 %
 % Vertical grid size.
 %
-% spat_samp_z = Ts*cp/1e6; 		% [m].
+% spat_samp_z = Ts*cp/1e6;              % [m].
 z_min = us(idx_z_min)*cp/1e3/2
 z_max = us(idx_z_max)*cp/1e3/2
 z = (z_min:spat_samp_z:z_max);

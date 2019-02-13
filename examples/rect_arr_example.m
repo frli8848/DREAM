@@ -1,14 +1,13 @@
-
 % $Revision: 565 $ $Date: 2009-09-17 22:24:06 +0200 (Thu, 17 Sep 2009) $ $LastChangedBy: dream $
 
 % Are we running on a Linux machine?
 tmp_str = computer;
 if size(strfind(tmp_str,'linux')) > 0 | ...
       size(strfind(tmp_str,'GLN')) > 0
-  
+
   % How many CPUs do we have?
   [dummy,tmp_str]= system('cat /proc/cpuinfo | grep model | grep name');
-  
+
   n_cpus = size(strfind(tmp_str,'model'),2);
 
   fprintf('\n*** Detected a %d cpu system ***\n\n',n_cpus);
@@ -21,7 +20,7 @@ end
 
 %
 % 2D Rectangular Array Transducer Example 1.
-% 
+%
 
 Fs = 10;   % Sampling freq. in MHz.
 Ts = 1/Fs;
@@ -34,36 +33,36 @@ dz = 2; % Average field over dz mm.
 % Observation point(s).
 %
 
-d  = 0.5; 				% [mm]
+d  = 0.5;                               % [mm]
 
 % X-Z plane;
 [xo,zo] = meshgrid(-50:d:50,(0:d:80));
-yo = zeros(size(xo));  
+yo = zeros(size(xo));
 
 % Y-Z plane;
 [yo2,zo2] = meshgrid(-50:d:50,(0:d:80));
-xo2 = zeros(size(yo2));  
+xo2 = zeros(size(yo2));
 
 Ro = [[xo(:)' xo2(:)']'  [yo(:)' yo2(:)']' [zo(:)' zo2(:)']'];
 
 fprintf('Number of observation points = %d\n\n',size(Ro,1));
 
 % Material parameters.
-v     = 1.0; 				% Normal velocity.
-cp    = 1500; 				% Sound speed.
-alfa  = 0; 				% Absorbtion [dB/(cm MHz)].
+v     = 1.0;                            % Normal velocity.
+cp    = 1500;                           % Sound speed.
+alfa  = 0;                              % Absorbtion [dB/(cm MHz)].
 m_par = [v cp alfa];
 
 % Delay.
 t_z = (z-dz/2)*1e3/cp;
-delay = t_z; 				% Start at t_z [us].
-%delay = 0; 				% Start at 0 [us]. 
+delay = t_z;                            % Start at t_z [us].
+%delay = 0;                             % Start at 0 [us].
 
 
 % Descretization parameters.
-dx = 0.03; 				% [mm].
-dy = 0.03; 				% [mm]
-dt = Ts; 				% [us]. 
+dx = 0.03;                              % [mm].
+dy = 0.03;                              % [mm]
+dt = Ts;                                % [us].
 nt = round(dz*1e3/cp/Ts);               % Length of spatial impulse response vector.
 s_par = [dx dy dt nt];
 
@@ -102,13 +101,13 @@ G = [gx gy gz];
 %foc_met = 'y';
 foc_met = 'xy';
 %foc_met = 'x+y';
-focal = 50; 				% Focus radius [mm].
+focal = 50;                             % Focus radius [mm].
 
 % User defined focusing.
 %foc_met = 'ud';
 %
-% Focusing vector for 'ud'. Delays in [us]. 
-%focal = zeros(length(gx),1);  		% unfocused.
+% Focusing vector for 'ud'. Delays in [us].
+%focal = zeros(length(gx),1);           % unfocused.
 
 % Beam steering.
 %steer_met = 'off';
@@ -117,19 +116,19 @@ steer_met = 'x';
 %steer_met = 'xy';
 
 theta  = -25;				% Angle in x-direction.
-phi    = 0; 				% Angle in y-direction.
+phi    = 0;                             % Angle in y-direction.
 steer_par = [theta phi];
 
 % Apodization.
 apod_met = 'off';
-%apod_met = 'ud'; 			% User defined.
+%apod_met = 'ud';                       % User defined.
 %apod_met = 'triangle';
 %apod_met = 'gauss';
-%apod_met = 'raised'; 			% Raised cosine.
-%apod_met = 'simply'; 			% Simply supported.
+%apod_met = 'raised';                   % Raised cosine.
+%apod_met = 'simply';                   % Simply supported.
 %apod_met = 'clamped';
-apod = ones(length(gx),1); 		% Apodization weights for 'ud'.
-win_par = 1; 				% Parameter for raised cos and Gaussian apodization functions.
+apod = ones(length(gx),1);              % Apodization weights for 'ud'.
+win_par = 1;                            % Parameter for raised cos and Gaussian apodization functions.
 
 fprintf('Computing array responses...');
 H = dream_arr_rect_p(Ro,geom_par,G,s_par,delay,m_par,foc_met,...

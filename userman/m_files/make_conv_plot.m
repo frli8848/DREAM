@@ -11,7 +11,7 @@
 % Are we running on a Linux machine?
 tmp_str = computer;
 if size(strfind(tmp_str,'linux')) > 0 | size(strfind(tmp_str,'GLN')) > 0
-  
+
   % How many CPUs do we have?
   [dummy,tmp_str]= system('cat /proc/cpuinfo | grep model | grep name');
 
@@ -39,12 +39,12 @@ M = 10;
 disp('This may take some time - go and make some tea...');
 
 fprintf(['\n---------------------------------------------------------' ...
-         '-----------------------|\n']); 
-fprintf(' n\t| conv\t\t|  conv_p\t| fftconv_p\t| fftconv_p wisd.\t|\n'); 
+         '-----------------------|\n']);
+fprintf(' n\t| conv\t\t|  conv_p\t| fftconv_p\t| fftconv_p wisd.\t|\n');
 fprintf(['---------------------------------------------------------' ...
-         '-----------------------|\n']); 
+         '-----------------------|\n']);
 for n=[1 10:10:100 200:100:2000]
-  
+
   L1 = n;
   L2 = n;
   K=100;
@@ -76,7 +76,7 @@ for n=[1 10:10:100 200:100:2000]
     end
     t00 = t00/M;
   end
-  
+
   t1 = 0;
   for m=1:M
     eval('tic');
@@ -84,7 +84,7 @@ for n=[1 10:10:100 200:100:2000]
     t1 = t1 + toc;
   end
   t = t1/M;
-  
+
   %clear wisdom
   t2 = 0;
   for m=1:M
@@ -93,7 +93,7 @@ for n=[1 10:10:100 200:100:2000]
     t2 = t2+toc;
   end
   t2 = t2/M;
-    
+
   t3 = 0;
   for m=1:M
     eval('tic');
@@ -101,13 +101,13 @@ for n=[1 10:10:100 200:100:2000]
     t3 = t3 + toc;
   end
   t3 = t3/M;
-  
-  fprintf('%d\t| %f\t| %f\t| %f\t| %f\t\t|\n',n,t0,t1,t2,t3); 
-  
+
+  fprintf('%d\t| %f\t| %f\t| %f\t| %f\t\t|\n',n,t0,t1,t2,t3);
+
   if norm(Z-Z2) > 1e-10
     disp('Warning: large error in conv_p/fftconv_p!');
   end
-  
+
   NN =  [NN n];
   T0 = [T0 t0];
   if exist('OCTAVE_VERSION')

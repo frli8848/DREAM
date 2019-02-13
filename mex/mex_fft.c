@@ -4,18 +4,18 @@
 *
 * This file is part of the DREAM Toolbox.
 *
-* The DREAM Toolbox is free software; you can redistribute it and/or modify 
+* The DREAM Toolbox is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by the
 * Free Software Foundation; either version 2, or (at your option) any
 * later version.
 *
-* The DREAM Toolbox is distributed in the hope that it will be useful, but 
+* The DREAM Toolbox is distributed in the hope that it will be useful, but
 * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
 * for more details.
 *
 * You should have received a copy of the GNU General Public License
-* along with the DREAM Toolbox; see the file COPYING.  If not, write to the 
+* along with the DREAM Toolbox; see the file COPYING.  If not, write to the
 * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 * 02110-1301, USA.
 *
@@ -47,17 +47,16 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     if (nlhs > 1) {
       mexErrMsgTxt("my_ifft requires one output argument!");
     }
-  
+
   //  Get the input parameters.
   xr    = mxGetPr(prhs[0]);
   xi    = mxGetPi(prhs[0]);
   nt =  (dream_idx_type) mxGetM(prhs[0]) * mxGetN(prhs[0]);
-  
+
   // Create a matrix for return arguments
   plhs[0] = mxCreateDoubleMatrix(nt,1,mxCOMPLEX);
   yr = mxGetPr(plhs[0]);
   yi = mxGetPi(plhs[0]);
-  
+
   cc_ifft(xr, xi, yr, yi, nt);
 }
-      

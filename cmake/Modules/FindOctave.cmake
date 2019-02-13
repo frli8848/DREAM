@@ -30,8 +30,8 @@ ENDIF()
 
 # use mkoctfile
 set(MKOCTFILE_EXECUTABLE MKOCTFILE_EXECUTABLE-NOTFOUND)
-find_program(MKOCTFILE_EXECUTABLE 
-             NAME mkoctfile 
+find_program(MKOCTFILE_EXECUTABLE
+             NAME mkoctfile
              PATHS ${OCTAVE_BIN})
 mark_as_advanced(MKOCTFILE_EXECUTABLE)
 
@@ -59,12 +59,12 @@ if(MKOCTFILE_EXECUTABLE)
     COMMAND ${MKOCTFILE_EXECUTABLE} -p LFLAGS
     OUTPUT_VARIABLE _mkoctfile_ldirs
     RESULT_VARIABLE _mkoctfile_failed)
-    
+
   string(REGEX REPLACE "[\r\n]" " " _mkoctfile_ldirs "${_mkoctfile_ldirs}")
   string(REGEX REPLACE "-L" "" _mkoctfile_ldirs "${_mkoctfile_ldirs}")
-  
+
   separate_arguments(_mkoctfile_ldirs)
-    
+
   execute_process(
     COMMAND ${MKOCTFILE_EXECUTABLE} -p LIBS
     OUTPUT_VARIABLE _mkoctfile_libs
@@ -76,7 +76,7 @@ if(MKOCTFILE_EXECUTABLE)
     RESULT_VARIABLE _mkoctfile_failed)
   string(REGEX REPLACE "[\r\n]" " " _mkoctfile_octlibs "${_mkoctfile_octlibs}")
   set(_mkoctfile_libs "${_mkoctfile_libs} ${_mkoctfile_octlibs}")
-    
+
   string(REGEX MATCHALL "(^| )-l([./+-_\\a-zA-Z]*)" _mkoctfile_libs "${_mkoctfile_libs}")
   string(REGEX REPLACE "(^| )-l" "" _mkoctfile_libs "${_mkoctfile_libs}")
 
@@ -87,12 +87,12 @@ if(MKOCTFILE_EXECUTABLE)
   string(REGEX REPLACE "(^| )-L([./+-_\\a-zA-Z]*)" " " _mkoctfile_ldflags "${_mkoctfile_ldflags}")
 
   if (WIN32)
-    
+
     string(REGEX REPLACE "Program Files " "Program~Files~" _mkoctfile_ldirs "${_mkoctfile_ldirs}")
     separate_arguments(_mkoctfile_ldirs)
     string(REGEX REPLACE "Program Files " "Program~Files~" _mkoctfile_includedir "${_mkoctfile_includedir}")
     separate_arguments(_mkoctfile_includedir)
-    
+
     set(includes)
     foreach(ITR ${_mkoctfile_includedir})
       #string(REGEX REPLACE "~" " " ITR ${ITR})
@@ -100,7 +100,7 @@ if(MKOCTFILE_EXECUTABLE)
       list(APPEND includes ${ITR})
     endforeach()
     set(_mkoctfile_includedir ${includes})
-    
+
     set(libs)
     foreach(ITR ${_mkoctfile_ldirs})
       #string(REGEX REPLACE "~" " " ITR ${ITR})
@@ -109,7 +109,7 @@ if(MKOCTFILE_EXECUTABLE)
     endforeach()
     set(_mkoctfile_ldirs ${libs})
     message(STATUS ${libs})
-    
+
   else()
    separate_arguments(_mkoctfile_includedir)
   endif()
@@ -129,15 +129,15 @@ else()
       list(APPEND libs ${ITR})
     endforeach()
     set(_mkoctfile_ldirs ${libs})
-    endif()	
+    endif()
 
-	message(FATAL_ERROR "Unable to find mkoctfile executable")
+        message(FATAL_ERROR "Unable to find mkoctfile executable")
 endif()
 
 # use octave_config
 set(OCTAVE_CONFIG_EXECUTABLE OCTAVE_CONFIG_EXECUTABLE-NOTFOUND)
-find_program(OCTAVE_CONFIG_EXECUTABLE 
-             NAME octave-config 
+find_program(OCTAVE_CONFIG_EXECUTABLE
+             NAME octave-config
              PATHS ${OCTAVE_BIN})
 mark_as_advanced(OCTAVE_CONFIG_EXECUTABLE)
 
@@ -147,7 +147,7 @@ if(OCTAVE_CONFIG_EXECUTABLE)
     COMMAND ${OCTAVE_CONFIG_EXECUTABLE} -v
     OUTPUT_VARIABLE OCTAVE_VERSION
     RESULT_VARIABLE _octave_config_failed)
-  string(REGEX REPLACE "[\r\n]" "" OCTAVE_VERSION "${OCTAVE_VERSION}")    
+  string(REGEX REPLACE "[\r\n]" "" OCTAVE_VERSION "${OCTAVE_VERSION}")
   execute_process(
     COMMAND ${OCTAVE_CONFIG_EXECUTABLE} -p CANONICAL_HOST_TYPE
     OUTPUT_VARIABLE _octave_config_host_type
@@ -182,19 +182,19 @@ IF (WIN32)
 ENDIF()
 
 FIND_LIBRARY( OCTAVE_OCTAVE_LIBRARY
-			  NAMES octave liboctave
-			  PATHS ${OCTAVE_LINK_DIRS}				  
-			  NO_DEFAULT_PATH)
-			  
+                          NAMES octave liboctave
+                          PATHS ${OCTAVE_LINK_DIRS}
+                          NO_DEFAULT_PATH)
+
 FIND_LIBRARY( OCTAVE_OCTINTERP_LIBRARY
-			  NAMES octinterp liboctinterp
-			  PATHS ${OCTAVE_LINK_DIRS}				  
-			  NO_DEFAULT_PATH)
-			  
+                          NAMES octinterp liboctinterp
+                          PATHS ${OCTAVE_LINK_DIRS}
+                          NO_DEFAULT_PATH)
+
 FIND_LIBRARY( OCTAVE_CRUFT_LIBRARY
-			  NAMES cruft libcruft
-			  PATHS ${OCTAVE_LINK_DIRS}				  
-			  NO_DEFAULT_PATH)			  
+                          NAMES cruft libcruft
+                          PATHS ${OCTAVE_LINK_DIRS}
+                          NO_DEFAULT_PATH)
 
 SET(OCTAVE_LIBRARIES
   ${OCTAVE_OCTAVE_LIBRARY}
@@ -203,7 +203,7 @@ SET(OCTAVE_LIBRARIES
 if (OCTAVE_CRUFT_LIBRARY)
     list(APPEND OCTAVE_LIBRARIES ${OCTAVE_CRUFT_LIBRARY})
 endif()
-				  
+
 message(STATUS "OCTAVE_VERSION=${OCTAVE_VERSION}" )
 message(STATUS "OCTAVE_CXXFLAGS=${_mkoctfile_cppflags}" )
 message(STATUS "OCTAVE_LINK_FLAGS=${_mkoctfile_ldflags}" )

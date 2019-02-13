@@ -4,18 +4,18 @@
 *
 * This file is part of the DREAM Toolbox.
 *
-* The DREAM Toolbox is free software; you can redistribute it and/or modify 
+* The DREAM Toolbox is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by the
 * Free Software Foundation; either version 2, or (at your option) any
 * later version.
 *
-* The DREAM Toolbox is distributed in the hope that it will be useful, but 
+* The DREAM Toolbox is distributed in the hope that it will be useful, but
 * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
 * for more details.
 *
 * You should have received a copy of the GNU General Public License
-* along with the DREAM Toolbox; see the file COPYING.  If not, write to the 
+* along with the DREAM Toolbox; see the file COPYING.  If not, write to the
 * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 * 02110-1301, USA.
 *
@@ -82,15 +82,15 @@ void sighandler(int signum);
 void sig_abrt_handler(int signum);
 void sig_keyint_handler(int signum);
 
-#ifdef __cplusplus 
+#ifdef __cplusplus
 extern "C"
 #endif
-void conv(double *xr, size_t nx, double *yr, size_t ny, double *zr, 
-	  int in_place, int mode);
+void conv(double *xr, size_t nx, double *yr, size_t ny, double *zr,
+          int in_place, int mode);
 
 /***
  *
- * Thread function. 
+ * Thread function.
  *
  ***/
 
@@ -109,12 +109,12 @@ void* smp_process(void *arg)
       conv( &A[0+n*A_M], A_M, &B[0+n*B_M], B_M, &Y[0+n*(A_M+B_M-1)],in_place,mode);
     else // B is a vector.
       conv( &A[0+n*A_M], A_M, B, B_M, &Y[0+n*(A_M+B_M-1)],in_place,mode);
-    
+
     if (running == false) {
       mexPrintf("conv_p: thread for column %d -> %d bailing out!\n",line_start+1,line_stop);
       break;
     }
- 
+
   }
   return(NULL);
 }
@@ -139,14 +139,14 @@ void sig_keyint_handler(int signum) {
 }
 
 /***
- * 
+ *
  *  - Matlab (MEX) gateway function for CONV_P.
  *
  ***/
 
 void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
-  double *A,*B, *Y; 
+  double *A,*B, *Y;
   sighandler_t   old_handler, old_handler_abrt, old_handler_keyint;
   size_t line_start, line_stop, A_M, A_N, B_M, B_N, n;
   int    buflen, is_set = false;
@@ -160,68 +160,68 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Check for proper inputs arguments.
 
   switch (nrhs) {
-    
+
   case 0:
   case 1:
     mexErrMsgTxt("conv_p requires 2 to 4 input arguments!");
     break;
-    
+
   case 2:
     if (nlhs > 1) {
       mexErrMsgTxt("Too many output arguments for conv_p!");
-    }    
+    }
     break;
 
   case 3:
     if (nlhs > 0) {
       mexErrMsgTxt("No output arguments required for conv_p in in-place operating mode!");
-    }   
+    }
     if (mxIsChar(prhs[2])) {
       mexErrMsgTxt("Arg 3 must be a matrix (not a string)");
     }
     break;
-  
+
   case 4:
     if (mxIsChar(prhs[3])) { // 4th arg is a mode string.
-      //the_str = (char*) mxGetChars(prhs[4]); 
+      //the_str = (char*) mxGetChars(prhs[4]);
       buflen = mxGetM(prhs[3])*mxGetN(prhs[3])+1;
       the_str = (char*) malloc(buflen * sizeof(char));
       mxGetString(prhs[3], the_str, buflen); // Obsolete in Matlab 7.x ?
-      
+
       // Valid strings are:
       //  '='  : In-place replace mode.
       //  '+=' : In-place add mode.
       //  '-=' : In-place sub mode.
-      
+
       is_set = false;
-      
+
       if (strcmp(the_str,"=") == 0) {
-	mode = EQU; 
-	is_set = true;
+        mode = EQU;
+        is_set = true;
       }
-      
+
       if (strcmp(the_str,"+=") == 0) {
-	mode = SUM; 
-	is_set = true;
+        mode = SUM;
+        is_set = true;
       }
-      
+
       if (strcmp(the_str,"-=") == 0) {
-	mode = NEG; 
-	is_set = true;
+        mode = NEG;
+        is_set = true;
       }
-      
+
       if (is_set == false)
-	mexErrMsgTxt("Non-valid string in arg 4!");
-      
+        mexErrMsgTxt("Non-valid string in arg 4!");
+
     }
     free(the_str);
     break;
-    
+
   default:
     mexErrMsgTxt("conv_p requires 2 to 4 input arguments!");
     break;
   }
-  
+
   A_M = mxGetM(prhs[0]);
   A_N = mxGetN(prhs[0]);
   A = mxGetPr(prhs[0]);
@@ -230,7 +230,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   B_N = mxGetN(prhs[1]);
   B = mxGetPr(prhs[1]);
 
-  // Check that arg 2. 
+  // Check that arg 2.
   if ( B_M != 1 && B_N !=1 && B_N != A_N)
     mexErrMsgTxt("Argument 2 must be a vector or a matrix with the same number of rows as arg 1!");
 
@@ -238,21 +238,21 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     B_M = B_M*B_N;
     B_N = 1;
   }
-    
+
   //
   // Number of threads.
   //
 
   // Get number of CPU cores (including hypethreading, C++11)
   nthreads = std::thread::hardware_concurrency();
-  
+
   // nthreads can't be larger then the number of columns in the A matrix.
-  if (nthreads > A_N) { 
+  if (nthreads > A_N) {
     nthreads = A_N;
   }
 
   if (nrhs == 2) { // Test for in-place/normal mode.
-    
+
     //
     // Normal mode.
     //
@@ -266,9 +266,9 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     //
     // in-place mode.
     //
-    
+
     in_place = true;
-    
+
     if ( mxGetM(prhs[2]) != A_M+B_M-1)
       mexErrMsgTxt("Wrong number of rows in argument 3!");
 
@@ -289,34 +289,34 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   if ((old_handler_abrt=signal(SIGABRT, &sighandler)) == SIG_ERR) {
     printf("Couldn't register signal handler.\n");
   }
-  
+
   if ((old_handler_keyint=signal(SIGINT, &sighandler)) == SIG_ERR) {
     printf("Couldn't register signal handler.\n");
   }
-  
+
   //
   // Call the CONV subroutine.
   //
 
   running = true;
-  
+
   if (nthreads>1) { // Use threads
 
     // Allocate local data.
     D = (DATA*) malloc(nthreads*sizeof(DATA));
     if (!D)
       mexErrMsgTxt("Failed to allocate memory for thread data!");
-    
+
     // Allocate mem for the threads.
-    threads = new std::thread[nthreads]; // Init thread data.  
+    threads = new std::thread[nthreads]; // Init thread data.
     if (!threads)
       mexErrMsgTxt("Failed to allocate memory for threads!");
-    
+
     for (thread_n = 0; thread_n < nthreads; thread_n++) {
-      
+
       line_start = thread_n * A_N/nthreads;
       line_stop =  (thread_n+1) * A_N/nthreads;
-      
+
       // Init local data.
       D[thread_n].line_start = line_start; // Local start index;
       D[thread_n].line_stop = line_stop; // Local stop index;
@@ -327,41 +327,41 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       D[thread_n].B_M = B_M;
       D[thread_n].B_N = B_N;
       D[thread_n].Y = Y;
-      
+
       // Start the threads.
       threads[thread_n] = std::thread(smp_process, &D[thread_n]);
 
     } // for (thread_n = 0; thread_n < nthreads; thread_n++)
-    
+
     // Wait for all threads to finish.
-    for (thread_n = 0; thread_n < nthreads; thread_n++) 
-	threads[thread_n].join();
-        
+    for (thread_n = 0; thread_n < nthreads; thread_n++)
+        threads[thread_n].join();
+
     // Free memory.
     if (D)
       free((void*) D);
-    
+
   } else {			// Do not use threads
-    
+
     if (B_N > 1) {		// B is a matrix.
       for (n=0; n<A_N; n++) {
 
-	conv( &A[0+n*A_M], A_M, &B[0+n*B_M], B_M, &Y[0+n*(A_M+B_M-1)],in_place,mode);
+        conv( &A[0+n*A_M], A_M, &B[0+n*B_M], B_M, &Y[0+n*(A_M+B_M-1)],in_place,mode);
 
-	if (running==false) {
-	  printf("conv_p: bailing out!\n");
-	  break;
-	}
+        if (running==false) {
+          printf("conv_p: bailing out!\n");
+          break;
+        }
       }
     } else {			// B is a vector.
       for (n=0; n<A_N; n++) {
 
-	conv( &A[0+n*A_M], A_M, B, B_M, &Y[0+n*(A_M+B_M-1)],in_place,mode);	
-	
-	if (running==false) {
-	  printf("conv_p: bailing out!\n");
-	  break;
-	}
+        conv( &A[0+n*A_M], A_M, B, B_M, &Y[0+n*(A_M+B_M-1)],in_place,mode);
+
+        if (running==false) {
+          printf("conv_p: bailing out!\n");
+          break;
+        }
       }
     }
   }
@@ -373,11 +373,11 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   if (signal(SIGTERM, old_handler) == SIG_ERR) {
     printf("Couldn't register old signal handler.\n");
   }
-   
+
   if (signal(SIGABRT,  old_handler_abrt) == SIG_ERR) {
     printf("Couldn't register signal handler.\n");
   }
-  
+
   if (signal(SIGINT, old_handler_keyint) == SIG_ERR) {
     printf("Couldn't register signal handler.\n");
   }

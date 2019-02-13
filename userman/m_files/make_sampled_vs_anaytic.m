@@ -1,4 +1,3 @@
-
 SAVE_EPS = 1;
 eps_path = 'eps/';
 
@@ -17,19 +16,19 @@ Ro = ro;
 disp(['Observation point (x,y,z) = ' num2str(Ro)])
 
 % Descretization parameters.
-dt = Ts; 				% [us]. 
-nt = 1500;   				% Length of spatial impulse response vector.
+dt = Ts;                                % [us].
+nt = 1500;                              % Length of spatial impulse response vector.
 s_par = [dt nt];
 
 % Material parameters.
-v     = 1.0; 				% Normal velocity.
-cp    = 1500; 				% Sound speed.
-alfa  = 0; 				% Absorbtion [dB/(cm MHz)].
+v     = 1.0;                            % Normal velocity.
+cp    = 1500;                           % Sound speed.
+alfa  = 0;                              % Absorbtion [dB/(cm MHz)].
 m_par = [v cp alfa];
 
 % Delay.
 t_z = z*1e3/cp;
-delay = 0; 				% Start at 0 [us]. 
+delay = 0;                              % Start at 0 [us].
 
 
 figure(1);
@@ -43,7 +42,7 @@ t = (0:Ts:Ts*(nt-1))+delay;
 h_s_sir = scirc_sir(Ro,geom_par,s_par,delay,m_par(1:2),1000);
 
 % Continous response.
-c_dt = 1/2000; 				% [us]. 
+c_dt = 1/2000;                          % [us].
 c_nt = 150000;                          % Length of spatial impulse response vector.
 c_par = [c_dt c_nt];
 
@@ -96,7 +95,7 @@ t = (0:Ts:Ts*(nt-1))+delay;
 h_s_sir = scirc_sir(Ro,geom_par,s_par,delay,m_par(1:2),1000);
 
 % Continous response.
-c_dt = 1/2000; 				% [us]. 
+c_dt = 1/2000;                          % [us].
 c_nt = 150000;                          % Length of spatial impulse response vector.
 c_par = [c_dt c_nt];
 

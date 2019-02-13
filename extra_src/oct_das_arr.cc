@@ -4,18 +4,18 @@
 *
 * This file is part of the DREAM Toolbox.
 *
-* The DREAM Toolbox is free software; you can redistribute it and/or modify 
+* The DREAM Toolbox is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by the
 * Free Software Foundation; either version 2, or (at your option) any
 * later version.
 *
-* The DREAM Toolbox is distributed in the hope that it will be useful, but 
+* The DREAM Toolbox is distributed in the hope that it will be useful, but
 * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
 * for more details.
 *
 * You should have received a copy of the GNU General Public License
-* along with the DREAM Toolbox; see the file COPYING.  If not, write to the 
+* along with the DREAM Toolbox; see the file COPYING.  If not, write to the
 * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 * 02110-1301, USA.
 *
@@ -88,7 +88,7 @@ void sig_keyint_handler(int signum) {
  ***/
 
 DEFUN_DLD (das_arr, args, nlhs,
-	   "-*- texinfo -*-\n\
+           "-*- texinfo -*-\n\
 @deftypefn {Loadable Function} {}  [Y] =  das_arr(Ro,G,s_par,delay,m_par,foc_met,\n \
     focal,steer_met,steer_par,apod_met,apod,win_par,err_level);\n\
 \n\
@@ -224,19 +224,19 @@ Copyright @copyright{} 2008-2016 Fredrik Lingvall.\n\
   octave_value_list oct_retval;
 
   int nrhs = args.length ();
-  
+
   // Check for proper number of arguments
-  
+
   if (!((nrhs == 12) || (nrhs == 13))) {
     error("das_arr requires 12 or 13 input arguments!");
-    return oct_retval; 
+    return oct_retval;
   }
   else
     if (nlhs > 2) {
       error("Too many output arguments for das_arr !");
-      return oct_retval; 
+      return oct_retval;
     }
-  
+
   //
   // Observation point.
   //
@@ -246,7 +246,7 @@ Copyright @copyright{} 2008-2016 Fredrik Lingvall.\n\
     error("Argument 1 must be a (number of observation points) x 3 matrix!");
     return oct_retval;
   }
-  
+
   no = mxGetM(0); // Number of observation points.
   const Matrix tmp0 = args(0).matrix_value();
   ro = (double*) tmp0.fortran_vec();
@@ -258,7 +258,7 @@ Copyright @copyright{} 2008-2016 Fredrik Lingvall.\n\
   isize = (int) mxGetM(1); // Number of elementents in the array.
   if (mxGetN(1) !=3 )
     dream_err_msg("Argument 3  must a (number of array elements) x 3 matrix!");
-  
+
   const Matrix tmp1 = args(1).matrix_value();
   gx = (double*) tmp1.fortran_vec(); // First column in the matrix.
   gy    = gx + isize;		// Second column in the matrix.
@@ -267,18 +267,18 @@ Copyright @copyright{} 2008-2016 Fredrik Lingvall.\n\
   //
   // Temporal and spatial sampling parameters.
   //
-  
+
   // Check that arg 3 is a 2 element vector
   if (!((mxGetM(2)==2 && mxGetN(2)==1) || (mxGetM(2)==1 && mxGetN(2)==2))) {
     error("Argument 3 must be a vector of length 2!");
     return oct_retval;
   }
-  
+
   const Matrix tmp2 = args(2).matrix_value();
   s_par = (double*) tmp2.fortran_vec();
   dt    = s_par[0]; // Temporal discretization size (= 1/sampling freq).
   nt    = (dream_idx_type) s_par[1]; // Length of SIR.
-  
+
   //
   // Start point of impulse response vector ([us]).
   //
@@ -288,152 +288,152 @@ Copyright @copyright{} 2008-2016 Fredrik Lingvall.\n\
     error("Argument 4 must be a scalar or a vector with a length equal to the number of observation points!");
     return oct_retval;
   }
-  
+
   const Matrix tmp3 = args(3).matrix_value();
   delay = (double*) tmp3.fortran_vec();
 
   //
   // Material parameters
   //
-  
+
   // Check that arg 5 is a scalar.
   if (!(mxGetM(4)==1 && mxGetN(4)==1)) {
     error("Argument 5 must be scalar!");
     return oct_retval;
   }
-  
+
   const Matrix tmp4 = args(4).matrix_value();
   m_par = (double*) tmp4.fortran_vec();
   cp    = m_par[0]; // Sound speed.
 
-  //  
+  //
   // Focusing parameters.
   //
 
   //  ifoc = 1 - no foc, 2 foc x ,3 foc y, 4 foc xy (del=fsqrt(x*x+y*y)), 5 focx+focy.
 
   if (nrhs >= 6) {
-    
+
     if (!mxIsChar(5)) {
-      error("Argument 6 must be a string");   
+      error("Argument 6 must be a string");
       return oct_retval;
     }
-    
-    std::string strin = args(5).string_value(); 
+
+    std::string strin = args(5).string_value();
     buflen = strin.length();
     for ( n=0; n<=buflen; n++ ) {
       foc_met[n] = strin[n];
     }
     foc_met[buflen] = '\0';
-    
+
     set = false;
 
     if (!strcmp(foc_met,"off")) {
-      ifoc = 1; 
+      ifoc = 1;
       set = true;
     }
-    
+
     if (!strcmp(foc_met,"x")) {
-      ifoc = 2; 
+      ifoc = 2;
       set = true;
     }
 
     if (!strcmp(foc_met,"y")) {
-      ifoc = 3; 
+      ifoc = 3;
       set = true;
     }
 
     if (!strcmp(foc_met,"xy")) {
-      ifoc = 4; 
+      ifoc = 4;
       set = true;
     }
 
     if (!strcmp(foc_met,"x+y")) {
-      ifoc = 5; 
+      ifoc = 5;
       set = true;
     }
-    
+
     if (!strcmp(foc_met,"ud")) {
-      ifoc = 6; 
+      ifoc = 6;
       set = true;
-      
+
       if (mxGetM(6) * mxGetN(6) != isize ) {
-	error("The time delay vector (argument 7) for user defined ('ud') focusing\n") ;
-	error("delays must have the same length as the number of array elements.!");
-	return oct_retval;
+        error("The time delay vector (argument 7) for user defined ('ud') focusing\n") ;
+        error("delays must have the same length as the number of array elements.!");
+        return oct_retval;
       }
       const Matrix tmp5 = args(7).matrix_value();
       ud_focal = (double*) tmp5.fortran_vec();
 
     }
     else {
-      
+
       // Check that arg 7 is a scalar.
       if (mxGetM(6) * mxGetN(6) !=1 ) {
-	error("Argument 7 to must be a scalar!");
-	return oct_retval;
+        error("Argument 7 to must be a scalar!");
+        return oct_retval;
       }
       // Focal point (in mm).
       const Matrix tmp5 = args(6).matrix_value();
       focal = (double) tmp5.fortran_vec()[0];
     }
-    
+
     if (set == false) {
       error("Unknown focusing method!");
       return oct_retval;
     }
-    
+
   } else
     ifoc = 1;
-  
+
   //
   // Beam steering.
   //
-  
+
   // Beam steering: ister = 1 - no steering, 2 steer ph=ax ,3 steer y ph=by, 4 steer xy ph=ax+by.
-  
+
   if (nrhs >= 8) {
-    
+
     if (!mxIsChar(7)) {
       error("Argument 8 must be a string");
       return oct_retval;
     }
 
-    std::string strin = args(7).string_value(); 
+    std::string strin = args(7).string_value();
     buflen = strin.length();
     for ( n=0; n<=buflen; n++ ) {
       steer_met[n] = strin[n];
     }
     steer_met[buflen] = '\0';
-        
+
     ister = 1;			// Default no steering
     set = false;
 
     if (!strcmp(steer_met,"off")) {
-      ister = 1; 
+      ister = 1;
       set = true;
     }
-    
+
     if (!strcmp(steer_met,"x")) {
-      ister = 2; 
+      ister = 2;
       set = true;
     }
 
     if (!strcmp(steer_met,"y")) {
-      ister = 3; 
+      ister = 3;
       set = true;
     }
 
     if (!strcmp(steer_met,"xy")) {
-      ister = 4; 
+      ister = 4;
       set = true;
     }
-    
+
     if (set == false) {
       error("Unknown beamsteering method!");
       return oct_retval;
     }
-    
+
     // Check that arg 9 is a 2 element vector
     if (!((mxGetM(8)==2 && mxGetN(8)==1) || (mxGetM(8)==1 && mxGetN(8)==2))) {
       error("Argument 9 must be a vector of length 2!");
@@ -446,79 +446,79 @@ Copyright @copyright{} 2008-2016 Fredrik Lingvall.\n\
     phi    = steer_par[1];		// Angle in y-direction.
   } else
     ister = 1;
-  
+
   //
   // Apodization.
   //
 
   // iweight = 1 - no weighting, 2  weighting.
-  // iapo = 0 - user defined, 1 traingle, 2 Gauss, 3 raised cosine, 4 simply supported, 5 clamped. 
+  // iapo = 0 - user defined, 1 traingle, 2 Gauss, 3 raised cosine, 4 simply supported, 5 clamped.
 
   if (nrhs >= 10) {
-    
+
     if (!mxIsChar(9)) {
       dream_err_msg("Argument 10 must be a string");
       return oct_retval;
     }
-    
-    std::string strin = args(9).string_value(); 
+
+    std::string strin = args(9).string_value();
     buflen = strin.length();
     for ( n=0; n<=buflen; n++ ) {
       apod_met[n] = strin[n];
     }
     apod_met[buflen] = '\0';
-    
-    iweight = 1;			// default off. 
+
+    iweight = 1;			// default off.
     set = false;
 
     if (!strcmp(apod_met,"off")) {
-      iweight = 1; 
+      iweight = 1;
       set = true;
     }
-    
+
     if (!strcmp(apod_met,"ud")) {
-      iweight = 2; 
-      iapo = 0; 
+      iweight = 2;
+      iapo = 0;
       set = true;
 
       // Vector of apodization weights.
       if (mxGetM(10) * mxGetN(10) != isize) {
-	error("The length of argument 11 (apodization vector) must be the same as the number of array elements!");
-	return oct_retval;
+        error("The length of argument 11 (apodization vector) must be the same as the number of array elements!");
+        return oct_retval;
       }
-      
+
       const Matrix tmp6 = args(10).matrix_value();
       apod = (double*) tmp6.fortran_vec();
 
     }
-    
+
     if (!strcmp(apod_met,"triangle")) {
-      iweight = 2; 
-      iapo = 1; 
+      iweight = 2;
+      iapo = 1;
       set = true;
     }
-    
+
     if (!strcmp(apod_met,"gauss")) {
-      iweight = 2; 
-      iapo = 2; 
+      iweight = 2;
+      iapo = 2;
       set = true;
     }
-    
+
     if (!strcmp(apod_met,"raised")) {
-      iweight = 2; 
-      iapo = 3; 
+      iweight = 2;
+      iapo = 3;
       set = true;
     }
-    
+
     if (!strcmp(apod_met,"simply")) {
-      iweight = 2; 
-      iapo = 4; 
+      iweight = 2;
+      iapo = 4;
       set = true;
     }
-    
+
     if (!strcmp(apod_met,"clamped")) {
-      iweight = 2; 
-      iapo = 5; 
+      iweight = 2;
+      iapo = 5;
       set = true;
     }
 
@@ -537,8 +537,8 @@ Copyright @copyright{} 2008-2016 Fredrik Lingvall.\n\
     param = (double) tmp7.fortran_vec()[0];
 
   }
-  else 
-    iweight = 1;   
+  else
+    iweight = 1;
 
   //
   // Error reporting.
@@ -546,11 +546,11 @@ Copyright @copyright{} 2008-2016 Fredrik Lingvall.\n\
   if (nrhs == 13) {
 
     if (!mxIsChar(12)) {
-      dream_err_msg("Argument 13 must be a string");    
+      dream_err_msg("Argument 13 must be a string");
       return oct_retval;
     }
 
-    std::string strin = args(12).string_value(); 
+    std::string strin = args(12).string_value();
     buflen = strin.length();
     for ( n=0; n<=buflen; n++ ) {
       err_str[n] = strin[n];
@@ -560,17 +560,17 @@ Copyright @copyright{} 2008-2016 Fredrik Lingvall.\n\
     set = false;
 
     if (!strcmp(err_str,"ignore")) {
-      err_level = IGNORE; 
+      err_level = IGNORE;
       set = true;
     }
 
     if (!strcmp(err_str,"warn")) {
-      err_level = WARN; 
+      err_level = WARN;
       set = true;
     }
-    
+
     if (!strcmp(err_str,"stop")) {
-      err_level = STOP; 
+      err_level = STOP;
       set = true;
     }
 
@@ -597,105 +597,105 @@ Copyright @copyright{} 2008-2016 Fredrik Lingvall.\n\
   if (( old_handler_abrt=signal(SIGABRT, &sighandler)) == SIG_ERR) {
     printf("Couldn't register SIGABRT signal handler.\n");
   }
-  
+
   if (( old_handler_keyint=signal(SIGINT, &sighandler)) == SIG_ERR) {
     printf("Couldn't register SIGINT signal handler.\n");
   }
-  
-  //  
+
+  //
   // Call the DAS subroutine.
   //
 
   running = true;
-  
-  if (ifoc != 6) { 
-    
+
+  if (ifoc != 6) {
+
     if (mxGetM(3) * mxGetN(3) == 1) {
       for (n=0; n<no; n++) {
-	xo = ro[n]; 
-	yo = ro[n+1*no]; 
-	zo = ro[n+2*no]; 
-	
-	err = das_arr(xo,yo,zo,dt,nt,delay[0],cp,isize,gx,gy,gz,
-			     ifoc,focal,ister,theta,phi,apod,iweight,iapo,param,&h[n*nt],err_level);
-	if (err != NONE) {
-	  out_err = err;
-	  if (err == STOP) {
-	    error("");
-	    return oct_retval;
-	  }
+        xo = ro[n];
+        yo = ro[n+1*no];
+        zo = ro[n+2*no];
 
-	  if (!running) {
-	    break; // CTRL-C pressed.
-	  }
-	  
-	}
+        err = das_arr(xo,yo,zo,dt,nt,delay[0],cp,isize,gx,gy,gz,
+                             ifoc,focal,ister,theta,phi,apod,iweight,iapo,param,&h[n*nt],err_level);
+        if (err != NONE) {
+          out_err = err;
+          if (err == STOP) {
+            error("");
+            return oct_retval;
+          }
+
+          if (!running) {
+            break; // CTRL-C pressed.
+          }
+
+        }
       }
     } else {
       for (n=0; n<no; n++) {
-	xo = ro[n]; 
-	yo = ro[n+1*no]; 
-	zo = ro[n+2*no]; 
-	
-	err = das_arr(xo,yo,zo,dt,nt,delay[n],cp,isize,gx,gy,gz,
-			     ifoc,focal,ister,theta,phi,apod,iweight,iapo,param,&h[n*nt],err_level);
-	if (err != NONE) {
-	  out_err = err;	  
-	  if (err == STOP) {
-	    error("");
-	    return oct_retval;
-	  }
-	  
-	  if (!running) {
-	    break; // CTRL-C pressed.
-	  }
-	  
-	}
+        xo = ro[n];
+        yo = ro[n+1*no];
+        zo = ro[n+2*no];
+
+        err = das_arr(xo,yo,zo,dt,nt,delay[n],cp,isize,gx,gy,gz,
+                             ifoc,focal,ister,theta,phi,apod,iweight,iapo,param,&h[n*nt],err_level);
+        if (err != NONE) {
+          out_err = err;
+          if (err == STOP) {
+            error("");
+            return oct_retval;
+          }
+
+          if (!running) {
+            break; // CTRL-C pressed.
+          }
+
+        }
       }
     }
   }
   else { // User defined focusing.
-    
+
     if (mxGetM(3) * mxGetN(3) == 1) {
       for (n=0; n<no; n++) {
-	xo = ro[n]; 
-	yo = ro[n+1*no]; 
-	zo = ro[n+2*no]; 
-	
-	err = das_arr_ud(xo,yo,zo,dt,nt,delay[0],cp,isize,gx,gy,gz,
-			 ifoc,ud_focal,ister,theta,phi,apod,iweight,iapo,param,&h[n*nt],err_level);
-	if (err != NONE) {
-	  out_err = err;
-	  if (err == STOP) {
-	    error("");
-	    return oct_retval;
-	  }
-	}
+        xo = ro[n];
+        yo = ro[n+1*no];
+        zo = ro[n+2*no];
 
-	if (!running) {
-	  break; // CTRL-C pressed.
-	}
+        err = das_arr_ud(xo,yo,zo,dt,nt,delay[0],cp,isize,gx,gy,gz,
+                         ifoc,ud_focal,ister,theta,phi,apod,iweight,iapo,param,&h[n*nt],err_level);
+        if (err != NONE) {
+          out_err = err;
+          if (err == STOP) {
+            error("");
+            return oct_retval;
+          }
+        }
+
+        if (!running) {
+          break; // CTRL-C pressed.
+        }
 
       }
     } else {
       for (n=0; n<no; n++) {
-	xo = ro[n]; 
-	yo = ro[n+1*no]; 
-	zo = ro[n+2*no]; 
-	
-	err = das_arr_ud(xo,yo,zo,dt,nt,delay[n],cp,isize,gx,gy,gz,
-			 ifoc,ud_focal,ister,theta,phi,apod,iweight,iapo,param,&h[n*nt],err_level);
-	if (err != NONE) {
-	  out_err = err;	  
-	  if (err == STOP) {
-	    error("");
-	    return oct_retval;
-	  }
-	}
+        xo = ro[n];
+        yo = ro[n+1*no];
+        zo = ro[n+2*no];
 
-	if (!running) {
-	  break; // CTRL-C pressed.
-	}
+        err = das_arr_ud(xo,yo,zo,dt,nt,delay[n],cp,isize,gx,gy,gz,
+                         ifoc,ud_focal,ister,theta,phi,apod,iweight,iapo,param,&h[n*nt],err_level);
+        if (err != NONE) {
+          out_err = err;
+          if (err == STOP) {
+            error("");
+            return oct_retval;
+          }
+        }
+
+        if (!running) {
+          break; // CTRL-C pressed.
+        }
 
       }
     }
@@ -708,22 +708,22 @@ Copyright @copyright{} 2008-2016 Fredrik Lingvall.\n\
   if (signal(SIGTERM, old_handler) == SIG_ERR) {
     printf("Couldn't register old SIGTERM signal handler.\n");
   }
-   
+
   if (signal(SIGABRT,  old_handler_abrt) == SIG_ERR) {
     printf("Couldn't register old SIGABRT signal handler.\n");
   }
-  
+
   if (signal(SIGINT, old_handler_keyint) == SIG_ERR) {
     printf("Couldn't register old SIGINT signal handler.\n");
   }
-  
+
   if (!running) {
     error("CTRL-C pressed!\n"); // Bail out.
-    return oct_retval; 
+    return oct_retval;
   }
 
   oct_retval.append(h_mat);
-  
+
   // Return error.
   if (nlhs == 2) {
     Matrix err_mat(nt, no);
@@ -731,7 +731,6 @@ Copyright @copyright{} 2008-2016 Fredrik Lingvall.\n\
     err_p[0] = (double) out_err;
     oct_retval.append(err_mat);
   }
-  
+
   return oct_retval;
 }
-  

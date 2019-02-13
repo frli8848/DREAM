@@ -1,6 +1,6 @@
 %
 % Example: The Synthetic Aperture Focusing Technique (SAFT).
-% 
+%
 
 % $Revision: 565 $ $Date: 2009-09-17 22:24:06 +0200 (Thu, 17 Sep 2009) $ $LastChangedBy: dream $
 
@@ -11,8 +11,8 @@ n_cpus = 2;
 
 z = 50; % Point target depth [mm].
 
-d  = 0.125; 				% Array pitch [mm].
-xo = (-50:d:50); 			% Horizontal scanning
+d  = 0.125;                             % Array pitch [mm].
+xo = (-50:d:50);                        % Horizontal scanning
                                         % distance  [mm].
 yo = zeros(length(xo),1);
 zo = z*ones(length(xo),1);
@@ -20,27 +20,27 @@ Ro = [xo(:) yo(:) zo(:)];
 
 
 % Descretization parameters.
-dx = 0.03; 				% [mm].
-dy = 0.03; 				% [mm]
-dt = Ts; 				% [us]. 
-nt = 700;   				% Length of spatial impulse response vector.
+dx = 0.03;                              % [mm].
+dy = 0.03;                              % [mm]
+dt = Ts;                                % [us].
+nt = 700;                               % Length of spatial impulse response vector.
 s_par = [dx dy dt nt];
 
 % Material parameters.
-v     = 1.0; 				% Normal velocity.
-cp    = 1500; 				% Sound speed.
-alfa  = 0; 				% Absorbtion [dB/(cm MHz)].
+v     = 1.0;                            % Normal velocity.
+cp    = 1500;                           % Sound speed.
+alfa  = 0;                              % Absorbtion [dB/(cm MHz)].
 m_par = [v cp alfa];
 
 % Delay.
-delay = 0; 				% Start at 0 [us]. 
+delay = 0;                              % Start at 0 [us].
 %t_z = z*1e3/cp;
-%delay = t_z; 				% Start at t_z [us].
+%delay = t_z;                           % Start at t_z [us].
 
 % Geometrical parameters.
 r = 1.0;                                % Radius [mm].
 geom_par = [r];
-  
+
 H = dreamcirc(Ro,geom_par,s_par,delay,m_par,'stop');
 
 %
@@ -77,7 +77,7 @@ title('B-scan data','FontSize',16);
 %
 % Positions of the scanned transducer.
 %
-xo = (-50:d:50); 			% -50 -> 50 mm.
+xo = (-50:d:50);                        % -50 -> 50 mm.
 yo = zeros(length(xo),1);
 zo = zeros(length(xo),1);
 To = [xo(:) yo(:) zo(:)];

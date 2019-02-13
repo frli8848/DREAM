@@ -1,6 +1,6 @@
 %
 % Rectangular Transducer Example 1.
-% 
+%
 
 % $Revision: 565 $ $Date: 2009-09-17 22:24:06 +0200 (Thu, 17 Sep 2009) $ $LastChangedBy: dream $
 
@@ -23,36 +23,36 @@ if 0
   disp(['Observation point (x,y,z) = ' num2str(Ro)])
 else
   %  Points along x-axis.
-  d  = 1; 				% [mm]
-  xo = (0:d:50); 			% 0-50 mm.
+  d  = 1;                               % [mm]
+  xo = (0:d:50);                        % 0-50 mm.
   yo = zeros(length(xo),1);
   zo = z*ones(length(xo),1);
   Ro = [xo(:) yo(:) zo(:)];
 end
 
 % Descretization parameters.
-dx = 0.03; 				% [mm].
-dy = 0.03; 				% [mm]
-dt = Ts; 				% [us]. 
-nt = 400;   				% Length of spatial impulse response vector.
+dx = 0.03;                              % [mm].
+dy = 0.03;                              % [mm]
+dt = Ts;                                % [us].
+nt = 400;                               % Length of spatial impulse response vector.
 s_par = [dx dy dt nt];
 
 % Material parameters.
-v     = 1.0; 				% Normal velocity.
-cp    = 1500; 				% Sound speed.
-alfa  = 0; 				% Absorbtion [dB/(cm MHz)].
+v     = 1.0;                            % Normal velocity.
+cp    = 1500;                           % Sound speed.
+alfa  = 0;                              % Absorbtion [dB/(cm MHz)].
 m_par = [v cp alfa];
 
 % Delay.
 t_z = z*1e3/cp;
-%delay = 0; 				% Start at 0 [us]. 
-delay = t_z; 				% Start at t_z [us].
+%delay = 0;                             % Start at 0 [us].
+delay = t_z;                            % Start at t_z [us].
 
 % Geometrical parameters.
 a = 10;					% x-size [mm].
 b = 15;					% y-size [mm].
 geom_par = [a b];
-  
+
 H = dreamrect(Ro,geom_par,s_par,delay,m_par,'stop');
 
 

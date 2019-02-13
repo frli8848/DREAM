@@ -1,6 +1,6 @@
 %
 % Cylindrical Focused Array Transducer Example 1.
-% 
+%
 
 % $Revision: 565 $ $Date: 2009-09-17 22:24:06 +0200 (Thu, 17 Sep 2009) $ $LastChangedBy: dream $
 
@@ -23,34 +23,34 @@ if 1
   disp(['Observation point (x,y,z) = ' num2str(Ro)])
 else
   %  Points along x-axis.
-  d  = 1; 				% [mm]
-  xo = (0:d:50); 			% 0-50 mm.
+  d  = 1;                               % [mm]
+  xo = (0:d:50);                        % 0-50 mm.
   yo = zeros(length(xo),1);
   zo = z*ones(length(xo),1);
   Ro = [xo(:) yo(:) zo(:)];
 end
 
 % Descretization parameters.
-dx = 0.01; 				% [mm].
-dy = 0.01; 				% [mm]
-dt = Ts; 				% [us]. 
-nt = 500;   				% Length of spatial impulse response vector.
+dx = 0.01;                              % [mm].
+dy = 0.01;                              % [mm]
+dt = Ts;                                % [us].
+nt = 500;                               % Length of spatial impulse response vector.
 s_par = [dx dy dt nt];
 
 % Material parameters.
-v     = 1.0; 				% Normal velocity.
-cp    = 1000; 				% Sound speed [m/s].
-alfa  = 0; 				% Absorbtion [dB/(cm MHz)].
+v     = 1.0;                            % Normal velocity.
+cp    = 1000;                           % Sound speed [m/s].
+alfa  = 0;                              % Absorbtion [dB/(cm MHz)].
 m_par = [v cp alfa];
 
 % Delay.
 t_z = z*1e3/cp;
-%delay = 0; 				% Start at 0 [us]. 
-delay = t_z; 				% Start at t_z [us].
+%delay = 0;                             % Start at 0 [us].
+delay = t_z;                            % Start at t_z [us].
 
 % Element size [mm].
-a = 1; 					% x-size.
-b = 20; 				% y-size.
+a = 1;                                  % x-size.
+b = 20;                                 % y-size.
 R = 100;				% Curvature radius.
 geom_par = [a b R];
 
@@ -70,13 +70,13 @@ G = [gx gy gz];
 %foc_met = 'y';
 foc_met = 'xy';
 %foc_met = 'x+y';
-focal = 50; 				% Focus radius [mm].
+focal = 50;                             % Focus radius [mm].
 
 % User defined focusing.
 %foc_met = 'ud';
 %
-% Focusing vector for 'ud'. Delays in [us]. 
-%focal = zeros(length(gx),1);  		% unfocused.
+% Focusing vector for 'ud'. Delays in [us].
+%focal = zeros(length(gx),1);           % unfocused.
 
 % Beam steering.
 steer_met = 'off';
@@ -85,19 +85,19 @@ steer_met = 'off';
 %steer_met = 'xy';
 
 theta  = 0;				% Angle in x-direction.
-phi    = 0; 				% Angle in y-direction.
+phi    = 0;                             % Angle in y-direction.
 steer_par = [theta phi];
 
 % Apodization.
 apod_met = 'off';
-%apod_met = 'ud'; 			% User defined.
+%apod_met = 'ud';                       % User defined.
 %apod_met = 'triangle';
 %apod_met = 'gauss';
-%apod_met = 'raised'; 			% Raised cosine.
-%apod_met = 'simply'; 			% Simply supported.
+%apod_met = 'raised';                   % Raised cosine.
+%apod_met = 'simply';                   % Simply supported.
 %apod_met = 'clamped';
-apod = ones(length(gx),1); 		% Apodization weights for 'ud'.
-win_par = 1; 				% Parameter for raised cos and Gaussian apodization functions.
+apod = ones(length(gx),1);              % Apodization weights for 'ud'.
+win_par = 1;                            % Parameter for raised cos and Gaussian apodization functions.
 
 H = dream_arr_cylind_f(Ro,geom_par,G,s_par,delay,m_par,...
     foc_met,focal,steer_met,steer_par,apod_met,apod,win_par,'stop');

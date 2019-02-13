@@ -1,6 +1,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% Run all transducer functions. 
+% Run all transducer functions.
 %
 % Copyright (C) 2005,2006,2008,2009 Fredrik Lingvall
 %
@@ -18,10 +18,10 @@ ONE_POINT = 1;
 tmp_str = computer;
 if size(strfind(tmp_str,'linux')) > 0 | ...
       size(strfind(tmp_str,'GLN')) > 0
-  
+
   % How many CPUs do we have?
   [dummy,tmp_str]= system('cat /proc/cpuinfo | grep model | grep name');
-  
+
   n_cpus = size(strfind(tmp_str,'model'),2);
 
   fprintf('\n*** Detected a %d cpu system ***\n\n',n_cpus);
@@ -64,21 +64,21 @@ else
 end
 
 % Descretization parameters.
-dx = 0.05; 				% [mm].
-dy = 0.05; 				% [mm]
-dt = Ts; 				% [us]. 
-nt = 300;   				% Length of spatial impulse response vector.
+dx = 0.05;                              % [mm].
+dy = 0.05;                              % [mm]
+dt = Ts;                                % [us].
+nt = 300;                               % Length of spatial impulse response vector.
 s_par = [dx dy dt nt];
 
 t = 0:Ts:Ts*(nt-1);
 
 % Material parameters.
-v     = 1.0; 				% Normal velocity.
-cp    = 1000; 			% Sound speed.
-alfa  = 0; 				% Absorbtion (dB/cm Hz).
+v     = 1.0;                            % Normal velocity.
+cp    = 1000;                   % Sound speed.
+alfa  = 0;                              % Absorbtion (dB/cm Hz).
 m_par = [v cp alfa];
 
-t_z = z*1e-3/cp * 1e6; 		% us 
+t_z = z*1e-3/cp * 1e6;          % us
 
 delay = 0;
 %delay = t_z;
@@ -100,7 +100,7 @@ if size(H,2)>1
   mesh(xo,t,H);
   axis('tight');
   view(135,32);
-else    
+else
   plot(t,H);
   ax = axis;
   axis([0 50 ax(3) ax(4)]);
@@ -147,7 +147,7 @@ foc_met = 'off';
 %foc_met = 'y';
 foc_met = 'xy';
 %foc_met = 'x+y';
-focal = 100; 				% Focus radius
+focal = 100;                            % Focus radius
 
 [H,err] = dreamrect_f(Ro,geom_par,s_par,delay,m_par,foc_met,focal,'stop');
 
@@ -202,7 +202,7 @@ foc_met = 'off';
 %foc_met = 'y';
 foc_met = 'xy';
 %foc_met = 'x+y';
-focal = 100; 				% Focus radius
+focal = 100;                            % Focus radius
 
 [H,err] = dreamcirc_f(Ro,geom_par,s_par,delay,m_par,foc_met,focal,'stop');
 
@@ -236,7 +236,7 @@ if size(H,2)>1
   mesh(H);
   axis('tight');
   view(135,32);
-else   
+else
   plot(t,H);
   ax = axis;
   axis([0 50 ax(3) ax(4)])
@@ -279,7 +279,7 @@ fprintf('dreamcylind_d\n');
 % ------------- Focused Spherical Transducer --------------------------
 
 % Geometrical parameters.
-r = 10;				        % Radius of the transducer.
+r = 10;                                 % Radius of the transducer.
 R = 100;				% Radius of the curvature.
 geom_par = [r R];
 
@@ -327,7 +327,7 @@ fprintf('dreamsphere_d_d\n');
 % ------------- Array with circular elements --------------------------
 
 % Element diameter [mm].
-r = 0.5; 
+r = 0.5;
 
 % Grid function (position vectors of the elements).
 x = -10:1:10;
@@ -343,7 +343,7 @@ foc_met = 'off';
 %foc_met = 'y';
 %foc_met = 'xy';
 %foc_met = 'x+y';
-focal = 100; 				% Focus radius
+focal = 100;                            % Focus radius
 
 % Beam steering.
 steer_met = 'off';
@@ -352,19 +352,19 @@ steer_met = 'off';
 %steer_met = 'xy';
 
 theta  = 0;				% Angle in x-direction.
-phi    = 0; 				% Angle in y-direction.
+phi    = 0;                             % Angle in y-direction.
 steer_par = [theta phi];
 
 % Apodization.
 apod_met = 'off';
-%apod_met = 'ud'; 			% User defined.
+%apod_met = 'ud';                       % User defined.
 %apod_met = 'triangle';
 %apod_met = 'gauss';
-%apod_met = 'raised'; 			% Raised cosine.
-%apod_met = 'simply'; 			% Simply supported.
+%apod_met = 'raised';                   % Raised cosine.
+%apod_met = 'simply';                   % Simply supported.
 %apod_met = 'clamped';
-apod = ones(length(gx),1); 		% Apodization weights for 'ud'.
-win_par = 1; 				% Parameter for raised cos and Gaussian apodization functions.
+apod = ones(length(gx),1);              % Apodization weights for 'ud'.
+win_par = 1;                            % Parameter for raised cos and Gaussian apodization functions.
 
 [H,err] = dream_arr_circ(Ro,r,G,s_par,delay,m_par,foc_met,focal,...
                          steer_met,steer_par,apod_met,apod,win_par,'stop');
@@ -405,7 +405,7 @@ foc_met = 'off';
 %foc_met = 'y';
 %foc_met = 'xy';
 %foc_met = 'x+y';
-focal = 100; 				% Focus radius
+focal = 100;                            % Focus radius
 
 % Beam steering.
 steer_met = 'off';
@@ -414,19 +414,19 @@ steer_met = 'off';
 %steer_met = 'xy';
 
 theta  = 0;				% Angle in x-direction.
-phi    = 0; 				% Angle in y-direction.
+phi    = 0;                             % Angle in y-direction.
 steer_par = [theta phi];
 
 % Apodization.
 apod_met = 'off';
-%apod_met = 'ud'; 			% User defined.
+%apod_met = 'ud';                       % User defined.
 %apod_met = 'triangle';
 %apod_met = 'gauss';
-%apod_met = 'raised'; 			% Raised cosine.
-%apod_met = 'simply'; 			% Simply supported.
+%apod_met = 'raised';                   % Raised cosine.
+%apod_met = 'simply';                   % Simply supported.
 %apod_met = 'clamped';
-apod = ones(length(gx),1); 		% Apodization weights for 'ud'.
-win_par = 1; 				% Parameter for raised cos and Gaussian apodization functions.
+apod = ones(length(gx),1);              % Apodization weights for 'ud'.
+win_par = 1;                            % Parameter for raised cos and Gaussian apodization functions.
 
 [H,err] = dream_arr_rect(Ro,geom_par,G,s_par,delay,...
                          m_par,foc_met,focal,steer_met,steer_par,apod_met,apod,win_par,'stop');
@@ -449,8 +449,8 @@ fprintf('dream_arr_rect\n');
 % ------------- Array with (concave) cylindrical elements --------------------------
 
 % Element size [mm].
-a = 1; 				% x-width.
-b = 20; 				% y-width.
+a = 1;                          % x-width.
+b = 20;                                 % y-width.
 R = 100;				% Radius.
 geom_par = [a b R];
 
@@ -467,7 +467,7 @@ foc_met = 'off';
 %foc_met = 'y';
 %foc_met = 'xy';
 %foc_met = 'x+y';
-focal = 100; 				% Focus radius
+focal = 100;                            % Focus radius
 
 % Beam steering.
 steer_met = 'off';
@@ -476,19 +476,19 @@ steer_met = 'off';
 %steer_met = 'xy';
 
 theta  = 0;				% Angle in x-direction.
-phi    = 0; 				% Angle in y-direction.
+phi    = 0;                             % Angle in y-direction.
 steer_par = [theta phi];
 
 % Apodization.
 apod_met = 'off';
-%apod_met = 'ud'; 			% User defined.
+%apod_met = 'ud';                       % User defined.
 %apod_met = 'triangle';
 %apod_met = 'gauss';
-%apod_met = 'raised'; 			% Raised cosine.
-%apod_met = 'simply'; 			% Simply supported.
+%apod_met = 'raised';                   % Raised cosine.
+%apod_met = 'simply';                   % Simply supported.
 %apod_met = 'clamped';
-apod = ones(length(gx),1); 		% Apodization weights for 'ud'.
-win_par = 1; 				% Parameter for raised cos and Gaussian apodization functions.
+apod = ones(length(gx),1);              % Apodization weights for 'ud'.
+win_par = 1;                            % Parameter for raised cos and Gaussian apodization functions.
 
 [H,err] = dream_arr_cylind_f(Ro,geom_par,G,s_par,delay,...
                              m_par,foc_met,focal,steer_met,steer_par,apod_met,apod,win_par,'stop');
@@ -514,8 +514,8 @@ clf
 % ------------- Array with (convex) cylindrical elements --------------------------
 
 % Element size [mm].
-a = 1; 				% x-width.
-b = 20; 				% y-width.
+a = 1;                          % x-width.
+b = 20;                                 % y-width.
 R = 100;				% Radius.
 geom_par = [a b R];
 
@@ -532,7 +532,7 @@ foc_met = 'off';
 %foc_met = 'y';
 %foc_met = 'xy';
 %foc_met = 'x+y';
-focal = 100; 				% Focus radius
+focal = 100;                            % Focus radius
 
 % Beam steering.
 steer_met = 'off';
@@ -541,19 +541,19 @@ steer_met = 'off';
 %steer_met = 'xy';
 
 theta  = 0;				% Angle in x-direction.
-phi    = 0; 				% Angle in y-direction.
+phi    = 0;                             % Angle in y-direction.
 steer_par = [theta phi];
 
 % Apodization.
 apod_met = 'off';
-%apod_met = 'ud'; 			% User defined.
+%apod_met = 'ud';                       % User defined.
 %apod_met = 'triangle';
 %apod_met = 'gauss';
-%apod_met = 'raised'; 			% Raised cosine.
-%apod_met = 'simply'; 			% Simply supported.
+%apod_met = 'raised';                   % Raised cosine.
+%apod_met = 'simply';                   % Simply supported.
 %apod_met = 'clamped';
-apod = ones(length(gx),1); 		% Apodization weights for 'ud'.
-win_par = 1; 				% Parameter for raised cos and Gaussian apodization functions.
+apod = ones(length(gx),1);              % Apodization weights for 'ud'.
+win_par = 1;                            % Parameter for raised cos and Gaussian apodization functions.
 
 [H,err] = dream_arr_cylind_d(Ro,geom_par,G,s_par,delay,...
                              m_par,foc_met,focal,steer_met,steer_par,apod_met,apod,win_par,'stop');
@@ -587,18 +587,18 @@ G = gr(:);
 % Focusing parameters.
 foc_met = 'on';
 %foc_met = 'off';
-focal = 100; 				% Focus radius
+focal = 100;                            % Focus radius
 
 % Apodization.
 apod_met = 'off';
-%apod_met = 'ud'; 			% User defined.
+%apod_met = 'ud';                       % User defined.
 %apod_met = 'triangle';
 %apod_met = 'gauss';
-%apod_met = 'raised'; 			% Raised cosine.
-%apod_met = 'simply'; 			% Simply supported.
+%apod_met = 'raised';                   % Raised cosine.
+%apod_met = 'simply';                   % Simply supported.
 %apod_met = 'clamped';
-apod = ones(length(gr),1); 		% Apodization weights for 'ud'.
-win_par = 1; 				% Parameter for raised cos and Gaussian apodization functions.
+apod = ones(length(gr),1);              % Apodization weights for 'ud'.
+win_par = 1;                            % Parameter for raised cos and Gaussian apodization functions.
 
 [H,err] = dream_arr_annu(Ro,G,s_par,delay,...
                          m_par,foc_met,focal,apod_met,apod,win_par,'stop');
@@ -622,7 +622,7 @@ fprintf('dream_arr_annu\n');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% Run all transducer functions with parallel computing support. 
+% Run all transducer functions with parallel computing support.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -660,21 +660,21 @@ else
 end
 
 % Descretization parameters.
-dx = 0.05; 				% [mm].
-dy = 0.05; 				% [mm]
-dt = Ts; 				% [us]. 
-nt = 300;   				% Length of spatial impulse response vector.
+dx = 0.05;                              % [mm].
+dy = 0.05;                              % [mm]
+dt = Ts;                                % [us].
+nt = 300;                               % Length of spatial impulse response vector.
 s_par = [dx dy dt nt];
 
 t = 0:Ts:Ts*(nt-1);
 
 % Material parameters.
-v     = 1.0; 				% Normal velocity.
-cp    = 1000; 			% Sound speed.
-alfa  = 0; 				% Absorbtion (dB/cm Hz).
+v     = 1.0;                            % Normal velocity.
+cp    = 1000;                   % Sound speed.
+alfa  = 0;                              % Absorbtion (dB/cm Hz).
 m_par = [v cp alfa];
 
-t_z = z*1e-3/cp * 1e6; 		% us 
+t_z = z*1e-3/cp * 1e6;          % us
 
 delay = 0;
 %delay = t_z;
@@ -693,7 +693,7 @@ if size(H,2)>1
   mesh(xo,t,H);
   axis('tight')
   view(135,32)
-else    
+else
   plot(t,H);
   ax = axis;
   axis([0 50 ax(3) ax(4)])
@@ -740,7 +740,7 @@ foc_met = 'off';
 %foc_met = 'y';
 foc_met = 'xy';
 %foc_met = 'x+y';
-focal = 100; 				% Focus radius
+focal = 100;                            % Focus radius
 
 [H,err] = dreamrect_f_p(Ro,geom_par,s_par,delay,m_par,foc_met,focal,n_cpus,'stop');
 
@@ -794,7 +794,7 @@ foc_met = 'off';
 %foc_met = 'y';
 foc_met = 'xy';
 %foc_met = 'x+y';
-focal = 100; 				% Focus radius
+focal = 100;                            % Focus radius
 
 [H,err] = dreamcirc_f_p(Ro,geom_par,s_par,delay,m_par,foc_met,focal,n_cpus,'stop');
 
@@ -828,7 +828,7 @@ if size(H,2)>1
   mesh(H);
   axis('tight');
   view(135,32)
-else   
+else
   plot(t,H);
   ax = axis;
   axis([0 50 ax(3) ax(4)])
@@ -919,7 +919,7 @@ fprintf('dreamsphere_d_p\n');
 % ------------- Array with circular elements --------------------------
 
 % Element diameter [mm].
-r = 0.5; 
+r = 0.5;
 
 % Grid function (position vectors of the elements).
 x = -10:1:10;
@@ -935,7 +935,7 @@ foc_met = 'off';
 %foc_met = 'y';
 %foc_met = 'xy';
 %foc_met = 'x+y';
-focal = 100; 				% Focus radius
+focal = 100;                            % Focus radius
 
 % Beam steering.
 steer_met = 'off';
@@ -944,19 +944,19 @@ steer_met = 'off';
 %steer_met = 'xy';
 
 theta  = 0;				% Angle in x-direction.
-phi    = 0; 				% Angle in y-direction.
+phi    = 0;                             % Angle in y-direction.
 steer_par = [theta phi];
 
 % Apodization.
 apod_met = 'off';
-%apod_met = 'ud'; 			% User defined.
+%apod_met = 'ud';                       % User defined.
 %apod_met = 'triangle';
 %apod_met = 'gauss';
-%apod_met = 'raised'; 			% Raised cosine.
-%apod_met = 'simply'; 			% Simply supported.
+%apod_met = 'raised';                   % Raised cosine.
+%apod_met = 'simply';                   % Simply supported.
 %apod_met = 'clamped';
-apod = ones(length(gx),1); 		% Apodization weights for 'ud'.
-win_par = 1; 				% Parameter for raised cos and Gaussian apodization functions.
+apod = ones(length(gx),1);              % Apodization weights for 'ud'.
+win_par = 1;                            % Parameter for raised cos and Gaussian apodization functions.
 
 [H,err] = dream_arr_circ_p(Ro,r,G,s_par,delay,m_par,foc_met,focal,...
                            steer_met,steer_par,apod_met,apod,win_par,n_cpus,'stop');
@@ -997,7 +997,7 @@ foc_met = 'off';
 %foc_met = 'y';
 %foc_met = 'xy';
 %foc_met = 'x+y';
-focal = 100; 				% Focus radius
+focal = 100;                            % Focus radius
 
 % Beam steering.
 steer_met = 'off';
@@ -1006,19 +1006,19 @@ steer_met = 'off';
 %steer_met = 'xy';
 
 theta  = 0;				% Angle in x-direction.
-phi    = 0; 				% Angle in y-direction.
+phi    = 0;                             % Angle in y-direction.
 steer_par = [theta phi];
 
 % Apodization.
 apod_met = 'off';
-%apod_met = 'ud'; 			% User defined.
+%apod_met = 'ud';                       % User defined.
 %apod_met = 'triangle';
 %apod_met = 'gauss';
-%apod_met = 'raised'; 			% Raised cosine.
-%apod_met = 'simply'; 			% Simply supported.
+%apod_met = 'raised';                   % Raised cosine.
+%apod_met = 'simply';                   % Simply supported.
 %apod_met = 'clamped';
-apod = ones(length(gx),1); 		% Apodization weights for 'ud'.
-win_par = 1; 				% Parameter for raised cos and Gaussian apodization functions.
+apod = ones(length(gx),1);              % Apodization weights for 'ud'.
+win_par = 1;                            % Parameter for raised cos and Gaussian apodization functions.
 
 [H,err] = dream_arr_rect_p(Ro,geom_par,G,s_par,delay,...
                            m_par,foc_met,focal,steer_met,steer_par,apod_met,apod,win_par,n_cpus,'stop');
@@ -1041,8 +1041,8 @@ fprintf('dream_arr_rect_p\n');
 % ------------- Array with (concave) cylindrical elements --------------------------
 
 % Element size [mm].
-a = 1; 				% x-width.
-b = 20; 				% y-width.
+a = 1;                          % x-width.
+b = 20;                                 % y-width.
 R = 100;				% Radius.
 geom_par = [a b R];
 
@@ -1059,7 +1059,7 @@ foc_met = 'off';
 %foc_met = 'y';
 %foc_met = 'xy';
 %foc_met = 'x+y';
-focal = 100; 				% Focus radius
+focal = 100;                            % Focus radius
 
 % Beam steering.
 steer_met = 'off';
@@ -1068,19 +1068,19 @@ steer_met = 'off';
 %steer_met = 'xy';
 
 theta  = 0;				% Angle in x-direction.
-phi    = 0; 				% Angle in y-direction.
+phi    = 0;                             % Angle in y-direction.
 steer_par = [theta phi];
 
 % Apodization.
 apod_met = 'off';
-%apod_met = 'ud'; 			% User defined.
+%apod_met = 'ud';                       % User defined.
 %apod_met = 'triangle';
 %apod_met = 'gauss';
-%apod_met = 'raised'; 			% Raised cosine.
-%apod_met = 'simply'; 			% Simply supported.
+%apod_met = 'raised';                   % Raised cosine.
+%apod_met = 'simply';                   % Simply supported.
 %apod_met = 'clamped';
-apod = ones(length(gx),1); 		% Apodization weights for 'ud'.
-win_par = 1; 				% Parameter for raised cos and Gaussian apodization functions.
+apod = ones(length(gx),1);              % Apodization weights for 'ud'.
+win_par = 1;                            % Parameter for raised cos and Gaussian apodization functions.
 
 [H,err] = dream_arr_cylind_f_p(Ro,geom_par,G,s_par,delay,...
                                m_par,foc_met,focal,steer_met,steer_par,apod_met,apod,win_par,n_cpus,'stop');
@@ -1106,8 +1106,8 @@ clf
 % ------------- Array with (convex) cylindrical elements --------------------------
 
 % Element size [mm].
-a = 1; 				% x-width.
-b = 20; 				% y-width.
+a = 1;                          % x-width.
+b = 20;                                 % y-width.
 R = 100;				% Radius.
 geom_par = [a b R];
 
@@ -1124,7 +1124,7 @@ foc_met = 'off';
 %foc_met = 'y';
 %foc_met = 'xy';
 %foc_met = 'x+y';
-focal = 100; 				% Focus radius
+focal = 100;                            % Focus radius
 
 % Beam steering.
 steer_met = 'off';
@@ -1133,19 +1133,19 @@ steer_met = 'off';
 %steer_met = 'xy';
 
 theta  = 0;				% Angle in x-direction.
-phi    = 0; 				% Angle in y-direction.
+phi    = 0;                             % Angle in y-direction.
 steer_par = [theta phi];
 
 % Apodization.
 apod_met = 'off';
-%apod_met = 'ud'; 			% User defined.
+%apod_met = 'ud';                       % User defined.
 %apod_met = 'triangle';
 %apod_met = 'gauss';
-%apod_met = 'raised'; 			% Raised cosine.
-%apod_met = 'simply'; 			% Simply supported.
+%apod_met = 'raised';                   % Raised cosine.
+%apod_met = 'simply';                   % Simply supported.
 %apod_met = 'clamped';
-apod = ones(length(gx),1); 		% Apodization weights for 'ud'.
-win_par = 1; 				% Parameter for raised cos and Gaussian apodization functions.
+apod = ones(length(gx),1);              % Apodization weights for 'ud'.
+win_par = 1;                            % Parameter for raised cos and Gaussian apodization functions.
 
 [H,err] = dream_arr_cylind_d_p(Ro,geom_par,G,s_par,delay,...
                                m_par,foc_met,focal,steer_met,steer_par,apod_met,apod,win_par,n_cpus,'stop');
@@ -1179,18 +1179,18 @@ G = gr(:);
 % Focusing parameters.
 foc_met = 'on';
 %foc_met = 'off';
-focal = 100; 				% Focus radius
+focal = 100;                            % Focus radius
 
 % Apodization.
 apod_met = 'off';
-%apod_met = 'ud'; 			% User defined.
+%apod_met = 'ud';                       % User defined.
 %apod_met = 'triangle';
 %apod_met = 'gauss';
-%apod_met = 'raised'; 			% Raised cosine.
-%apod_met = 'simply'; 			% Simply supported.
+%apod_met = 'raised';                   % Raised cosine.
+%apod_met = 'simply';                   % Simply supported.
 %apod_met = 'clamped';
-apod = ones(length(gr),1); 		% Apodization weights for 'ud'.
-win_par = 1; 				% Parameter for raised cos and Gaussian apodization functions.
+apod = ones(length(gr),1);              % Apodization weights for 'ud'.
+win_par = 1;                            % Parameter for raised cos and Gaussian apodization functions.
 
 [H,err] = dream_arr_annu_p(Ro,G,s_par,delay,...
                            m_par,foc_met,focal,apod_met,apod,win_par,n_cpus,'stop');
@@ -1235,5 +1235,4 @@ Z2 = fftconv_p(X,Y,n_cpus);
 t2= toc;
 fprintf('fftconv_p\n\n');
 
-fprintf('Elapsed time conv_p: %f, fftconv_p: %f\n\n',t1,t2); 
-
+fprintf('Elapsed time conv_p: %f, fftconv_p: %f\n\n',t1,t2);

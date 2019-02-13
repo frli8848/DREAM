@@ -4,18 +4,18 @@
 *
 * This file is part of the DREAM Toolbox.
 *
-* The DREAM Toolbox is free software; you can redistribute it and/or modify 
+* The DREAM Toolbox is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by the
 * Free Software Foundation; either version 2, or (at your option) any
 * later version.
 *
-* The DREAM Toolbox is distributed in the hope that it will be useful, but 
+* The DREAM Toolbox is distributed in the hope that it will be useful, but
 * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
 * for more details.
 *
 * You should have received a copy of the GNU General Public License
-* along with the DREAM Toolbox; see the file COPYING.  If not, write to the 
+* along with the DREAM Toolbox; see the file COPYING.  If not, write to the
 * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 * 02110-1301, USA.
 *
@@ -40,8 +40,8 @@
 //
 
 int delay_arr(double xo, double yo, double zo, double xs, double ys, double zs, double dt,
-	      dream_idx_type nt, double delay, double retfoc, double retsteer, double cp,
-	      double weight, double *RESTRICT h, int err_level);
+              dream_idx_type nt, double delay, double retfoc, double retsteer, double cp,
+              double weight, double *RESTRICT h, int err_level);
 
 int centroid(double *RESTRICT h,dream_idx_type nt);
 
@@ -52,10 +52,10 @@ int centroid(double *RESTRICT h,dream_idx_type nt);
  ***/
 
 int das_arr(double xo, double yo, double zo, double dt, dream_idx_type nt,
-	    double delay, double cp, int  isize, 
-	    double *RESTRICT gx, double *RESTRICT gy, double *RESTRICT gz, int ifoc, double focal, 
-	    int ister, double theta, double phi, double *RESTRICT apod, int iweight, 
-	    int iapo, double param, double *RESTRICT ha,int err_level)
+            double delay, double cp, int  isize,
+            double *RESTRICT gx, double *RESTRICT gy, double *RESTRICT gz, int ifoc, double focal,
+            int ister, double theta, double phi, double *RESTRICT apod, int iweight,
+            int iapo, double param, double *RESTRICT ha,int err_level)
 {
   double retsteer;
   double *RESTRICT h;
@@ -64,35 +64,35 @@ int das_arr(double xo, double yo, double zo, double dt, dream_idx_type nt,
   double xs, ys, zs, retfoc, weight;
   int err = NONE, out_err = NONE;
 
-  h = (double*) malloc(nt*sizeof(double));  
-  
+  h = (double*) malloc(nt*sizeof(double));
+
   for (i=0; i<nt; i++) {
     ha[i] = (double) 0.0;
   }
-  
+
   retfoc   = (double) 0.0;
   retsteer = (double) 0.0;
   weight   = (double) 1.0;
 
   maxdimarr(&xamax, &yamax, &ramax, gx, gy, gz, isize);
-  
+
   for (i=0; i<isize; i++) {
     center_pos(&xs, &ys, &zs, i, gx, gy, gz);
     focusing(ifoc, focal, xs, ys, xamax, yamax, ramax, cp, &retfoc);
     beamsteering(ister, theta, phi, xs, ys, xamax, yamax, ramax, cp, &retsteer);
     weighting(iweight, iapo, i, apod, &weight, xs, ys, ramax, param, isize);
-    
+
     err = delay_arr(xo,yo,zo,xs,ys,zs,dt,nt,delay,retfoc,retsteer,cp,weight,h,err_level);
     if (err != NONE) {
       out_err = err;
       if ( (err == PARALLEL_STOP) || (err == STOP) ) {
-	return err; // Bail out.
+        return err; // Bail out.
       }
     }
-    
+
     superpoz(h, ha, nt);
   }
-  
+
   i_c = centroid(ha,nt);
   for (i = 0; i < nt; i++) {
     ha[i] = (double) 0.0;
@@ -111,25 +111,25 @@ int das_arr(double xo, double yo, double zo, double dt, dream_idx_type nt,
       free(h);
       return err; // Bail out.
     }
-    
+
   }
-  
+
   free(h);
 
-  return out_err; 
+  return out_err;
 } /* dream_arr_circ */
 
 /***
  *
- * das_arr_ud - Delay-and-sum array processing - user defined focusing. 
+ * das_arr_ud - Delay-and-sum array processing - user defined focusing.
  *
  ***/
 
 int das_arr_ud(double xo, double yo, double zo, double dt, dream_idx_type nt,
-		    double delay, double cp, int  isize, 
-		      double *RESTRICT gx, double *RESTRICT gy, double *RESTRICT gz, int ifoc, double *RESTRICT focal, 
-		      int ister, double theta, double phi, double *RESTRICT apod, int iweight, 
-		      int iapo, double param, double *RESTRICT ha,int err_level)
+                    double delay, double cp, int  isize,
+                      double *RESTRICT gx, double *RESTRICT gy, double *RESTRICT gz, int ifoc, double *RESTRICT focal,
+                      int ister, double theta, double phi, double *RESTRICT apod, int iweight,
+                      int iapo, double param, double *RESTRICT ha,int err_level)
 {
   double retsteer;
   double *RESTRICT h;
@@ -138,36 +138,36 @@ int das_arr_ud(double xo, double yo, double zo, double dt, dream_idx_type nt,
   double xs, ys, zs, retfoc, weight;
   int err = NONE, out_err = NONE;
 
-  h = (double*) malloc(nt*sizeof(double));  
-  
+  h = (double*) malloc(nt*sizeof(double));
+
   for (i=0; i<nt; i++) {
     ha[i] = (double) 0.0;
   }
-  
+
   retfoc   = (double) 0.0;
   retsteer = (double) 0.0;
   weight   = (double) 1.0;
 
   maxdimarr(&xamax, &yamax, &ramax, gx, gy, gz, isize);
-  
+
   for (i=0; i<isize; i++) {
     center_pos(&xs, &ys, &zs, i, gx, gy, gz);
     focusing(ifoc, focal[i], xs, ys, xamax, yamax, ramax, cp, &retfoc);   // Note ifoc must be 6 here!
     beamsteering(ister, theta, phi, xs, ys, xamax, yamax, ramax, cp, &retsteer);
     weighting(iweight, iapo, i, apod, &weight, xs, ys, ramax, param, isize);
-    
+
     err = delay_arr(xo,yo,zo,xs,ys,zs,dt,nt,delay,retfoc,retsteer,cp,weight,h,err_level);
     if (err != NONE) {
       out_err = err;
       if ( (err == PARALLEL_STOP) || (err == STOP) ) {
-	return err; // Bail out.
+        return err; // Bail out.
       }
     }
 
     superpoz(h, ha, nt);
   }
 
-  
+
   i_c = centroid(ha,nt);
 
   for (i = 0; i < nt; i++) {
@@ -192,7 +192,7 @@ int das_arr_ud(double xo, double yo, double zo, double dt, dream_idx_type nt,
 
   free(h);
 
-  return out_err; 
+  return out_err;
 } /* das_arr_ud */
 
 /********************************************************************/
@@ -200,13 +200,13 @@ int das_arr_ud(double xo, double yo, double zo, double dt, dream_idx_type nt,
 
 /***
  *
- * Compute the time-of-flight (delay) from array element to observation point. 
+ * Compute the time-of-flight (delay) from array element to observation point.
  *
  ***/
 
 int delay_arr(double xo, double yo, double zo, double xs, double ys, double zs, double dt,
-	      dream_idx_type nt, double delay, double retfoc, double retsteer, double cp,
-	      double weight, double *RESTRICT h, int err_level)
+              dream_idx_type nt, double delay, double retfoc, double retsteer, double cp,
+              double weight, double *RESTRICT h, int err_level)
 {
   dream_idx_type    i;
   double t,decal,tt;
@@ -214,9 +214,9 @@ int delay_arr(double xo, double yo, double zo, double xs, double ys, double zs, 
   dream_idx_type    it;
   double qan;
   int err = NONE;
-  
+
   decal = retfoc + retsteer;
-  
+
   for (i = 0; i < nt; i++) {
     h[i] = (double) 0.0;
   }
@@ -226,7 +226,7 @@ int delay_arr(double xo, double yo, double zo, double xs, double ys, double zs, 
   tt = t - delay + decal;
   qan = tt / dt;
   it = (dream_idx_type) rint(qan);
-      
+
   // Check if index is out of bounds.
   if ((it < nt) && (it >= 0)) {
     h[it] += 1.0;
@@ -237,10 +237,10 @@ int delay_arr(double xo, double yo, double zo, double xs, double ys, double zs, 
     else
       err = dream_out_of_bounds_err("Delay out of bounds",it,err_level);
 
-    if ( (err == PARALLEL_STOP) || (err == STOP) )    
+    if ( (err == PARALLEL_STOP) || (err == STOP) )
       return err; // Bail out.
   }
-  
+
   return err;
 } /* delay_arr */
 

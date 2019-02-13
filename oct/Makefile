@@ -4,18 +4,18 @@
 #
 # This file is part of the DREAM Toolbox.
 #
-# The DREAM Toolbox is free software; you can redistribute it and/or modify 
+# The DREAM Toolbox is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by the
 # Free Software Foundation; either version 2, or (at your option) any
 # later version.
 #
-# The DREAM Toolbox is distributed in the hope that it will be useful, but 
+# The DREAM Toolbox is distributed in the hope that it will be useful, but
 # WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 # FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
 # for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with the DREAM Toolbox; see the file COPYING.  If not, write to the 
+# along with the DREAM Toolbox; see the file COPYING.  If not, write to the
 # Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301, USA.
 
@@ -23,7 +23,7 @@
 
 ###################################
 #
-# Makefile for building DLD Octave 
+# Makefile for building DLD Octave
 # files from the C-sources.
 #
 ###################################
@@ -42,14 +42,14 @@ ATT = att.o
 
 ##################################################################
 #
-# Note: 
-# 
+# Note:
+#
 # Octave must be compiled with (at least):
 #
 #	export CXXFLAGS=-pthread (export CFLAGS==-pthread)
 #
 # and
-# 	./configure  --enable-shared --enable-dl
+#	./configure  --enable-shared --enable-dl
 #
 ##################################################################
 
@@ -58,7 +58,7 @@ DLDCC		= $(CXX)
 
 # Octave is compiled with -fPIC and when using -shared the DLD (.oct) functions
 # must therefore also be compiled with -fPIC (according to the gcc manual).
-FPIC 		= -fPIC
+FPIC		= -fPIC
 
 
 DREAM_CFLAGS	= $(CFLAGS)  $(ATT_FFTW)
@@ -67,7 +67,7 @@ DREAM_CXXFLAGS	= $(CXXFLAGS)  $(ATT_FFTW) -std=c++11
 
 # Octave options for g++/gcc linking.
 DLD_FLAGS	= -shared -Wl,-Bsymbolic
-#DLD_FLAGS	= 
+#DLD_FLAGS	=
 
 #
 # LD flags (from gcc manual).
@@ -91,7 +91,7 @@ DLD_FLAGS	= -shared -Wl,-Bsymbolic
 #            meaningful on ELF platforms which support shared libraries.
 #
 
-DREAM_INCLUDE		= -I../include $(OCTAVE_HEADERS) 
+DREAM_INCLUDE		= -I../include $(OCTAVE_HEADERS)
 
 # Needed for *_p functions (you may need to build Octave with -pthread flag). TODO: is this needed with C++11?
 PARLIBS		= -lpthread
@@ -127,20 +127,20 @@ all: \
 	dream_arr_cylind_d.oct \
 	dream_arr_annu.oct \
 	dream_apodwin.oct \
-	dream_att.oct 
+	dream_att.oct
 
 #
 # Compile att.c with pthread support (uses pthread mutexes).
 #
 
 # C99
-att_pthread.o:	
+att_pthread.o:
 	$(CC) $(DREAM_CXXFLAGS) $(FPIC) $(DREAM_INCLUDE) -DPARALLEL -c att.c -o $@
 #	$(DLDCC) $(DREAM_CXXFLAGS) $(FPIC) $(DREAM_INCLUDE) -DPARALLEL -c att.c -o $@
 
 
 # C++
-#att_pthread.o:	
+#att_pthread.o:
 #	$(CXX) $(DREAM_CXXFLAGS) $(FPIC) $(DREAM_INCLUDE) -DPARALLEL -c att_octave.cc -o $@
 
 

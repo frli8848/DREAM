@@ -1,4 +1,3 @@
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % Make sound field snapshots and movies using the
@@ -19,7 +18,7 @@ if findstr(computer,'linux') && exist('OCTAVE_VERSION')
   disp('*');
   disp('***************************************************************');
   pause(4);
-  
+
   % Detect the number of CPUs/Cores on the system.
   [dummy,tmp_str]= system('cat /proc/cpuinfo | grep model | grep name');
   n_cpus = size(strfind(tmp_str,'model'),2);
@@ -44,56 +43,56 @@ AUTO_SCALE = 0;
 
 % 25 MHz
 Ts = 0.04;
-  
+
 if COMPUTE_SIR
 
   % Soundspeed in water (in [m/s]).
   cp = 1500;
-  
+
   % Length of A-scans.
   K = 1000;
-  
+
   %
   % Define the array.
   %
-  
+
   % Spacing between array elements (array pitch).
-  arr_samp = 1;                         % [mm] 
-  
+  arr_samp = 1;                         % [mm]
+
   % Element size.
-  a = 0.9;                              % [mm] 
-  b = 1.0;                              % [mm] 
-  
+  a = 0.9;                              % [mm]
+  b = 1.0;                              % [mm]
+
   % Transmit.
   lt = 8;
   xt =  arr_samp*(-lt+0.5:lt-0.5);
   trans = [xt; a*ones(1,2*lt);];
-  
+
   fprintf('Array aperture = %1.1f [mm]\n',xt(length(xt))-xt(1));
 
-  
+
   % Number of transducer elements.
   L = size(xt,2);
-  
+
   % Time vector.
   us = (0:Ts:Ts*40000);
 
   % Max width of ROI.
   x_max = 25;
-  
+
   idx_z_min = 1;
   idx_z_max = 918;
 
   % Spatial sampling resolution.
   spat_samp_x = 0.3; % Horizontal resolution [mm].
   spat_samp_z = 0.3; % Vertical resoltion [mm].
-  
+
   %
   % Horizontal grid.
   %
   x = -x_max:spat_samp_x:x_max;
   N = length(x);
-  
+
   %
   % Vertical grid.
   %
@@ -101,7 +100,7 @@ if COMPUTE_SIR
   z_max = us(idx_z_max)*cp/1e3;
   z = (z_min:spat_samp_z:z_max);
   M = length(z);
-  
+
   %
   % Observation grid matrix.
   %
@@ -111,25 +110,25 @@ if COMPUTE_SIR
   yo = Y(:);
   zo = Z(:);
   Ro = [xo yo zo];
-    
+
   % Number of array elements.
   L = size(trans,2);
-  
+
   % Number of observation points
   MN = size(Ro,1);
-  
+
   fprintf('z_min = %1.1f [mm]\n',z_min);
   fprintf('z_max = %1.1f [mm]\n',z_max);
-  
+
   fprintf('KL x MN = %d x %d \n',K*L,M*N);
-  
-  
+
+
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   %
   % Electrical impulse response.
   %
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  
+
   he_nt=50;
   t = (0:((he_nt-1)))*Ts;
 
@@ -149,38 +148,38 @@ if COMPUTE_SIR
   h_e = h_e/max(f_tmp); % Unity gain at center freq.
   f_e = abs(freqz(h_e,1,1024));
   f = (0:1023)/1045/Ts/2;
-  
+
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   %
   % DREAM parameters.
   %
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  
+
   % Descretization parameters.
-  dx = 0.05; 				% [mm]
-  dy = 0.05; 				% [mm]
-  dt = Ts; 				% [us] 
-  nt = 1300;   				% Length of single-path spatial impulse response vector.
+  dx = 0.05;                            % [mm]
+  dy = 0.05;                            % [mm]
+  dt = Ts;                              % [us]
+  nt = 1300;                            % Length of single-path spatial impulse response vector.
   s_par = [dx dy dt nt];
 
-  
+
   fprintf('\nDREAM length nt = %d\n\n',nt);
-  
+
   % Material parameters.
-  v     = 1.0; 				% Normal velocity.
-  alfa  = 0; 				% Absorbtion (dB/cm Hz).
+  v     = 1.0;                          % Normal velocity.
+  alfa  = 0;                            % Absorbtion (dB/cm Hz).
   m_par = [v cp alfa];
-  
+
   % Element size for transmit [mm].
   geom_par = [a b];
-  
+
   % Grid function (position vectors of the transmit elements).
   gx = trans(1,:);
   gx = gx(:);
   gy = zeros(length(gx),1);
   gz = zeros(length(gx),1);
   G = [gx gy gz];
-  
+
   %
   % User defined focusing.
   %
@@ -188,10 +187,10 @@ if COMPUTE_SIR
   foc_dep = 50;
   theta = -20;
   foc_met = 'ud';
-  
+
   xp = foc_dep*tan(theta*pi/180)*ones(L,1);
   zp = foc_dep*ones(L,1);
-  
+
   r_max = 0;
   for l=1:L
     tmp_max = norm([xp(l) zp(l)]' - [gx(l) 0]');
@@ -199,32 +198,32 @@ if COMPUTE_SIR
       r_max = tmp_max;
     end
   end
-  
+
   focal = zeros(L,1);
   for n=1:L
     focal(n) = (r_max - norm([xp(n) zp(n)]' - [gx(n) 0]'))*1000/cp;
   end
-  
+
   fprintf('Array focused at  = %1.1f [mm]\n',foc_dep);
   fprintf('Array steered = %1.1f [deg]\n',theta);
-  
-  % Beam steering 
+
+  % Beam steering
   steer_met = 'off'; % Done above by foc_met = 'ud' above.
-  
-  phi = 0; 				% Angle in y-direction.
+
+  phi = 0;                              % Angle in y-direction.
   steer_par = [theta phi];              % Not used here.
-  
+
   apod_met = 'off';
 
   % Apodization
   apod_met = 'off';
-  apod = ones(length(gx),1); 		% Not used here.
-  win_par = 1; 				% Not used here.
-  
-  
+  apod = ones(length(gx),1);            % Not used here.
+  win_par = 1;                          % Not used here.
+
+
   z_min = min(Ro(:,3));                 % Depth to closest observation point.
   delay = z_min/cp*1000;                % Single path delay.
-  
+
   mx_td = max(focal);
   fprintf('----------------------------------------------------------------------\n');
   fprintf(' Max steer delay = %1.2f [us] (= %1.2f [mm], = %d [samples])\n',mx_td, mx_td*1000/cp,...
@@ -238,7 +237,7 @@ if COMPUTE_SIR
   eval('tic');
 
   if n_cpus == 1
-    % Serial. 
+    % Serial.
     H_t = dream_arr_rect(Ro,geom_par,G,s_par,delay,m_par,foc_met,...
                          focal,steer_met,steer_par,apod_met,apod,win_par,'stop');
   else
@@ -246,7 +245,7 @@ if COMPUTE_SIR
     H_t = dream_arr_rect_p(Ro,geom_par,G,s_par,delay,m_par,foc_met,...
                            focal,steer_met,steer_par,apod_met,apod,win_par,n_cpus,'stop');
   end
-  
+
   t = toc;
   if t > 60
     fprintf('elapsed time: dream_arr_rect = %1.1f [min]\n',t/60);
@@ -257,12 +256,12 @@ if COMPUTE_SIR
   %
   % Compute pressure response (i.e., convolve with electro-acoustical impulse response).
   %
-  
+
   eval('tic');
 
-  %P_t = conv_p(H_t,h_e,n_cpus); 
+  %P_t = conv_p(H_t,h_e,n_cpus);
   P_t = fftconv_p(H_t,h_e,n_cpus); % If you have fftw 3.x on your system.
-  
+
   t = toc;
   if t > 60
     fprintf('elapsed time: fftconv_p = %1.1f [min]\n',t/60);
@@ -282,18 +281,18 @@ else
   set(fig,'DoubleBuffer','on');
   set(gca,'xlim',[min(x) max(x)],'ylim',[z(1) z(l_z)],...
           'NextPlot','replace','Visible','off')
-  
+
 end
 
 kk = 0;
 for k=1:3:1100
   kk = kk+1;
-  
+
   fprintf('Snapshot taken at %1.1f [us]\n', delay+k*Ts)
 
   ds = Ts*cp/1000;
   u_samp = ceil(spat_samp_z/ds); % n times undersampled.
-  
+
   if u_samp > 1
     % Take mean of u_samp samples.
     if (round(k-u_samp/2) >=1)
@@ -308,7 +307,7 @@ for k=1:3:1100
   end
 
   mx = max(abs(o));
-  
+
   if AUTO_SCALE
     O = 64*abs(O)/mx;
     Im = abs(O);
@@ -318,37 +317,37 @@ for k=1:3:1100
   end
 
   if exist('OCTAVE_VERSION')
-    image(x,z,Im); 
+    image(x,z,Im);
     axis('ij')
     xlabel('x [mm]');
     ylabel('z [mm]');
     legend('off');
-  else    
+  else
     h = image(x,z,Im);
     set(gca,'FontSize',16);
     xlabel('x [mm]','FontSize',20);
     ylabel('z [mm]','FontSize',20);
     set(gca,'YTick', 0:10:80)
     drawnow
-  end  
+  end
   grid('off');
 
   t_str = sprintf('Wavefield Snapshot at %1.1f [us]', delay+k*Ts);
   title(t_str);
-  
+
   if MAKE_MOVIE
-    
-    if exist('OCTAVE_VERSION') 
-      print(sprintf ('%s/snapshot_%.5d.png', png_path, k));                   
+
+    if exist('OCTAVE_VERSION')
+      print(sprintf ('%s/snapshot_%.5d.png', png_path, k));
 
       %if k<10
-      %  eval(['print("' png_path 'snapshot_000' num2str(k) '.png", "-dpng");']); 
+      %  eval(['print("' png_path 'snapshot_000' num2str(k) '.png", "-dpng");']);
       %elseif k<100
-      %  eval(['print("' png_path 'snapshot_00' num2str(k) '.png", "-dpng");']); 
+      %  eval(['print("' png_path 'snapshot_00' num2str(k) '.png", "-dpng");']);
       %elseif k<1000
-      %  eval(['print("' png_path 'snapshot_0' num2str(k) '.png", "-dpng");']); 
+      %  eval(['print("' png_path 'snapshot_0' num2str(k) '.png", "-dpng");']);
       %else
-      %  eval(['print("' png_path 'snapshot_' num2str(k) '.png", "-dpng");']); 
+      %  eval(['print("' png_path 'snapshot_' num2str(k) '.png", "-dpng");']);
       %end
     else % Matlab
       % Add a frame to Matlab movie.
@@ -382,9 +381,9 @@ end
 if GENERATE_EPS
   t_str = sprintf('%1.1f', delay+k*Ts);
   if exist('OCTAVE_VERSION')
-    eval(['print("' eps_path 'snapshot_' eps_file '_'  t_str '.eps", "-depsc");']); 
+    eval(['print("' eps_path 'snapshot_' eps_file '_'  t_str '.eps", "-depsc");']);
   else
-    eval(['print -deps ' eps_path 'snapshot_' eps_file '_' t_str '.eps']); 
+    eval(['print -deps ' eps_path 'snapshot_' eps_file '_' t_str '.eps']);
   end
 end
 
@@ -412,9 +411,9 @@ end
 
 if GENERATE_EPS
   if exist('OCTAVE_VERSION')
-    eval(['print("' eps_path 'imp_resp.eps", "-depsc");']); 
+    eval(['print("' eps_path 'imp_resp.eps", "-depsc");']);
   else
-    eval(['print -depsc ' eps_path 'imp_resp.eps']); 
+    eval(['print -depsc ' eps_path 'imp_resp.eps']);
   end
 end
 
@@ -438,9 +437,8 @@ title('Pulse Spectrum');
 
 if GENERATE_EPS
   if exist('OCTAVE_VERSION')
-    eval(['print("' eps_path 'freq_imp_resp.eps", "-depsc");']); 
+    eval(['print("' eps_path 'freq_imp_resp.eps", "-depsc");']);
   else
-    eval(['print -depsc ' eps_path 'freq_imp_resp.eps']); 
+    eval(['print -depsc ' eps_path 'freq_imp_resp.eps']);
   end
 end
-

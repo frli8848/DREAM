@@ -4,18 +4,18 @@
 *
 * This file is part of the DREAM Toolbox.
 *
-* The DREAM Toolbox is free software; you can redistribute it and/or modify 
+* The DREAM Toolbox is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by the
 * Free Software Foundation; either version 2, or (at your option) any
 * later version.
 *
-* The DREAM Toolbox is distributed in the hope that it will be useful, but 
+* The DREAM Toolbox is distributed in the hope that it will be useful, but
 * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
 * for more details.
 *
 * You should have received a copy of the GNU General Public License
-* along with the DREAM Toolbox; see the file COPYING.  If not, write to the 
+* along with the DREAM Toolbox; see the file COPYING.  If not, write to the
 * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 * 02110-1301, USA.
 *
@@ -41,15 +41,15 @@
 #define mxGetM(N)   args(N).matrix_value().rows()
 #define mxGetN(N)   args(N).matrix_value().cols()
 #define mxIsChar(N) args(N).is_string()
- 
+
 /***
- * 
+ *
  * das - Octave (oct) gateway function for DAS (delay-and-sum).
  *
  ***/
 
 DEFUN_DLD (das, args, nlhs,
-	   "-*- texinfo -*-\n\
+           "-*- texinfo -*-\n\
 @deftypefn {Loadable Function} {}  [Y] = das(Ro,s_par,delay,m_par).\n\
 \n\
 DAS Computes the delay reponse for single element transducer. That is,\n\
@@ -119,7 +119,7 @@ Copyright @copyright{} 2008-2016 Fredrik Lingvall.\n\
   int nrhs = args.length ();
 
   // Check for proper number of arguments
-  
+
   if (!((nrhs == 5) || (nrhs == 6))) {
     error("das requires 5 or 6 input arguments!");
     return oct_retval;
@@ -129,7 +129,7 @@ Copyright @copyright{} 2008-2016 Fredrik Lingvall.\n\
       error("Too many output arguments for das!");
       return oct_retval;
     }
-  
+
   //
   // Observation point.
   //
@@ -139,7 +139,7 @@ Copyright @copyright{} 2008-2016 Fredrik Lingvall.\n\
     error("Argument 1 must be a (number of observation points) x 3 matrix!");
     return oct_retval;
   }
-  
+
   no = mxGetM(0); // Number of observation points.
   const Matrix tmp0 = args(0).matrix_value();
   ro = (double*) tmp0.fortran_vec();
@@ -147,7 +147,7 @@ Copyright @copyright{} 2008-2016 Fredrik Lingvall.\n\
   //
   // Temporal and spatial sampling parameters.
   //
-  
+
   if (!((mxGetM(1)==2 && mxGetN(2)==1) || (mxGetM(1)==1 && mxGetN(1)==2))) {
     error("Argument 2 must be a vector of length 2!");
     return oct_retval;
@@ -159,7 +159,7 @@ Copyright @copyright{} 2008-2016 Fredrik Lingvall.\n\
   nt    = (dream_idx_type) s_par[1];	// Length of SIR.
 
   //
-  // Start point of impulse response vector ([us]). 
+  // Start point of impulse response vector ([us]).
   //
 
   // Check that arg 3 is a scalar (or vector).
@@ -167,7 +167,7 @@ Copyright @copyright{} 2008-2016 Fredrik Lingvall.\n\
     error("Argument 3 must be a scalar or a vector with a length equal to the number of observation points!");
     return oct_retval;
   }
-  
+
   const Matrix tmp2 = args(2).matrix_value();
   delay = (double*) tmp2.fortran_vec();
 
@@ -180,20 +180,20 @@ Copyright @copyright{} 2008-2016 Fredrik Lingvall.\n\
     error("Argument 4 must be a scalar!");
     return oct_retval;
   }
-  
+
   const Matrix tmp3 = args(3).matrix_value();
   m_par = (double*) tmp3.fortran_vec();
   cp    = m_par[0]; // Sound speed.
 
   // Error reporting.
   if (nrhs == 5) {
-    
+
     if (!mxIsChar(4)) {
       error("Argument 5 must be a string");
       return oct_retval;
     }
-    
-    std::string strin = args(4).string_value(); 
+
+    std::string strin = args(4).string_value();
     buflen = strin.length();
     for ( n=0; n<=buflen; n++ ) {
       err_str[n] = strin[n];
@@ -201,22 +201,22 @@ Copyright @copyright{} 2008-2016 Fredrik Lingvall.\n\
     err_str[buflen] = '\0';
 
     if (!strcmp(err_str,"ignore")) {
-      err_level = IGNORE; 
+      err_level = IGNORE;
       is_set = true;
     }
-    
+
     if (!strcmp(err_str,"warn")) {
-      err_level = WARN; 
+      err_level = WARN;
       is_set = true;
     }
-    
+
     if (!strcmp(err_str,"stop")) {
-      err_level = STOP; 
+      err_level = STOP;
       is_set = true;
     }
 
     if (is_set == false) {
-      error("Unknown error level!"); 
+      error("Unknown error level!");
       return oct_retval;
     }
   }
@@ -226,41 +226,41 @@ Copyright @copyright{} 2008-2016 Fredrik Lingvall.\n\
   // Create an output matrix for the impulse response.
   Matrix h_mat(nt, no);
   h = h_mat.fortran_vec();
-  
+
   // Call the DAS subroutine.
   if (mxGetM(2) * mxGetN(2) == 1) {
     for (n=0; n<no; n++) {
-      xo = ro[n]; 
-      yo = ro[n+1*no]; 
-      zo = ro[n+2*no]; 
-      
+      xo = ro[n];
+      yo = ro[n+1*no];
+      zo = ro[n+2*no];
+
       err = das(xo,yo,zo,dt,nt,delay[0],cp,&h[n*nt],err_level);
 
       if (err != NONE) {
-	out_err = err;
-	if (err == STOP) {
-	  error("");
-	  return oct_retval;
-	}
+        out_err = err;
+        if (err == STOP) {
+          error("");
+          return oct_retval;
+        }
       }
-      
+
     }
   } else {
     for (n=0; n<no; n++) {
-      xo = ro[n]; 
-      yo = ro[n+1*no]; 
-      zo = ro[n+2*no]; 
-      
+      xo = ro[n];
+      yo = ro[n+1*no];
+      zo = ro[n+2*no];
+
       err = das(xo,yo,zo,dt,nt,delay[n],cp,&h[n*nt],err_level);
 
       if (err != NONE) {
-	out_err = err;
-	if (err == STOP) {
-	  error("");
-	  return oct_retval;
-	}
+        out_err = err;
+        if (err == STOP) {
+          error("");
+          return oct_retval;
+        }
       }
-      
+
     }
   }
 
@@ -273,7 +273,6 @@ Copyright @copyright{} 2008-2016 Fredrik Lingvall.\n\
     err_p[0] = (double) out_err;
     oct_retval.append(err_mat);
   }
-    
+
   return oct_retval;
 }
-

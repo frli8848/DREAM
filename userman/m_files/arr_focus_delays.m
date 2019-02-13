@@ -3,11 +3,11 @@ function d = arr_focus_delays(gx,cp,foc,ang)
 %
 % Function to compute array focusing delays.
 %
-% x   - Vector of (horizontal) center positions of the array elements. 
+% x   - Vector of (horizontal) center positions of the array elements.
 % cp  - Soundspeed of the media [m/s].
 % foc - Focal depth [mm].
 % ang - Steering angle [deg].
-% 
+%
 % d  - vector of focusing delays [us].
 %
 % Fredrik Lingvall 2004-02-17.

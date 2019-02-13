@@ -1,9 +1,9 @@
 \documentclass[10pt,a4]{article}
 %\documentclass[10pt,a4,twocolumn]{article}
-%\documentclass[floatfix,showkeys,nopreprint]{jasatex} 
+%\documentclass[floatfix,showkeys,nopreprint]{jasatex}
 
 % $Revision: 882 $ $Date: 2015-05-11 08:14:59 +0200 (Mon, 11 May 2015) $ $LastChangedBy: frli8848 $
- 
+
 \usepackage{amsmath,amsfonts,amssymb}% popular packages from the American Mathematical Society
 \usepackage{bm}% Bold Math package
 %\usepackage[]{color}
@@ -16,16 +16,16 @@
 \newboolean{TEX4HT}
 
 %\usepackage[]{multicolumn}
-%\usepackage[]{showlabels} 
+%\usepackage[]{showlabels}
 
 \setboolean{TEX4HT}{false}
 
 \usepackage[colorlinks=true,linkcolor=blue,ps2pdf]{hyperref}
 \title{\textbf{User Manual for the DREAM Toolbox\\
     Version \version}\\
-  An ultrasound simulation software for use with 
+  An ultrasound simulation software for use with
   \href{http://www.mathworks.com}{\textsc{Matlab}}
-  and 
+  and
   \href{http://www.octave.org}{\textsc{GNU Octave}}}
 
 \author{Fredrik Lingvall\footnote{E-mail:\texttt{Fredrik.Lingvall@gmail.com}}}
@@ -52,7 +52,7 @@
 \renewcommand{\subfigcapmargin}{0pt}
 \renewcommand{\subfigtopskip}{5pt}
 \renewcommand{\subfigcapskip}{0pt}
-\renewcommand{\subfigbottomskip}{0pt} 
+\renewcommand{\subfigbottomskip}{0pt}
 
 % IEEE stuff
 \newcommand{\IEEEuffc}{IEEE Transactions on Ultrasonics\mbox{,} Ferroelectrics\mbox{,} and Frequency Control}
@@ -125,7 +125,7 @@
 {
   \newcommand{\rs}{\ensuremath{\mathbf{r}_s}}
   \newcommand{\ro}{\ensuremath{\mathbf{r}_o}}
-}{ 
+}{
   \newcommand{\rs}{\ensuremath{\mathbf{r}_{\text{s}}}}
   \newcommand{\ro}{\ensuremath{\mathbf{r}_{\text{o}}}}
 }
@@ -247,7 +247,7 @@
 
 
 %\date{}
- 
+
 \begin{document}
 
 \maketitle
@@ -256,13 +256,13 @@
 %\begin{center}
   %\mbox{\scalebox{0.8}{\mbox{\epsfig{file=userman/eps/frontpage.eps}}}}
   %\mbox{\scalebox{1.0}{\mbox{\epsfig{file=userman/eps/snapshot_50_m20.eps}}}}
-  %\mbox{\epsfig{file=userman/eps/imp_resp.eps,width=0.38\columnwidth} 
+  %\mbox{\epsfig{file=userman/eps/imp_resp.eps,width=0.38\columnwidth}
   %  \epsfig{file=userman/eps/freq_imp_resp.eps,width=0.38\columnwidth}}\\
   %\mbox{\epsfig{file=userman/eps/snapshot_50_m20.eps,width=0.68\columnwidth}}
   %
-  %\mbox{\epsfig{file=userman/eps/snapshot_50_m20_4.0.eps,width=0.4\columnwidth} 
+  %\mbox{\epsfig{file=userman/eps/snapshot_50_m20_4.0.eps,width=0.4\columnwidth}
   %  \epsfig{file=userman/eps/snapshot_50_m20_8.0.eps,width=0.4\columnwidth}}\\
-  %\mbox{\epsfig{file=userman/eps/snapshot_50_m20_16.0.eps,width=0.4\columnwidth} 
+  %\mbox{\epsfig{file=userman/eps/snapshot_50_m20_16.0.eps,width=0.4\columnwidth}
   %  \epsfig{file=userman/eps/snapshot_50_m20_24.0.eps,width=0.4\columnwidth}}\\
   %\epsfig{file=userman/eps/snapshot_foc_16_0280_bw.eps,width=0.4\columnwidth}
 %\end{center}
@@ -287,22 +287,22 @@
 \label{sec:intro}
 
 \PARstart{T}{he} DREAM (Discrete REpresentation Array Modeling) toolbox is an open source software,
-released under the GNU General Public License (GPL), for both \Matlab\ and Octave for simulating acoustic 
-fields radiated from common ultrasonic transducer types and arbitrarily complicated ultrasonic transducers 
-arrays. The DREAM toolbox enables analysis of beam steering, beam focusing, and apodization 
-for wide band (pulse) excitation both in near and far fields. The toolbox is also 
+released under the GNU General Public License (GPL), for both \Matlab\ and Octave for simulating acoustic
+fields radiated from common ultrasonic transducer types and arbitrarily complicated ultrasonic transducers
+arrays. The DREAM toolbox enables analysis of beam steering, beam focusing, and apodization
+for wide band (pulse) excitation both in near and far fields. The toolbox is also
 provided with a user friendly graphical user interface (GUI).
 
-The toolbox consists of a set of routines for computing (discrete) spatial impulse 
-response (SIRs) for various single-element transducer geometries as well as multi-element 
-transducer arrays. Based on linear systems theory, these SIR functions can then be 
-convolved with the transducer's electrical impulse response to obtain the acoustic field 
-at an observation point. %~\cite{Lhemery1991}. 
-Using the DREAM toolbox one can simulate ultrasonic measurement 
-systems for many configurations including phased arrays and measurements performed in 
+The toolbox consists of a set of routines for computing (discrete) spatial impulse
+response (SIRs) for various single-element transducer geometries as well as multi-element
+transducer arrays. Based on linear systems theory, these SIR functions can then be
+convolved with the transducer's electrical impulse response to obtain the acoustic field
+at an observation point. %~\cite{Lhemery1991}.
+Using the DREAM toolbox one can simulate ultrasonic measurement
+systems for many configurations including phased arrays and measurements performed in
 lossy media.
 
-The DREAM toolbox uses a numerical procedure based on based on the discrete 
+The DREAM toolbox uses a numerical procedure based on based on the discrete
 representation (DR) computational concept~\cite{Piwakowski1989,Piwakowski1999} which is a method
 based on the general approach of the spatial impulse responses~\cite{Tupholme1969,Stepanishen1971a}.
 
@@ -312,13 +312,13 @@ based on the general approach of the spatial impulse responses~\cite{Tupholme196
 %from \Matlab/Octave (or from a script/function) and a set of \emph{helper
 %functions} that is used internally in the DREAM toolbox. The DREAM toolbox also comes
 %with a GUI (for \Matlab\ only) from which one call the different transducer functions
-%and plot the SIRs for various configurations. 
+%and plot the SIRs for various configurations.
 
 \section{Copyright}
 
-\PARstart{T}{he} DREAM toolbox is an open source software and the source code for the toolbox is freely 
-redistributable under the terms of the GNU General Public License (GPL) 
-as published by the Free Software Foundation (\url{http://www.gnu.org}). 
+\PARstart{T}{he} DREAM toolbox is an open source software and the source code for the toolbox is freely
+redistributable under the terms of the GNU General Public License (GPL)
+as published by the Free Software Foundation (\url{http://www.gnu.org}).
 See also the file \texttt{COPYING} which is distributed with the DREAM Toolbox.
 
 The DREAM Toolbox can be downloaded at:
@@ -331,19 +331,19 @@ bugs etc.
 \subsection{Disclaimer}
 
 %\PARstart{T}{he}
-The DREAM toolbox is distributed in the hope that it will 
+The DREAM toolbox is distributed in the hope that it will
 be useful but WITHOUT ANY WARRANTY. More specifically:
 \begin{quote}
   \footnotesize
-  THE PROGRAM IS PROVIDED ``AS-IS'' WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
-  BUT NOT LIMITED TO THE IMPLIED WARRANTIES OR CONDITIONS OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR 
-  PURPOSE. IN NO EVENT SHALL ANY OF THE AUTHORS OF THE DREAM TOOLBOX AND/OR THE DEPARTMENT OF ENGINEERING 
-  SCIENCES AT UPPSALA UNIVERSITY, SWEDEN, OR THE INSTITUT D'ELECTRONIQUE ET DE MICRU\--ELEC\-TRONIQUE DU NORD 
-  (IEMN-DOAE-UMR CNRS 9929), ECOLE CENTRALE DE LILLE, FRANCE, BE LIABLE FOR ANY SPECIAL, INCIDENTAL, INDIRECT, 
+  THE PROGRAM IS PROVIDED ``AS-IS'' WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING
+  BUT NOT LIMITED TO THE IMPLIED WARRANTIES OR CONDITIONS OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR
+  PURPOSE. IN NO EVENT SHALL ANY OF THE AUTHORS OF THE DREAM TOOLBOX AND/OR THE DEPARTMENT OF ENGINEERING
+  SCIENCES AT UPPSALA UNIVERSITY, SWEDEN, OR THE INSTITUT D'ELECTRONIQUE ET DE MICRU\--ELEC\-TRONIQUE DU NORD
+  (IEMN-DOAE-UMR CNRS 9929), ECOLE CENTRALE DE LILLE, FRANCE, BE LIABLE FOR ANY SPECIAL, INCIDENTAL, INDIRECT,
   OR CONSEQUENTIAL DAMAGES OF ANY KIND, OR DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA, OR PROFITS,
-  WHETHER OR NOT THE AUTHORS OF THE DREAM TOOLBOX HAVE BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES, 
-  AND/OR ON ANY THEORY OF LIABILITY ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS 
-  SOFTWARE. 
+  WHETHER OR NOT THE AUTHORS OF THE DREAM TOOLBOX HAVE BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES,
+  AND/OR ON ANY THEORY OF LIABILITY ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
+  SOFTWARE.
 \end{quote}
 
 \section{System Requirements}
@@ -354,28 +354,28 @@ be useful but WITHOUT ANY WARRANTY. More specifically:
 
 \item \href{http://www.octave.org}{Octave} $\ge$ 3.8 recommended.
 
-\item \href{http://www.fftw.org}{FFTW} $\ge$ 3.0.1 (optional).\footnote{The attenuation code in DREAM makes heavily 
-    use of FFTs. If the optimized \href{http://www.fftw.org}{FFTW} is installed then DREAM can be configured to use 
+\item \href{http://www.fftw.org}{FFTW} $\ge$ 3.0.1 (optional).\footnote{The attenuation code in DREAM makes heavily
+    use of FFTs. If the optimized \href{http://www.fftw.org}{FFTW} is installed then DREAM can be configured to use
     this lib.} %Also, the \texttt{fftconv\_p} and \texttt{sum\_fftconv\_p} functions needs the FFTW3 library.}
 
-\item Pthread.\footnote{If you want to use the parallel (threaded) DREAM functions in Windows you need to install 
-  the Pthreads-Win32 library.} 
+\item Pthread.\footnote{If you want to use the parallel (threaded) DREAM functions in Windows you need to install
+  the Pthreads-Win32 library.}
 
 \end{enumerate}
 
 \section{Installation}
 
-\PARstart{T}{he} DREAM Toolbox can be installed both using pre-compiled binaries and from source code. Binaries are 
-currently available for Linux (i686 [32-bit], x86\_64 [64-bit]), Windows (i686 [32-bit], x86\_64 [64-bit]), and for 
-Intel Macs (Mac OS X). The binaries are compiled using generic compiler flags and without support for the FFTW 
-library (for the transducer functions) and should, therefore, run on most setups. 
+\PARstart{T}{he} DREAM Toolbox can be installed both using pre-compiled binaries and from source code. Binaries are
+currently available for Linux (i686 [32-bit], x86\_64 [64-bit]), Windows (i686 [32-bit], x86\_64 [64-bit]), and for
+Intel Macs (Mac OS X). The binaries are compiled using generic compiler flags and without support for the FFTW
+library (for the transducer functions) and should, therefore, run on most setups.
 
 If you want higher performance then it is recommended that you compile DREAM from source. From DREAM version $\ge$ 3.x
-we have added support for the cross-platform \href{http://www.cmake.org/}{\emph{CMake}} build system (to replace the 
+we have added support for the cross-platform \href{http://www.cmake.org/}{\emph{CMake}} build system (to replace the
 bash-script and Unix Makefiles that was previously used).
 
 There is
-a bash script and m-files included in the source distribution to facilitate building the toolbox and, 
+a bash script and m-files included in the source distribution to facilitate building the toolbox and,
 furthermore, the \texttt{Makefile}s used in build process can easily be edited for further fine tuning of the
 performance.
 
@@ -399,9 +399,9 @@ performance.
       to your \texttt{startup.m} file.
 \end{enumerate}
 
-Note: since the oct-API often changes between releases of Octave the binaries will probably only work for 
-the version of Octave that they were compiled for. For this reason binaries for Octave are no longer 
-available and you need to install the toolbox from source which easily can be done with the Octave 
+Note: since the oct-API often changes between releases of Octave the binaries will probably only work for
+the version of Octave that they were compiled for. For this reason binaries for Octave are no longer
+available and you need to install the toolbox from source which easily can be done with the Octave
 \texttt{pkg} command (see Section~\ref{sec:oct-install}).
 
 \subsection{Windows Specific Installation Notes}
@@ -414,24 +414,24 @@ Pthreads-Win32 library. Download the library from:
      \url{http://sourceware.org/pthreads-win32/}
 %\end{verbatim}
 %
-and put the \\ \href{ftp://sourceware.org/pub/pthreads-win32/dll-latest/lib/pthreadGC2.dll}{pthreadGC2.dll} 
-file in a suitable directory, such as, \texttt{C:{$\backslash$}WINDOWS{$\backslash$}System32}; this file is 
-now also available on the DREAM web page. If you want to build the Pthreads library for Windows from source 
+and put the \\ \href{ftp://sourceware.org/pub/pthreads-win32/dll-latest/lib/pthreadGC2.dll}{pthreadGC2.dll}
+file in a suitable directory, such as, \texttt{C:{$\backslash$}WINDOWS{$\backslash$}System32}; this file is
+now also available on the DREAM web page. If you want to build the Pthreads library for Windows from source
 then you can find instructions in Appendix~\ref{sec:build_pthreads-windows}.
 
 
 The \texttt{fftconv\_p} and \texttt{sum\_fftconv\_p} use the FFTW3 library (see Section~\ref{sec:misc-conv}).
-A Windows version of this library can be found at: 
+A Windows version of this library can be found at:
 %%
 %\begin{verbatim}
      \url{http://www.fftw.org/install/windows.html}
 %\end{verbatim}
 %
-but it is now also available on the DREAM web page. 
+but it is now also available on the DREAM web page.
 %Rename the \texttt{libfftw3-3.dll} file to
-%\texttt{fftw3.dll} and 
-Copy the \texttt{libfftw3-3.dll} file to \texttt{C:{$\backslash$}WINDOWS{$\backslash$}System32}. 
-If you want to build the FFTW library for Windows from source 
+%\texttt{fftw3.dll} and
+Copy the \texttt{libfftw3-3.dll} file to \texttt{C:{$\backslash$}WINDOWS{$\backslash$}System32}.
+If you want to build the FFTW library for Windows from source
 then you can find instructions in Appendix~\ref{sec:build_fftw-windows}.
 
 To install DREAM for Octave on Windows see Sections~\ref{sec:win_octave_mingw}.
@@ -439,8 +439,8 @@ To install DREAM for Octave on Windows see Sections~\ref{sec:win_octave_mingw}.
 \subsection{MacOS X Specific Installation Notes}
 \label{sec:mac-install}
 
-The \texttt{fftconv\_p} and \texttt{sum\_fftconv} functions use the FFTW3 library 
-(see Section~\ref{sec:misc-conv}). Instructions for installing FFTW on MacOS X can be found at: 
+The \texttt{fftconv\_p} and \texttt{sum\_fftconv} functions use the FFTW3 library
+(see Section~\ref{sec:misc-conv}). Instructions for installing FFTW on MacOS X can be found at:
 
 \url{http://www.fftw.org/install/mac.html}
 
@@ -454,20 +454,20 @@ The \texttt{fftconv\_p} and \texttt{sum\_fftconv} functions use the FFTW3 librar
 
 As mentioned above, the DREAM Toolbox must be installed from sources for Octave. Recent versions of
 Octave have a package manager tool (\texttt{pkg}) for that purpose. Given that you have the developer tools
-for your system installed (for Windows see Sections~\ref{sec:win_octave_mingw}) you should be able to 
+for your system installed (for Windows see Sections~\ref{sec:win_octave_mingw}) you should be able to
 install DREAM by,
 \begin{enumerate}
 
 \item Download the special DREAM source code file for the Octave package manager,
 
-\item type: \texttt{pkg install dream-{\version}.tar.gz} at the Octave command 
+\item type: \texttt{pkg install dream-{\version}.tar.gz} at the Octave command
   line.\footnote{Note: this will not build the documentation.}
 
 \end{enumerate}
 %
 You should now be able to see the DREAM packege by typing:
 \begin{verbatim}
-  pkg list 
+  pkg list
 \end{verbatim}
 %
 at the Octave command line.
@@ -476,16 +476,16 @@ at the Octave command line.
 \label{sec:source-install}
 
 To build the DREAM Toolbox from sources you need to have developer tools installed for your
-system (compiler, linker, etc.). 
+system (compiler, linker, etc.).
 %
-Start with downloading (and uncompressing) the (full) source \texttt{DREAM-{\version}.tgz} file. 
+Start with downloading (and uncompressing) the (full) source \texttt{DREAM-{\version}.tgz} file.
 This file contains the source code, the documentation (the user manual), and the html code
 for the web pages. The build process is based on Makefiles both for C/C++ code and for
-building the (\LaTeX) user manual and html documentation.  
+building the (\LaTeX) user manual and html documentation.
 %
-Therefore, to build the documentation you need to have \TeX/\LaTeX\ installed and, furthermore, 
-to build the html documentation you also need the 
-\href{http://www.cse.ohio-state.edu/~gurari/TeX4ht/mn.html}{tex4ht} and 
+Therefore, to build the documentation you need to have \TeX/\LaTeX\ installed and, furthermore,
+to build the html documentation you also need the
+\href{http://www.cse.ohio-state.edu/~gurari/TeX4ht/mn.html}{tex4ht} and
 \href{http://www.andre-simon.de/}{highlight} tools.\footnote{The build of the
 documentation has only been tested on Linux based systems.}
 
@@ -493,57 +493,57 @@ documentation has only been tested on Linux based systems.}
 \label{sec:linux-build}
 
 There are three methods that can be used to build the DREAM Toolbox on unix from sources. The first, and simplest,
-is to use the m-script \texttt{build\_mexfiles\_unix.m}, the second is to use the bash script 
+is to use the m-script \texttt{build\_mexfiles\_unix.m}, the second is to use the bash script
 \texttt{build\_dream} and the third is to manually edit the build configuration file \texttt{Make.inc}
 and then compile the sources.
 
 \noindent\emph{Method 1:} Using the \texttt{build\_mexfiles\_unix.m} script.
 
 This is the simplest method but there is no optimization for the used architecture and the attenuation code
-is build without FFTW support (see Section~\ref{sec:fftw}). This will also only build the mex-files 
+is build without FFTW support (see Section~\ref{sec:fftw}). This will also only build the mex-files
 (not the oct-files).
 
 \begin{enumerate}
-  
+
 \item Install \href{http://www.fftw.org}{FFTW} (if it is not already installed).
-  
+
 \item Start \Matlab\ and select compiler (gcc is recommended) with \texttt{mex -setup} (if you have not already done so).
-\item Remove the \texttt{-ansi} flag from your 
+\item Remove the \texttt{-ansi} flag from your
 \begin{verbatim}
 ~/.matlab/R20XXx/mexopts.sh
-\end{verbatim} 
+\end{verbatim}
   file (the DREAM sources contain C++ style comments and they will not compile with \texttt{-ansi}).
 
 \item Add \texttt{-std=c++11} to the CXXFLAGS in your
 \begin{verbatim}
 ~/.matlab/R20XXx/mexopts.sh
-\end{verbatim} 
+\end{verbatim}
   file (the DREAM sources uses C++11 threads).
-  
+
 \item Run the m-script: \texttt{build\_mexfiles\_unix}
-  
-\item Copy the files in the \texttt{gui} and \texttt{help\_m\_files} directories to your 
+
+\item Copy the files in the \texttt{gui} and \texttt{help\_m\_files} directories to your
   DREAM install directory.
 
 \item Add your DREAM install directory to the \Matlab\ path. That is, add\\
-  \texttt{addpath('/}\emph{your\_installation\_dir}\texttt{/')}to your \texttt{matlab/startup.m} file. 
-  
+  \texttt{addpath('/}\emph{your\_installation\_dir}\texttt{/')}to your \texttt{matlab/startup.m} file.
+
 \end{enumerate}
 %
-%Note: if you want fftw support for all transducer functions you can add the \texttt{-DUSE\_FFTW} option to each 
+%Note: if you want fftw support for all transducer functions you can add the \texttt{-DUSE\_FFTW} option to each
 %mex call in \texttt{build\_mexfiles\_unix.m}.
 
 
 \noindent\emph{Method 2:} Build using CMake.
 %
 \begin{enumerate}
-  
+
 \item Install CMake (if not already done).
-  
+
 \item Create a build folder:\\
   \texttt{dream-src \$ mkdir build}\\
   \texttt{dream-src \$ cd build}
-  
+
 \item Configure the build:\\
   \texttt{build \$ cmake -DBUILD\_USERMAN=on -DCMAKE\_C\_FLAGS="-O2 -march=native" -DCMAKE\_CXX\_FLAGS="-O2 -march=native" -DCMAKE\_BUILD\_TYPE=Release ..}
 
@@ -553,9 +553,9 @@ is build without FFTW support (see Section~\ref{sec:fftw}). This will also only 
 
 The bash script \texttt{build\_dream} will probe the machine for cpu, architecture (32 or 64 bits)
 and then use a pre-defined set of compiler flags for the machine (currently only x86 is supported).
-This script will both build the mex-/oct-interfaces and the documentation for DREAM. It is assumed that \Matlab\ 
-is installed in \texttt{/usr/local/matlab}. If you have installed \matlab\ somewhere else then you can create a symbolic 
-link to the \texttt{/usr/local/matlab} dir. The \texttt{build\_dream} script takes a few flags, use \texttt{-h} to 
+This script will both build the mex-/oct-interfaces and the documentation for DREAM. It is assumed that \Matlab\
+is installed in \texttt{/usr/local/matlab}. If you have installed \matlab\ somewhere else then you can create a symbolic
+link to the \texttt{/usr/local/matlab} dir. The \texttt{build\_dream} script takes a few flags, use \texttt{-h} to
 to display the help text:
 %
 \begin{verbatim}
@@ -579,39 +579,39 @@ to display the help text:
 
 \end{verbatim}
 
-The \texttt{-native/-n} flag will build all sources with the (ggc) flags \texttt{-02 -march=native}, that is, 
+The \texttt{-native/-n} flag will build all sources with the (ggc) flags \texttt{-02 -march=native}, that is,
 it lets \texttt{gcc} probe/detect the hardware and builds all DREAM sources optimized for the current hardware.
 %
-When \texttt{-auto/-a} flag is used the build script uses DREAM's own (somewhat outdated) detection code to select compiler flags. 
+When \texttt{-auto/-a} flag is used the build script uses DREAM's own (somewhat outdated) detection code to select compiler flags.
 One can also use pre-defined sets of flags for a few architecture, which currently are: \texttt{-coppermine},  \texttt{-northwood},
 \texttt{-prescott}, \texttt{-banias}, \texttt{-penryn}, \texttt{-nahelem}, and  \texttt{-westmere}, repectively.
 
-One can also use a second flag \texttt{-affinity/-a} which builds DREAM with experimental affinity control support. This is only 
+One can also use a second flag \texttt{-affinity/-a} which builds DREAM with experimental affinity control support. This is only
 available for a few functions and has only been tested on Linux. When enabled one can select which cpu/core a thread should run on.
 
-After the \texttt{build\_dream} script is done building the code and documantation add your DREAM install directory to 
-the \Matlab/Octave path(s). That is, add \texttt{addpath('/}\emph{your\_installation\_dir}\texttt{/')} to your 
+After the \texttt{build\_dream} script is done building the code and documantation add your DREAM install directory to
+the \Matlab/Octave path(s). That is, add \texttt{addpath('/}\emph{your\_installation\_dir}\texttt{/')} to your
 \texttt{matlab/startup.m} file and/or \texttt{.octaverc} file.
 
 \noindent\emph{Method 3:} Manual configuration.
 %
 \begin{enumerate}
 
-\item Copy \texttt{Make.default} to \texttt{Make.inc}, and open the \texttt{Make.inc} file with a 
+\item Copy \texttt{Make.default} to \texttt{Make.inc}, and open the \texttt{Make.inc} file with a
   text-editor.
 
 \item Change the paths for Matlab and/or Octave in \texttt{Make.inc} to fit your installation.
 
-\item Change \texttt{INSTALL\_DIR}, \texttt{MEX\_EXT} (if you use \Matlab), 
+\item Change \texttt{INSTALL\_DIR}, \texttt{MEX\_EXT} (if you use \Matlab),
   \texttt{CFLAGS}, and \texttt{OCTVER} (if you use Octave) in \texttt{Make.inc} to fit your architecture.
 
-\item If you don't have both Matlab and Octave then open the \texttt{Makefile} and remove the corresponding software on 
+\item If you don't have both Matlab and Octave then open the \texttt{Makefile} and remove the corresponding software on
   the line ``\texttt{all: matlab octave doc}'' that you don't use.
 
 \item Type \texttt{make}
 
 \item Add your DREAM install dir to the \Matlab/Octave path(s). That is, add\\
-  \texttt{addpath('/}\emph{your\_installation\_dir}\texttt{/')} to your \texttt{matlab/startup.m} file 
+  \texttt{addpath('/}\emph{your\_installation\_dir}\texttt{/')} to your \texttt{matlab/startup.m} file
   and/or \texttt{.octaverc} file.
 \end{enumerate}
 
@@ -628,114 +628,114 @@ work under Mac OS X).
 
 \item Start \Matlab\ and select compiler (gcc is recommended) with \texttt{mex -setup} (if you have not already done so).
 
-\item Remove the \texttt{-ansi} flag from your 
+\item Remove the \texttt{-ansi} flag from your
 \begin{verbatim}
 ~/.matlab/R20XXx/mexopts.sh
-\end{verbatim} 
+\end{verbatim}
   file (the DREAM sources contain C++ style comments which will not compile with \texttt{-ansi}).
-  
+
 \item Run the m-script: \texttt{build\_mexfiles\_unix}
-  
-\item Copy the files in the \texttt{gui} and \texttt{help\_m\_files} directories to your 
+
+\item Copy the files in the \texttt{gui} and \texttt{help\_m\_files} directories to your
   DREAM install directory.
 
 \item Add your DREAM install directory to your \Matlab\ path. That is, add \\
-  \texttt{addpath('/}\emph{your\_installation\_dir} to your \texttt{matlab/startup.m} file 
+  \texttt{addpath('/}\emph{your\_installation\_dir} to your \texttt{matlab/startup.m} file
   (or use the menu in the \Matlab\ GUI).
-  
+
 \end{enumerate}
 %
-%Note: if you want fftw support for all transducer functions you can add the \texttt{-DUSE\_FFTW} option to each 
+%Note: if you want fftw support for all transducer functions you can add the \texttt{-DUSE\_FFTW} option to each
 %mex call in \texttt{build\_mexfiles\_unix.m}. Need to att -lfftw3 too.
 
 \subsubsection{Build the DREAM Matlab 32-bit \texttt{mex}-files for Windows}
 
 \noindent\emph{Method 1:} Using the MinGW/Gnumex Tools.
 
-%MinGW is a iso C99 compiler which 
+%MinGW is a iso C99 compiler which
 
 \begin{enumerate}
 
-\item \href{http://www.signal.uu.se/Toolbox/dream/download.shtml}{Download} the DREAM Toolbox full 
+\item \href{http://www.signal.uu.se/Toolbox/dream/download.shtml}{Download} the DREAM Toolbox full
   source package and uncompress it.
-  
+
 \item Download the MinGW-w64 compiler for your architecture (i686 [32-bit] or x86\_64 [64-bit]), see \url{http://mingw-w64.sourceforge.net/}).
-  
-\item Uncompress the corresponding zip-file, create the folder \texttt{C:\\MinGW-w32}, and copy all files to that folder. 
+
+\item Uncompress the corresponding zip-file, create the folder \texttt{C:\\MinGW-w32}, and copy all files to that folder.
 
 \item Get the \texttt{phreadGC2.dll} and  \texttt{libfftw3-3.dll} (for your corresponding architecture) from the DREAM web-page.
 
-\item Copy the \texttt{phreadGC2.dll} and  \texttt{libfftw3-3.dll} to the \texttt{windows/dll}/\texttt{windows/dll\_64} 
+\item Copy the \texttt{phreadGC2.dll} and  \texttt{libfftw3-3.dll} to the \texttt{windows/dll}/\texttt{windows/dll\_64}
   (depending on your architecture) folder.
 
-\item Also, copy the headerfiles: \texttt{phread.h}, \texttt{shed.h}, and \texttt{semaphore.h}, and  \texttt{fftw3.h}, to the  
+\item Also, copy the headerfiles: \texttt{phread.h}, \texttt{shed.h}, and \texttt{semaphore.h}, and  \texttt{fftw3.h}, to the
   \texttt{windows/dll}/\texttt{windows/dll\_64}
-  
+
 \item Start Matlab and cd to the \texttt{windows} folder.
-  
+
 \item Run\\
 \begin{verbatim}
    >> build_mexfiles_mingw
-\end{verbatim} 
+\end{verbatim}
   or
 \begin{verbatim}
    >> build_mexfiles_mingw_64
-\end{verbatim} 
- This will build all mex-files and copy them, some help files, the GUI files, and the pthread and FFTW libraries, 
+\end{verbatim}
+ This will build all mex-files and copy them, some help files, the GUI files, and the pthread and FFTW libraries,
  to an installation folder which is printed when the script is done.
 
 \item Add your DREAM install directory to your \Matlab\ path. That is, add \\
-  \texttt{addpath('/}\emph{your\_installation\_dir} \texttt{')} to your \texttt{matlab/startup.m} file 
+  \texttt{addpath('/}\emph{your\_installation\_dir} \texttt{')} to your \texttt{matlab/startup.m} file
   (or use the menu in the \Matlab\ GUI).
 
 \end{enumerate}
 
-%Note: if you want fftw support for all transducer functions you can add the \texttt{-DUSE\_FFTW} option to each 
+%Note: if you want fftw support for all transducer functions you can add the \texttt{-DUSE\_FFTW} option to each
 %mex call in \texttt{build\_mexfiles\_unix.m}. Need to att -lfftw3 too.
 
 \subsubsection{Build the DREAM Octave 32-bit \texttt{oct}-files for Windows using the MinGW Compiler}
 \label{sec:win_octave_mingw}
 
-The pkg source can be build also on Windows with resent versions of Octave (tested with Octave 3.2.3 
-[MinGW 4.4.0]). To do this, using the native Windows Octave from \href{http://octave.sourceforge.net}{octave-forge}, 
+The pkg source can be build also on Windows with resent versions of Octave (tested with Octave 3.2.3
+[MinGW 4.4.0]). To do this, using the native Windows Octave from \href{http://octave.sourceforge.net}{octave-forge},
 you only need to install Octave since FFTW, the MinGW compiler, and  the pthread libs
 are included in the Octave package).
 %
-\begin{enumerate} 
+\begin{enumerate}
 
-\item \href{http://www.signal.uu.se/Toolbox/dream/download.shtml}{Download} 
+\item \href{http://www.signal.uu.se/Toolbox/dream/download.shtml}{Download}
   the DREAM Toolbox \texttt{pkg} source package (i.e., the file \texttt{dream-{\version}.tar.gz}).
-  
+
 \item  Download the Windows \href{http://octave.sourceforge.net}{Octave} installer.
-  
-\item Install Octave in \texttt{C:$\backslash$Octave}; do not install in 
-  \texttt{C:$\backslash$Program Files$\backslash$Octave} since the 
-  \texttt{mkoctfile} script that is used to compile the C++ code in the DREAM toolbox do work well 
-  with white spaces in the path (the default install location should be OK). 
-  
-  % \item Get the \texttt{fftw3.h} file (for version 3.1.3) from \url{http://www.fftw.org}, or from 
+
+\item Install Octave in \texttt{C:$\backslash$Octave}; do not install in
+  \texttt{C:$\backslash$Program Files$\backslash$Octave} since the
+  \texttt{mkoctfile} script that is used to compile the C++ code in the DREAM toolbox do work well
+  with white spaces in the path (the default install location should be OK).
+
+  % \item Get the \texttt{fftw3.h} file (for version 3.1.3) from \url{http://www.fftw.org}, or from
   %   \href{http://www.signal.uu.se/Toolbox/dream/download.shtml}{DREAM web page}, and copy it to
-  %   \texttt{C:$\backslash$Octave$\backslash$include$\backslash$}; you don't need to install the fftw3 \texttt{dll} 
+  %   \texttt{C:$\backslash$Octave$\backslash$include$\backslash$}; you don't need to install the fftw3 \texttt{dll}
   %   file since it is already included in the Windows package of Octave.
-  
-  % \item Get the \texttt{phread.h}, \texttt{shed.h}, and \texttt{semaphore.h} files from 
-  %   \url{http://sourceware.org/pthreads-win32/} (version 2.8.0), or from 
-  %   the \href{http://www.signal.uu.se/Toolbox/dream/download.shtml}{DREAM web page}, and copy them to 
+
+  % \item Get the \texttt{phread.h}, \texttt{shed.h}, and \texttt{semaphore.h} files from
+  %   \url{http://sourceware.org/pthreads-win32/} (version 2.8.0), or from
+  %   the \href{http://www.signal.uu.se/Toolbox/dream/download.shtml}{DREAM web page}, and copy them to
   %   \texttt{C:$\backslash$Octave$\backslash$include$\backslash$}
-  
+
   % \item Get the \texttt{phreadGC2.lib} file from \url{http://sourceware.org/pthreads-win32/},
-  %   or from the\\ \href{http://www.signal.uu.se/Toolbox/dream/download.shtml}{DREAM web page}, 
-  %   copy it to \texttt{C:$\backslash$Octave$\backslash$lib$\backslash$}, and 
-  %   rename it to \texttt{phread.lib}; the Unix style Makefile which is used to build the toolbox 
+  %   or from the\\ \href{http://www.signal.uu.se/Toolbox/dream/download.shtml}{DREAM web page},
+  %   copy it to \texttt{C:$\backslash$Octave$\backslash$lib$\backslash$}, and
+  %   rename it to \texttt{phread.lib}; the Unix style Makefile which is used to build the toolbox
   %   expects this name of the lib file.
-  
-\item Build and install the DREAM Toolbox with: \texttt{pkg install dream-{\version}.tar.gz}. 
-  
-  % \item Get the \texttt{pthreadGC2.dll} file (for gcc) from 
-  %   \url{http://sourceware.org/pthreads-win32/} (version 2.8.0), or from 
+
+\item Build and install the DREAM Toolbox with: \texttt{pkg install dream-{\version}.tar.gz}.
+
+  % \item Get the \texttt{pthreadGC2.dll} file (for gcc) from
+  %   \url{http://sourceware.org/pthreads-win32/} (version 2.8.0), or from
   %   the \href{http://www.signal.uu.se/Toolbox/dream/download.shtml}{DREAM web page}, and copy
   %   it to \texttt{C:{$\backslash$}WINDOWS{$\backslash$}System32}.
-  
+
 \end{enumerate}
 
 \subsubsection{Build the DREAM Octave \texttt{oct}-files for 64-bit Windows}
@@ -747,9 +747,9 @@ Octave for Windows available (yet).
 \subsubsection{Compile with FFTW support for the Attenuation Code}
 \label{sec:fftw}
 
-The attenuation code in the DREAM Toolbox uses FFTs extensively. To speed up the FFT computations 
-(by 10\% to 50\%) one can compile The DREAM Toolbox with FFTW support for the attenuation code. To 
-do this you need to compile all functions with the flag \texttt{-DUSE\_FFTW} and link with 
+The attenuation code in the DREAM Toolbox uses FFTs extensively. To speed up the FFT computations
+(by 10\% to 50\%) one can compile The DREAM Toolbox with FFTW support for the attenuation code. To
+do this you need to compile all functions with the flag \texttt{-DUSE\_FFTW} and link with
 \texttt{-lfftw3}. This can be accomplished by changing:
 %
 \begin{verbatim}
@@ -770,15 +770,15 @@ Section~\ref{sec:linux-build} (the \texttt{build\_dream} uses FFTW by default).
 \section{An  Introduction to The Impulse Response Method}
 
 \PARstart{T}{he} impulse response method is an approach based on linear systems theory to model acoustic fields from
-ultrasonic transducers; the method was introduced by Tupholme and Stepanishen in the late 60's, early 
+ultrasonic transducers; the method was introduced by Tupholme and Stepanishen in the late 60's, early
 70's~\cite{Tupholme1969,Stepanishen1971a}. The impulse response method is based on linear acoustics and can be used to
 model acoustic fields and (double-path) responses for both single transducer setups and for array imaging. The idea
-is to divide the imaging system in two parts: the first one accounts for acoustical wave propagation effects 
+is to divide the imaging system in two parts: the first one accounts for acoustical wave propagation effects
 (i.e., the diffraction effects) from the transducer surface to the observation point, and the second one accounts for
 the electro-acoustical effects. These two parts are then convolved to obtain a model for the total imaging system.
 
-The impulse response method is very flexible since, (\emph{i}) by linearity the response from multi-element transducers 
-(such as array transducers) can be obtained be means of super-position and (\emph{ii}) arbitrary input signals can be 
+The impulse response method is very flexible since, (\emph{i}) by linearity the response from multi-element transducers
+(such as array transducers) can be obtained be means of super-position and (\emph{ii}) arbitrary input signals can be
 treated by simply convolving the electro-acoustical impulse response with the input signal. In this section we will
 present a short introduction to the impulse response method and, in particular, discuss how to use the method
 for discrete-time modeling.
@@ -786,10 +786,10 @@ for discrete-time modeling.
 \subsection{The Baffled Piston Model and the Rayleigh integral}
 \label{sec:analythical}
 
-The impulse response method is based on the assumption that the transducer can be treated as a 
+The impulse response method is based on the assumption that the transducer can be treated as a
 baffled piston. This assumption implies that we only need to consider the active area of the
-transducer when modeling the wave propagation. That is, if the source (the transducer) is located 
-in the rigid plane, often referred to as the \emph{rigid baffle} as illustrated in 
+transducer when modeling the wave propagation. That is, if the source (the transducer) is located
+in the rigid plane, often referred to as the \emph{rigid baffle} as illustrated in
 Figure~\ref{fig:integration}, then the baffle ($S_{\smt{b}}$) will not contribute to the field.
 %%
 \begin{figure}
@@ -800,16 +800,16 @@ Figure~\ref{fig:integration}, then the baffle ($S_{\smt{b}}$) will not contribut
     \label{fig:integration}}
 \end{figure}
 %
-The pressure at an observation point $\rr$ is then described by the Rayleigh integral 
+The pressure at an observation point $\rr$ is then described by the Rayleigh integral
 %
 \ifthenelse{\boolean{TEX4HT}}
 {
   \begin{equation}
     \begin{split}
-      p(\rr,t)  = &\rho_0 \frac{\partial}{\partial t} \int_{-\infty}^{\infty} 
-      \biggl( \int_{S_{\smt{r}}}  v_{{n}}(\rr_0, t_0) \frac{\delta\left(t - t_0 - |\rr - \rr_0|/c_p\right)}{2\pi |\rr - 
+      p(\rr,t)  = &\rho_0 \frac{\partial}{\partial t} \int_{-\infty}^{\infty}
+      \biggl( \int_{S_{\smt{r}}}  v_{{n}}(\rr_0, t_0) \frac{\delta\left(t - t_0 - |\rr - \rr_0|/c_p\right)}{2\pi |\rr -
         \mathbf{r}_0| }dS_{\smt{r}} \biggl) dt_0, \\
-      = & \rho_0 \frac{\partial}{\partial t} \int_{-\infty}^{\infty}  v_{{n}}(t_0) 
+      = & \rho_0 \frac{\partial}{\partial t} \int_{-\infty}^{\infty}  v_{{n}}(t_0)
       \int_{S_{\smt{r}}} \frac{\delta\left(t - t_0 - |\rr - \rr_0|/c_p\right)}{2\pi |\rr - \mathbf{r}_0| }dS_{\smt{r}} dt_0, \\
       = & \rho_0 \frac{\partial}{\partial t} \int_{-\infty}^{\infty} v_{{n}}(t_0) h^{{f-}\smt{sir}}(\rr,t-t_0) dt_0, \\
       = & \rho_0 \frac{\partial}{\partial t} v_{{n}}(t) * h^{{f-}\smt{sir}}(\rr,t-t_0).
@@ -819,10 +819,10 @@ The pressure at an observation point $\rr$ is then described by the Rayleigh int
 }{
   \begin{equation}
     \begin{split}
-      p(\rr,t)  = &\rho_0 \frac{\partial}{\partial t} \int_{-\infty}^{\infty} 
-      \biggl( \int_{S_{\smt{r}}}  v_{\text{n}}(\rr_0, t_0) \frac{\delta\left(t - t_0 - |\rr - \rr_0|/c_p\right)}{2\pi |\rr - 
+      p(\rr,t)  = &\rho_0 \frac{\partial}{\partial t} \int_{-\infty}^{\infty}
+      \biggl( \int_{S_{\smt{r}}}  v_{\text{n}}(\rr_0, t_0) \frac{\delta\left(t - t_0 - |\rr - \rr_0|/c_p\right)}{2\pi |\rr -
         \mathbf{r}_0| }dS_{\smt{r}} \biggl) dt_0, \\
-      = & \rho_0 \frac{\partial}{\partial t} \int_{-\infty}^{\infty}  v_{\text{n}}(t_0) 
+      = & \rho_0 \frac{\partial}{\partial t} \int_{-\infty}^{\infty}  v_{\text{n}}(t_0)
       \int_{S_{\smt{r}}} \frac{\delta\left(t - t_0 - |\rr - \rr_0|/c_p\right)}{2\pi |\rr - \mathbf{r}_0| }dS_{\smt{r}} dt_0, \\
       = & \rho_0 \frac{\partial}{\partial t} \int_{-\infty}^{\infty} v_{\text{n}}(t_0) h^{\text{f-}\smt{sir}}(\rr,t-t_0) dt_0, \\
       = & \rho_0 \frac{\partial}{\partial t} v_{\text{n}}(t) * h^{\text{f-}\smt{sir}}(\rr,t-t_0).
@@ -830,42 +830,42 @@ The pressure at an observation point $\rr$ is then described by the Rayleigh int
     \end{split}
   \end{equation}
 }
-% 
-where it is where we for simplicity have assumed that the normal velocity  
+%
+where it is where we for simplicity have assumed that the normal velocity
 \ifthenelse{\boolean{TEX4HT}}
 {
-  $v_{{n}}(\rr_0, t) \equiv v_{{n}}(t)$ is 
+  $v_{{n}}(\rr_0, t) \equiv v_{{n}}(t)$ is
 }{
-  $v_{\text{n}}(\rr_0, t) \equiv v_{\text{n}}(t)$ is 
+  $v_{\text{n}}(\rr_0, t) \equiv v_{\text{n}}(t)$ is
 }
-uniform on the transducer's surface $S_{\smt{r}}$. The Rayleigh integral formula~\eqref{eq:rayleigh} simply states 
+uniform on the transducer's surface $S_{\smt{r}}$. The Rayleigh integral formula~\eqref{eq:rayleigh} simply states
 that the acoustic field at an observation point is the sum of the contributions from all points of the active area
-of the transducer. The impulse response 
+of the transducer. The impulse response
 \ifthenelse{\boolean{TEX4HT}}
 {
-  $h^{{f-}\smt{sir}}(\rr,t)$ 
+  $h^{{f-}\smt{sir}}(\rr,t)$
 }{
-  $h^{\text{f-}\smt{sir}}(\rr,t)$ 
+  $h^{\text{f-}\smt{sir}}(\rr,t)$
 }
-in Eq.~\eqref{eq:rayleigh} is usually referred to 
+in Eq.~\eqref{eq:rayleigh} is usually referred to
 as the (forward) \emph{spatial impulse response} (SIR).
 
-The normal velocity, 
+The normal velocity,
 \ifthenelse{\boolean{TEX4HT}}
 {
-  $v_{{n}}(t)$, 
+  $v_{{n}}(t)$,
 }{
-  $v_{\text{n}}(t)$, 
+  $v_{\text{n}}(t)$,
 }
-depends on both the input signal, $u(t)$, and the electro-acoustical properties of the transducer, which can be 
-described with the (forward) electrical impulse response 
+depends on both the input signal, $u(t)$, and the electro-acoustical properties of the transducer, which can be
+described with the (forward) electrical impulse response
 \ifthenelse{\boolean{TEX4HT}}
 {
-  $h^{{ef}}(t)$. 
+  $h^{{ef}}(t)$.
 }{
-  $h^{\text{ef}}(t)$. 
+  $h^{\text{ef}}(t)$.
 }
-Thus, the pressure at $\rr$ can be expressed by the convolutions of the input signal and the two (forward) 
+Thus, the pressure at $\rr$ can be expressed by the convolutions of the input signal and the two (forward)
 impulse responses according to,
 %
 \ifthenelse{\boolean{TEX4HT}}
@@ -881,28 +881,28 @@ impulse responses according to,
   \end{equation}
 }
 %
-Double-path (pulse-echo) responses can be treated in a similar way by convolving the forward  
-response~\eqref{eq:pressure_response} with the backward electrical (acousto-electrical) response 
+Double-path (pulse-echo) responses can be treated in a similar way by convolving the forward
+response~\eqref{eq:pressure_response} with the backward electrical (acousto-electrical) response
 and the backward SIR for a point source at $\rr$.
 
-Analytical solutions to SIRs exist for a few geometries, but one must in general 
-resort to numerical methods. 
+Analytical solutions to SIRs exist for a few geometries, but one must in general
+resort to numerical methods.
 %%
-Also, these \emph{time continuous} solutions are normally not practical since all acquired signals (the data) are 
+Also, these \emph{time continuous} solutions are normally not practical since all acquired signals (the data) are
 normally sampled and time discrete  models are, therefore, needed;
 sampling of time continous SIRs is discussed in Section~\ref{sec:sir-sampling}.
 %%
 %In summary, the total system response can be modeled by convolving the electrical impulse response(s) and the
-%SIRs. 
+%SIRs.
 
 Before we discuss sampled SIRs, and the particular method use by the DREAM Toolbox, let us consider a case where
 there exist an analytical solution.
 %
 \begin{example}[The SIR for a Circular Disc]
   %
-  The SIR of a circular disc (see illustration in Figure~\ref{fig:circ}) has an analytical 
+  The SIR of a circular disc (see illustration in Figure~\ref{fig:circ}) has an analytical
   solution~\cite{Stepanishen1971a}
-  %% 
+  %%
   \begin{figure}[phtb]
     \begin{center}
       \scalebox{0.7}{\epsfig{file=userman/eps/circ_aperture.eps}}
@@ -910,15 +910,15 @@ there exist an analytical solution.
     \caption{Geometry of a a circular disc source.
       \label{fig:circ}}
   \end{figure}
-  %% 
+  %%
   which can be divided in two cases: (\emph{i})
-  when the observation point is inside the aperture of the disc 
-  $\sqrt{x^2 + y^2}\le a$, where $a$ is the transducer radius, and (\emph{ii}) when the 
+  when the observation point is inside the aperture of the disc
+  $\sqrt{x^2 + y^2}\le a$, where $a$ is the transducer radius, and (\emph{ii}) when the
   observation point is outside the aperture.
-  The disc is assumed to be located in the $x$--$y$ plane centered at $x=y=0$. If we let $r$ 
-  denote the distance in  the $x$--$y$ plane from the center axis of the disc to the observation point, 
+  The disc is assumed to be located in the $x$--$y$ plane centered at $x=y=0$. If we let $r$
+  denote the distance in  the $x$--$y$ plane from the center axis of the disc to the observation point,
   $r  = \sqrt{x^2 + y^2}$, then the circular disc SIR is given by
-  %% 
+  %%
   \ifthenelse{\boolean{TEX4HT}}
   {
     \begin{equation}
@@ -931,12 +931,12 @@ there exist an analytical solution.
           \frac{\cp}{\pi} \cos^{-1}\left(\cp^2 \frac{ t^2-t_z^2+t_r^2 - a/\cp^2}{2t_r\sqrt{t^2-t_z^2}}
           \right),\ &\ \ t_1 < t \le t_2 \\
           0, &\ \ t > t_2
-        \end{cases} \\ 
+        \end{cases} \\
         {for}\ r > a & \\
         h(\rr,t) & =
         \begin{cases}
           0, &\ \ t \le t_1 \\
-          \frac{\cp}{\pi} \cos^{-1}\left(\cp^2\frac{t^2-t_z^2+t_r^2-a/\cp^2}{2t_r\sqrt{t^2-t_z^2}} 
+          \frac{\cp}{\pi} \cos^{-1}\left(\cp^2\frac{t^2-t_z^2+t_r^2-a/\cp^2}{2t_r\sqrt{t^2-t_z^2}}
           \right),\ &\ \ t_1 <  t \le t_2 \\
           0, &\ \ t > t_2
         \end{cases} \\
@@ -954,12 +954,12 @@ there exist an analytical solution.
           \frac{\cp}{\pi} \cos^{-1}\left(\cp^2 \frac{ t^2-t_z^2+t_r^2 - a/\cp^2}{2t_r\sqrt{t^2-t_z^2}}
           \right),\ &\ \ t_1 < t \le t_2 \\
           0, &\ \ t > t_2
-        \end{cases} \\ 
+        \end{cases} \\
         \text{for}\ r > a & \\
         h(\rr,t) & =
         \begin{cases}
           0, &\ \ t \le t_1 \\
-          \frac{\cp}{\pi} \cos^{-1}\left(\cp^2\frac{t^2-t_z^2+t_r^2-a/\cp^2}{2t_r\sqrt{t^2-t_z^2}} 
+          \frac{\cp}{\pi} \cos^{-1}\left(\cp^2\frac{t^2-t_z^2+t_r^2-a/\cp^2}{2t_r\sqrt{t^2-t_z^2}}
           \right),\ &\ \ t_1 <  t \le t_2 \\
           0, &\ \ t > t_2
         \end{cases} \\
@@ -967,24 +967,24 @@ there exist an analytical solution.
       \label{eq:disc}
     \end{equation}
   }
-  %% 
-  where $t_z = z/\cp$ is the earliest time that the wave reaches the observation point 
-  $\rr$ when $r \le a$, $t_r = r/\cp$, and 
+  %%
+  where $t_z = z/\cp$ is the earliest time that the wave reaches the observation point
+  $\rr$ when $r \le a$, $t_r = r/\cp$, and
   $t_{1,2} = t_z \sqrt{1 + (\frac{a\mp r}{z})^2}$
   are the propagation times corresponding to the edges of the disc that are
   closest and furthermost away from $\rr$, respectively.
-  
-  Noticeable is that the pulse amplitude of the on-axis SIR is constant 
+
+  Noticeable is that the pulse amplitude of the on-axis SIR is constant
   regardless of the distance to the observation point.\footnote{The on-axis SIR
     has duration $t_1 - t_z$ with the constant amplitude $\cp$ in the time interval
-    $t_z \le t \le t_1$.} The  duration of the on-axis SIR is given by 
-  $t_1=a/\cp$ at $z=0$. As the distance increases the duration, $t_1-t_z$, of the SIR 
+    $t_z \le t \le t_1$.} The  duration of the on-axis SIR is given by
+  $t_1=a/\cp$ at $z=0$. As the distance increases the duration, $t_1-t_z$, of the SIR
   becomes shorter, and for large $z$ it approaches to the delta function.
   %% the response of a point source.
   The transducer size effects are therefore most pronounced in the near-field.
-  This is illustrated in Figure~\ref{fig:on_axis_sirs} where the on-axis SIRs at $z=20$ and 
+  This is illustrated in Figure~\ref{fig:on_axis_sirs} where the on-axis SIRs at $z=20$ and
   $z=80$ mm, respectively are shown.
-  %% 
+  %%
   \begin{figure}[phtb]
     \begin{center}
       \mbox{\subfigure[Spatial impulse response at $z=20$ mm.
@@ -992,38 +992,38 @@ there exist an analytical solution.
         \subfigure[Spatial impulse response at $z=80$ mm.
         ]{\scalebox{0.4}{\mbox{\epsfig{file=userman/eps/on_axis_far.eps}}}}}
     \end{center}
-    \caption{On-axis spatial impulse responses for a 10 mm disc where the sound 
+    \caption{On-axis spatial impulse responses for a 10 mm disc where the sound
       speed, $\cp$, was 1500 m/s.
       \label{fig:on_axis_sirs}}
   \end{figure}
-  %% 
+  %%
   The duration at $z=20$ is longer than that of $z=80$
-  and if the distance, $z$, increases then the on-axis SIR will approach to a delta 
+  and if the distance, $z$, increases then the on-axis SIR will approach to a delta
   function, cf. Figures~\ref{fig:on_axis_sirs}(a) and (b).
   $\Box$
   \label{ex:circle}
 \end{example}
 
-As mentioned above, there exist no analytical analytical solutions for many transducer 
+As mentioned above, there exist no analytical analytical solutions for many transducer
 geometries, and in such situations numerical methods must be used. The DREAM Toolbox uses a
 method based on the \emph{discrete representation} (DR) computational concept~\cite{Piwakowski1989,Piwakowski1999}.
-The DR method is very flexible in the sense that complex transducer shapes as well as arbitrary focusing 
-methods easily can be modeled. Another benefit of the DR method is that the SIRs are directly  computed in 
+The DR method is very flexible in the sense that complex transducer shapes as well as arbitrary focusing
+methods easily can be modeled. Another benefit of the DR method is that the SIRs are directly  computed in
 a discrete form which is convenient since this directly allows for digital signal processing. The DR method
-is described in Section~\ref{sec:dr} below, but first we will discuss sampling of spatial impulse responses. 
+is described in Section~\ref{sec:dr} below, but first we will discuss sampling of spatial impulse responses.
 
 \subsection{Discrete-time Spatial Impulse Responses}
 \label{sec:sir-sampling}
 
 Before we introduce the discrete representation (DR) method, which the DREAM toolbox transducer functions are
-based on, let us discuss sampling of spatial impulse responses. This is of interest since our ultimate goal 
-normally is to model the total \emph{sampled} imaging system which includes both acoustic propagation effects (the SIRs) 
-as well as input signals and electro-acoustical effects. 
+based on, let us discuss sampling of spatial impulse responses. This is of interest since our ultimate goal
+normally is to model the total \emph{sampled} imaging system which includes both acoustic propagation effects (the SIRs)
+as well as input signals and electro-acoustical effects.
 
-To obtain a discrete model we need a discrete representation of the SIRs. That is, the analytical expressions 
-for the SIRs discussed in Section~\ref{sec:analythical} must be converted to a discrete form in order to be 
-useful for digital signal processing; a proper discrete representation of the SIRs 
-is necessary so that when the sampled SIR is convolved with the normal velocity the 
+To obtain a discrete model we need a discrete representation of the SIRs. That is, the analytical expressions
+for the SIRs discussed in Section~\ref{sec:analythical} must be converted to a discrete form in order to be
+useful for digital signal processing; a proper discrete representation of the SIRs
+is necessary so that when the sampled SIR is convolved with the normal velocity the
 resulting waveform can faithfully represent the sampled measured waveform.
 
 The analytical SIRs have an infinite bandwidth due to the abrupt amplitude changes
@@ -1034,21 +1034,21 @@ taking the amplitude at the sampling instants %, $t_k$, %% for $k=0,1,\ldots,K-1
 since the SIR may actually be zero those time instants.
 %%
 The SIRs are however convolved with a band-limited normal velocity signal, hence
-the resulting pressure waveform must also be band-limited, 
+the resulting pressure waveform must also be band-limited,
 cf.~\eqref{eq:pressure_response}. Consequently, we only need to
 sample the SIR in such way that the band-limited received A-scans
 are properly modeled.
 
 In a sampled system the impulse responses are given at discrete time instants, $t_k$ (given by the sampling
 period $\Ts$) and to faithfully represent the SIRs we need to collect all contributions from the
-continuous time SIRs in the corresponding sampling interval $[t_k-\Ts/2,t_k+\Ts/2]$. 
+continuous time SIRs in the corresponding sampling interval $[t_k-\Ts/2,t_k+\Ts/2]$.
 %%
-A discrete version of the a time continuous SIR is then obtained by summing all 
-contributions from the SIR in the actual sampling interval. That is, the 
+A discrete version of the a time continuous SIR is then obtained by summing all
+contributions from the SIR in the actual sampling interval. That is, the
 sampled SIR is defined as
 %%
 \begin{equation}
-     h(\rr,t_k) \triangleq \frac{1}{\ts} 
+     h(\rr,t_k) \triangleq \frac{1}{\ts}
      \int_{t_k-\ts/2}^{t_k+\ts/2} h(\rr,t) dt.
 \label{eq:sampled_sir}
 \end{equation}
@@ -1058,25 +1058,25 @@ The amplitude of the sampled SIR, at time $t_k$, is then the mean value of the
 continuous SIR in the corresponding sampling interval, $[t_k-\ts/2, t_k+\ts/2]$.
 %%
 Also, as seen from the analytical solutions above, the SIRs always have a finite length
-as the transducer has a finite size. The sampled SIRs are therefore naturally represented 
-by finite impulse response filters (FIRs). 
+as the transducer has a finite size. The sampled SIRs are therefore naturally represented
+by finite impulse response filters (FIRs).
 
-The effect of the sampling scheme~\eqref{eq:sampled_sir} is illustrated in 
+The effect of the sampling scheme~\eqref{eq:sampled_sir} is illustrated in
 Figure~\ref{fig:sampled_vs_analytic} for two discs with radii 1.2 and
 3 mm, respectively, where the sampling interval, $\ts$, was 0.04$\mu$s.
 %%
 \begin{figure}[phtb]
   \begin{center}
-    \subfigure[Continuous and sampled spatial impulse responses 
+    \subfigure[Continuous and sampled spatial impulse responses
     of a circular disc with radius $r=1.2$ mm.
     ]{\scalebox{0.4}{\epsfig{file=userman/eps/circ_sir_sampled_vs_analythic_small.eps}}}\quad
-    \subfigure[Continuous and sampled spatial impulse responses 
+    \subfigure[Continuous and sampled spatial impulse responses
     of a circular disc with radius $r=3$ mm.
     ]{\scalebox{0.4}{\epsfig{file=userman/eps/circ_sir_sampled_vs_analythic_large.eps}}}
   \end{center}
   \caption{Illustration of sampling spatial impulse responses.
     The continuous and sampled on-axis SIRs for two discs with radii 1.2 and
-    3 mm, respectively are shown where the sampling interval, $\ts$, was 0.04 $\mu$s 
+    3 mm, respectively are shown where the sampling interval, $\ts$, was 0.04 $\mu$s
     (\cp = 1500 [m/s]).
     \label{fig:sampled_vs_analytic}}
 \end{figure}
@@ -1084,7 +1084,7 @@ Figure~\ref{fig:sampled_vs_analytic} for two discs with radii 1.2 and
 In Figure~\ref{fig:sampled_vs_analytic}(a) the analytic SIR is shorter than the
 sampling interval, $\ts$. The max amplitude of the discrete SIR is therefore lower
 than then the max amplitude of the continuous SIR. If the duration of the analytic SIR
-is longer than the sampling interval, as for the 3 mm disc shown in 
+is longer than the sampling interval, as for the 3 mm disc shown in
 Figure~\ref{fig:sampled_vs_analytic}(b), then the max amplitudes of the
 on-axis sampled and analytic disc SIRs will be the same.
 
@@ -1092,10 +1092,10 @@ on-axis sampled and analytic disc SIRs will be the same.
 \label{sec:dr}
 
 As mentioned in previous in Section~\ref{sec:analythical}
-the analytical spatial impulse responses are only available for a few simple 
-transducer geometries. Therefore, for a transducer with an arbitrary geometry a 
+the analytical spatial impulse responses are only available for a few simple
+transducer geometries. Therefore, for a transducer with an arbitrary geometry a
 numerical method must be used. The numerical method used in this toolbox is based on
-the \emph{discrete representation} (DR) method, which is based on a discretization of the 
+the \emph{discrete representation} (DR) method, which is based on a discretization of the
 Rayleigh integral formula~\eqref{eq:rayleigh}.
 In the DR method, the radiating surface is divided into a set of
 small surface elements (see illustration in Figure~\ref{fig:dream}), and
@@ -1108,18 +1108,18 @@ small surface elements (see illustration in Figure~\ref{fig:dream}), and
     \label{fig:dream}}
 \end{figure}
 %%
-the surface integral in the Rayleigh formula is replaced by a summation. 
-The DR method facilitates computation 
-of SIRs for non-uniform excitation, apodization of the aperture, and arbitrary 
-focusing laws since each surface element can be assigned a different normal velocity, 
-apdodization or time-delay. The DR computational concept can therefore 
-be used for computing SIRs for an arbitrary transducer shape or array 
-layout~\cite{Piwakowski1999,Piwakowski1989}. 
+the surface integral in the Rayleigh formula is replaced by a summation.
+The DR method facilitates computation
+of SIRs for non-uniform excitation, apodization of the aperture, and arbitrary
+focusing laws since each surface element can be assigned a different normal velocity,
+apdodization or time-delay. The DR computational concept can therefore
+be used for computing SIRs for an arbitrary transducer shape or array
+layout~\cite{Piwakowski1999,Piwakowski1989}.
 
-A discrete SIR, computed using the DR method, can be found by first dividing the total transducer surface 
-into a set of $J$ surface elements $\{\Delta S_0, \Delta S_1,\ldots,\Delta S_{J-1}\}$. Second, let $w_j$ denote 
-an aperture weight, and $R_j = |\rr-\rr_j|$ the distance from the $j$th surface element to the observation point. 
-The discrete SIR can now be approximated by 
+A discrete SIR, computed using the DR method, can be found by first dividing the total transducer surface
+into a set of $J$ surface elements $\{\Delta S_0, \Delta S_1,\ldots,\Delta S_{J-1}\}$. Second, let $w_j$ denote
+an aperture weight, and $R_j = |\rr-\rr_j|$ the distance from the $j$th surface element to the observation point.
+The discrete SIR can now be approximated by
 %%
 \begin{equation}
   \begin{split}
@@ -1130,7 +1130,7 @@ The discrete SIR can now be approximated by
   \label{eq:dream_sum}
 \end{equation}
 %%
-where $d_j$ is a user defined focusing delay and $t_k = k\Ts$, for $k=0,1,\ldots K-1$. 
+where $d_j$ is a user defined focusing delay and $t_k = k\Ts$, for $k=0,1,\ldots K-1$.
 The scaling factor
 %%
 \begin{equation}
@@ -1140,11 +1140,11 @@ The scaling factor
 %%
 in~\eqref{eq:dream_sum} represents the amplitude of the impulse response
 for an elementary surface at $\rr_j$ excited by a Dirac pulse. Hence, the total response,
-at time $t_k$, is a sum of contributions from those elementary 
-surface elements, $\Delta S_j$, whose response arrive in the time 
+at time $t_k$, is a sum of contributions from those elementary
+surface elements, $\Delta S_j$, whose response arrive in the time
 interval $[t_k-\Ts/2,t_k+\Ts/2]$.
 
-The accuracy of the method depends on the size of the discretization 
+The accuracy of the method depends on the size of the discretization
 surfaces $\Delta S_j$. It should, however, be noted that high frequency
 numerical noise due to the surface discretization is in practice not critical
 since the transducer's electrical impulse response has a bandwidth in the low
@@ -1157,42 +1157,42 @@ and non-uniform surface velocity can easily be included in the simulation.
 \subsection{Lossy Media}
 \label{sec:attenuation}
 
-The computational procedure for an attenuation free medium implies a Dirac-type Green's 
+The computational procedure for an attenuation free medium implies a Dirac-type Green's
 function~\cite{Piwakowski1989}. The discrete approach in the DREAM toolbox above is, however,
-also applicable to the problems characterized by an arbitrarily shaped causal Green's function. 
-In such a case a Dirac function is simply replaced by a sampled version of this function. 
-This characteristic extends the field of applications and allows, for example, the computations 
-for lossy media. 
-% 
+also applicable to the problems characterized by an arbitrarily shaped causal Green's function.
+In such a case a Dirac function is simply replaced by a sampled version of this function.
+This characteristic extends the field of applications and allows, for example, the computations
+for lossy media.
+%
 For such a case, the free space Green's function $\frac{\delta(t-|\rs-\ro|/c)}{4\pi|\rs-\ro|}$,
 where \rs is a point in the transducer surface and \ro is the observation point,
-should be replaced by its causal counterpart $g_{\alpha}(t,|\rs-\ro|)$ related to the medium 
+should be replaced by its causal counterpart $g_{\alpha}(t,|\rs-\ro|)$ related to the medium
 with absorption. The solution for lossy media used in the DREAM toolbox for $g_{\alpha}$ has
 the following frequency-domain form~\cite{Piwakowski1989,Aki1980}:
-% 
+%
 \begin{equation}
   G_{\alpha}(j\omega,|\rs-\ro|) = \frac {1}{4\pi|\rs-\ro|}e^{j(k_1|\rs-\ro|-\omega t)}
   \label{eq:lossy}
 \end{equation}
-% 
-where 
+%
+where
 \begin{equation}
-  k_1 = \frac{\omega}{c}\biggl [1+\frac{c\alpha_0}{\pi^2}\ln \biggl (\frac{1}{\alpha_1\omega} \biggr ) \biggr ] 
+  k_1 = \frac{\omega}{c}\biggl [1+\frac{c\alpha_0}{\pi^2}\ln \biggl (\frac{1}{\alpha_1\omega} \biggr ) \biggr ]
   + \alpha_0f,
   \label{eq:k1}
 \end{equation}
-% 
+%
 $\alpha_1  = \pi /0.95$, and $\alpha_0(\alpha) = \frac{\alpha}{8.686\times 10^4}$.
-% 
+%
 The time-domain transfer function is then obtained by means of the inverse Fourier transform
-% 
+%
 \begin{equation}
   g_{\alpha}(t,|\rs-\ro|) = \mathcal{F}^{-1} \{G_{\alpha}(j\omega,|\rs-\ro|)\}.
   \label{eq:time-lossy}
 \end{equation}
-% 
+%
 In the DREAM toolbox this computation is performed by a discrete Fourier transform for each surface
-element \texttt{dx}$\times$\texttt{dy}. An illustration of the effects due to lossy media for an attenuation of 
+element \texttt{dx}$\times$\texttt{dy}. An illustration of the effects due to lossy media for an attenuation of
 coefficient, $\alpha$ of 1 [db/cm MHz] is shown in Figure~\ref{fig:lossy} for 10 mm, 25 mm, and 40 mm respectively.
 %%
 \begin{figure}[phtb]
@@ -1220,9 +1220,9 @@ coefficient, $\alpha$ of 1 [db/cm MHz] is shown in Figure~\ref{fig:lossy} for 10
 
 \PARstart{I}{n} his section a quick start on how to perform simulations with DREAM is presented. Here only
 a simple example is shown just to illustrate what is needed to simulate an ultrasonic measurement system. We
-will use a circular transducers for this example but more advanced examples can be found on the DREAM web 
+will use a circular transducers for this example but more advanced examples can be found on the DREAM web
 page  \url{http://www.signal.uu.se/Toolbox/dream/} on the
-\emph{Examples} page. Also more details of the various functions in the DREAM Toolbox can be found in 
+\emph{Examples} page. Also more details of the various functions in the DREAM Toolbox can be found in
 Sections~\ref{sec:transducer-functions}, \ref{sec:parallel}, and~\ref{sec:misc-functions}, respectively.
 
 Let us study a the pressure response for a circular transducer using water as the propagation
@@ -1258,7 +1258,7 @@ sampling:
 % Descretization parameters.
 dx = 0.03;                              % [mm].
 dy = 0.03;                              % [mm]
-dt = Ts;                                % [us]. 
+dt = Ts;                                % [us].
 nt = 400;                               % Length of spatial impulse response vector.
 s_par = [dx dy dt nt];
 \end{verbatim}
@@ -1293,24 +1293,24 @@ compute the discrete SIRs:
 \begin{verbatim}
 % Delay.
 t_z = z*1e3/cp;
-%delay = 0;                             % Start at 0 [us]. 
+%delay = 0;                             % Start at 0 [us].
 delay = t_z;                            % Start at t_z [us].
-  
+
 H = dreamcirc(Ro,geom_par,s_par,delay,m_par,'stop');
 \end{verbatim}
 \normalsize
 
 %
-% TODO: add electrical impulse response. 
+% TODO: add electrical impulse response.
 %
 
 \section{Transducer Function Reference}
 \label{sec:transducer-functions}
 
-\PARstart{T}{he} transducer functions are implemented as \textsc{Matlab} \emph{mex}-functions 
-and Octave\ \emph{oct}-functions; a \emph{mex/oct}-function is pre-compiled code that is dynamically 
-linked to \Matlab/Octave at run time. This greatly increases the computation speed compared to using 
-ordinary m-files since the DR-concept (see~\cite{Piwakowski1999}) uses \texttt{for} and \texttt{while} 
+\PARstart{T}{he} transducer functions are implemented as \textsc{Matlab} \emph{mex}-functions
+and Octave\ \emph{oct}-functions; a \emph{mex/oct}-function is pre-compiled code that is dynamically
+linked to \Matlab/Octave at run time. This greatly increases the computation speed compared to using
+ordinary m-files since the DR-concept (see~\cite{Piwakowski1999}) uses \texttt{for} and \texttt{while}
 loops extensively. An overview of the transducer functions can be found in Table~\ref{tab:overview}.
 
 % Need a new line above the table otherwise all rows on the table are
@@ -1344,46 +1344,46 @@ loops extensively. An overview of the transducer functions can be found in Table
   \caption{Overview of the DREAM toolbox transducer functions.
     \label{tab:overview}}
 \end{table}
-% 
-By convention, a transducer function name ending with ``\texttt{\_f}'' is a focused transducer (or has 
+%
+By convention, a transducer function name ending with ``\texttt{\_f}'' is a focused transducer (or has
 focused transducer elements) and a transducer function name ending with ``\texttt{\_d}'' is defocused
 (convex) transducer.
 
 The transducer functions can be divided in two groups, \emph{single transducer functions} and \emph{array
 functions}. The names of both groups starts with ``\texttt{dream}'' and the array functions are distinguished
-from single transducer functions by ``\texttt{\_arr\_}''. Note that arbitrary arrays (with mixed forms of 
-transducer elements) can be modeled using the single transducer functions and then adding their 
+from single transducer functions by ``\texttt{\_arr\_}''. Note that arbitrary arrays (with mixed forms of
+transducer elements) can be modeled using the single transducer functions and then adding their
 corresponding responses.
 
-\subsection{Input Parameters Common to all Transducer Functions} 
+\subsection{Input Parameters Common to all Transducer Functions}
 
 
 \subsubsection{Observation Point(s) Parameter}
 \label{sec:obsarg}
 
 The transducer functions can compute SIRs for multiple observation points. The observation points are given
-by a  $N\times 3$ matrix \texttt{Ro} were the first column contains the $x$-coordinates, the second the 
+by a  $N\times 3$ matrix \texttt{Ro} were the first column contains the $x$-coordinates, the second the
 $y$-coordinates, and the third the $z$-coordinates, respectively ($N$ is the number of observation points).
 
-The single element transducers are, by convention, all centered at $\mathbf{r} = (0,0,0)$ and the SIRs are 
-computed relative to this center point. 
+The single element transducers are, by convention, all centered at $\mathbf{r} = (0,0,0)$ and the SIRs are
+computed relative to this center point.
 %
-The array functions uses a grid matrix \texttt{G} to define the positions of the array elements 
+The array functions uses a grid matrix \texttt{G} to define the positions of the array elements
 (see Section~\ref{sec:array-par}). The SIRs are therefore computed relative the positions given
 by the grid matrix for the arrays.
 
 \subsubsection{Sampling Parameters}
 \label{sec:sarg}
 
-The four-element vector \texttt{s\_par = [dx dy dt nt]} determines the spatial discretization and the 
-temporal sampling properties. The spatial discretization of the transducer surface is given by 
+The four-element vector \texttt{s\_par = [dx dy dt nt]} determines the spatial discretization and the
+temporal sampling properties. The spatial discretization of the transducer surface is given by
 \texttt{dx}$\times$\texttt{dy}; small values of \texttt{dx} and \texttt{dy} results in a finer mesh,
-and a higher numerical accuracy, compared to larger ones. 
+and a higher numerical accuracy, compared to larger ones.
 %
-The temporal sampling interval $\Delta t$ (or $\Ts$) is given by \texttt{dt} and the length of the 
-SIR-vector is determined by \texttt{nt}. If \texttt{nt} is chosen too low so that any non-zero component 
-of the SIR is not within the time-window defined by \texttt{[delay dt*(nt-1)+delay]} an error message will 
-be printed (See Section~\ref{sec:delay} for a description of the \texttt{delay} parameter and 
+The temporal sampling interval $\Delta t$ (or $\Ts$) is given by \texttt{dt} and the length of the
+SIR-vector is determined by \texttt{nt}. If \texttt{nt} is chosen too low so that any non-zero component
+of the SIR is not within the time-window defined by \texttt{[delay dt*(nt-1)+delay]} an error message will
+be printed (See Section~\ref{sec:delay} for a description of the \texttt{delay} parameter and
 Section~\ref{sec:error} for a description of the error handling in the DREAM toolbox).
 %
 \begin{description}
@@ -1396,12 +1396,12 @@ Section~\ref{sec:error} for a description of the error handling in the DREAM too
 \subsubsection{The Delay Parameter}
 \label{sec:delay}
 
-The starting point of the SIR-vector(s) is given by the delay parameter \texttt{delay} ([$\mu$s]). 
+The starting point of the SIR-vector(s) is given by the delay parameter \texttt{delay} ([$\mu$s]).
 The delay parameter can either be a scalar, then all SIRs will have the same starting point, or it can be
-a vector with a length that must be equal to the number of observation points. In the latter case each 
+a vector with a length that must be equal to the number of observation points. In the latter case each
 observation point has a SIR with a different starting point.
 
-%If the delay parameter is set to $|\mathbf{r}_o|/c$ (assuming that the transducer is centered at 
+%If the delay parameter is set to $|\mathbf{r}_o|/c$ (assuming that the transducer is centered at
 %$\mathbf{r} = (0,0,0)$) then the SIR will start at the first index.
 
 \subsubsection{Material Parameters}
@@ -1416,18 +1416,18 @@ The material parameters are given by the three-element vector \texttt{m\_par = [
 \end{description}
 %
 Note: if \texttt{alpha} $\neq 0$ then the SIRs are compensated for attenuation. Note that the attenuation
-calculation involves a computation of an inverse discrete Fourier transform of length \texttt{nt} for 
-every surface element \texttt{dx}$\times$\texttt{dy}~\cite{Piwakowski1999} %(Appendix~\ref{sec:lossy}). 
-This results in a longer computation time compared to when \texttt{alpha} = 0. 
+calculation involves a computation of an inverse discrete Fourier transform of length \texttt{nt} for
+every surface element \texttt{dx}$\times$\texttt{dy}~\cite{Piwakowski1999} %(Appendix~\ref{sec:lossy}).
+This results in a longer computation time compared to when \texttt{alpha} = 0.
 See also Section~\ref{sec:misc-att}.
 
 \subsubsection{Focusing parameters}
 \label{sec:focus}
 
 
-The focusing in the DREAM toolbox is controlled with the two parameters \texttt{foc\_met} and 
-\texttt{focal}. The \texttt{foc\_met} parameters is a text string that selects the focusing method, 
-options are: 
+The focusing in the DREAM toolbox is controlled with the two parameters \texttt{foc\_met} and
+\texttt{focal}. The \texttt{foc\_met} parameters is a text string that selects the focusing method,
+options are:
 \begin{description}
 \item[\texttt{'off'}]: focusing not used.
 \item[\texttt{'x'}]: focus in $x$ only, $\left(\sqrt{x^2 + z_f^2}\right)/\cp$.
@@ -1438,21 +1438,21 @@ options are:
 
 %\begin{description}
 %\item[\texttt{'off'}]: Focusing not used.
-%\item[\texttt{'x'}]: Focus in $x$ only.($t(x,y) = \left(\sqrt{x_\text{max}^2 + z_f^2} - 
+%\item[\texttt{'x'}]: Focus in $x$ only.($t(x,y) = \left(\sqrt{x_\text{max}^2 + z_f^2} -
 %  \sqrt{x^2 + z_f^2}\right)/\cp$).
-%\item[\texttt{'y'}]: Focus in $y$ only.($t(x,y) = \left(\sqrt{y_\text{max}^2 + z_f^2} - 
+%\item[\texttt{'y'}]: Focus in $y$ only.($t(x,y) = \left(\sqrt{y_\text{max}^2 + z_f^2} -
 %  \sqrt{y^2 + z_f^2}\right)/\cp$).
-%\item[\texttt{'xy'}] Focus in both $x$ and $y$. ($t(x,y) = \left(\sqrt{x_\text{max}^2 + y_\text{max}^2 + z_f^2} 
+%\item[\texttt{'xy'}] Focus in both $x$ and $y$. ($t(x,y) = \left(\sqrt{x_\text{max}^2 + y_\text{max}^2 + z_f^2}
 %  - \sqrt{x^2 + y^2 + z_f^2}\right)/\cp$).
-%\item[\texttt{'x+y'}]: Focus in $x+y$. ($t(x,y) = \left(\sqrt{x_\text{max}^2 + y_\text{max}^2 + z_f^2} - 
+%\item[\texttt{'x+y'}]: Focus in $x+y$. ($t(x,y) = \left(\sqrt{x_\text{max}^2 + y_\text{max}^2 + z_f^2} -
 %  (\sqrt{x^2 + z_f^2} + \sqrt{y^2 + z_f^2}\right)/\cp$)).
 %\end{description}
 %
-%where $x_\text{max}$ and $y_\text{max}$ is the size of the transducer in respectively direction, and 
+%where $x_\text{max}$ and $y_\text{max}$ is the size of the transducer in respectively direction, and
 %the \texttt{focal} parameter is the focal distance $z_f$ (in [mm]).
 
-This type of focusing is used for the two single transducer functions (\texttt{dreamrect\_f} and 
-\texttt{dreamcirc\_f} see Section~\ref{sec:single}) and for the array functions (Section~\ref{sec:array}). 
+This type of focusing is used for the two single transducer functions (\texttt{dreamrect\_f} and
+\texttt{dreamcirc\_f} see Section~\ref{sec:single}) and for the array functions (Section~\ref{sec:array}).
 The spherical and cylindrical transducer functions also use focusing but there focusing is controlled by
 a single parameter \texttt{R} (see Sections~\ref{sec:spher_f}, \ref{sec:spher_d},
 \ref{sec:cyl_f}, and \ref{sec:cyl_d}).
@@ -1461,16 +1461,16 @@ a single parameter \texttt{R} (see Sections~\ref{sec:spher_f}, \ref{sec:spher_d}
 \label{sec:error}
 
 There are three levels of error reporting for the transducer functions. An error typically occur
-when the SIR do not fit within the time window, defined by the delay, sampling period, and 
-length parameters. The levels are controlled by the optional \texttt{err\_level} parameter which is a text 
+when the SIR do not fit within the time window, defined by the delay, sampling period, and
+length parameters. The levels are controlled by the optional \texttt{err\_level} parameter which is a text
 string with the following alternatives:
 %
 \begin{enumerate}
 
 \item \texttt{'ignore'}: Here an error is silently ignored,
-  
+
 \item \texttt{'warn'}: An error message is printed but computation is not stopped,
-  
+
 \item \texttt{'stop'}: An error message is printed and the computation is stopped.
 
 \end{enumerate}
@@ -1482,16 +1482,16 @@ SIR is. The default error level is \texttt{'stop'} (if the \texttt{err\_level} i
 
 \subsubsection{The SIR Output Argument}
 
-The first output argument of transducer functions, \texttt{H},  is a matrix or vector, 
-containing the spatial impulse response(s). 
+The first output argument of transducer functions, \texttt{H},  is a matrix or vector,
+containing the spatial impulse response(s).
 %
 \begin{verbatim}
   H = dream***( ... );
 \end{verbatim}
 %
-Each column \texttt{H} contain the SIR for the corresponding entry in the observation point input matrix 
+Each column \texttt{H} contain the SIR for the corresponding entry in the observation point input matrix
 \texttt{Ro} (see Section~\ref{sec:obsarg}).
- 
+
 \subsubsection{The Error Output Argument}
 
 The second (optional) output argument, \texttt{err}, is negative if an error has occurred and
@@ -1502,7 +1502,7 @@ The second (optional) output argument, \texttt{err}, is negative if an error has
 \end{verbatim}
 %
 If, for example, \texttt{err\_level = 'ignore'} then no error message will be printed
-but \texttt{err} will be negative if an error occurred so the error can be detected. This 
+but \texttt{err} will be negative if an error occurred so the error can be detected. This
 is useful for displaying error dialog boxes in GUIs, for example.
 
 %---------------------------------------------------------------
@@ -1513,11 +1513,11 @@ is useful for displaying error dialog boxes in GUIs, for example.
 As mentioned above all single element transducers are centered at $\rr = (0,0,0)$. There is, however, no
 loss in generality since the response at other transducer positions can simply be obtained
 by offsetting the coordinate system after computation.
- 
+
 \subsubsection{Line (strip) Transducer}
 
-The line, or strip, transducer has a length \texttt{a} and a (small) thickness equal to 
-\texttt{dy} (in \texttt{s\_par}). 
+The line, or strip, transducer has a length \texttt{a} and a (small) thickness equal to
+\texttt{dy} (in \texttt{s\_par}).
 
 \noindent \textbf{Syntax}:
 \begin{verbatim}
@@ -1661,22 +1661,22 @@ and the focusing is described in Section~\ref{sec:focus}.
 
 %---------------------------------------------------------------
 
-\subsection{Input Parameters Common to the Array Functions} 
+\subsection{Input Parameters Common to the Array Functions}
 \label{sec:array-par}
 
 \subsubsection{The Array Grid Matrix}
 
 The positions of the array transducer elements are determined by the $L\times3$ \emph{grid matrix}
-\texttt{G}. The first column contain the (center) $x$-positions of the elements, the second the $y$-positions, 
+\texttt{G}. The first column contain the (center) $x$-positions of the elements, the second the $y$-positions,
 and the third the $z$-positions ($L$ is the number of elements), respectively. This approach is very flexible
-and allows for arbitrary array geometries that  not is restricted to equally spaced linear or 2D 
+and allows for arbitrary array geometries that  not is restricted to equally spaced linear or 2D
 arrays.%\footnote{Note that \texttt{G} is a vector for the annular array}.
 
 \subsubsection{Array Focusing}
 \label{sec:arrfocus}
 %See Section~\ref{sec:focus}.
 
-The array focusing has an extra option, \texttt{'ud'},  compared to the focusing methods described in  
+The array focusing has an extra option, \texttt{'ud'},  compared to the focusing methods described in
 Section~\ref{sec:focus}:
 \begin{description}
 \item[\texttt{'off}]: focusing not used,
@@ -1688,13 +1688,13 @@ Section~\ref{sec:focus}:
 \end{description}
 %
 When user defined focusing is used the \texttt{'focal'} parameter is a vector of focusing delays (in $\mu$s).
-Each element in \texttt{'focal'} then delays the signal to the corresponding element in the array 
+Each element in \texttt{'focal'} then delays the signal to the corresponding element in the array
 (given by the grid matrix).
 
 
 \subsubsection{Beam Steering Parameters}
 
-The beam steering in the DREAM toolbox is controlled by the two parameters \texttt{steer\_met} and 
+The beam steering in the DREAM toolbox is controlled by the two parameters \texttt{steer\_met} and
 \texttt{steer\_par}. The \texttt{steer\_met} is a text string with four alternatives:
 \texttt{'off'}, \texttt{'x'}, \texttt{'y'}, and \texttt{'xy'}. The \texttt{steer\_par} is a two-element
 vector \texttt{steer\_par =  [theta phi]} where \texttt{theta} [deg] is the x-direction steer angle and
@@ -1716,7 +1716,7 @@ for the array functions:
     w_{{simply}}(r) & = & 1 - r^2 / r_{{max}}^2 \\
     w_{{clamped}}(r) & = & (1 - r^2 / r_{{max}}^2)^2.
   \end{eqnarray}
-}{ 
+}{
   \begin{eqnarray}
     w_{\text{triangle}}(r) & = & 1 - \frac{|r|}{r_{\text{max}}} \\
     w_{\text{gauss}}(r;p) & = &\exp(-p r^2) / r_{\text{max}}^2 \\
@@ -1746,7 +1746,7 @@ Figure~\ref{fig:apod_windows} show some examples of these function.
 There are three parameters that controls the apodization in the DREAM toolbox, \texttt{apod\_met},
 \texttt{apod}, and \texttt{win\_par}.
 %
-The \texttt{apod\_met} parameter is string variable for selecting apodization method, 
+The \texttt{apod\_met} parameter is string variable for selecting apodization method,
 options are:
 \begin{description}
 \item[\texttt{'off'}]      - No apodization
@@ -1758,10 +1758,10 @@ options are:
 \item[\texttt{'clamped'}]  - Clamped.
 \end{description}
 %
-The second parameter, \texttt{apod}, is a vector of apodization weights that is used for the 
+The second parameter, \texttt{apod}, is a vector of apodization weights that is used for the
 \texttt{'ud'} option. Pass an empty matrix (\texttt{[]}) if one of the other options are used.
 %
-The last parameter, \texttt{win\_par} (scalar), is used for raised cosine and Gaussian apodization 
+The last parameter, \texttt{win\_par} (scalar), is used for raised cosine and Gaussian apodization
 functions. See also Section~\ref{sec:misc-apod}.
 
 \subsection{Array Transducers}
@@ -1818,7 +1818,7 @@ Geometrical parameters:
   gz = zeros(length(gx),1);
   gx=gx(:);  gy=gy(:);  gz=gz(:);
   G = [gx gy gz];
-  
+
 \end{verbatim}
 
 \subsubsection{Array with Cylindrical Convex Elements}
@@ -1851,8 +1851,8 @@ Geometrical parameters:
 \end{verbatim}
 %
 The first element in \texttt{G} is the radius of the center element; then \texttt{G}
-has two entries for each annulus (the inner and outer radius). Hence, the length of 
-\texttt{G} must be odd for the annular array. 
+has two entries for each annulus (the inner and outer radius). Hence, the length of
+\texttt{G} must be odd for the annular array.
 
 The \texttt{apod\_met} parameter has the following entries for the annular array function:
 \begin{description}
@@ -1872,11 +1872,11 @@ this will speed up the computations. In the DREAM toolbox this is performed usin
 the SIRs for each observation point set is computed in its own thread.
 
 In DREAM version $<3$ Pthread was used and the DREAM functions had an extra parameter, \texttt{n\_cpus}, that was
-used to set the number of threads (all functions with thread support had a ``\texttt{\_p}'' in its function name). In 
+used to set the number of threads (all functions with thread support had a ``\texttt{\_p}'' in its function name). In
 DREAM version $\ge 3$ C++11 threads is used instead and the number of CPU cores is auto-detected to avoid the extra
 \texttt{n\_cpus} parameter. This reduces the number of DREAM functions and we don't need to build the Pthread lib
-on, for example, Windows platforms. One must however build DREAM with a C++ compiler that supports the C++11 
-standard.\footnote{The \texttt{conv\_p} and \texttt{fftconv\_p} functions still uses the \texttt{\_p} 
+on, for example, Windows platforms. One must however build DREAM with a C++ compiler that supports the C++11
+standard.\footnote{The \texttt{conv\_p} and \texttt{fftconv\_p} functions still uses the \texttt{\_p}
 naming scheme to avoid a conflict with the build-in \texttt{conv} (Octave, Matlab) and \texttt{fftconv} (Octave) functions.}
 
 To see if multiple threads are running using Linux or MacOS X, first run a DREAM function on one terminal
@@ -1885,13 +1885,13 @@ To see if multiple threads are running using Linux or MacOS X, first run a DREAM
     >> H = dreamrect_p(Ro,geom_par,s_par,delay,m_par,'stop');
 \end{verbatim}
 %
-and, second, open new terminal window and use the command \texttt{htop}.\footnote{On MacOS X \texttt{htop} can, for example, be installed 
+and, second, open new terminal window and use the command \texttt{htop}.\footnote{On MacOS X \texttt{htop} can, for example, be installed
 using MacPorts.} One should see something like:
 %
 \footnotesize
 \begin{verbatim}
   1  [||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||100.0%]     Tasks: 100, 249 thr; 6 running
-  2  [||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||100.0%]     Load average: 4.66 2.10 1.04 
+  2  [||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||100.0%]     Load average: 4.66 2.10 1.04
   3  [||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||100.0%]     Uptime: 4 days, 18:05:06
   4  [||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||100.0%]
   Mem[|||||||||||||||||||||||||||||||||||||||||||||||||||||||||          3052/7925MB]
@@ -1914,8 +1914,8 @@ on one core.
 \section{Analytic Transducer  Functions}
 \label{sec:analytic}
 
-The DREAM Toolbox has two time-continous analytic functions, and one sampled analytic function, for 
-circular and a rectangular transducers, respectively~\cite{Stepanishen1971a,Lockwood1973}. The parameters 
+The DREAM Toolbox has two time-continous analytic functions, and one sampled analytic function, for
+circular and a rectangular transducers, respectively~\cite{Stepanishen1971a,Lockwood1973}. The parameters
 for the functions,
 %
 \begin{verbatim}
@@ -1947,12 +1947,12 @@ methods described is Section~\ref{sec:apod}. The input parameters are:
 %
 \begin{description}
 \item[\texttt{apod\_met}] - Text string for selecting apodization method.
-  options are: \texttt{'off'}, \texttt{'ud'}, \texttt{'triangle'}, \texttt{'gauss'}, 
+  options are: \texttt{'off'}, \texttt{'ud'}, \texttt{'triangle'}, \texttt{'gauss'},
   \texttt{'raised'}, \texttt{'simply'}, and \texttt{'clamped'}.
-  
+
 \item[\texttt{a}]  - Is the number of points of the apodization window.% (or vector
   %of apodization weights for the \texttt{'ud'} option).
-  
+
 \item[\texttt{win\_par}] - Scalar parameter for raised cosine and Gaussian apodization functions.
 \end{description}
 
@@ -1969,14 +1969,14 @@ The input parameters for \texttt{dream\_att} are:
 %
 \begin{description}
 
-\item[\texttt{Ro}] - See Section~\ref{sec:obsarg}. 
+\item[\texttt{Ro}] - See Section~\ref{sec:obsarg}.
 
-\item[\texttt{s\_par =  [dt,nt];}] - See Section~\ref{sec:sarg}. 
+\item[\texttt{s\_par =  [dt,nt];}] - See Section~\ref{sec:sarg}.
 
-\item[\texttt{delay}]  - See Section~\ref{sec:delay}. 
+\item[\texttt{delay}]  - See Section~\ref{sec:delay}.
 
 \item[\texttt{m\_par= [cp,alpha];}]  -  See Section~\ref{sec:material}.
-  
+
 \end{description}
 
 \subsection{One Dimensional Matrix Convolution Functions}
@@ -1985,9 +1985,9 @@ The input parameters for \texttt{dream\_att} are:
 The \texttt{conv\_p} and \texttt{fftconv\_p} functions computes the
 one dimensional convolution of the columns in a matrix \texttt{A} and
 matrix (or vector) \texttt{B} using one or more threads. These functions
-are typically used to compute single-path or double-path (pulse-echo) 
-responses for a large number of observation points and thus avoiding 
-a slow \texttt{for}-loop using the \texttt{conv} function 
+are typically used to compute single-path or double-path (pulse-echo)
+responses for a large number of observation points and thus avoiding
+a slow \texttt{for}-loop using the \texttt{conv} function
 (that only takes vector arguments).
 
 \noindent \textbf{Syntax}:
@@ -2009,16 +2009,16 @@ and
 \end{verbatim}
 %
 where \texttt{A} is an $M\times N$ matrix, \texttt{B} is a $K\times N$
-matrix or a $K$-length vector, and \texttt{Y} is the $(M+K-1)\times N$ 
+matrix or a $K$-length vector, and \texttt{Y} is the $(M+K-1)\times N$
 output matrix.  If $\texttt{B}$ is a vector then each
-column in \texttt{A} is convolved with \texttt{B}. 
+column in \texttt{A} is convolved with \texttt{B}.
 
 The \texttt{fftconv\_p} performs the convolutions in the frequency
 domain using the FFTW library~\cite{fftw} which is significantly
 faster than the time-domain implementation \texttt{conv\_p} for long
 vectors. To use the \texttt{fftconv\_p} the FFTW3 lib must be
 available. The windows version of \texttt{fftconv\_p} is linked to
-the FFTW lib which, as previously described, can be found at 
+the FFTW lib which, as previously described, can be found at
 \texttt{ftp://ftp.fftw.org/pub/fftw/fftw3win32mingw.zip}.
 
 \subsubsection{Using Pre-computed FFTW Plans}
@@ -2042,20 +2042,20 @@ then use the plan in consecutive computations of the same size,
   end
 \end{verbatim}
 %
-The time-consuming call to FFTW plan functions is then avoided at each call to \texttt{fftconv\_p} inside the loop. 
+The time-consuming call to FFTW plan functions is then avoided at each call to \texttt{fftconv\_p} inside the loop.
 
 \subsubsection{Using the In-place Mode}
 
 If the involved matrices are large then memory allocation can be time consuming. To alleviate this problem
-both \texttt{conv\_p},  \texttt{fftconv\_p} and  \texttt{sum\_fftconv\_p} (see Section~\ref{sec:sumfftconv_p}) have an in-place 
-mode that uses a pre-allocated output matrix, hence memory allocation for the (large) output matrix \texttt{Y} is avoided. 
-For the \texttt{conv\_p} and \texttt{fftconv\_p} functions, the in-place operation has three modes, 
+both \texttt{conv\_p},  \texttt{fftconv\_p} and  \texttt{sum\_fftconv\_p} (see Section~\ref{sec:sumfftconv_p}) have an in-place
+mode that uses a pre-allocated output matrix, hence memory allocation for the (large) output matrix \texttt{Y} is avoided.
+For the \texttt{conv\_p} and \texttt{fftconv\_p} functions, the in-place operation has three modes,
 \texttt{'='}, \texttt{'+='}, and \texttt{'-='}, respectively.
 
-The default \texttt{'='} mode 
+The default \texttt{'='} mode
 
 \begin{verbatim}
-  
+
   [Y] = fftconv_p(H,u);
 
   for n=2:N
@@ -2085,30 +2085,30 @@ responses from the individual array elements. Assume that we have an array with 
 elements. The pressure response $p(\rr,t)$ is then given by,
 \ifthenelse{\boolean{TEX4HT}}
 {
-  %% 
+  %%
   \begin{equation}
     p(\rr,t) = \sum_{k=0}^{K-1} h^{{f-}\smt{sir}}_k(\rr,t) * h_{k}^{{ef}}(t) * u_k(t),
     \label{eq:system_impulse_response}
   \end{equation}
-  %% 
+  %%
   where $h^{{f-}\smt{sir}}_k(\rr,t)$ is the forward SIR for the $k$th transmit element,
   $h_{k}^{{ef}}(t)$ is the forward electro-acoustical impulse response, and $u_k(t)$ is
   the $k$th input signal.
 }{
-  %% 
+  %%
   \begin{equation}
     p(\rr,t) = \sum_{k=0}^{K-1} h^{\text{f-}\smt{sir}}_k(\rr,t) * h_{k}^{\text{ef}}(t) * u_k(t),
     \label{eq:system_impulse_response}
   \end{equation}
-  %% 
+  %%
   where $h^{\text{f-}\smt{sir}}_k(\rr,t)$ is the forward SIR for the $k$th transmit element,
   $h_{k}^{\text{ef}}(t)$ is the forward electro-acoustical impulse response, and $u_k(t)$ is
   the $k$th input signal.
 }
-%  
+%
 The DREAM Toolbox has a function, \texttt{sum\_fftconv\_p}, to facilitate computation of
-discrete array responses with arbitrary input signals. Similar to the \texttt{fftconv\_p} function,  
-the \texttt{sum\_fftconv\_p} function uses a FFT based algorithm to compute the convolutions. 
+discrete array responses with arbitrary input signals. Similar to the \texttt{fftconv\_p} function,
+the \texttt{sum\_fftconv\_p} function uses a FFT based algorithm to compute the convolutions.
 The \texttt{sum\_fftconv\_p} function performs an operation similar to the code:
 %%
 \begin{verbatim}
@@ -2162,7 +2162,7 @@ where the overhead of calling FFTW plan functions is now avoided inside the for 
 
 \subsection{Parallel Matrix Copy}
 
-The impulse response matrices can often become rather large and the time taken to copy data between matrices 
+The impulse response matrices can often become rather large and the time taken to copy data between matrices
 can therefore be considerable. The DREAM Toolbox comes with a threaded function \texttt{copy\_p} to speed up
 data copy.
 
@@ -2185,9 +2185,9 @@ In-place, threaded copy of data into a matrix:
 \subsection{The Speed of Sound in Water}
 
 The SIRs are a function of the sound speed in the propagation medium which often is water.
-The DREAM toolbox comes with a function \texttt{h2o\_soundspeed}, based on a method by V.A. Del 
+The DREAM toolbox comes with a function \texttt{h2o\_soundspeed}, based on a method by V.A. Del
 Grosso~\cite{Grosso1974}, to facilitate computation of the water sound speed (as function
-of temperature, pressure, and salinity). 
+of temperature, pressure, and salinity).
 
 \begin{verbatim}
   [cp] = h2o_soundspeed(T,P,unit,S)
@@ -2211,9 +2211,9 @@ of temperature, pressure, and salinity).
 
 \subsection{Double-path Modeling}
 
-Double-path responses can be modeled as convolutions between the forward and backward 
+Double-path responses can be modeled as convolutions between the forward and backward
 responses~\cite{Stepanishen1981}. This operation can be time consuming when the number of
-observation points is large. The DREAM toolbox has the threaded functions \texttt{conv\_p} 
+observation points is large. The DREAM toolbox has the threaded functions \texttt{conv\_p}
 and \texttt{fftconv\_p} that can be used to speed up this operation.
 %
 A typical example is:
@@ -2224,49 +2224,49 @@ H = fftconv_p(H_t,H_r); % Double-path.
 P = fftconv_p(H,h_e); % Electrical impulse response.
 \end{verbatim}
 %
-where we first compute the double-path SIRs and then add (convolve) the double-path 
+where we first compute the double-path SIRs and then add (convolve) the double-path
 electrical impulse response to get the (double-path) propagation response matrix \texttt{P}.
 
 \subsection{Synthetic Aperture Imaging --- The Synthetic Aperture Focusing Technique}
 \label{sec:saft}
 
-%\PARstart{S}{ynthetic} 
+%\PARstart{S}{ynthetic}
 Synthetic aperture imaging  (SAI) was developed to improve resolution
 in the along track direction for side-looking radar. The idea was to record
 data from a sequence of pulses from a single moving real aperture and then, with
-suitable computation, combine the signals so the output can be treated as a much 
+suitable computation, combine the signals so the output can be treated as a much
 larger aperture. The first synthetic aperture radar (SAR) systems  appeared
 in the beginning of the 1950's~\cite{Whiley1985,Sherwin1962}. Later on the method
-has carried over to ultrasound imaging in areas such as synthetic aperture sonar 
-(SAS)~\cite{Gough1997}, medical imaging, and nondestructive 
-testing~\cite{Seydel1982,Doctor1986}, where the method is often called the synthetic 
+has carried over to ultrasound imaging in areas such as synthetic aperture sonar
+(SAS)~\cite{Gough1997}, medical imaging, and nondestructive
+testing~\cite{Seydel1982,Doctor1986}, where the method is often called the synthetic
 aperture focusing technique (SAFT).
 
-The conventional time-domain SAFT algorithm performs synthetic focusing 
-by means of coherent summations, of responses from point scatterers, along 
-hyperbolas.\footnote{Linear scanning of the transducer is assumed here.} 
-These hyperbolas simply express the distances, or time-delays, from transducer 
-positions in the synthetic aperture 
-to the observation points, see illustration in Figure~\ref{fig:saft}. 
+The conventional time-domain SAFT algorithm performs synthetic focusing
+by means of coherent summations, of responses from point scatterers, along
+hyperbolas.\footnote{Linear scanning of the transducer is assumed here.}
+These hyperbolas simply express the distances, or time-delays, from transducer
+positions in the synthetic aperture
+to the observation points, see illustration in Figure~\ref{fig:saft}.
 %%
 \begin{figure}[phtb]
  \begin{center}
    \scalebox{0.6}{\epsfig{file=userman/eps/saft_geometry.eps}}
  \end{center}
-\caption{Typical measurement setup for a SAFT experiment. The transducer is mechanically 
-  scanned along the $x$-axis and at each sampling position, $x_n$, 
-  $n=0,1,\ldots,L-1$, a data vector (A-scan) of length $K$ is recorded. The 
-  distance between the transducer, at $(x_n,z=0)$, and the observation point, 
+\caption{Typical measurement setup for a SAFT experiment. The transducer is mechanically
+  scanned along the $x$-axis and at each sampling position, $x_n$,
+  $n=0,1,\ldots,L-1$, a data vector (A-scan) of length $K$ is recorded. The
+  distance between the transducer, at $(x_n,z=0)$, and the observation point,
   $(x_{\tilde{n}},z_m)$, is given by $R$.
   \label{fig:saft}}
 \end{figure}
 %%
-More specifically, to achieve focus at an observation point $(x_{\tilde{n}},z_m)$, the SAFT 
-algorithm time shifts and performs a summation of the received signals  $y(x_n,t)$ 
-measured at transducer positions $x_n$  for all $n$ in the synthetic aperture. 
+More specifically, to achieve focus at an observation point $(x_{\tilde{n}},z_m)$, the SAFT
+algorithm time shifts and performs a summation of the received signals  $y(x_n,t)$
+measured at transducer positions $x_n$  for all $n$ in the synthetic aperture.
 The time shifts which aim to compensate for differences in pulse traveling time,
-are simply calculated using the Pythagorean theorem and the operation 
-is commonly expressed in the continuous time 
+are simply calculated using the Pythagorean theorem and the operation
+is commonly expressed in the continuous time
 form~\cite{Frazier1998}
 %%
 \ifthenelse{\boolean{TEX4HT}}
@@ -2303,7 +2303,7 @@ that performs the SAFT operation (with linear interpolation):
 %   cp   [m/s]      - Sound velocity.
 %
 % Observation point(s) ([mm]):
-% Ro = [xo1 yo1 zo2; xo2 yo2 zo2; ... xoN yoN zoN]; 
+% Ro = [xo1 yo1 zo2; xo2 yo2 zo2; ... xoN yoN zoN];
 %      where N is the number of observation points.
 %
 % Synthetic aperture:
@@ -2323,12 +2323,12 @@ that performs the SAFT operation (with linear interpolation):
 \noindent Input parameters:
 \begin{verbatim}
  B     - KxL Ultrasonic B-scan data matrix.
- To    - A matrix of the form  [xo1 yo1 zo2; xo2 yo2 zo2; ... xoL yoL zoL]; 
+ To    - A matrix of the form  [xo1 yo1 zo2; xo2 yo2 zo2; ... xoL yoL zoL];
          where L is the number of transducer positions.
  delay - A scalar (or vector) of starting point(s) of the A-scans in B.
 \end{verbatim}
 
-%A simulation example using the \texttt{saft} function can be found in 
+%A simulation example using the \texttt{saft} function can be found in
 %Section~\ref{sec:saft-example}.
 
 \subsection{Delay-and-sum Imaging}
@@ -2337,7 +2337,7 @@ that performs the SAFT operation (with linear interpolation):
 The SAFT method described in Section~\ref{sec:saft} is a special case of methods based on so-called
 delay-and-sum imaging (DAS). The simple idea is just to compensate for the double-path propagation delay from
 each transmitter/receiver to each observation point and then perform a (coherent) summation. This operation
-is essentially based on an geometrical optics approach and is analogous to the operation of an acoustical 
+is essentially based on an geometrical optics approach and is analogous to the operation of an acoustical
 lens~\cite{Kino1987}.
 
 The DREAM Toolbox has two functions to facilitate (matrix based) delay-and-sum processing. The two DAS functions
@@ -2359,12 +2359,12 @@ are similar to the ones used in the transducer functions previously described.
 
 \subsection{Model Based Ultrasonic  Array Imaging}
 
-In this section a short introduction to model based ultrasonic imaging is presented. Model based ultrasonic array 
-imaging~\cite{Stoughton1993,Lingvall2003,Lingvall2007} is different from delay-and-sum imaging in the sense that is 
-based on optimal information processing  whereas delay-and-sum imaging is based on geometrical focusing. The idea is 
+In this section a short introduction to model based ultrasonic imaging is presented. Model based ultrasonic array
+imaging~\cite{Stoughton1993,Lingvall2003,Lingvall2007} is different from delay-and-sum imaging in the sense that is
+based on optimal information processing  whereas delay-and-sum imaging is based on geometrical focusing. The idea is
 to use a (linear) model, taking into account the diffraction effects associated with each transmitter/receiver, the
-electrical characteristics for each transmitter/receiver, as well as the used input signal(s), and 
-then estimate the parameters (the scattering strengths) of the model based on both data and prior 
+electrical characteristics for each transmitter/receiver, as well as the used input signal(s), and
+then estimate the parameters (the scattering strengths) of the model based on both data and prior
 information.
 %
 The DREAM toolbox can be used in this process for computing the SIRs for the model which can then be convolved
@@ -2372,43 +2372,43 @@ with measured electrical impulse responses to obtain a model for a real measurem
 impulse responses to evaluate different array designs, for example.
 
 To obtain a linear mode we need to consider both the forward process and the backward process.
-As discussed in Section~\ref{sec:analythical} [Eq.~\eqref{eq:pressure_response}] the forward response can be 
-divided in three parts: the input signal $u(t)$, the forward electro-acoustical response 
+As discussed in Section~\ref{sec:analythical} [Eq.~\eqref{eq:pressure_response}] the forward response can be
+divided in three parts: the input signal $u(t)$, the forward electro-acoustical response
 %
 \ifthenelse{\boolean{TEX4HT}}
 {
-  $h^{ef}(t)$, 
+  $h^{ef}(t)$,
 }{
-  $h^\text{ef}(t)$, 
+  $h^\text{ef}(t)$,
 }
-and the forward SIR 
+and the forward SIR
 \ifthenelse{\boolean{TEX4HT}}
 {
-  $h^{{f-}\smt{sir}}(\r,t)$. 
+  $h^{{f-}\smt{sir}}(\r,t)$.
 }{
-  $h^{\text{f-}\smt{sir}}(\r,t)$. 
+  $h^{\text{f-}\smt{sir}}(\r,t)$.
 }
-The backward response can similarly be divided in two parts: the 
-backward acousto-electrical impulse 
-response 
+The backward response can similarly be divided in two parts: the
+backward acousto-electrical impulse
+response
 \ifthenelse{\boolean{TEX4HT}}
 {
-  $h^{eb}(t)$ and the backward SIR $h^{{b-}\smt{sir}}(\r,t)$. 
+  $h^{eb}(t)$ and the backward SIR $h^{{b-}\smt{sir}}(\r,t)$.
 }{
-  $h^\text{eb}(t)$ and the backward SIR $h^{\text{b-}\smt{sir}}(\r,t)$. 
+  $h^\text{eb}(t)$ and the backward SIR $h^{\text{b-}\smt{sir}}(\r,t)$.
 }
-Now, consider an array with $K$ transmit elements and $L$ receive elements and contributions from a single observation 
-point, $\r = \begin{bmatrix} x &y & z\end{bmatrix}^T$, where ${}^T$ denotes the transpose operator. 
+Now, consider an array with $K$ transmit elements and $L$ receive elements and contributions from a single observation
+point, $\r = \begin{bmatrix} x &y & z\end{bmatrix}^T$, where ${}^T$ denotes the transpose operator.
 The received signal, $y_l(\r,t)$, from the $l$th receive element can be expressed
 %%
 \ifthenelse{\boolean{TEX4HT}}
 {
   \begin{equation}
     \begin{split}
-      y_l(\r,t) & = 
-      \overset{{Forward impulse response (f)}}{\overbrace{\left( \sum_{k=0}^{K-1}  
+      y_l(\r,t) & =
+      \overset{{Forward impulse response (f)}}{\overbrace{\left( \sum_{k=0}^{K-1}
             h^{{f-}\smt{sir}}_k(\r,t) * h_{k}^{ef}(t),
-            * u_k(t) \right)}} o(\r) * \\  
+            * u_k(t) \right)}} o(\r) * \\
       & \overset{{Backward impulse response (b)}}{\overbrace{h^{{b-}\smt{sir}}_l(\r,t) *  h_{l}^{eb}(t)}} + e_l(t), \\
       & = h^{f}(\r,t) * h_l^{b}(\r,t) o(\r) + e_l(t), \\
       & = h_l(\r,t) o(\r) + e_l(t),
@@ -2418,10 +2418,10 @@ The received signal, $y_l(\r,t)$, from the $l$th receive element can be expresse
 }{
   \begin{equation}
     \begin{split}
-      y_l(\r,t) & = 
-      \overset{\text{Forward impulse response (f)}}{\overbrace{\left( \sum_{k=0}^{K-1}  
+      y_l(\r,t) & =
+      \overset{\text{Forward impulse response (f)}}{\overbrace{\left( \sum_{k=0}^{K-1}
             h^{\text{f-}\smt{sir}}_k(\r,t) * h_{k}^\text{ef}(t),
-            * u_k(t) \right)}} o(\r) * \\  
+            * u_k(t) \right)}} o(\r) * \\
       & \overset{\text{Backward impulse response (b)}}{\overbrace{h^{\text{b-}\smt{sir}}_l(\r,t) *  h_{l}^\text{eb}(t)}} + e_l(t), \\
       & = h^\text{f}(\r,t) * h_l^\text{b}(\r,t) o(\r) + e_l(t), \\
       & = h_l(\r,t) o(\r) + e_l(t),
@@ -2429,32 +2429,32 @@ The received signal, $y_l(\r,t)$, from the $l$th receive element can be expresse
     \label{eq:discrete_system_impulse_response}
   \end{equation}
 }
-%% 
-where $*$ denotes temporal convolution and $e_l(t)$ is the noise for the $l$th receive element. 
-Note that the total forward impulse response is a superposition of the forward impulse responses 
-corresponding to all transmit elements. The \emph{object function} 
-$o(\r)$ is the scattering strength at the observation point $\r$, 
+%%
+where $*$ denotes temporal convolution and $e_l(t)$ is the noise for the $l$th receive element.
+Note that the total forward impulse response is a superposition of the forward impulse responses
+corresponding to all transmit elements. The \emph{object function}
+$o(\r)$ is the scattering strength at the observation point $\r$,
 \ifthenelse{\boolean{TEX4HT}}
 {
-  $h_{k}^{ef}(t)$ 
+  $h_{k}^{ef}(t)$
 }{
-  $h_{k}^\text{ef}(t)$ 
+  $h_{k}^\text{ef}(t)$
 }
-is the forward electrical impulse response for the $k$th transmit element, 
+is the forward electrical impulse response for the $k$th transmit element,
 \ifthenelse{\boolean{TEX4HT}}
 {
-  $h_{l}^{eb}(t)$ 
+  $h_{l}^{eb}(t)$
 }{
-  $h_{l}^\text{eb}(t)$ 
+  $h_{l}^\text{eb}(t)$
 }
-the backward electrical impulse response  
-for the $l$th receive element, and $u_k(t)$ is the input signal for the $k$th transmit element. 
+the backward electrical impulse response
+for the $l$th receive element, and $u_k(t)$ is the input signal for the $k$th transmit element.
 %Hereafter we will refer to the pulse-echo (double-path) impulse $h_l(\r,t)$ as the \emph{system}
 %impulse response.
 
-A discrete-time version of~\eqref{eq:system_impulse_response} is obtained by sampling the  
+A discrete-time version of~\eqref{eq:system_impulse_response} is obtained by sampling the
 impulse responses and by using discrete-time convolutions. If we consider $N$ observation points
-then the received discrete waveform from a target at the $n$th observation point, 
+then the received discrete waveform from a target at the $n$th observation point,
 $\r_n = (x_n,y_n,z_n)$, can be expressed as
 %%
 \begin{equation}
@@ -2463,11 +2463,11 @@ $\r_n = (x_n,y_n,z_n)$, can be expressed as
 \end{equation}
 %%
 where the column vector $\h_l^{(n)}$ is the discrete system impulse response for
-the $l$th receive element.\footnote{Here all vectors are by convention column vectors.} The vector $\o$ 
-represents the $N$ scattering amplitudes in the region-of-interest, and the notation $(\n)_{n}$ denotes the $n$th 
-element in $\o$.\footnote{The vector $\o$ can easily be rearrange to form an image when two-dimensional imaging is 
-  considered~\cite{Lingvall2004}.} 
-%% 
+the $l$th receive element.\footnote{Here all vectors are by convention column vectors.} The vector $\o$
+represents the $N$ scattering amplitudes in the region-of-interest, and the notation $(\n)_{n}$ denotes the $n$th
+element in $\o$.\footnote{The vector $\o$ can easily be rearrange to form an image when two-dimensional imaging is
+  considered~\cite{Lingvall2004}.}
+%%
 
 To obtain the received signal for all observation points we need to perform a summation over $n$, which
 equivalently can be expressed as a matrix-vector multiplication, according to
@@ -2488,11 +2488,11 @@ we finally have linear model for the total array setup
 %%
 \begin{equation}
   \begin{split}
-    \y = & \begin{bmatrix} \y_{0} \\ 
-      \y_1 \\  \vdots \\ 
-      \y_{L-1}\\  \end{bmatrix}  = \begin{bmatrix} \P_{0} \\ 
-      \P_1 \\  \vdots \\ 
-      \P_{L-1}\\  \end{bmatrix}  
+    \y = & \begin{bmatrix} \y_{0} \\
+      \y_1 \\  \vdots \\
+      \y_{L-1}\\  \end{bmatrix}  = \begin{bmatrix} \P_{0} \\
+      \P_1 \\  \vdots \\
+      \P_{L-1}\\  \end{bmatrix}
     \o +
     \begin{bmatrix} \e_0 \\ \e_1 \\  \vdots \\ \e_{L-1} \\ \end{bmatrix} \\
     = & \P \o + \e,
@@ -2502,15 +2502,15 @@ we finally have linear model for the total array setup
 %%
 for the total array imaging system~\cite{Lingvall2004}.
 %
-The \emph{propagation matrix}, $\P$, in~\eqref{eq:extended} now 
-describes both the transmission and the reception process for an arbitrary focused 
-array. Note that the position of the observation points, and the corresponding scattering amplitudes represented 
+The \emph{propagation matrix}, $\P$, in~\eqref{eq:extended} now
+describes both the transmission and the reception process for an arbitrary focused
+array. Note that the position of the observation points, and the corresponding scattering amplitudes represented
 by the vector $\o$, is not restricted to a regular two-dimensional grid, which is often used in ultrasonic imaging.
 %
-Furthermore, the array elements can in fact, similar to the observation points , be positioned at arbitrary locations in 
+Furthermore, the array elements can in fact, similar to the observation points , be positioned at arbitrary locations in
 tree-dimensional space space. Thus, the model~\eqref{eq:extended} can also
-be used to model two-dimensional arrays as well as to model array responses in tree-dimensional space. 
-Also note that the ``noise'' vector $\e$ describes the \emph{uncertainty} of the model~\eqref{eq:extended}. The noise $\e$ 
+be used to model two-dimensional arrays as well as to model array responses in tree-dimensional space.
+Also note that the ``noise'' vector $\e$ describes the \emph{uncertainty} of the model~\eqref{eq:extended}. The noise $\e$
 does not only model the measurement noise but also all other errors that we may have, such as: multiple scattering effects,
 cross talk between array elements, non-uniform sound speed in the media, etc.
 
@@ -2529,7 +2529,7 @@ for each observation point is given by~\cite{Lingvall2003}
   \label{eq:matched-filter}
 \end{equation}
 
-Note that the structure of the matched filter is similar to delay-and-sum processing which  also can be expressed 
+Note that the structure of the matched filter is similar to delay-and-sum processing which  also can be expressed
 as a matrix-vector multiplication (see the \texttt{model\_based\_example.m} on the DREAM website),
 \begin{equation}
   \hat{\o}= \D^T\y
@@ -2554,21 +2554,21 @@ where $\Co$ is the covariance matrix for $\o$ and $\Ce$ is the covariance matrix
 The estimator~\eqref{eq:optimal} has the property, not found for the matched filter or for delay-and-sum
 methods, namely that any beampattern can be compensated given that the signal-to-noise ratio is sufficient.
 
-As a final not on model based imaging is that the matrices involved normally become rather large. It is 
-therefore highly recommended to used a tuned linear algebra library, such as 
+As a final not on model based imaging is that the matrices involved normally become rather large. It is
+therefore highly recommended to used a tuned linear algebra library, such as
 \href{http://www.tacc.utexas.edu/resources/software/}{K. Goto's} BLAS library or
-the \href{http://math-atlas.sourceforge.net/}{ATLAS} library, for example. These libraries often have thread 
+the \href{http://math-atlas.sourceforge.net/}{ATLAS} library, for example. These libraries often have thread
 support so that all CPUs on the computer can be utilized.
 
-An example of model based (and matrix based delay-and-sum) imaging can be found on the DREAM website (see the 
+An example of model based (and matrix based delay-and-sum) imaging can be found on the DREAM website (see the
 \texttt{model\_base\_example.m} file on the examples page).
 
 \section{The Graphical User Interface (Matlab only)}
 \label{sec:gui}
 
-To launch the DREAM Toolbox GUI, type \texttt{dream\_gui} in the \Matlab\ Command 
-Window %\footnote{The DREAM GUI is not available for Octave.} 
-and a graphical user interface will be raised as shown in Figure~\ref{fig:gui}.  
+To launch the DREAM Toolbox GUI, type \texttt{dream\_gui} in the \Matlab\ Command
+Window %\footnote{The DREAM GUI is not available for Octave.}
+and a graphical user interface will be raised as shown in Figure~\ref{fig:gui}.
 %
 \begin{figure}[phtb]
  \begin{center}
@@ -2580,19 +2580,19 @@ and a graphical user interface will be raised as shown in Figure~\ref{fig:gui}.
 \end{figure}
 %
 After activating the user interface, users can set parameters,
-compute SIRs, and save and process the resulting SIR by using the 
-graphical controls. For setting of geometry parameters, please also refer to the 
-schematic diagram of transducer displayed in the center of the graphic interface. 
+compute SIRs, and save and process the resulting SIR by using the
+graphical controls. For setting of geometry parameters, please also refer to the
+schematic diagram of transducer displayed in the center of the graphic interface.
 After setting all the parameters, clicking on the \emph{Compute} button
-starts to compute SIR. In addition, the DREAM GUI provides several post-processing 
+starts to compute SIR. In addition, the DREAM GUI provides several post-processing
 operations to process the SIRs, including computing pressure response, computing the
-spectrum of the SIR, and convolving the SIR with an excitation signal. Notice that if 
+spectrum of the SIR, and convolving the SIR with an excitation signal. Notice that if
 users tick the checkbox of pressure response, the spectrum and
 convolution operations will be performed on the pressure instead of on the SIR.
 The parameters and resulting SIR can be stored in an \texttt{*.mat} file by clicking on the
 button of \emph{Save}.  The parameters settings can then be restored by loading the file using
 the \emph{Load} button.
-%, or read the 
+%, or read the
 %parameters and process SIR data in the \Matlab\ command window.
 
 \section{Known Issues}
@@ -2604,40 +2604,40 @@ the \emph{Load} button.
   or similar, then try to pre-load the \texttt{libstdc++.so.6} for the compiler used to build the mex-files. For example,\\
   \texttt{\$ export LD\_PRELOAD="/usr/lib64/gcc/x86\_64-pc-linux-gnu/4.9.2/libstdc++.so.6"}\\
   and then start Matlab from the same terminal.
-  
+
 \item On Windows platforms the MEX-files can not be aborted by
-  pressing \texttt{CTRL-C} since Windows lacks real asynchronous signals, see: 
-  % 
-  % \begin{verbatim} 
+  pressing \texttt{CTRL-C} since Windows lacks real asynchronous signals, see:
+  %
+  % \begin{verbatim}
   \url{http://www.mathworks.com/support/solutions/data/1-188VX.html}
   % \end{verbatim}
   %
   Therefore, when \texttt{CTRL-C} is pressed, using Windows, the
   operation is interrupted after the MEX-file has finished.
-  
+
 \item On Linux x86 platforms the \Matlab\ release 14 library
   \texttt{matlab/sys/os/glnx86/libgcc\_s.so} seems to be buggy causing
   \matlab\ to abort when a \texttt{mexErrMsg} call is done within a
   MEX-file. The threaded functions uses the \texttt{mexErrMsg}
   function when \texttt{CTRL-C} is pressed. A work-around is to set the environment
-  variable \texttt{LD\_PRELOAD} to point to a working library. If you, for example, are using 
-  gcc 3.4.4, then you can set 
-  % 
-\begin{verbatim} 
+  variable \texttt{LD\_PRELOAD} to point to a working library. If you, for example, are using
+  gcc 3.4.4, then you can set
+  %
+\begin{verbatim}
    export LD_PRELOAD=/usr/lib/gcc/i686-pc-linux-gnu/3.4.4/libgcc_s.so
 \end{verbatim}
-  % 
+  %
   or rename \texttt{matlab/sys/os/glnx86/libgcc\_s.so} and copy (or
-  link) a working \texttt{libgcc\_s.so} to the 
+  link) a working \texttt{libgcc\_s.so} to the
   \texttt{matlab/sys/os/glnx86/} directory.
-    
-\item The file \texttt{mex\_sum\_fftconv\_p.c} do not compile unless \Matlab\ $\ge$ R2006b is installed. The problem 
-  is that \texttt{mwSize} must be defined in \texttt{matlab/extern/include/matrix.h} (\texttt{sum\_fftconv\_p} 
+
+\item The file \texttt{mex\_sum\_fftconv\_p.c} do not compile unless \Matlab\ $\ge$ R2006b is installed. The problem
+  is that \texttt{mwSize} must be defined in \texttt{matlab/extern/include/matrix.h} (\texttt{sum\_fftconv\_p}
   compiles for Octave).
-  
-\item The computation of responses for lossy media is rather time consuming; the computation time can be as 
-  large as a factor of 1000 times longer than for loss-less media. This due to the fact that the frequency 
-  domain attenuation response is computed, and an inverse FFT is performed, for every surface element, 
+
+\item The computation of responses for lossy media is rather time consuming; the computation time can be as
+  large as a factor of 1000 times longer than for loss-less media. This due to the fact that the frequency
+  domain attenuation response is computed, and an inverse FFT is performed, for every surface element,
   \texttt{dx}$\times$\texttt{dy}, of the transducer surface.
 
 \end{itemize}
@@ -2663,21 +2663,21 @@ the \emph{Load} button.
 \section{Building the Pthreads Library for 32 and 64 bit Windows}
 \label{sec:build_pthreads-windows}
 
-The DREAM toolbox uses pthreads (POSIX threads) to run computations in parallel on several cores/cpus. To run the 
-parallel functions on Windows the \emph{Pthreads-win32} library is used:\\ \url{http://sourceware.org/pthreads-win32/}. 
-The most current version of the Pthreads-win32 library, which is the one used by DREAM, is version 2.8.0 (2006-12-22). 
-A 32-bit binary version of the library can be found at: \url{ftp://sourceware.org/pub/pthreads-win32/}. 
+The DREAM toolbox uses pthreads (POSIX threads) to run computations in parallel on several cores/cpus. To run the
+parallel functions on Windows the \emph{Pthreads-win32} library is used:\\ \url{http://sourceware.org/pthreads-win32/}.
+The most current version of the Pthreads-win32 library, which is the one used by DREAM, is version 2.8.0 (2006-12-22).
+A 32-bit binary version of the library can be found at: \url{ftp://sourceware.org/pub/pthreads-win32/}.
 %
-The \href{http://sourceforge.net/projects/mingw-w64/}{MinGW-w64} project has a patch to build the Pthreads-win32 lib 
-for 64-bit Windows, and there are some more 64-bit patches at:\\ \url{http://www.cadforte.com/wiki/index.php/Pthreads}. 
+The \href{http://sourceforge.net/projects/mingw-w64/}{MinGW-w64} project has a patch to build the Pthreads-win32 lib
+for 64-bit Windows, and there are some more 64-bit patches at:\\ \url{http://www.cadforte.com/wiki/index.php/Pthreads}.
 
-To facilite building the lib we have included our own (experimental) patch, which is a combination of the patches 
-above (with some minor changes), and the source code for the Pthreads-win32 lib in the source code package of the DREAM 
-toolbox. There are also two (bash) build scripts which can be used for building the 32-bit and 64-bit libs, 
-respectively. This is tested using the MinGW-w64 cross compiler tool chains on Linux. After uncompressing 
+To facilite building the lib we have included our own (experimental) patch, which is a combination of the patches
+above (with some minor changes), and the source code for the Pthreads-win32 lib in the source code package of the DREAM
+toolbox. There are also two (bash) build scripts which can be used for building the 32-bit and 64-bit libs,
+respectively. This is tested using the MinGW-w64 cross compiler tool chains on Linux. After uncompressing
 the DREAM source code packge you can find these files in the \texttt{windows} folder.
 
-Given that you have installed the MinGW-w64 i686 cross compiler you can 
+Given that you have installed the MinGW-w64 i686 cross compiler you can
 build the 32-bit Pthreads-win32 with
 %
 \begin{verbatim}
@@ -2685,26 +2685,26 @@ build the 32-bit Pthreads-win32 with
 \end{verbatim}
 %
 This will (patch it for the MinGW-w64 compiler) build the \texttt{pthreadGC2.dll} file and copy it (the \texttt{pthread.def} file,
-and the header files \texttt{pthread.h}, \texttt{sched.h} and, \texttt{semaphore.h}) to  the \texttt{windows/dll} folder. 
+and the header files \texttt{pthread.h}, \texttt{sched.h} and, \texttt{semaphore.h}) to  the \texttt{windows/dll} folder.
 
 For 64-bit windows you first need to install the MinGW-w64 x86\_64 cross compiler and then the script
 \begin{verbatim}
 # ./build_pthreads_win64
 \end{verbatim}
 %
-will copy the Pthreads-win32 sources, patch them for 64-bits support, and build the lib. The 64-bit lib (the 
-\texttt{pthread.def} file, and the header files \texttt{pthread.h}, \texttt{sched.h} and, 
+will copy the Pthreads-win32 sources, patch them for 64-bits support, and build the lib. The 64-bit lib (the
+\texttt{pthread.def} file, and the header files \texttt{pthread.h}, \texttt{sched.h} and,
 \texttt{semaphore.h}) will be installed in the  \texttt{windows/dll\_64} folder.
 
-%Note: if you intend to use these libs with one of the MSVC compilers then you also need the 
-%corresponding \texttt{lib} files. These \texttt{lib} files can be generated using the windows 
+%Note: if you intend to use these libs with one of the MSVC compilers then you also need the
+%corresponding \texttt{lib} files. These \texttt{lib} files can be generated using the windows
 %bat-files found in the \texttt{windows/dll} and  \texttt{windows/dll\_64} folders, respectively.
 
 
 \section{Building the FFTW Library for 32 and 64 bit Windows}
 \label{sec:build_fftw-windows}
 
-For conveniance we have also included scripts to build the FFTW library 
+For conveniance we have also included scripts to build the FFTW library
 for both 32 and 64-bit Windows. The (bash) scripts uses MinGW-w64 (i686 and x86\_64) cross compiler
 tool chains, respectively. Change directory to the \texttt{windows} folder and run
 %
@@ -2718,13 +2718,13 @@ to build for 32-bit Windows or
 # ./BUILD-MINGW_64-FFTW
 \end{verbatim}
 %
-for 64-bit Windows. The two build scripts are based on the corresponding ones at the FFTW 
+for 64-bit Windows. The two build scripts are based on the corresponding ones at the FFTW
 \href{http://www.fftw.org}{site} adapted for building DREAM on Windows. The scripts downloads the FFTW
-sources, builds and install the libraries in the \texttt{windows/dll} and  \texttt{windows/dll\_64} folders, 
+sources, builds and install the libraries in the \texttt{windows/dll} and  \texttt{windows/dll\_64} folders,
 respectively.
 
-%Similary to the Pthreads-win32 lib you need to build the \texttt{lib} files if you intend to use 
-%these libs with one of the MSVC compilers. These \texttt{lib} files can be generated using the corresponding 
+%Similary to the Pthreads-win32 lib you need to build the \texttt{lib} files if you intend to use
+%these libs with one of the MSVC compilers. These \texttt{lib} files can be generated using the corresponding
 %windows bat-files found in the \texttt{windows/dll} and  \texttt{windows/dll\_64} folders, respectively.
 
 \end{document}

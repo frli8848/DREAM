@@ -4,18 +4,18 @@
 *
 * This file is part of the DREAM Toolbox.
 *
-* The DREAM Toolbox is free software; you can redistribute it and/or modify 
+* The DREAM Toolbox is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by the
 * Free Software Foundation; either version 2, or (at your option) any
 * later version.
 *
-* The DREAM Toolbox is distributed in the hope that it will be useful, but 
+* The DREAM Toolbox is distributed in the hope that it will be useful, but
 * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
 * for more details.
 *
 * You should have received a copy of the GNU General Public License
-* along with the DREAM Toolbox; see the file COPYING.  If not, write to the 
+* along with the DREAM Toolbox; see the file COPYING.  If not, write to the
 * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 * 02110-1301, USA.
 *
@@ -77,7 +77,7 @@ void sig_keyint_handler(int signum);
 
 /***
  *
- * Thread function. 
+ * Thread function.
  *
  ***/
 
@@ -89,14 +89,14 @@ void* smp_process(void *arg)
   size_t A_M = D.A_M, B_M = D.B_M, r = D.r, k = D.k, len = D.len;
 
   for (n=line_start; n<line_stop; n++) {
-    
+
     memcpy( &A[r+(k+n)*A_M], &B[0+n*B_M], len*sizeof(double));
-    
+
     if (running==false) {
       mexPrintf("copy_p: thread for column %d -> %d bailing out!\n",line_start+1,line_stop);
       break;
     }
- 
+
   }
   return(NULL);
 }
@@ -123,7 +123,7 @@ void sig_keyint_handler(int signum) {
 }
 
 /***
- * 
+ *
  * Matlab (MEX) gateway function for copy_p.
  *
  ***/
@@ -131,7 +131,7 @@ extern void _main();
 
 void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
-  double         *A,*B; 
+  double         *A,*B;
   sighandler_t   old_handler, old_handler_abrt, old_handler_keyint;
   size_t line_start, line_stop, A_M, A_N, B_M, B_N;
   size_t r_M, r_N, k_M, k_N;
@@ -148,7 +148,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
   if (nlhs > 0)
     mexErrMsgTxt("Too many output arguments for copy_p, none required!");
-  
+
   A_M = mxGetM(prhs[0]);
   A_N = mxGetN(prhs[0]);
   A   = mxGetPr(prhs[0]);
@@ -165,7 +165,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   B_N = mxGetN(prhs[3]);
   B   = mxGetPr(prhs[3]);
 
-  // Check that arg 2. 
+  // Check that arg 2.
   if ( r_M * r_N !=2 )
     mexErrMsgTxt("Argument 2 must be a 2 element vector!");
 
@@ -175,35 +175,35 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   if (( (size_t) r[0] > A_M) || ( (size_t) r[1] > A_M))
     mexErrMsgTxt("One element of argument 2 exceeds row dimension of arg 1!");
 
-  // Check that arg 3. 
+  // Check that arg 3.
   if ( k_M * k_N !=2 )
     mexErrMsgTxt("Argument 3 must be a 2 element vector!");
 
   if ( (size_t) k[1] < 1)
     mexErrMsgTxt("1st element of argument 3 must be > 1!");
-  
+
   if (( (size_t) k[0] > A_N) || ( (size_t) k[1] > A_N))
     mexErrMsgTxt("One element of argument 3 exceeds colomn dimension of arg 1!");
 
-  // Check that arg 4. 
+  // Check that arg 4.
   if (B_M < (size_t) (r[1]-r[0])+1 )
     mexErrMsgTxt("Argument 4 has not the number of rows as given by arg 2!");
 
   if (B_N != (size_t) (k[1]-k[0])+1 )
     mexErrMsgTxt("Argument 4 has not the number of columns as given by arg 3!");
 
-    
+
   //
   // Number of threads.
   //
-   
+
   // Get number of CPU cores (including hypethreading, C++11)
   nthreads = std::thread::hardware_concurrency();
-  
+
   // nthreads can't be larger then the number of columns in the A matrix.
   if (nthreads > A_N)
     nthreads = A_N;
-  
+
   //
   // Register signal handlers.
   //
@@ -215,24 +215,24 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   if ((old_handler_abrt=signal(SIGABRT, &sighandler)) == SIG_ERR) {
     printf("Couldn't register signal handler.\n");
   }
-  
+
   if ((old_handler_keyint=signal(SIGINT, &sighandler)) == SIG_ERR) {
     printf("Couldn't register signal handler.\n");
   }
-  
+
   //
   // Call the mem_copy subroutine.
   //
 
   running = true;
-  
+
   // Allocate local data.
   D = (DATA*) malloc(nthreads*sizeof(DATA));
   if (!D)
     mexErrMsgTxt("Failed to allocate memory for thread data!");
 
   // Allocate mem for the threads.
-  threads = new std::thread[nthreads]; // Init thread data.  
+  threads = new std::thread[nthreads]; // Init thread data.
   if (!threads)
     mexErrMsgTxt("Failed to allocate memory for threads!");
 
@@ -263,10 +263,10 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     CPU_ZERO(&cpuset);
     CPU_SET(thread_n, &cpuset);
     int rc = pthread_setaffinity_np(threads[thread_n].native_handle(),
-				    sizeof(cpu_set_t), &cpuset);
+                                    sizeof(cpu_set_t), &cpuset);
 #endif
-  } // for (thread_n = 0; thread_n < nthreads; thread_n++)  
-  
+  } // for (thread_n = 0; thread_n < nthreads; thread_n++)
+
   // Wait for all threads to finish.
   for (thread_n = 0; thread_n < nthreads; thread_n++)
     threads[thread_n].join();
@@ -283,11 +283,11 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   if (signal(SIGTERM, old_handler) == SIG_ERR) {
     printf("Couldn't register old signal handler.\n");
   }
-   
+
   if (signal(SIGABRT,  old_handler_abrt) == SIG_ERR) {
     printf("Couldn't register signal handler.\n");
   }
-  
+
   if (signal(SIGINT, old_handler_keyint) == SIG_ERR) {
     printf("Couldn't register signal handler.\n");
   }
@@ -296,6 +296,6 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     // This may kill Matlab 7 release 14 (bug in Matlab).
     mexErrMsgTxt("CTRL-C pressed!\n"); // Bail out.
   }
-  
+
   return;
 }

@@ -56,6 +56,10 @@
 // We pobably need fftw >= 3.2.x to handle 64-bit array indexing.
 // ToDO If we have fftw 3.2.x we can use fftw_plan_dft_r2c_1d_64 etc.
 
+//#include <mutex>
+//std::mutex print_mutex;         // Debug print mutex (C++11)
+
+
 #include "dream.h"
 
 /***
@@ -85,8 +89,8 @@ fftw_plan    p_backward;
 
 typedef struct
 {
-  octave_idx_type line_start;
-  octave_idx_type line_stop;
+  octave_idx_type col_start;
+  octave_idx_type col_stop;
   double *A;
   octave_idx_type A_M;
   octave_idx_type A_N;
@@ -101,7 +105,7 @@ typedef void (*sighandler_t)(int);
 //
 // Function prototypes.
 //
-void* smp_process(void *arg);
+void* smp_fftconv_process(void *arg);
 void sighandler(int signum);
 void sig_abrt_handler(int signum);
 void sig_keyint_handler(int signum);
@@ -116,10 +120,10 @@ void fftconv(double *xr, octave_idx_type nx, double *yr, octave_idx_type ny, dou
  *
  ***/
 
-void* smp_process(void *arg)
+void* smp_fftconv_process(void *arg)
 {
   DATA D = *(DATA *)arg;
-  octave_idx_type    line_start=D.line_start, line_stop=D.line_stop, n;
+  octave_idx_type    col_start=D.col_start, col_stop=D.col_stop, n;
   double *A = D.A, *B = D.B, *Y = D.Y;
   octave_idx_type A_M = D.A_M, B_M = D.B_M, B_N = D.B_N;
 
@@ -135,6 +139,7 @@ void* smp_process(void *arg)
   // Allocate space for input vectors.
 
   fft_len = A_M+B_M-1;
+
 
   //
   // fftw_malloc may not be thread safe! Check this!!!
@@ -156,34 +161,62 @@ void* smp_process(void *arg)
   //
   // Do the convolution.
   //
+  size_t k = 0;
 
   if (B_N > 1) {// B is a matrix.
 
-    for (n=line_start; n<line_stop; n++) {
+    n=col_start;
+    double *Ap = &A[0+n*A_M];
+    double *Bp = &B[0+n*B_M];
+    double *Yp = &Y[0+n*(A_M+B_M-1)];
+    for (n=col_start; n<col_stop; n++) {
 
-      fftconv( &A[0+n*A_M], A_M, &B[0+n*B_M], B_M, &Y[0+n*(A_M+B_M-1)],
-               a,b,c,af,bf,cf);
+      fftconv( Ap, A_M, Bp, B_M, Yp, a,b,c,af,bf,cf);
+
+      Ap += A_M;
+      Bp += B_M;
+      Yp += (A_M+B_M-1);
 
       if (running==false) {
-        octave_stdout << "fftconv_p: thread for column " << line_start+1 << " -> " << line_stop << " bailing out!\n";
+        octave_stdout << "fftconv_p: thread for column " << col_start+1 << " -> " << col_stop << " bailing out!\n";
         break;
       }
+
+      k++;
 
     } // end-for
   } else { // B is a vector.
 
-    for (n=line_start; n<line_stop; n++) {
+    n=col_start;
+    double *Ap = &A[0+n*A_M];
+    double *Yp = &Y[0+n*(A_M+B_M-1)];
+    for (n=col_start; n<col_stop; n++) {
 
-      fftconv( &A[0+n*A_M], A_M, B, B_M, &Y[0+n*(A_M+B_M-1)],
-               a,b,c,af,bf,cf);
+      fftconv( Ap, A_M, B, B_M, Yp, a,b,c,af,bf,cf);
+
+      Ap += A_M;
+      Yp += (A_M+B_M-1);
 
       if (running==false) {
-        octave_stdout << "fftconv_p: thread for column " << line_start+1 << " -> " << line_stop << " bailing out!\n";
+        octave_stdout << "fftconv_p: thread for column " << col_start+1 << " -> " << col_stop << " bailing out!\n";
         break;
       }
 
+      k++;
+
     } // end-for
-  } // end.if
+  } // end-if
+
+  /*
+  {
+    std::lock_guard<std::mutex> lk(print_mutex);
+    octave_stdout << "col_start: " << col_start
+                  << " col_stop: " << col_stop
+                  << " k: " << k
+                  << std::endl;
+
+  }
+  */
 
   //
   //  Cleanup
@@ -402,7 +435,7 @@ Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
 @end deftypefn")
 {
   double *A,*B, *Y;
-  octave_idx_type line_start, line_stop, A_M, A_N, B_M, B_N, n;
+  octave_idx_type col_start, col_stop, A_M, A_N, B_M, B_N, n;
   sighandler_t    old_handler, old_handler_abrt, old_handler_keyint;
   std::thread     *threads;
   octave_idx_type  thread_n, nthreads;
@@ -563,19 +596,19 @@ Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
     break;
   }
 
-  const Matrix tmp = args(0).matrix_value();
-  A_M = tmp.rows();
-  A_N = tmp.cols();
-  A = (double*) tmp.fortran_vec();
+  const Matrix tmp0 = args(0).matrix_value();
+  A_M = tmp0.rows();
+  A_N = tmp0.cols();
+  A = (double*) tmp0.fortran_vec();
 
-  const Matrix tmp2 = args(1).matrix_value();
-  B_M = tmp2.rows();
-  B_N = tmp2.cols();
-  B = (double*) tmp2.fortran_vec();
+  const Matrix tmp1 = args(1).matrix_value();
+  B_M = tmp1.rows();
+  B_N = tmp1.cols();
+  B = (double*) tmp1.fortran_vec();
 
   // Check that arg 2.
   if ( B_M != 1 && B_N !=1 && B_N != A_N) {
-    error("Argument 2 must be a vector or a matrix with the same number of rows as arg 1!");
+    error("Argument 2 must be a vector or a matrix with the same number of columns as arg 1!");
     return oct_retval;
   }
 
@@ -592,8 +625,20 @@ Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
   nthreads = std::thread::hardware_concurrency();
 
   // nthreads can't be larger then the number of columns in the A matrix.
-  if (nthreads > A_N)
+  if (nthreads > A_N) {
     nthreads = A_N;
+  }
+
+  /*
+  {
+    std::lock_guard<std::mutex> lk(print_mutex);
+    octave_stdout << "A_M: " <<  A_M
+                  << " A_N: " <<  A_N
+                  << " B_M: " <<  B_M
+                  << " A_N: " <<  A_N
+                  << " nthreads: "  << nthreads <<std::endl;
+  }
+  */
 
   //
   // Register signal handlers.
@@ -699,12 +744,12 @@ Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
 
       for (thread_n = 0; thread_n < nthreads; thread_n++) {
 
-        line_start = thread_n * A_N/nthreads;
-        line_stop =  (thread_n+1) * A_N/nthreads;
+        col_start = thread_n * A_N/nthreads;
+        col_stop =  (thread_n+1) * A_N/nthreads;
 
         // Init local data.
-        D[thread_n].line_start = line_start; // Local start index;
-        D[thread_n].line_stop = line_stop; // Local stop index;
+        D[thread_n].col_start = col_start; // Local start index;
+        D[thread_n].col_stop = col_stop; // Local stop index;
         D[thread_n].A = A;
         D[thread_n].A_M = A_M;
         D[thread_n].A_N = A_N;
@@ -713,8 +758,17 @@ Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
         D[thread_n].B_N = B_N;
         D[thread_n].Y = Y;
 
+        /*
+        {
+          std::lock_guard<std::mutex> lk(print_mutex);
+          octave_stdout << "col_start: " << col_start
+                        << " col_stop: " << col_stop
+                        << " thread_n: "  << thread_n <<std::endl;
+        }
+        */
+
         // Start the threads.
-        threads[thread_n] = std::thread(smp_process, &D[thread_n]);
+        threads[thread_n] = std::thread(smp_fftconv_process, &D[thread_n]);
 
 #ifdef __linux__
         // Make sure that each thread run on different CPU/core.
@@ -723,6 +777,9 @@ Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
         CPU_SET(thread_n, &cpuset);
         int rc = pthread_setaffinity_np(threads[thread_n].native_handle(),
                                         sizeof(cpu_set_t), &cpuset);
+        if (rc != 0) {
+          octave_stdout << "pthread_setaffinity_np returned: " << rc;
+        }
 #endif
 
 
@@ -852,8 +909,8 @@ Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
       return oct_retval;
     }
 
-    const Matrix Ytmp = args(2).matrix_value();
-    Y = (double*) Ytmp.fortran_vec();
+    const Matrix Ymat = args(2).matrix_value();
+    Y = (double*) Ymat.fortran_vec();
 
     //
     // Call the CONV subroutine.
@@ -879,12 +936,12 @@ Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
 
       for (thread_n = 0; thread_n < nthreads; thread_n++) {
 
-        line_start = thread_n * A_N/nthreads;
-        line_stop =  (thread_n+1) * A_N/nthreads;
+        col_start = thread_n * A_N/nthreads;
+        col_stop =  (thread_n+1) * A_N/nthreads;
 
         // Init local data.
-        D[thread_n].line_start = line_start; // Local start index;
-        D[thread_n].line_stop = line_stop; // Local stop index;
+        D[thread_n].col_start = col_start; // Local start index;
+        D[thread_n].col_stop = col_stop;   // Local stop index;
         D[thread_n].A = A;
         D[thread_n].A_M = A_M;
         D[thread_n].A_N = A_N;
@@ -894,7 +951,7 @@ Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
         D[thread_n].Y = Y;
 
         // Start the threads.
-        threads[thread_n] = std::thread(smp_process, &D[thread_n]);
+        threads[thread_n] = std::thread(smp_fftconv_process, &D[thread_n]);
 
       } // for (thread_n = 0; thread_n < nthreads; thread_n++)
 

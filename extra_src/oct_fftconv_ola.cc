@@ -1120,6 +1120,14 @@ Copyright @copyright{} 2010-2016 Fredrik Lingvall.\n\
   // Get number of CPU cores (including hypethreading, C++11)
   nthreads = std::thread::hardware_concurrency();
 
+  // Read OMP_NUM_THREADS env var
+  if(const char* env_p = std::getenv("OMP_NUM_THREADS")) {
+    unsigned int omp_threads = std::stoul(env_p);
+    if (omp_threads < nthreads) {
+      nthreads = omp_threads;
+    }
+  }
+
   // Check nthreads argument.
   if (nthreads > A_N) {
     // Add a -v verbose flag to display stuff like this!

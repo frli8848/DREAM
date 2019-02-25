@@ -199,6 +199,14 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Get number of CPU cores (including hypethreading, C++11)
   nthreads = std::thread::hardware_concurrency();
 
+  // Read OMP_NUM_THREADS env var
+  if(const char* env_p = std::getenv("OMP_NUM_THREADS")) {
+    unsigned int omp_threads = std::stoul(env_p);
+    if (omp_threads < nthreads) {
+      nthreads = omp_threads;
+    }
+  }
+
   // nthreads can't be larger then the number of columns in the A matrix.
   if (nthreads > A_N)
     nthreads = A_N;

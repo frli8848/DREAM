@@ -334,7 +334,7 @@ void sig_keyint_handler(int signum) {
 
 extern void _main();
 
-void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
   double *A,*B, *Y = NULL;
   sighandler_t   old_handler, old_handler_abrt, old_handler_keyint;
@@ -498,6 +498,14 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
   // Get number of CPU cores (including hypethreading, C++11)
   nthreads = std::thread::hardware_concurrency();
+
+  // Read OMP_NUM_THREADS env var
+  if(const char* env_p = std::getenv("OMP_NUM_THREADS")) {
+    unsigned int omp_threads = std::stoul(env_p);
+    if (omp_threads < nthreads) {
+      nthreads = omp_threads;
+    }
+  }
 
   // nthreads can't be larger then the number of columns in the A matrix.
   if (nthreads > A_N) {

@@ -372,6 +372,14 @@ Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
   // Get number of CPU cores (including hypethreading, C++11)
   nthreads = std::thread::hardware_concurrency();
 
+  // Read OMP_NUM_THREADS env var
+  if(const char* env_p = std::getenv("OMP_NUM_THREADS")) {
+    unsigned int omp_threads = std::stoul(env_p);
+    if (omp_threads < nthreads) {
+      nthreads = omp_threads;
+    }
+  }
+
   // nthreads can't be larger then the number of observation points.
   if (nthreads > (unsigned int) no) {
     nthreads = no;

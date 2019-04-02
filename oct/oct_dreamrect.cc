@@ -90,7 +90,7 @@ typedef void (*sighandler_t)(int);
 //
 // Function prototypes.
 //
-void* smp_process(void *arg);
+void* smp_dreamrect_process(void *arg);
 void sighandler(int signum);
 void sig_abrt_handler(int signum);
 void sig_keyint_handler(int signum);
@@ -101,7 +101,7 @@ void sig_keyint_handler(int signum);
  *
  ***/
 
-void* smp_process(void *arg)
+void* smp_dreamrect_process(void *arg)
 {
   int tmp_err = NONE, err = NONE;
   DATA D = *(DATA *)arg;
@@ -340,8 +340,8 @@ Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
   }
   const Matrix tmp2 = args(2).matrix_value();
   s_par = (double*) tmp2.fortran_vec();
-  dx    = s_par[0];		// Spatial x discretization size.
-  dy    = s_par[1];		// Spatial dy iscretization size.
+  dx    = s_par[0];		// Spatial x-discretization size.
+  dy    = s_par[1];		// Spatial y-discretization size.
   dt    = s_par[2];		// Temporal discretization size (= 1/sampling freq).
   nt    = (octave_idx_type) s_par[3];	// Length of SIR.
 
@@ -505,16 +505,19 @@ Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
     D[thread_n].err_level = err_level;
 
     // Start the threads.
-    threads[thread_n] = std::thread(smp_process, &D[thread_n]);
+    threads[thread_n] = std::thread(smp_dreamrect_process, &D[thread_n]);
     set_dream_thread_affinity(thread_n, nthreads, threads);
   }
 
   // Wait for all threads to finish.
-  for (thread_n = 0; thread_n < nthreads; thread_n++)
+  for (thread_n = 0; thread_n < nthreads; thread_n++) {
     threads[thread_n].join();
+  }
 
   // Free memory.
-  free((void*) D);
+  if (D) {
+    free((void*) D);
+  }
 
   //
   // Restore old signal handlers.

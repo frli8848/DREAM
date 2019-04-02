@@ -81,7 +81,7 @@ int dreamcirc_f(double xo,
   dream_idx_type i, it;
   double t, ai;
   double xsmin, ysmin, xsmax, ysmax, ds, pi, ri;
-  double xsi, ysj, retfoc;
+  double x, y, retfoc;
   double xs = 0.0;
   double ys = 0.0;
   int err = NONE;
@@ -97,20 +97,20 @@ int dreamcirc_f(double xo,
 
   //j = 0;
   //j++;
-  //ysj = ysmin + (j - 1) * dy + dy/2;
-  ysj = ysmin + dy/2;
-  while (ysj <= ysmax) {
+  //y = ysmin + (j - 1) * dy + dy/2;
+  y = ysmin + dy/2;
+  while (y <= ysmax) {
 
-    xlimit(ysj, r, xs, ys, &xsmin, &xsmax);
+    xlimit(y, r, xs, ys, &xsmin, &xsmax);
 
     //i = 0;
     //i++;
-    //xsi = xsmin + (i-1) * dx + dx/2;
-    xsi = xsmin + dx/2;
-    while (xsi <= xsmax) {
+    //x = xsmin + (i-1) * dx + dx/2;
+    x = xsmin + dx/2;
+    while (x <= xsmax) {
 
-      distance(xo, yo, zo, xsi, ysj, &ri);
-      focusing(ifoc,focal,xsi,ysj,r,r,r,cp,&retfoc);
+      distance(xo, yo, zo, x, y, &ri);
+      focusing(ifoc,focal,x,y,r,r,r,cp,&retfoc);
 
       ai = v * ds / (2*pi * ri);
       ai /= dt;
@@ -141,12 +141,12 @@ int dreamcirc_f(double xo,
       }
 
       //i++;
-      //xsi = xsmin + (i-1) * dx + dx/2;
-      xsi += dx;
+      //x = xsmin + (i-1) * dx + dx/2;
+      x += dx;
     }
     //j++;
-    //ysj = ysmin + (j-1) * dy + dy/2;
-    ysj += dy;
+    //y = ysmin + (j-1) * dy + dy/2;
+    y += dy;
   }
 
   return err;

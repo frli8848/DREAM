@@ -47,7 +47,7 @@ int dreamline(double xo, double yo, double zo, double a,
   double ai;
   double ds, pi, ri;
   int    err=NONE;
-  double xsi;
+  double x;
   double xsmax = a/2.0;
   double xsmin = -a/2.0;
 
@@ -59,18 +59,12 @@ int dreamline(double xo, double yo, double zo, double a,
     h[i] = (double) 0.0 ;
   }
 
-  //i = 0;
-  //i++;
-  //xsi = xsmin + (i-1) * dx + dx / 2;
-  xsi = xsmin + dx / 2.0;
-  while (xsi <= xsmax) {
+  x = xsmin + dx / 2.0;
 
-    //distance(xo, yo, zo, xsi, ys, zs, &ri);
-    //rx = xo - xsi;
-    //ry = yo - ys;
-    //rz = zo - zs;
-    //ri = sqrt(rx*rx + yo*yo + zo*zo);
-    ri = sqrt((xo-xsi)*(xo-xsi) + yo*yo + zo*zo);
+  while (x <= xsmax) {
+
+    //distance(xo, yo, zo, x, ys, zs, &ri);
+    ri = sqrt((xo-x)*(xo-x) + yo*yo + zo*zo);
 
     ai = v * ds / (2*pi * ri);
     ai /= dt;
@@ -99,11 +93,8 @@ int dreamline(double xo, double yo, double zo, double a,
       if ( (err_level == PARALLEL_STOP) || (err_level == STOP) )
         return err; // Bail out.
     }
-
-    //i++;
-    //xsi = xsmin + (i-1) * dx + dx/2;
-    xsi += dx;
+    x += dx;
   }
 
   return err;
-} /* dreamline */
+}

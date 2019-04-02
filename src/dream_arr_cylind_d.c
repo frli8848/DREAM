@@ -37,7 +37,7 @@
 
 /***
  *
- *  2D Array with cylindrical concave elements.
+ * Array with cylindrical convex elements.
  *
  ***/
 
@@ -166,7 +166,7 @@ int cylind_d(double xo, double yo, double zo, double xs, double ys, double zs, d
   double phisj, haut;
   dream_idx_type i, it;
   double t, xsmin, xsmax, ai, phi, ds, pi, du, ri;
-  double phismin, phismax, dphi, xsi, ysj;
+  double phismin, phismax, dphi, x, y;
   double decal;
   int err = NONE;
 
@@ -198,17 +198,17 @@ int cylind_d(double xo, double yo, double zo, double xs, double ys, double zs, d
   //j++;
   //phisj = phismin + (j-1)*dphi + dphi/2;
   phisj = phismin + dphi/2.0;
-  ysj = R * sin(phisj);
+  y = R * sin(phisj);
   while (phisj <= phismax) {
 
     //i = 0;
     //i++;
-    //xsi = xsmin + (i-1)*dx + dx/2;
-    xsi = xsmin + dx/2.0;
-    while (xsi <= xsmax) {
+    //x = xsmin + (i-1)*dx + dx/2;
+    x = xsmin + dx/2.0;
+    while (x <= xsmax) {
 
       // Compute ri and ds.
-      cyl_cart(xsi, ysj, zs, R, haut, xo, yo, zo, &ri, &du);
+      cyl_cart(x, y, zs, R, haut, xo, yo, zo, &ri, &du);
       ai = v * ds * du/(2*pi * ri);
       ai /= dt;
       // Convert to SI units.
@@ -238,14 +238,14 @@ int cylind_d(double xo, double yo, double zo, double xs, double ys, double zs, d
       }
 
       //i++;
-      //xsi = xsmin + (i-1) * dx + dx/2;
-      xsi += dx;
+      //x = xsmin + (i-1) * dx + dx/2;
+      x += dx;
     }
 
     //j++;
     //phisj = phismin + (j-1) * dphi + dphi/2;
     phisj += dphi;
-    ysj = R * sin(phisj);
+    y = R * sin(phisj);
   }
 
   return err;

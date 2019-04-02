@@ -92,7 +92,7 @@ typedef void (*sighandler_t)(int);
 //
 // Function prototypes.
 //
-void* smp_process(void *arg);
+void* smp_dreamline_process(void *arg);
 void sighandler(int signum);
 void sig_abrt_handler(int signum);
 void sig_keyint_handler(int signum);
@@ -103,7 +103,7 @@ void sig_keyint_handler(int signum);
  *
  ***/
 
-void* smp_process(void *arg)
+void* smp_dreamline_process(void *arg)
 {
   int tmp_err = NONE, err = NONE;
   DATA D = *(DATA *)arg;
@@ -122,6 +122,7 @@ void* smp_process(void *arg)
     tmp_lev = err_level;
 
   if (D.delay_method == SINGLE) {
+
     for (n=start; n<stop; n++) {
       xo = ro[n];
       yo = ro[n+1*no];
@@ -139,9 +140,10 @@ void* smp_process(void *arg)
         octave_stdout << "Thread for observation points " << start+1 << " -> " << stop << " bailing out!\n";
         return(NULL);
       }
-
     }
+
   } else { // MULTIPLE delays.
+
     for (n=start; n<stop; n++) {
       xo = ro[n];
       yo = ro[n+1*no];
@@ -271,19 +273,16 @@ Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
   DATA   *D;
   octave_idx_type start, stop;
   std::thread *threads;
-  unsigned int thread_n;
+  unsigned int thread_n, nthreads;
   sighandler_t old_handler, old_handler_abrt, old_handler_keyint;
   octave_value_list oct_retval;
 
   int nrhs = args.length ();
 
-  // Get number of CPU cores (including hypethreading, C++11)
-  unsigned int nthreads = std::thread::hardware_concurrency();
-
   // Check for proper number of arguments
 
   if (!((nrhs == 5) || (nrhs == 6))) {
-    error("dreamline_p requires 5 or 6 input arguments!");
+    error("dreamline requires 5 or 6 input arguments!");
     return oct_retval;
   }
   else
@@ -484,10 +483,11 @@ Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
     D[thread_n].dt = dt;
     D[thread_n].nt = nt;
 
-    if (mxGetM(3) * mxGetN(3) == 1)
+    if (mxGetM(3) * mxGetN(3) == 1) {
       D[thread_n].delay_method = SINGLE; // delay is a scalar.
-    else
+    } else {
       D[thread_n].delay_method = MULTIPLE; // delay is a vector.
+    }
 
     D[thread_n].delay = delay;
     D[thread_n].v = v;
@@ -497,17 +497,19 @@ Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
     D[thread_n].err_level = err_level;
 
     // Start the threads.
-    threads[thread_n] = std::thread(smp_process, &D[thread_n]);
+    threads[thread_n] = std::thread(smp_dreamline_process, &D[thread_n]);
     set_dream_thread_affinity(thread_n, nthreads, threads);
   }
 
   // Wait for all threads to finish.
-  for (thread_n = 0; thread_n < nthreads; thread_n++)
+  for (thread_n = 0; thread_n < nthreads; thread_n++) {
     threads[thread_n].join();
+  }
 
   // Free memory.
-  if (D)
+  if (D) {
     free((void*) D);
+  }
 
   //
   // Restore old signal handlers.

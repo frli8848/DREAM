@@ -65,7 +65,7 @@ int dreamcylind_d(double xo,
   double phisj, haut;
   dream_idx_type i, it;
   double t, xsmin, xsmax, ai, phi, ds, pi, du, ri;
-  double phismin, phismax, dphi, xsi, ysj;
+  double phismin, phismax, dphi, x, y;
   int err = NONE;
 
   if (b > 2*R) {
@@ -97,17 +97,17 @@ int dreamcylind_d(double xo,
   //j++;
   //phisj = phismin + (j-1)*dphi + dphi/2;
   phisj = phismin + dphi/2;
-  ysj = R * sin(phisj);
+  y = R * sin(phisj);
   while (phisj <= phismax) {
 
     //i = 0;
     //i++;
-    //xsi = xsmin + (i-1)*dx + dx/2;
-    xsi = xsmin + dx/2;
-    while (xsi <= xsmax) {
+    //x = xsmin + (i-1)*dx + dx/2;
+    x = xsmin + dx/2;
+    while (x <= xsmax) {
 
       // Compute ri and ds.
-      cyl_cart(xsi, ysj, R, haut, xo, yo, zo, &ri, &du);
+      cyl_cart(x, y, R, haut, xo, yo, zo, &ri, &du);
       ai = v * ds * du/(2*pi * ri);
       ai /= dt;
       // Convert to SI units.
@@ -137,14 +137,14 @@ int dreamcylind_d(double xo,
       }
 
       //i++;
-      //xsi = xsmin + (i-1) * dx + dx/2;
-      xsi += dx;
+      //x = xsmin + (i-1) * dx + dx/2;
+      x += dx;
     }
 
     //j++;
     //phisj = phismin + (j-1) * dphi + dphi/2;
     phisj += dphi;
-    ysj = R * sin(phisj);
+    y = R * sin(phisj);
   }
 
   return err;

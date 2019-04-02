@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2003,2006,2007,2008,2009,2014 Fredrik Lingvall
+* Copyright (C) 2003,2006,2007,2008,2009,2014,2019 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -20,7 +20,6 @@
 * 02110-1301, USA.
 *
 ***/
-
 
 #include <math.h>
 #include <stdio.h>
@@ -71,44 +70,39 @@ int dreamrect_f(double xo,
                  double *RESTRICT h,
                  int err_level)
 {
-  dream_idx_type i, j, it;
+  dream_idx_type i, it;
   double t;
   double ai, ds, pi, c, retfoc;
-  double ri, xsi, ysj;
+  double ri, x, y;
   double xsmin = -a/2;
   double xsmax = a/2;
   double ysmin = -b/2;
   double ysmax = b/2;
   int err = NONE;
 
-  pi = atan( (double) 1.0) * 4.0;
+  pi = 4.0 * atan(1.0);
   ds = dx * dy;
-
-  //b = (-ysmin + ysmax) / 2;
-  //a = (-xsmin + xsmax) / 2;
   c = sqrt(a*a + b*b);
 
   for (i = 0; i < nt; i++) {
     h[i] = (double) 0.0 ;
   }
 
-  j = 0;
-  j++;
-  ysj = ysmin + (j-1) * dy + dy / 2;
-  while (ysj <= ysmax) {
+  y = ysmin + dy / 2.0;
 
-    i = 0;
-    i++;
-    xsi = xsmin + (i-1) * dx + dx / 2;
-    while (xsi <= xsmax) {
+  while (y <= ysmax) {
 
-      distance(xo, yo, zo, xsi, ysj,  &ri);
-      focusing(ifoc, focal, xsi, ysj, a, b, c, cp, &retfoc);
+    x = xsmin + dx / 2.0;
+
+    while (x <= xsmax) {
+
+      distance(xo, yo, zo, x, y,  &ri);
+      focusing(ifoc, focal, x, y, a, b, c, cp, &retfoc);
 
       ai = v * ds / (2*pi * ri);
       ai /= dt;
-      // Convert to SI units.
-      ai *= 1000;
+      ai *= 1000; // Convert to SI units.
+
       // Propagation delay in micro seconds.
       t = ri * 1000/cp;
       it = (dream_idx_type) rint((t - delay + retfoc)/dt);
@@ -132,26 +126,16 @@ int dreamrect_f(double xo,
         if ( (err_level == PARALLEL_STOP) || (err_level == STOP) )
           return err; // Bail out.
       }
-
-      i++;
-      xsi = xsmin + (i-1)*dx + dx/2;
+      x += dx;
     }
-
-    j++;
-    ysj = ysmin + (j-1)*dy + dy / 2;
+    y += dy;
   }
 
   return err;
-} /* dreamrect */
+}
 
 
 /* ****************************************************** */
-
-/***
- *
- * subrutine distance(xi,xs,hs,ri,rx,rz) pour trouver le longeur du vecteur
- *
- ***/
 
 void distance(double xo,
            double yo,
@@ -165,7 +149,7 @@ void distance(double xo,
   ry = yo - y;
   rx = xo - x;
   rz = zo;
-  *ri = sqrt(rx*rx + rz*rz + ry*ry);
+  *ri = sqrt(rx*rx + ry*ry + rz*rz);
 
   return;
 } /* distance */

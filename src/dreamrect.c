@@ -34,7 +34,7 @@
 
 /***
  *
- * subroutine dreamrect
+ * dreamrect
  *
  ***/
 
@@ -54,10 +54,10 @@ int dreamrect(double xo,
                double *RESTRICT h,
                int err_level)
 {
-  dream_idx_type i, it, m, n, M, N;
+  dream_idx_type i, it;
   double t;
   double ai, ds, pi;
-  double ri, xsi, ysj;
+  double ri, x, y;
   double xsmin, xsmax, ysmin, ysmax;
   int err = NONE;
   double rx,ry,rz;
@@ -73,24 +73,19 @@ int dreamrect(double xo,
   for (i = 0; i < nt; i++)
     h[i] = (double) 0.0;
 
-  M = (dream_idx_type) (b/dy);
-  N = (dream_idx_type) (a/dx);
-
   // Check if absorbtion is present.
   if (alpha == (double) 0.0) {
 
     rz = zo;
-    ysj = ysmin + dy / 2.0;
+    y = ysmin + dy / 2.0;
 
-    //for(m=0; m<M; m++) {
-      while (ysj <= ysmax) {
-      ry = yo - ysj;
-      xsi = xsmin + dx / 2.0;
+    while (y <= ysmax) {
+      ry = yo - y;
+      x = xsmin + dx / 2.0;
 
-      //for(n=0; n<N; n++) {
-        while (xsi <= xsmax) {
+      while (x <= xsmax) {
 
-        rx = xo - xsi;
+        rx = xo - x;
         ri = sqrt(rx*rx + ry*ry + rz*rz);
 
         ai = v * ds / (2*pi * ri);
@@ -113,21 +108,21 @@ int dreamrect(double xo,
           if ( (err_level == PARALLEL_STOP) || (err_level == STOP) )
             return err; // Bail out.
         }
-        xsi += dx;
+        x += dx;
       }
-      ysj += dy;
+      y += dy;
     }
 
   } else { // Absorbtion.
 
     rz = zo;
-    ysj = ysmin + dy / 2.0;
-    while (ysj <= ysmax) {
-      ry = yo - ysj;
-      xsi = xsmin + dx / 2.0;
-      while (xsi <= xsmax) {
+    y = ysmin + dy / 2.0;
+    while (y <= ysmax) {
+      ry = yo - y;
+      x = xsmin + dx / 2.0;
+      while (x <= xsmax) {
 
-        rx = xo - xsi;
+        rx = xo - x;
         ri = sqrt(rx*rx + ry*ry + rz*rz);
 
         ai = v * ds / (2*pi * ri);
@@ -150,12 +145,12 @@ int dreamrect(double xo,
           if ( (err_level == PARALLEL_STOP) || (err_level == STOP) )
             return err; // Bail out.
         }
-        xsi += dx;
+        x += dx;
       }
-      ysj += dy;
+      y += dy;
     }
 
   } // if (alpha == ...)
 
   return err;
-} /* dreamrect */
+}

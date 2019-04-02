@@ -174,7 +174,7 @@ int rect_ab(double xo, double yo, double zo, double xs, double ys, double zs, do
   double t, decal;
   double xsmin, ysmin, xsmax, ysmax, ai, ds, pi, ri;
   dream_idx_type it;
-  double xsi, ysj;
+  double x, y;
   int err = NONE;
 
   decal = retfoc + retsteer;
@@ -190,13 +190,13 @@ int rect_ab(double xo, double yo, double zo, double xs, double ys, double zs, do
   for (i = 0; i < nt; i++)
     h[i] = (double) 0.0;
 
-  ysj = ysmin + dy/2.0;
-  while (ysj <= ysmax) {
+  y = ysmin + dy/2.0;
+  while (y <= ysmax) {
 
-    xsi = xsmin + dx/2.0;
-    while (xsi <= xsmax) {
+    x = xsmin + dx/2.0;
+    while (x <= xsmax) {
 
-      distance(xo, yo, zo, xsi, ysj, zs, &ri);
+      distance(xo, yo, zo, x, y, zs, &ri);
       ai = weight * v * ds / (2*pi*ri);
       ai /= dt;
       ai *= 1000;      // Convert to SI units.
@@ -221,9 +221,9 @@ int rect_ab(double xo, double yo, double zo, double xs, double ys, double zs, do
           return err; // Bail out.
       }
 
-      xsi += dx;
+      x += dx;
     } // while
-    ysj += dy;
+    y += dy;
   } // while
 
   return err;

@@ -79,7 +79,7 @@ int dreamcirc(double xo,
   dream_idx_type i, it;
   double t, ai;
   double xsmin, ysmin, xsmax, ysmax, ds, pi, ri;
-  double xsi, ysj, rx, ry;
+  double x, y, rx, ry;
   double xs = 0.0;
   double ys = 0.0;
   double rs = 0.0;
@@ -96,26 +96,26 @@ int dreamcirc(double xo,
 
   //j = 0;
   //j++;
-  //ysj = ysmin + (j - 1) * dy + dy/2;
-  ysj = ysmin + dy/2;
-  while (ysj <= ysmax) {
+  //y = ysmin + (j - 1) * dy + dy/2;
+  y = ysmin + dy/2;
+  while (y <= ysmax) {
 
-    //xlimit(ysj, r, xs, ys, &xsmin, &xsmax);
-    rs = sqrt(r*r - (ys-ysj)*(ys-ysj));
+    //xlimit(y, r, xs, ys, &xsmin, &xsmax);
+    rs = sqrt(r*r - (ys-y)*(ys-y));
     xsmin = -rs + xs;
     xsmax = rs + xs;
 
-    ry = yo - ysj;
+    ry = yo - y;
 
     //i = 0;
     //i++;
-    //xsi = xsmin + (i-1) * dx + dx/2;
-    xsi = xsmin + dx / 2.0;
-    while (xsi <= xsmax) {
+    //x = xsmin + (i-1) * dx + dx/2;
+    x = xsmin + dx / 2.0;
+    while (x <= xsmax) {
 
-      //distance(xo, yo, zo, xsi, ysj, &ri);
-      rx = xo - xsi;
-      //ry = yo - ysj; // Moved outside this loop.
+      //distance(xo, yo, zo, x, y, &ri);
+      rx = xo - x;
+      //ry = yo - y; // Moved outside this loop.
       //rz = zo;
       ri = sqrt(rx*rx + ry*ry + zo*zo);
 
@@ -148,12 +148,12 @@ int dreamcirc(double xo,
       }
 
       //i++;
-      //xsi = xsmin + (i-1) * dx + dx/2;
-      xsi += dx;
+      //x = xsmin + (i-1) * dx + dx/2;
+      x += dx;
     }
     //j++;
-    //ysj = ysmin + (j-1) * dy + dy/2;
-    ysj += dy;
+    //y = ysmin + (j-1) * dy + dy/2;
+    y += dy;
   }
 
   return err;

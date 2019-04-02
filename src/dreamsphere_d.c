@@ -56,7 +56,7 @@ int dreamsphere_d(double xo, double yo, double zo, double r, double R, double
   double t, cotet, xsmin, ysmin, xsmax, ysmax, ai, ds, pi, ri;
   dream_idx_type it;
   double xs, ys;
-  double xsi, ysj;
+  double x, y;
   int err = NONE;
 
   pi = atan( (double) 1.0) * 4.0;
@@ -72,19 +72,19 @@ int dreamsphere_d(double xo, double yo, double zo, double r, double R, double
 
   //j = 0;
   //j++;
-  //ysj = ysmin + (j-1) * dy + dy / 2;
-  ysj = ysmin + dy / 2.0;
-  while (ysj <= ysmax) {
+  //y = ysmin + (j-1) * dy + dy / 2;
+  y = ysmin + dy / 2.0;
+  while (y <= ysmax) {
 
-    xlimit(ysj, r, xs, ys, &xsmin, &xsmax);
+    xlimit(y, r, xs, ys, &xsmin, &xsmax);
 
     //i=0;
     //i++;
-    //xsi = xsmin + (i-1) * dx + dx / 2;
-    xsi = xsmin + dx / 2.0;
-    while (xsi <= xsmax) {
+    //x = xsmin + (i-1) * dx + dx / 2;
+    x = xsmin + dx / 2.0;
+    while (x <= xsmax) {
 
-      sph_cart(xsi,ysj,dx,dy,R,haut,xo,yo,zo,&ri,&cotet,&ds);
+      sph_cart(x,y,dx,dy,R,haut,xo,yo,zo,&ri,&cotet,&ds);
 
       ai = v * ds / (2*pi * ri);
       ai /= dt;
@@ -115,13 +115,13 @@ int dreamsphere_d(double xo, double yo, double zo, double r, double R, double
       }
 
       //i++;
-      //xsi = xsmin + (i-1)*dx + dx/2;
-      xsi += dx;
+      //x = xsmin + (i-1)*dx + dx/2;
+      x += dx;
     }
 
     //j++;
-    //ysj = ysmin + (j-1)*dy + dy / 2;
-    ysj += dy;
+    //y = ysmin + (j-1)*dy + dy / 2;
+    y += dy;
   }
 
   return err;
@@ -129,7 +129,7 @@ int dreamsphere_d(double xo, double yo, double zo, double r, double R, double
 
 /***
  *
- * call xlimit(ysj,a,xs,ys,xsmin,xsmax)
+ * call xlimit(y,a,xs,ys,xsmin,xsmax)
  * subroutine xlimit - pour definir les limits d integration en x
  *
  ***/

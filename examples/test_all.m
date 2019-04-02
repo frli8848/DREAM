@@ -168,7 +168,6 @@ geom_par = [a];
 
 [H,err] = dreamcirc(Ro,geom_par,s_par,delay,m_par,'stop');
 
-title('Circular transducer')
 subplot(3,2,4);
 if size(H,2)>1
   mesh(xo,t,H);
@@ -181,6 +180,7 @@ else
   %xlabel('t [\mus]')
   grid('on');
 end
+title('Circular transducer')
 
 fprintf('dreamcirc\n');
 
@@ -552,7 +552,6 @@ win_par = 1;                            % Parameter for raised cos and Gaussian 
 [H,err] = dream_arr_cylind_d(Ro,geom_par,G,s_par,delay,...
                              m_par,foc_met,focal,steer_met,steer_par,apod_met,apod,win_par,'stop');
 
-subplot(2,2,1); % Needed for due to bug in Octave.
 subplot(3,2,1);
 
 if size(H,2)>1
@@ -611,67 +610,6 @@ else
 end
 title('Annular array');
 fprintf('dream_arr_annu\n');
-
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
-% Run all transducer functions with parallel computing support.
-%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-fprintf('Using %d threads.\n',n_cpus);
-
-figure(3);
-clf
-
-
-Fs = 4;   % Sampling freq. [MHz].
-Ts = 1/Fs; % [us].
-
-%
-% Observation point.
-%
-
-z = 10;
-
-if ONE_POINT
-  % One point.
-  xo = 0;
-  yo = 0;
-  zo = z;
-  ro = [xo yo zo];
-  Ro = ro;
-  disp(['Observation point (x,y,z) = ' num2str(Ro)])
-else
-  %  Points along x-axis.
-  d  = 10;
-  xo = (0:d:50);
-  yo = zeros(length(xo),1);
-  zo = z*ones(length(xo),1);
-  Ro = [xo(:) yo(:) zo(:)];
-end
-
-% Descretization parameters.
-dx = 0.05;                              % [mm].
-dy = 0.05;                              % [mm]
-dt = Ts;                                % [us].
-nt = 300;                               % Length of spatial impulse response vector.
-s_par = [dx dy dt nt];
-
-t = 0:Ts:Ts*(nt-1);
-
-% Material parameters.
-v     = 1.0;                            % Normal velocity.
-cp    = 1000;                   % Sound speed.
-alfa  = 0;                              % Absorbtion (dB/cm Hz).
-m_par = [v cp alfa];
-
-t_z = z*1e-3/cp * 1e6;          % us
-
-delay = 0;
-%delay = t_z;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %

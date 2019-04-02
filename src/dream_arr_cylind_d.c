@@ -49,8 +49,9 @@ int cylind_d(double xo, double yo, double zo, double xs, double ys, double zs, d
              double dx, double dy, double dt, dream_idx_type nt, double delay, double retfoc, double retsteer,
              double v, double cp, double alpha,  double weight, double *RESTRICT h, int err_level);
 
-void cyl_cart(double xs, double ys, double zs, double r,double haut,double
-              xo,double yo,double zo,double *RESTRICT rj, double *RESTRICT du);
+void cyl_arr_d(double xs, double ys, double zs, double R, double haut,
+               double xo, double yo, double zo,
+               double *RESTRICT r, double *RESTRICT du);
 
 /***
  *
@@ -120,7 +121,7 @@ int dream_arr_cylind_udd(double xo, double yo, double zo, double a, double b, do
   dream_idx_type i;
   double ramax, xamax, yamax;
   double xs, ys, zs, retfoc, weight;
-  int err = NONE;
+  int err = NONE, out_err = NONE;
 
   h = (double*) malloc(nt*sizeof(double));
 
@@ -141,13 +142,15 @@ int dream_arr_cylind_udd(double xo, double yo, double zo, double a, double b, do
     apodization(iweight, iapo, i, apod, &weight, xs, ys, ramax, param, isize);
 
     err = cylind_d(xo,yo,zo,xs,ys,zs,R,a,b,dx,dy,dt,nt,delay,retfoc,retsteer,v,cp,alpha,weight,h,err_level);
+    if (err != NONE)
+      out_err = err;
 
     superpos(h, ha, nt);
   }
 
   free(h);
 
-  return err;
+  return out_err;
 } /* dream_arr_cylind_udd */
 
 /********************************************************************/
@@ -163,9 +166,9 @@ int cylind_d(double xo, double yo, double zo, double xs, double ys, double zs, d
              double dx, double dy, double dt, dream_idx_type nt, double delay, double retfoc, double retsteer,
              double v, double cp, double alpha,  double weight, double *RESTRICT h, int err_level)
 {
-  double phisj, haut;
+  double haut;
   dream_idx_type i, it;
-  double t, xsmin, xsmax, ai, phi, ds, pi, du, ri;
+  double t, xsmin, xsmax, ai, phi, ds, pi, du, r;
   double phismin, phismax, dphi, x, y;
   double decal;
   int err = NONE;
@@ -173,7 +176,7 @@ int cylind_d(double xo, double yo, double zo, double xs, double ys, double zs, d
   if (b > 2*R)
     dream_err_msg("Error in dream_arr_cylind_d: the y-width, b, must be less than the diameter 2R!");
 
-  b /=2;
+  b /=2.0;
   decal = retfoc + retsteer;
   pi = 4.0 * atan( (double) 1.0);
   haut = R - sqrt(R*R - b*b);
@@ -191,30 +194,25 @@ int cylind_d(double xo, double yo, double zo, double xs, double ys, double zs, d
   ds = R * dx * dphi;
   //ds = dx * dy; // Approx the same as  ds = R * dx * dphi.
 
-  for (i = 0; i < nt; i++)
+  for (i = 0; i < nt; i++) {
     h[i] = (double) 0.0 ;
+  }
 
-  //j = 0;
-  //j++;
-  //phisj = phismin + (j-1)*dphi + dphi/2;
-  phisj = phismin + dphi/2.0;
-  y = R * sin(phisj);
-  while (phisj <= phismax) {
+  phi = phismin + dphi/2.0;
+  y = R * sin(phi);
+  while (phi <= phismax) {
 
-    //i = 0;
-    //i++;
-    //x = xsmin + (i-1)*dx + dx/2;
     x = xsmin + dx/2.0;
     while (x <= xsmax) {
 
-      // Compute ri and ds.
-      cyl_cart(x, y, zs, R, haut, xo, yo, zo, &ri, &du);
-      ai = v * ds * du/(2*pi * ri);
+      // Compute r and ds.
+      cyl_arr_d(x, y, zs, R, haut, xo, yo, zo, &r, &du);
+      ai = v * ds * du/(2*pi * r);
       ai /= dt;
       // Convert to SI units.
       ai *= 1000;
       // Propagation delay in micro seconds.
-      t = ri * 1000/cp;
+      t = r * 1000/cp;
       it = (dream_idx_type) rint((t - delay + decal)/dt);
 
       // Check if index is out of bounds.
@@ -224,10 +222,11 @@ int cylind_d(double xo, double yo, double zo, double xs, double ys, double zs, d
         if (alpha == (double) 0.0) {
           h[it] += ai;
         } else {
-          att(alpha,ri,it,dt,cp,h,nt,ai);
+          att(alpha,r,it,dt,cp,h,nt,ai);
         }
-      }
-      else   {
+
+      } else {
+
         if  (it >= 0)
           err = dream_out_of_bounds_err("SIR out of bounds",it-nt+1,err_level);
         else
@@ -242,10 +241,8 @@ int cylind_d(double xo, double yo, double zo, double xs, double ys, double zs, d
       x += dx;
     }
 
-    //j++;
-    //phisj = phismin + (j-1) * dphi + dphi/2;
-    phisj += dphi;
-    y = R * sin(phisj);
+    phi += dphi;
+    y = R * sin(phi);
   }
 
   return err;
@@ -254,32 +251,41 @@ int cylind_d(double xo, double yo, double zo, double xs, double ys, double zs, d
 
 /***
  *
- * cyl_cart.
+ * cyl_arr_d.
  *
  ***/
 
-void cyl_cart(double xs, double ys, double zs, double R,double haut,double xo,
-              double yo,double zo,double *RESTRICT rj, double *RESTRICT du)
+void cyl_arr_d(double xs, double ys, double zs, double R, double haut,double xo,
+              double yo,double zo,double *RESTRICT r, double *RESTRICT du)
 {
   double z, rx, ry, rz;
   double cotetj;
 
-  *du = (double) 1.0;
+  *du = 1.0;
 
   z = zs + R - sqrt(R*R - ys*ys);
   z = -z;
   rx = xo - xs;
   ry = yo - ys;
   rz = zo - z;
-  *rj = sqrt(rx*rx + ry*ry + rz*rz);
+  *r = sqrt(rx*rx + ry*ry + rz*rz);
 
-  // Cos theta = -[rx ry rz]*[x y (z-r)]' / (r * *rj) (Scalar prod.). (focused)
-  // Cos theta = [rx ry rz]*[x y (z+r)]' / (r * *rj) (Scalar prod.). (defocused)
-  cotetj = (rx*xs + ry*ys + rz*(z+R)) / (R * *rj);
+  // Cos theta = -[rx ry rz]*[x y (z-r)]' / (r * *r) (Scalar prod.). (focused)
+  // Cos theta = [rx ry rz]*[x y (z+r)]' / (r * *r) (Scalar prod.). (defocused)
+  cotetj = (rx*xs + ry*ys + rz*(z+R)) / (R * *r);
 
-  if (cotetj < (double) 0.0) {
-    *du = (double) 0.0;
+  if (zo <= haut) {
+
+    double d1 = sqrt(xo*xo + yo*yo);
+    double d2 = sqrt(zo * (R * 2.0 - zo));
+
+    if ( (cotetj < 0.0) || (d1 > d2)) {
+      *du = 0.0;
+    }
+  } else {
+    if (cotetj < 0.0) {
+      *du = 0.0;
+    }
   }
-
   return;
-} /* cyl_cart */
+}

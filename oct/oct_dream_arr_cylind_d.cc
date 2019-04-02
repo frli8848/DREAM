@@ -274,7 +274,7 @@ void sig_keyint_handler(int signum) {
 
 DEFUN_DLD (dream_arr_cylind_d, args, nlhs,
            "-*- texinfo -*-\n\
-@deftypefn {Loadable Function} {} [H,err] = dream_arr_circ_p(ro,a,G,s_par,delay,m_par,foc_met,focal,...\n\
+@deftypefn {Loadable Function} {} [H,err] = dream_arr_circ_d(ro,a,G,s_par,delay,m_par,foc_met,focal,...\n\
                      steer_met,steer_par,apod_met,apod,win_par,err_level);\n\
 \n\
 DREAM_ARR_CYLIND_D - Computes the spatial impulse response\n\

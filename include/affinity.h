@@ -24,13 +24,4 @@
 
 #include "dream.h"
 
-/***
- *
- * Header file for dreamline
- *
- ***/
-
-#ifdef __cplusplus
-extern "C"
-#endif
 int set_dream_thread_affinity(dream_idx_type thread_n, dream_idx_type nthreads, std::thread *threads);

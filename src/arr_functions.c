@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2002,2003,2006,2007,2008,2009,2014 Fredrik Lingvall
+* Copyright (C) 2002,2003,2006,2007,2008,2009,2014,2019 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -21,7 +21,6 @@
 *
 ***/
 
-
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -38,7 +37,9 @@
 
 /***
 *
-*  center_pos(xs,ys,zs,i,j) pour calculer le centrn element
+*  center_pos
+*
+*  pour calculer le centrn element (?)
 *
 ***/
 
@@ -50,19 +51,18 @@ void center_pos(double *RESTRICT xs, double *RESTRICT ys, double *RESTRICT zs, i
   *zs = gz[i];
 
   return;
-} /* center_pos */
-
+}
 
 /***
  *
- *  maxdimarr : Give les valeurs maximales d'aperture de l'array
+ *  max_dim_arr
  *
- *   Computes the maximum aperture of the array.
+ *  Computes the maximum aperture of the array.
  *
  ***/
 
-void maxdimarr(double *RESTRICT xamax, double *RESTRICT yamax, double *RESTRICT ramax,
-               double *RESTRICT gx, double *RESTRICT gy, double *RESTRICT gz, int isize)
+void max_dim_arr(double *RESTRICT xamax, double *RESTRICT yamax, double *RESTRICT ramax,
+                 double *RESTRICT gx, double *RESTRICT gy, double *RESTRICT gz, int isize)
 {
   int i;
   double ret;
@@ -85,14 +85,14 @@ void maxdimarr(double *RESTRICT xamax, double *RESTRICT yamax, double *RESTRICT 
   *ramax = sqrt(*xamax * *xamax + *yamax * *yamax);
 
   return;
-} /* maxdimarr */
+}
 
 /***
  *
- *   Focussing gives le retard retfoc du au focussing
+ * focusing
  *
- *   focusing - computes the  focusing delay, retfoc, for point (xs,ys) on the
- *              transducer surface (?).
+ * Computes the focusing delay, retfoc, for point (xs,ys) on the
+ * transducer surface (?).
  *
  ***/
 
@@ -107,28 +107,28 @@ void focusing(int ifoc, double focal, double xs, double ys,
 
   switch(ifoc) {
 
-  case 1:
+  case NO_FOCUS:
     return;
 
-  case 2:
+  case FOCUS_X:
     rmax = sqrt(xamax*xamax + focal*focal);
     diff = rmax - sqrt(xs*xs + focal*focal);
     *retfoc = diff*1000/cp;
     break;
 
-  case 3:
+  case FOCUS_Y:
     rmax = sqrt(yamax*yamax + focal*focal);
     diff  = rmax - sqrt(ys*ys + focal*focal);
     *retfoc = diff*1000/cp;
     break;
 
-  case 4:
+  case FOCUS_XY:
     rmax = sqrt(ramax*ramax + focal*focal);
     diff = rmax - sqrt(xs*xs + ys*ys + focal*focal);
     *retfoc = diff*1000/cp;
     break;
 
-  case 5:
+  case FOCUS_X_Y:
     rmax = sqrt(ramax*ramax + focal*focal);
     retx = sqrt(xs*xs + focal*focal);
     rety = sqrt(ys*ys + focal*focal);
@@ -136,7 +136,7 @@ void focusing(int ifoc, double focal, double xs, double ys,
     *retfoc = diff*1000/cp;
     break;
 
-  case 6:
+  case FOCUS_UD:
     *retfoc = focal; // Here focal is the user defined time delay in [us] (not the focal depth).
     break;
 
@@ -159,10 +159,10 @@ void focusing(int ifoc, double focal, double xs, double ys,
 void beamsteering(int ister, double theta, double phi, double xs, double ys,
                   double xamax, double yamax, double ramax, double cp, double *RESTRICT retsteer)
 {
-  double diff, rmax, sinx, siny, retsteerx, retsteery, pi, pii;
+  double diff, rmax, sinx, siny, retsteerx, retsteery;
 
-  pi = atan((double) 1.0) * (double) 4.0;
-  pii = pi / (double) 180.0;
+  double pi = 4.0 * atan(1.0);
+  double pii = pi / (double) 180.0;
 
   //
   // ister = 1 No steering, 2 Steer x ,3 Steer y, 4 Steer xy.
@@ -170,24 +170,25 @@ void beamsteering(int ister, double theta, double phi, double xs, double ys,
 
   switch(ister) {
 
-  case 1:
+  case 0:
+  case NO_STEER:
     break;
 
-  case 2:
+  case STEER_X:
     sinx = sin(theta * pii);
     rmax = xamax * sinx;
     diff =  rmax + xs*sinx;
     *retsteer = diff*1000/cp;
     break;
 
-  case 3:
+  case STEER_Y:
     siny = sin(phi * pii);
     rmax = yamax * siny;
     diff = rmax + ys * siny;
     *retsteer = diff*1000/cp;
     break;
 
-  case 4:
+  case STEER_XY:
     sinx = sin(theta * pii);
     rmax = xamax * sinx;
     diff = rmax + xs*sinx;
@@ -208,11 +209,11 @@ void beamsteering(int ister, double theta, double phi, double xs, double ys,
 
 /***
  *
- *  Weighting
+ *  Weighting (apodization)
  *
- * weighting iapo = 0 weighting with imported apodization function apod(x,y)
+ * weighting iapo = 0 weighting with user defined apodization function apod(x,y)
  *
- *      iweight = 1 No weighting, 2  Weighting , param=input parameter
+ * iweight = 1 No weighting, 2  Weighting , param=input parameter
  *
  * iapo = 0 User defined
  * iapo = 1 Traingle
@@ -226,11 +227,8 @@ void beamsteering(int ister, double theta, double phi, double xs, double ys,
 void weighting(int iweight, int iapo, int i, double *RESTRICT apod, double *RESTRICT weight,
                double xs, double ys, double ramax, double param, int isize)
 {
-  static double r, pi;
-
-
-  pi = atan((double) 1.0) * (double)4.;
-  r = sqrt(xs*xs + ys*ys);
+  double pi = 4.0 * atan(1.0);
+  double r = sqrt(xs*xs + ys*ys);
 
   if (iweight == 1) {
     return;
@@ -238,27 +236,27 @@ void weighting(int iweight, int iapo, int i, double *RESTRICT apod, double *REST
 
   switch(iapo) {
 
-  case 0:
+  case IPOD_UD:
     *weight = apod[i];
     break;
 
-  case 1:
+  case IPOD_TRIANGLE:
     *weight = (double) 1.0 - fabs(r) / ramax;
     break;
 
-  case 2:
+  case IPOD_GAUSS:
     *weight = exp(-(param * r*r) / (ramax*ramax));
     break;
 
-  case 3:
+  case IPOD_RISED_COSINE:
     *weight = param + cos(r*pi/ramax);
     break;
 
-  case 4:
+  case IPOD_SIMPLY_SUPPORTED:
     *weight = (double) 1.0 - r*r / (ramax*ramax);
     break;
 
-  case 5:
+  case IPOD_CLAMPED:
     *weight = ((double) 1.0 - r*r / (ramax*ramax)) * ((double) 1.0  - r / (ramax*ramax));
 
   default:
@@ -270,11 +268,13 @@ void weighting(int iweight, int iapo, int i, double *RESTRICT apod, double *REST
 
 /***
  *
- * Subrutine modri(xi,xs,hs,ri,rx,rz) pour trouver le longeur du vecteur
+ * distance
+ *
+ * Compute the distance bentween two points (vector length/magnitude)
  *
  ***/
 
-void modri(double xo, double yo, double zo,double xs,double ys, double zs, double *RESTRICT ri)
+void distance(double xo, double yo, double zo,double xs,double ys, double zs, double *RESTRICT ri)
 {
   double rx, ry, rz;
 
@@ -284,18 +284,20 @@ void modri(double xo, double yo, double zo,double xs,double ys, double zs, doubl
   *ri = sqrt(rx*rx + rz*rz + ry*ry);
 
   return;
-} /* modri */
+}
 
 /***
  *
- * superpoz(h,ha) Subroutine pour superpozer les contributions des elements
+ * superpos
+ *
+ * Add contributions from an array element.
  *
  * ha = output response
  * h  = input responce of actual element
  *
  ***/
 
-void superpoz(double *RESTRICT h, double *RESTRICT ha, dream_idx_type nt)
+void superpos(double *RESTRICT h, double *RESTRICT ha, dream_idx_type nt)
 {
   dream_idx_type i;
 
@@ -303,16 +305,17 @@ void superpoz(double *RESTRICT h, double *RESTRICT ha, dream_idx_type nt)
     ha[i] += h[i];
 
   return;
-} /* superpoz */
-
+}
 
 /***
  *
- * suobroitine pour check le retard de la reponse
+ * check_delay
+ *
+ * Check that the delay is within bounds of the impulse response vector.
  *
  ***/
 
-void checkdel(dream_idx_type it, double tt, int *icheck, dream_idx_type nt)
+void check_delay(dream_idx_type it, double tt, int *icheck, dream_idx_type nt)
 {
   if (tt < (double) 0.0)
     *icheck = 2;
@@ -321,4 +324,4 @@ void checkdel(dream_idx_type it, double tt, int *icheck, dream_idx_type nt)
     *icheck = 2;
 
   return;
-} /* checkdel */
+}

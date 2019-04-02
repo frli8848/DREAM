@@ -55,13 +55,13 @@ void center_pos(double *RESTRICT xs, double *RESTRICT ys, double *RESTRICT zs, i
 
 /***
  *
- *  maxdimarr : Give les valeurs maximales d'aperture de l'array
+ *  max_dim_arr : Give les valeurs maximales d'aperture de l'array
  *
  *   Computes the maximum aperture of the array.
  *
  ***/
 
-void maxdimarr(double *RESTRICT xamax, double *RESTRICT yamax, double *RESTRICT ramax,
+void max_dim_arr(double *RESTRICT xamax, double *RESTRICT yamax, double *RESTRICT ramax,
                double *RESTRICT gx, double *RESTRICT gy, double *RESTRICT gz, int isize)
 {
   int i;
@@ -85,7 +85,7 @@ void maxdimarr(double *RESTRICT xamax, double *RESTRICT yamax, double *RESTRICT 
   *ramax = sqrt(*xamax * *xamax + *yamax * *yamax);
 
   return;
-} /* maxdimarr */
+} /* max_dim_arr */
 
 /***
  *
@@ -270,11 +270,11 @@ void weighting(int iweight, int iapo, int i, double *RESTRICT apod, double *REST
 
 /***
  *
- * Subrutine modri(xi,xs,hs,ri,rx,rz) pour trouver le longeur du vecteur
+ * Subrutine distance(xi,xs,hs,ri,rx,rz) pour trouver le longeur du vecteur
  *
  ***/
 
-void modri(double xo, double yo, double zo,double xs,double ys, double zs, double *RESTRICT ri)
+void distance(double xo, double yo, double zo,double xs,double ys, double zs, double *RESTRICT ri)
 {
   double rx, ry, rz;
 
@@ -284,18 +284,18 @@ void modri(double xo, double yo, double zo,double xs,double ys, double zs, doubl
   *ri = sqrt(rx*rx + rz*rz + ry*ry);
 
   return;
-} /* modri */
+} /* distance */
 
 /***
  *
- * superpoz(h,ha) Subroutine pour superpozer les contributions des elements
+ * superpos(h,ha) Subroutine pour superposer les contributions des elements
  *
  * ha = output response
  * h  = input responce of actual element
  *
  ***/
 
-void superpoz(double *RESTRICT h, double *RESTRICT ha, dream_idx_type nt)
+void superpos(double *RESTRICT h, double *RESTRICT ha, dream_idx_type nt)
 {
   dream_idx_type i;
 
@@ -303,7 +303,7 @@ void superpoz(double *RESTRICT h, double *RESTRICT ha, dream_idx_type nt)
     ha[i] += h[i];
 
   return;
-} /* superpoz */
+} /* superpos */
 
 
 /***
@@ -312,7 +312,7 @@ void superpoz(double *RESTRICT h, double *RESTRICT ha, dream_idx_type nt)
  *
  ***/
 
-void checkdel(dream_idx_type it, double tt, int *icheck, dream_idx_type nt)
+void check_delay(dream_idx_type it, double tt, int *icheck, dream_idx_type nt)
 {
   if (tt < (double) 0.0)
     *icheck = 2;
@@ -321,4 +321,4 @@ void checkdel(dream_idx_type it, double tt, int *icheck, dream_idx_type nt)
     *icheck = 2;
 
   return;
-} /* checkdel */
+} /* check_delay */

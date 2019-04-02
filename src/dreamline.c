@@ -71,7 +71,7 @@ int dreamline(double xo, double yo, double zo, double a,
   xsi = xsmin + dx / 2.0;
   while (xsi <= xsmax) {
 
-    //modri(xo, yo, zo, xsi, ys, zs, &ri);
+    //distance(xo, yo, zo, xsi, ys, zs, &ri);
     //rx = xo - xsi;
     //ry = yo - ys;
     //rz = zo - zs;

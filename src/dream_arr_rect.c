@@ -40,7 +40,7 @@
 //
 
 
-int rectab(double xo, double yo, double zo, double xs, double ys, double zs, double a, double b,
+int rect_ab(double xo, double yo, double zo, double xs, double ys, double zs, double a, double b,
             double dx, double dy, double dt, dream_idx_type nt, int icheck, double delay, double retfoc,
             double retsteer, double v, double cp, double alfa,  double weight, double *RESTRICT h, int err_level);
 
@@ -76,7 +76,7 @@ int dream_arr_rect(double xo, double yo, double zo, double a, double b, double d
   weight   = (double) 1.0;
   icheck   = 1;
 
-  maxdimarr(&xamax, &yamax, &ramax, gx, gy, gz, isize);
+  max_dim_arr(&xamax, &yamax, &ramax, gx, gy, gz, isize);
 
   for (i=0; i<isize; i++) {
     center_pos(&xs, &ys, &zs, i, gx, gy, gz);
@@ -84,7 +84,7 @@ int dream_arr_rect(double xo, double yo, double zo, double a, double b, double d
     beamsteering(ister, theta, phi, xs, ys, xamax, yamax, ramax, cp, &retsteer);
     weighting(iweight, iapo, i, apod, &weight, xs, ys, ramax, param, isize);
 
-    err = rectab(xo,yo,zo,xs,ys,zs,a,b,dx,dy,dt,nt,icheck,
+    err = rect_ab(xo,yo,zo,xs,ys,zs,a,b,dx,dy,dt,nt,icheck,
                  delay,retfoc,retsteer,v,cp,alfa,weight,h,err_level);
     if (err != NONE)
       out_err = err;
@@ -92,7 +92,7 @@ int dream_arr_rect(double xo, double yo, double zo, double a, double b, double d
     if (icheck == 2) {
       break;
     }
-    superpoz(h, ha, nt);
+    superpos(h, ha, nt);
   }
 
   free(h);
@@ -131,7 +131,7 @@ int dream_arr_rect_ud(double xo, double yo, double zo, double a, double b, doubl
   weight   = (double) 1.0;
   icheck   = 1;
 
-  maxdimarr(&xamax, &yamax, &ramax, gx, gy, gz, isize);
+  max_dim_arr(&xamax, &yamax, &ramax, gx, gy, gz, isize);
 
   for (i=0; i<isize; i++) {
     center_pos(&xs, &ys, &zs, i, gx, gy, gz);
@@ -139,7 +139,7 @@ int dream_arr_rect_ud(double xo, double yo, double zo, double a, double b, doubl
     beamsteering(ister, theta, phi, xs, ys, xamax, yamax, ramax, cp, &retsteer);
     weighting(iweight, iapo, i, apod, &weight, xs, ys, ramax, param, isize);
 
-    err = rectab(xo,yo,zo,xs,ys,zs,a,b,dx,dy,dt,nt,icheck,
+    err = rect_ab(xo,yo,zo,xs,ys,zs,a,b,dx,dy,dt,nt,icheck,
                  delay,retfoc,retsteer,v,cp,alfa,weight,h,err_level);
     if (err != NONE)
       out_err = err;
@@ -147,7 +147,7 @@ int dream_arr_rect_ud(double xo, double yo, double zo, double a, double b, doubl
     if (icheck == 2) {
       break;
     }
-    superpoz(h, ha, nt);
+    superpos(h, ha, nt);
   }
 
   free(h);
@@ -160,14 +160,15 @@ int dream_arr_rect_ud(double xo, double yo, double zo, double a, double b, doubl
 
 /***
  *
- * subroutine rectab - pour calculer pulse respone of a one rectangular element for use
- * within an array
+ * rect_ab
+ *
+ * for calculatung the impulse respone of one rectangular element for use within an array.
  *
  ***/
 
-int rectab(double xo, double yo, double zo, double xs, double ys, double zs, double a, double b,
-           double dx, double dy, double dt, dream_idx_type nt, int icheck, double delay, double retfoc,
-           double retsteer, double v, double cp, double alfa, double weight, double *RESTRICT h, int err_level)
+int rect_ab(double xo, double yo, double zo, double xs, double ys, double zs, double a, double b,
+            double dx, double dy, double dt, dream_idx_type nt, int icheck, double delay, double retfoc,
+            double retsteer, double v, double cp, double alfa, double weight, double *RESTRICT h, int err_level)
 {
   dream_idx_type i;
   double t, decal;
@@ -189,25 +190,18 @@ int rectab(double xo, double yo, double zo, double xs, double ys, double zs, dou
   for (i = 0; i < nt; i++)
     h[i] = (double) 0.0;
 
-  //j=0;
-  //j++;
-  //ysj = ysmin + (j-1) * dy + dy/2;
   ysj = ysmin + dy/2.0;
   while (ysj <= ysmax) {
 
-    //i = 0;
-    //i++;
-    //xsi = xsmin + (i-1) * dx + dx/2;
     xsi = xsmin + dx/2.0;
     while (xsi <= xsmax) {
 
-      modri(xo, yo, zo, xsi, ysj, zs, &ri);
+      distance(xo, yo, zo, xsi, ysj, zs, &ri);
       ai = weight * v * ds / (2*pi*ri);
       ai /= dt;
-      // Convert to SI units.
-      ai *= 1000;
-      // Propagation delay in micro seconds.
-      t = ri * 1000/cp;
+      ai *= 1000;      // Convert to SI units.
+
+      t = ri * 1000/cp; // Propagation delay in micro seconds.
       it = (dream_idx_type) rint((t - delay + decal)/dt);
 
       if ((it < nt) && (it >= 0)) {
@@ -227,14 +221,10 @@ int rectab(double xo, double yo, double zo, double xs, double ys, double zs, dou
           return err; // Bail out.
       }
 
-      //i++;
-      //xsi = xsmin + ((double) (i-1))*dx + dx/2.0;
       xsi += dx;
     } // while
-    //j++;
-    //ysj = ysmin + ((double) (j-1))*dy + dy/2.0;
     ysj += dy;
   } // while
 
   return err;
-} /* rectab */
+} // rect_ab

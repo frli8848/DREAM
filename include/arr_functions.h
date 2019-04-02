@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2002,2003,2006,2007,2008,2009 Fredrik Lingvall
+* Copyright (C) 2002,2003,2006,2007,2008,2009,2019 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -22,8 +22,26 @@
 *
 ***/
 
-
 #include "dream.h"
+
+#define NO_FOCUS 1
+#define FOCUS_X 2
+#define FOCUS_Y 3
+#define FOCUS_XY 4
+#define FOCUS_X_Y 5             // X+Y
+#define FOCUS_UD 6              // User defined
+
+#define NO_STEER 1
+#define STEER_X 2
+#define STEER_Y 3
+#define STEER_XY 4
+
+#define IPOD_UD 0               // User defined
+#define IPOD_TRIANGLE  1
+#define IPOD_GAUSS  2
+#define IPOD_RISED_COSINE 3
+#define IPOD_SIMPLY_SUPPORTED 4
+#define IPOD_CLAMPED 5
 
 /***
  *
@@ -39,7 +57,7 @@ void center_pos(double *xs, double *ys, double *zs, int i, double *gx, double *g
 #ifdef __cplusplus
 extern "C"
 #endif
-void maxdimarr(double *xamax, double *yamax, double *ramax, double *gx, double *gy, double *gz, int isize);
+void max_dim_arr(double *xamax, double *yamax, double *ramax, double *gx, double *gy, double *gz, int isize);
 
 #ifdef __cplusplus
 extern "C"
@@ -59,18 +77,17 @@ extern "C"
 void weighting(int iweight, int iapo, int i, double  *apod, double *weight,
                double xs, double ys, double ramax, double param, int isize);
 
+#ifdef __cplusplus
+extern "C"
+#endif
+void distance(double xo, double yo, double zo,double xs,double ys, double zs,double *ri);
 
 #ifdef __cplusplus
 extern "C"
 #endif
-void modri(double xo, double yo, double zo,double xs,double ys, double zs,double *ri);
+void superpos(double *h, double *ha, dream_idx_type nt);
 
 #ifdef __cplusplus
 extern "C"
 #endif
-void superpoz(double *h, double *ha, dream_idx_type nt);
-
-#ifdef __cplusplus
-extern "C"
-#endif
-void checkdel(dream_idx_type it, double tt, int *icheck, dream_idx_type nt);
+void check_delay(dream_idx_type it, double tt, int *icheck, dream_idx_type nt);

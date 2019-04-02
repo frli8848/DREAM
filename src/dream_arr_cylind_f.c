@@ -82,7 +82,7 @@ int dream_arr_cylind_f(double xo, double yo, double zo, double a, double b, doub
   retsteer = (double) 0.0;
   weight   = (double) 1.0;
 
-  maxdimarr(&xamax, &yamax, &ramax, gx, gy, gz, isize);
+  max_dim_arr(&xamax, &yamax, &ramax, gx, gy, gz, isize);
 
   for (i=0; i<isize; i++) {
     center_pos(&xs, &ys, &zs, i, gx, gy, gz);
@@ -94,7 +94,7 @@ int dream_arr_cylind_f(double xo, double yo, double zo, double a, double b, doub
     if (err != NONE)
       out_err = err;
 
-    superpoz(h, ha, nt);
+    superpos(h, ha, nt);
   }
 
   free(h);
@@ -131,7 +131,7 @@ int dream_arr_cylind_udf(double xo, double yo, double zo, double a, double b, do
   retsteer = (double) 0.0;
   weight   = (double) 1.0;
 
-  maxdimarr(&xamax, &yamax, &ramax, gx, gy, gz, isize);
+  max_dim_arr(&xamax, &yamax, &ramax, gx, gy, gz, isize);
 
   for (i=0; i<isize; i++) {
     center_pos(&xs, &ys, &zs, i, gx, gy, gz);
@@ -143,7 +143,7 @@ int dream_arr_cylind_udf(double xo, double yo, double zo, double a, double b, do
     if (err != NONE)
       out_err = err;
 
-    superpoz(h, ha, nt);
+    superpos(h, ha, nt);
   }
 
   free(h);

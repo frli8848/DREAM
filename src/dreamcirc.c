@@ -113,7 +113,7 @@ int dreamcirc(double xo,
     xsi = xsmin + dx / 2.0;
     while (xsi <= xsmax) {
 
-      //modri(xo, yo, zo, xsi, ysj, &ri);
+      //distance(xo, yo, zo, xsi, ysj, &ri);
       rx = xo - xsi;
       //ry = yo - ysj; // Moved outside this loop.
       //rz = zo;

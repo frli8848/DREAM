@@ -40,14 +40,14 @@
 //
 
 void center_pos_annular(double *RESTRICT rs, double *RESTRICT gr, int isize, int nv, double *RESTRICT ramax);
-void superpoz_annular(double *RESTRICT hi, double *RESTRICT ha, dream_idx_type  nt, double weight, double retfoc, dream_idx_type j, double  dt);
+void superpos_annular(double *RESTRICT hi, double *RESTRICT ha, dream_idx_type  nt, double weight, double retfoc, dream_idx_type j, double  dt);
 void focusing_annular(int ifoc, double focal, double rs, double ramax, double cp, double *RESTRICT retfoc);
 void weighting_annular(int iweight, int iapo, double *RESTRICT apod, double *RESTRICT weight, double rs,
                        double ramax, double param, dream_idx_type i);
 int circ_annular(double xo, double  yo, double  zo, double  a, double dx, double dy, double dt,
                  dream_idx_type nt, double delay, double v, double cp, double alfa, double weight, double *RESTRICT h,
                  dream_idx_type k, int isize,int err_level);
-void modri(double xo, double yo, double zo, double xs, double ys, double zs, double *RESTRICT ri);
+void distance(double xo, double yo, double zo, double xs, double ys, double zs, double *RESTRICT ri);
 void xlimit(double yi, double a, double *RESTRICT xsmin, double *RESTRICT xsmax);
 void resp_annular(double *RESTRICT h, double *RESTRICT hi, dream_idx_type nt, dream_idx_type j);
 
@@ -114,7 +114,7 @@ int dream_arr_annu(double xo, double yo, double zo, double dx, double dy, double
     focusing_annular(ifoc, focal, rs[i], ramax, cp, &retfoc);
     weighting_annular(iweight, iapo, apod, &weight, rs[i], ramax, param, i);
     resp_annular(h, hi, nt, i);
-    superpoz_annular(hi, ha, nt, weight, retfoc, i, dt);
+    superpos_annular(hi, ha, nt, weight, retfoc, i, dt);
   }
 
   free(h);
@@ -189,7 +189,7 @@ int dream_arr_annu_ud(double xo, double yo, double zo, double dx, double dy, dou
     focusing_annular(ifoc, focal[i], rs[i], ramax, cp, &retfoc);  // Note ifoc must be 6 here!
     weighting_annular(iweight, iapo, apod, &weight, rs[i], ramax, param, i);
     resp_annular(h, hi, nt, i);
-    superpoz_annular(hi, ha, nt, weight, retfoc, i, dt);
+    superpos_annular(hi, ha, nt, weight, retfoc, i, dt);
   }
 
   free(h);
@@ -350,7 +350,7 @@ int circ_annular(double xo, double  yo, double  zo, double  r, double dx, double
     xsi = xsmin + dx/2.0;
     while (xsi <= xsmax) {
 
-      modri(xo, yo, zo, xsi, ysj, zs, &ri);
+      distance(xo, yo, zo, xsi, ysj, zs, &ri);
       ai = weight * v * ds / (2*pi*ri);
       ai /= dt;
       // Convert to SI units.
@@ -392,11 +392,11 @@ int circ_annular(double xo, double  yo, double  zo, double  r, double dx, double
 
 /***
  *
- * subrutine modri(xi,xs,hs,ri,rx,rz) pour trouver le longeur du vecteur
+ * subrutine distance(xi,xs,hs,ri,rx,rz) pour trouver le longeur du vecteur
  *
  ***/
 
-void modri(double xo, double yo, double zo, double xs, double ys, double zs, double *RESTRICT ri)
+void distance(double xo, double yo, double zo, double xs, double ys, double zs, double *RESTRICT ri)
 {
   double rx, ry, rz;
 
@@ -406,7 +406,7 @@ void modri(double xo, double yo, double zo, double xs, double ys, double zs, dou
   *ri = sqrt(rx*rx + rz*rz + ry*ry);
 
   return;
-} /* modri */
+} /* distance */
 
 
 /***
@@ -429,13 +429,13 @@ void xlimit(double yi, double a, double *RESTRICT xsmin, double *RESTRICT xsmax)
 
 /***
  *
- * call superpoz(h,ha) subroutine pour superpozer les contributions des elements
+ * call superpos(h,ha) subroutine pour superposer les contributions des elements
  *
  * ha = output response
  * h  = input responce of actual element
  ***/
 
-void superpoz_annular(double *RESTRICT hi, double *RESTRICT ha, dream_idx_type  nt, double weight, double retfoc, dream_idx_type j, double  dt)
+void superpos_annular(double *RESTRICT hi, double *RESTRICT ha, dream_idx_type  nt, double weight, double retfoc, dream_idx_type j, double  dt)
 {
   double *RESTRICT buff;
   dream_idx_type    i,it1;
@@ -456,7 +456,7 @@ void superpoz_annular(double *RESTRICT hi, double *RESTRICT ha, dream_idx_type  
   free(buff);
 
   return;
-} /* superpoz_annular */
+} /* superpos_annular */
 
 
 /***

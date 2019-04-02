@@ -73,7 +73,7 @@ int das_arr(double xo, double yo, double zo, double dt, dream_idx_type nt,
   retsteer = (double) 0.0;
   weight   = (double) 1.0;
 
-  maxdimarr(&xamax, &yamax, &ramax, gx, gy, gz, isize);
+  max_dim_arr(&xamax, &yamax, &ramax, gx, gy, gz, isize);
 
   for (i=0; i<isize; i++) {
     center_pos(&xs, &ys, &zs, i, gx, gy, gz);
@@ -89,7 +89,7 @@ int das_arr(double xo, double yo, double zo, double dt, dream_idx_type nt,
       }
     }
 
-    superpoz(h, ha, nt);
+    superpos(h, ha, nt);
   }
 
   i_c = centroid(ha,nt);
@@ -147,7 +147,7 @@ int das_arr_ud(double xo, double yo, double zo, double dt, dream_idx_type nt,
   retsteer = (double) 0.0;
   weight   = (double) 1.0;
 
-  maxdimarr(&xamax, &yamax, &ramax, gx, gy, gz, isize);
+  max_dim_arr(&xamax, &yamax, &ramax, gx, gy, gz, isize);
 
   for (i=0; i<isize; i++) {
     center_pos(&xs, &ys, &zs, i, gx, gy, gz);
@@ -163,7 +163,7 @@ int das_arr_ud(double xo, double yo, double zo, double dt, dream_idx_type nt,
       }
     }
 
-    superpoz(h, ha, nt);
+    superpos(h, ha, nt);
   }
 
 
@@ -220,7 +220,7 @@ int delay_arr(double xo, double yo, double zo, double xs, double ys, double zs, 
     h[i] = (double) 0.0;
   }
 
-  modri(xo, yo, zo, xs, ys, zs, &ri);
+  distance(xo, yo, zo, xs, ys, zs, &ri);
   t = ri * 1000/cp;
   tt = t - delay + decal;
   qan = tt / dt;

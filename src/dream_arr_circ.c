@@ -72,7 +72,7 @@ int dream_arr_circ(double xo, double yo, double zo, double r, double dx, double 
   retsteer = (double) 0.0;
   weight   = (double) 1.0;
 
-  maxdimarr(&xamax, &yamax, &ramax, gx, gy, gz, isize);
+  max_dim_arr(&xamax, &yamax, &ramax, gx, gy, gz, isize);
 
   for (i=0; i<isize; i++) {
     center_pos(&xs, &ys, &zs, i, gx, gy, gz);
@@ -84,7 +84,7 @@ int dream_arr_circ(double xo, double yo, double zo, double r, double dx, double 
     if (err != NONE)
       out_err = err;
 
-    superpoz(h, ha, nt);
+    superpos(h, ha, nt);
   }
 
   free(h);
@@ -121,7 +121,7 @@ int dream_arr_circ_ud(double xo, double yo, double zo, double r, double dx, doub
   retsteer = (double) 0.0;
   weight   = (double) 1.0;
 
-  maxdimarr(&xamax, &yamax, &ramax, gx, gy, gz, isize);
+  max_dim_arr(&xamax, &yamax, &ramax, gx, gy, gz, isize);
 
   for (i=0; i<isize; i++) {
     center_pos(&xs, &ys, &zs, i, gx, gy, gz);
@@ -133,7 +133,7 @@ int dream_arr_circ_ud(double xo, double yo, double zo, double r, double dx, doub
     if (err != NONE)
       out_err = err;
 
-    superpoz(h, ha, nt);
+    superpos(h, ha, nt);
   }
 
   free(h);
@@ -185,8 +185,8 @@ int circ_arr(double xo, double yo, double zo, double xs, double ys, double r, do
     xsi = xsmin + dx/2.0;
     while (xsi <= xsmax) {
 
-      //modri(xo, yo, zo, xsi, ysj, zs, &ri, &rx, &ry, &rz);
-      modri(xo, yo, zo, xsi, ysj, zs, &ri);
+      //distance(xo, yo, zo, xsi, ysj, zs, &ri, &rx, &ry, &rz);
+      distance(xo, yo, zo, xsi, ysj, zs, &ri);
       ai = weight * v * ds / (2*pi*ri);
       ai /= dt;
       // Convert to SI units.

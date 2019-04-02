@@ -36,7 +36,7 @@
 //  Function prototypes.
 //
 
-void modri(double xo,
+void distance(double xo,
            double yo,
            double zo,
            double x,
@@ -102,7 +102,7 @@ int dreamrect_f(double xo,
     xsi = xsmin + (i-1) * dx + dx / 2;
     while (xsi <= xsmax) {
 
-      modri(xo, yo, zo, xsi, ysj,  &ri);
+      distance(xo, yo, zo, xsi, ysj,  &ri);
       focusing(ifoc, focal, xsi, ysj, a, b, c, cp, &retfoc);
 
       ai = v * ds / (2*pi * ri);
@@ -149,11 +149,11 @@ int dreamrect_f(double xo,
 
 /***
  *
- * subrutine modri(xi,xs,hs,ri,rx,rz) pour trouver le longeur du vecteur
+ * subrutine distance(xi,xs,hs,ri,rx,rz) pour trouver le longeur du vecteur
  *
  ***/
 
-void modri(double xo,
+void distance(double xo,
            double yo,
            double zo,
            double x,
@@ -168,7 +168,7 @@ void modri(double xo,
   *ri = sqrt(rx*rx + rz*rz + ry*ry);
 
   return;
-} /* modri */
+} /* distance */
 
 
 /***

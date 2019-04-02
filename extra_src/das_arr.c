@@ -79,7 +79,7 @@ int das_arr(double xo, double yo, double zo, double dt, dream_idx_type nt,
     center_pos(&xs, &ys, &zs, i, gx, gy, gz);
     focusing(ifoc, focal, xs, ys, xamax, yamax, ramax, cp, &retfoc);
     beamsteering(ister, theta, phi, xs, ys, xamax, yamax, ramax, cp, &retsteer);
-    weighting(iweight, iapo, i, apod, &weight, xs, ys, ramax, param, isize);
+    apodization(iweight, iapo, i, apod, &weight, xs, ys, ramax, param, isize);
 
     err = delay_arr(xo,yo,zo,xs,ys,zs,dt,nt,delay,retfoc,retsteer,cp,weight,h,err_level);
     if (err != NONE) {
@@ -153,7 +153,7 @@ int das_arr_ud(double xo, double yo, double zo, double dt, dream_idx_type nt,
     center_pos(&xs, &ys, &zs, i, gx, gy, gz);
     focusing(ifoc, focal[i], xs, ys, xamax, yamax, ramax, cp, &retfoc);   // Note ifoc must be 6 here!
     beamsteering(ister, theta, phi, xs, ys, xamax, yamax, ramax, cp, &retsteer);
-    weighting(iweight, iapo, i, apod, &weight, xs, ys, ramax, param, isize);
+    apodization(iweight, iapo, i, apod, &weight, xs, ys, ramax, param, isize);
 
     err = delay_arr(xo,yo,zo,xs,ys,zs,dt,nt,delay,retfoc,retsteer,cp,weight,h,err_level);
     if (err != NONE) {

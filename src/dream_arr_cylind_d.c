@@ -88,7 +88,7 @@ int dream_arr_cylind_d(double xo, double yo, double zo, double a, double b, doub
     center_pos(&xs, &ys, &zs, i, gx, gy, gz);
     focusing(ifoc, focal, xs, ys, xamax, yamax, ramax, cp, &retfoc);
     beamsteering(ister, theta, phi, xs, ys, xamax, yamax, ramax, cp, &retsteer);
-    weighting(iweight, iapo, i, apod, &weight, xs, ys, ramax, param, isize);
+    apodization(iweight, iapo, i, apod, &weight, xs, ys, ramax, param, isize);
 
     err = cylind_d(xo,yo,zo,xs,ys,zs,R,a,b,dx,dy,dt,nt,delay,retfoc,retsteer,v,cp,alfa,weight,h,err_level);
     if (err != NONE)
@@ -138,7 +138,7 @@ int dream_arr_cylind_udd(double xo, double yo, double zo, double a, double b, do
     center_pos(&xs, &ys, &zs, i, gx, gy, gz);
     focusing(ifoc, focal[i], xs, ys, xamax, yamax, ramax, cp, &retfoc); // Note ifoc must be 6 here!
     beamsteering(ister, theta, phi, xs, ys, xamax, yamax, ramax, cp, &retsteer);
-    weighting(iweight, iapo, i, apod, &weight, xs, ys, ramax, param, isize);
+    apodization(iweight, iapo, i, apod, &weight, xs, ys, ramax, param, isize);
 
     err = cylind_d(xo,yo,zo,xs,ys,zs,R,a,b,dx,dy,dt,nt,delay,retfoc,retsteer,v,cp,alfa,weight,h,err_level);
 

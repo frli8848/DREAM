@@ -21,7 +21,6 @@
 *
 ***/
 
-
 #include <string.h>
 #include <uchar.h>
 #include "mex.h"
@@ -30,7 +29,7 @@
 
 /***
  *
- * Matlab (mex) gateway function for dream_apodwin (for the weighting functions in
+ * Matlab (mex) gateway function for dream_apodwin (for the apodization functions in
  * arr_functions.c)
  *
  ***/
@@ -145,7 +144,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   if (iweight != 1) {
     for (i=0; i<isize; i++) {
       xs = 2*ramax * (0.5 - ((double) i / (double) isize));
-      weighting(iweight,iapo,i,apod,&weight,xs,ys,ramax,param,isize);
+      apodization(iweight,iapo,i,apod,&weight,xs,ys,ramax,param,isize);
       yr[i] = weight;
     }
   }

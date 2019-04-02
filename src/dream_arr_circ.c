@@ -78,7 +78,7 @@ int dream_arr_circ(double xo, double yo, double zo, double r, double dx, double 
     center_pos(&xs, &ys, &zs, i, gx, gy, gz);
     focusing(ifoc, focal, xs, ys, xamax, yamax, ramax, cp, &retfoc);
     beamsteering(ister, theta, phi, xs, ys, xamax, yamax, ramax, cp, &retsteer);
-    weighting(iweight, iapo, i, apod, &weight, xs, ys, ramax, param, isize);
+    apodization(iweight, iapo, i, apod, &weight, xs, ys, ramax, param, isize);
 
     err = circ_arr(xo,yo,zo,xs,ys,r,dx,dy,dt,nt,delay,retfoc,retsteer,v,cp,alfa,weight,h,err_level);
     if (err != NONE)
@@ -127,7 +127,7 @@ int dream_arr_circ_ud(double xo, double yo, double zo, double r, double dx, doub
     center_pos(&xs, &ys, &zs, i, gx, gy, gz);
     focusing(ifoc, focal[i], xs, ys, xamax, yamax, ramax, cp, &retfoc);   // Note ifoc must be 6 here!
     beamsteering(ister, theta, phi, xs, ys, xamax, yamax, ramax, cp, &retsteer);
-    weighting(iweight, iapo, i, apod, &weight, xs, ys, ramax, param, isize);
+    apodization(iweight, iapo, i, apod, &weight, xs, ys, ramax, param, isize);
 
     err = circ_arr(xo,yo,zo,xs,ys,r,dx,dy,dt,nt,delay,retfoc,retsteer,v,cp,alfa,weight,h,err_level);
     if (err != NONE)

@@ -211,9 +211,9 @@ void beamsteering(int ister, double theta, double phi, double xs, double ys,
  *
  *  Weighting (apodization)
  *
- * weighting iapo = 0 weighting with user defined apodization function apod(x,y)
+ * apodization iapo = 0 apodization with user defined apodization function apod(x,y)
  *
- * iweight = 1 No weighting, 2  Weighting , param=input parameter
+ * iweight = 1 No apodization, 2  Weighting , param=input parameter
  *
  * iapo = 0 User defined
  * iapo = 1 Traingle
@@ -224,7 +224,7 @@ void beamsteering(int ister, double theta, double phi, double xs, double ys,
  *
  ***/
 
-void weighting(int iweight, int iapo, int i, double *RESTRICT apod, double *RESTRICT weight,
+void apodization(int iweight, int iapo, int i, double *RESTRICT apod, double *RESTRICT weight,
                double xs, double ys, double ramax, double param, int isize)
 {
   double pi = 4.0 * atan(1.0);
@@ -264,7 +264,7 @@ void weighting(int iweight, int iapo, int i, double *RESTRICT apod, double *REST
   }
 
   return;
-} /* weighting */
+} /* apodization */
 
 /***
  *

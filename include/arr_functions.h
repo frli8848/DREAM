@@ -74,7 +74,7 @@ void beamsteering(int ister, double theta, double phi, double xs, double ys,
 #ifdef __cplusplus
 extern "C"
 #endif
-void weighting(int iweight, int iapo, int i, double  *apod, double *weight,
+void apodization(int iweight, int iapo, int i, double  *apod, double *weight,
                double xs, double ys, double ramax, double param, int isize);
 
 #ifdef __cplusplus

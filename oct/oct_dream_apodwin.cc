@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2006,2007,2008,2009,2015,2016 Fredrik Lingvall
+* Copyright (C) 2006,2007,2008,2009,2015,2016,2019 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -43,7 +43,7 @@
 
 /***
  *
- * Octave (oct) gateway function for dream_apodwin (for the weighting functions in
+ * Octave (oct) gateway function for dream_apodwin (for the apodization functions in
  * arr_functions.c)
  *
  ***/
@@ -61,7 +61,7 @@ as used in the array functions in the DREAM Toolbox.\n\
 @item apod_met\n\
 The apodization method (a text string),\n\
 @item apod\n\
-Is the sample length of the apodization window (or a vector\n\
+Is the sample length of the apodization window (or a vector)\n\
 of apodization weights for the 'ud' option),\n\
 @item win_par\n\
 Parameter for raised cosine and Gaussian apodization functions (a scalar).\n\
@@ -89,14 +89,12 @@ Clamped.\n\
 dream_apodwin is an oct-function that is a part of the DREAM Toolbox available at\n\
 @url{http://www.signal.uu.se/Toolbox/dream/}.\n\
 \n\
-Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
+Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
 @seealso {dream_arr_rect, dream_arr_circ, dream_arr_cylind_f, dream_arr_cylind_d}\n\
 @end deftypefn")
 {
-  char   apod_met[40];
-  int    buflen,n;
-  int    iweight=0,iapo=0,i,isize=0, is_set = false;
-  double *apod=NULL,weight,xs,ys,ramax,param;
+  int    iweight=0, iapo=0, i, isize=0, is_set = false;
+  double *apod=nullptr, weight, xs, ys, ramax, param;
   double *h;
   octave_value_list oct_retval;
 
@@ -124,55 +122,50 @@ Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
     return oct_retval;
   }
 
-  std::string strin = args(0).string_value();
-  buflen = strin.length();
-  for ( n=0; n<=buflen; n++ ) {
-    apod_met[n] = strin[n];
-  }
-  apod_met[buflen] = '\0';
+  std::string apod_str = args(0).string_value();
 
   iweight = 1;			// default off.
   is_set = false;
 
-  if (!strcmp(apod_met,"off")) {
+  if (apod_str == "off") {
     iweight = 1;
     is_set = true;
   }
 
-  if (!strcmp(apod_met,"ud")) {
+  if (apod_str == "ud") {
     iweight = 2;
-    iapo = 0;
+    iapo = IPOD_UD;
     error(" 'ud'- (user defined) meaningless for this function!");
     return oct_retval;
   }
 
-  if (!strcmp(apod_met,"triangle")) {
+  if (apod_str == "triangle") {
     iweight = 2;
-    iapo = 1;
+    iapo = IPOD_TRIANGLE;
     is_set = true;
   }
 
-  if (!strcmp(apod_met,"gauss")) {
+  if (apod_str == "gauss") {
     iweight = 2;
-    iapo = 2;
+    iapo = IPOD_GAUSS;
     is_set = true;
   }
 
-  if (!strcmp(apod_met,"raised")) {
+  if (apod_str == "raised") {
     iweight = 2;
-    iapo = 3;
+    iapo = IPOD_RISED_COSINE;
     is_set = true;
   }
 
-  if (!strcmp(apod_met,"simply")) {
+  if (apod_str == "simply") {
     iweight = 2;
-    iapo = 4;
+    iapo = IPOD_SIMPLY_SUPPORTED;
       is_set = true;
   }
 
-  if (!strcmp(apod_met,"clamped")) {
+  if (apod_str == "clamped") {
     iweight = 2;
-    iapo = 5;
+    iapo = IPOD_CLAMPED;
     is_set = true;
   }
 
@@ -208,7 +201,6 @@ Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
   const Matrix tmp2 = args(2).matrix_value();
   param = (double) tmp2.fortran_vec()[0];
 
-
   // Create an output matrix for the impulse response
   Matrix h_mat(isize,1);
   h = h_mat.fortran_vec();
@@ -218,7 +210,7 @@ Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
   if (iweight != 1) {
     for (i=0; i<isize; i++) {
       xs = 2*ramax * (0.5 - ((double) i / (double) isize));
-      weighting(iweight,iapo,i,apod,&weight,xs,ys,ramax,param,isize);
+      apodization(iweight,iapo,i,apod,&weight,xs,ys,ramax,param,isize);
       h[i] = weight;
     }
   }

@@ -450,7 +450,7 @@ Copyright @copyright{} 2008-2016 Fredrik Lingvall.\n\
   // Apodization.
   //
 
-  // iweight = 1 - no weighting, 2  weighting.
+  // iweight = 1 - no apodization, 2  apodization.
   // iapo = 0 - user defined, 1 traingle, 2 Gauss, 3 raised cosine, 4 simply supported, 5 clamped.
 
   if (nrhs >= 10) {

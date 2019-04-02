@@ -28,6 +28,7 @@
 #include <mutex>
 #include <signal.h>
 #include "dream_arr_cylind_d.h"
+#include "affinity.h"
 #include "dream_error.h"
 
 #define SINGLE 0
@@ -674,7 +675,7 @@ Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
   // Apodization.
   //
 
-  // iweight = 1 - no weighting, 2  weighting.
+  // iweight = 1 - no apodization, 2  apodization.
   // iapo = 0 - user defined, 1 traingle, 2 Gauss, 3 raised cosine, 4 simply supported, 5 clamped.
 
   if (nrhs >= 11) {
@@ -906,16 +907,8 @@ Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
 
     // Start the threads.
     threads[thread_n] = std::thread(smp_process, &D[thread_n]); // Start the threads.
-
-#ifdef __linux__
-    // Make sure that each thread run on different CPU/core.
-    cpu_set_t cpuset;
-    CPU_ZERO(&cpuset);
-    CPU_SET(thread_n, &cpuset);
-    int rc = pthread_setaffinity_np(threads[thread_n].native_handle(),
-                                    sizeof(cpu_set_t), &cpuset);
-#endif
-  } // for (thread_n = 0; thread_n < nthreads; thread_n++)
+    set_dream_thread_affinity(thread_n, nthreads, threads);
+  }
 
   // Wait for all threads to finish.
   for (thread_n = 0; thread_n < nthreads; thread_n++)

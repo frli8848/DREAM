@@ -42,7 +42,7 @@
 void center_pos_annular(double *RESTRICT rs, double *RESTRICT gr, int isize, int nv, double *RESTRICT ramax);
 void superpos_annular(double *RESTRICT hi, double *RESTRICT ha, dream_idx_type  nt, double weight, double retfoc, dream_idx_type j, double  dt);
 void focusing_annular(int ifoc, double focal, double rs, double ramax, double cp, double *RESTRICT retfoc);
-void weighting_annular(int iweight, int iapo, double *RESTRICT apod, double *RESTRICT weight, double rs,
+void apodization_annular(int iweight, int iapo, double *RESTRICT apod, double *RESTRICT weight, double rs,
                        double ramax, double param, dream_idx_type i);
 int circ_annular(double xo, double  yo, double  zo, double  a, double dx, double dy, double dt,
                  dream_idx_type nt, double delay, double v, double cp, double alfa, double weight, double *RESTRICT h,
@@ -112,7 +112,7 @@ int dream_arr_annu(double xo, double yo, double zo, double dx, double dy, double
 
   for (i=0; i<nv; i++) {
     focusing_annular(ifoc, focal, rs[i], ramax, cp, &retfoc);
-    weighting_annular(iweight, iapo, apod, &weight, rs[i], ramax, param, i);
+    apodization_annular(iweight, iapo, apod, &weight, rs[i], ramax, param, i);
     resp_annular(h, hi, nt, i);
     superpos_annular(hi, ha, nt, weight, retfoc, i, dt);
   }
@@ -187,7 +187,7 @@ int dream_arr_annu_ud(double xo, double yo, double zo, double dx, double dy, dou
 
   for (i=0; i<nv; i++) {
     focusing_annular(ifoc, focal[i], rs[i], ramax, cp, &retfoc);  // Note ifoc must be 6 here!
-    weighting_annular(iweight, iapo, apod, &weight, rs[i], ramax, param, i);
+    apodization_annular(iweight, iapo, apod, &weight, rs[i], ramax, param, i);
     resp_annular(h, hi, nt, i);
     superpos_annular(hi, ha, nt, weight, retfoc, i, dt);
   }
@@ -253,11 +253,11 @@ void focusing_annular(int ifoc, double focal, double rs, double ramax, double cp
 
 /***
  *
- *  weighting
+ *  apodization
  *
- * weighting iapo = 0 weighting with imported apodisation function apod(x,y)
+ * apodization iapo = 0 apodization with imported apodisation function apod(x,y)
  *
- * iweight = 1 - no weighting, 2  weighting , param=input parameter
+ * iweight = 1 - no apodization, 2  apodization , param=input parameter
  *
  * iapo = 0 - user defined.
  * iapo = 1 traingle.
@@ -268,7 +268,7 @@ void focusing_annular(int ifoc, double focal, double rs, double ramax, double cp
  *
  ***/
 
-void weighting_annular(int iweight, int iapo, double *RESTRICT apod, double *RESTRICT weight, double rs,
+void apodization_annular(int iweight, int iapo, double *RESTRICT apod, double *RESTRICT weight, double rs,
                        double ramax, double param, dream_idx_type i)
 {
   double pi = atan((double) 1.0) * (double) 4.0;
@@ -309,7 +309,7 @@ void weighting_annular(int iweight, int iapo, double *RESTRICT apod, double *RES
   }
 
   return;
-} /* weighting_annular */
+} /* apodization_annular */
 
 /***
  *

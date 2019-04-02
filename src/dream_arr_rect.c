@@ -42,7 +42,7 @@
 
 int rect_ab(double xo, double yo, double zo, double xs, double ys, double zs, double a, double b,
             double dx, double dy, double dt, dream_idx_type nt, int icheck, double delay, double retfoc,
-            double retsteer, double v, double cp, double alfa,  double weight, double *RESTRICT h, int err_level);
+            double retsteer, double v, double cp, double alpha,  double weight, double *RESTRICT h, int err_level);
 
 
 /***
@@ -52,7 +52,7 @@ int rect_ab(double xo, double yo, double zo, double xs, double ys, double zs, do
  ***/
 
 int dream_arr_rect(double xo, double yo, double zo, double a, double b, double dx, double dy, double dt,
-                  dream_idx_type nt, double delay, double v, double cp, double alfa, int isize,
+                  dream_idx_type nt, double delay, double v, double cp, double alpha, int isize,
                   double *RESTRICT gx, double *RESTRICT gy, double *RESTRICT gz, int ifoc, double focal, int ister,
                   double theta, double phi, double *RESTRICT apod, int iweight, int iapo, double param, double *RESTRICT ha,
                   int err_level)
@@ -85,7 +85,7 @@ int dream_arr_rect(double xo, double yo, double zo, double a, double b, double d
     apodization(iweight, iapo, i, apod, &weight, xs, ys, ramax, param, isize);
 
     err = rect_ab(xo,yo,zo,xs,ys,zs,a,b,dx,dy,dt,nt,icheck,
-                 delay,retfoc,retsteer,v,cp,alfa,weight,h,err_level);
+                 delay,retfoc,retsteer,v,cp,alpha,weight,h,err_level);
     if (err != NONE)
       out_err = err;
 
@@ -107,7 +107,7 @@ int dream_arr_rect(double xo, double yo, double zo, double a, double b, double d
  ***/
 
 int dream_arr_rect_ud(double xo, double yo, double zo, double a, double b, double dx, double dy, double dt,
-                  dream_idx_type nt, double delay, double v, double cp, double alfa, int isize,
+                  dream_idx_type nt, double delay, double v, double cp, double alpha, int isize,
                   double *RESTRICT gx, double *RESTRICT gy, double *RESTRICT gz, int ifoc, double *RESTRICT focal, int ister,
                   double theta, double phi, double *RESTRICT apod, int iweight, int iapo, double param, double *RESTRICT ha,
                   int err_level)
@@ -140,7 +140,7 @@ int dream_arr_rect_ud(double xo, double yo, double zo, double a, double b, doubl
     apodization(iweight, iapo, i, apod, &weight, xs, ys, ramax, param, isize);
 
     err = rect_ab(xo,yo,zo,xs,ys,zs,a,b,dx,dy,dt,nt,icheck,
-                 delay,retfoc,retsteer,v,cp,alfa,weight,h,err_level);
+                 delay,retfoc,retsteer,v,cp,alpha,weight,h,err_level);
     if (err != NONE)
       out_err = err;
 
@@ -168,7 +168,7 @@ int dream_arr_rect_ud(double xo, double yo, double zo, double a, double b, doubl
 
 int rect_ab(double xo, double yo, double zo, double xs, double ys, double zs, double a, double b,
             double dx, double dy, double dt, dream_idx_type nt, int icheck, double delay, double retfoc,
-            double retsteer, double v, double cp, double alfa, double weight, double *RESTRICT h, int err_level)
+            double retsteer, double v, double cp, double alpha, double weight, double *RESTRICT h, int err_level)
 {
   dream_idx_type i;
   double t, decal;
@@ -206,10 +206,10 @@ int rect_ab(double xo, double yo, double zo, double xs, double ys, double zs, do
 
       if ((it < nt) && (it >= 0)) {
 
-        if (alfa == (double) 0.0 )
+        if (alpha == (double) 0.0 )
           h[it] += ai; // No attenuation.
         else
-          att(alfa, ri, it, dt, cp, h, nt, ai); // Attenuation compensation.
+          att(alpha, ri, it, dt, cp, h, nt, ai); // Attenuation compensation.
       }
       else   {
         if  (it >= 0)

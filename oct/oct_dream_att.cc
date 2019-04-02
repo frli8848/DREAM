@@ -83,14 +83,14 @@ Start point of SIR:\n\
 Scalar delay for all observation points or a vector with individual delays for each observation point [us].\n\
 @end table\n\
 \n\
-Material parameters: m_par = [v cp alfa];\n\
+Material parameters: m_par = [v cp alpha];\n\
 \n\
 @table @code\n\
 @item v\n\
 Normal velocity [m/s].\n\
 @item cp\n\
 Sound velocity [m/s].\n\
-@item alfa\n\
+@item alpha\n\
 Attenuation coefficient [dB/(cm MHz)] .\n\
 \n\
 @end table\n\
@@ -105,7 +105,7 @@ Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
   double *ro,*s_par,*m_par;
   int    it,nt,no,n;
   double xo,yo,zo,dt;
-  double *delay,cp,alfa,r;
+  double *delay,cp,alpha,r;
   double *h;
   octave_value_list oct_retval;
 
@@ -174,7 +174,7 @@ Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
   const Matrix tmp3 = args(3).matrix_value();
   m_par = (double*) tmp3.fortran_vec();
   cp    = m_par[0]; // Sound speed.
-  alfa  = m_par[1]; // Attenuation coefficient [dB/(cm MHz)].
+  alpha  = m_par[1]; // Attenuation coefficient [dB/(cm MHz)].
 
   //
   // Create an output matrix for the impulse response.
@@ -185,7 +185,7 @@ Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
   h = h_mat.fortran_vec();
 
 #ifdef USE_FFTW
-  if (alfa != (double) 0.0)
+  if (alpha != (double) 0.0)
     att_init(nt,1);
 #endif
 
@@ -200,7 +200,7 @@ Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
 
       r = sqrt(xo*xo + yo*yo + zo*zo);
       it = (int) ( (r * 1000/cp - delay[0])/dt + 1);
-      att(alfa,r,it,dt,cp,&h[n*nt],nt,1.0);
+      att(alpha,r,it,dt,cp,&h[n*nt],nt,1.0);
     }
   } else {
     for (n=0; n<no; n++) {
@@ -210,12 +210,12 @@ Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
 
       r = sqrt(xo*xo + yo*yo + zo*zo);
       it = (int) ( (r * 1000/cp - delay[n])/dt + 1);
-      att(alfa,r,it,dt,cp,&h[n*nt],nt,1.0);
+      att(alpha,r,it,dt,cp,&h[n*nt],nt,1.0);
     }
   }
 
 #ifdef USE_FFTW
-  if (alfa != (double) 0.0)
+  if (alpha != (double) 0.0)
     att_close();
 #endif
 

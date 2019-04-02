@@ -35,7 +35,7 @@
 extern "C"
 #endif
 int dream_arr_rect(double xo, double yo, double zo, double a, double b, double dx, double dy, double dt,
-                   dream_idx_type nt, double delay, double v, double cp, double alfa, int isize,
+                   dream_idx_type nt, double delay, double v, double cp, double alpha, int isize,
                    double *gx, double *gy, double *gz, int ifoc, double focal, int ister,
                    double theta, double phi, double *apod, int iweight, int iapo, double param, double *ha,
                    int err_level);
@@ -44,7 +44,7 @@ int dream_arr_rect(double xo, double yo, double zo, double a, double b, double d
 extern "C"
 #endif
 int dream_arr_rect_ud(double xo, double yo, double zo, double a, double b, double dx, double dy, double dt,
-                      dream_idx_type nt, double delay, double v, double cp, double alfa, int isize,
+                      dream_idx_type nt, double delay, double v, double cp, double alpha, int isize,
                       double *gx, double *gy, double *gz, int ifoc, double *focal, int ister,
                       double theta, double phi, double *apod, int iweight, int iapo, double param, double *ha,
                       int err_level);

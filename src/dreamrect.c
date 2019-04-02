@@ -50,7 +50,7 @@ int dreamrect(double xo,
                double delay,
                double v,
                double cp,
-               double alfa,
+               double alpha,
                double *RESTRICT h,
                int err_level)
 {
@@ -77,7 +77,7 @@ int dreamrect(double xo,
   N = (dream_idx_type) (a/dx);
 
   // Check if absorbtion is present.
-  if (alfa == (double) 0.0) {
+  if (alpha == (double) 0.0) {
 
     rz = zo;
     ysj = ysmin + dy / 2.0;
@@ -139,7 +139,7 @@ int dreamrect(double xo,
 
         // Check if index is out of bounds.
         if ( (it < nt) && (it >= 0) ) {
-          att(alfa,ri,it,dt,cp,h,nt,ai);
+          att(alpha,ri,it,dt,cp,h,nt,ai);
         }
         else {
           if  (it >= 0)
@@ -155,7 +155,7 @@ int dreamrect(double xo,
       ysj += dy;
     }
 
-  } // if (alfa == ...)
+  } // if (alpha == ...)
 
   return err;
 } /* dreamrect */

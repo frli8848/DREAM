@@ -157,7 +157,7 @@ void att_close()
  *
  ***/
 
-void att(double alfa, double rj, dream_idx_type it, double dt, double cp, double *h, dream_idx_type nt, double ai)
+void att(double alpha, double rj, dream_idx_type it, double dt, double cp, double *h, dream_idx_type nt, double ai)
 {
   const double mille = 1000.0;
   double pi,pi2;
@@ -229,9 +229,9 @@ void att(double alfa, double rj, dream_idx_type it, double dt, double cp, double
   // Calculate frequency-domain Green's function.
   //
 
-  /* absor = alfa en 1/m Hz: */
-  //alfa /= (double) 8.86*10000.0; // dB per cm MHz to Neper per m Hz conversion? (8.686 = 20/log(10)).
-  alfa /= (double) 8.686*10000.0; 
+  /* absor = alpha en 1/m Hz: */
+  //alpha /= (double) 8.86*10000.0; // dB per cm MHz to Neper per m Hz conversion? (8.686 = 20/log(10)).
+  alpha /= (double) 8.686*10000.0; 
 
   /*  	dt s, a1 s, */
   dt /= (mille * mille);	// Sampling period [s].
@@ -241,7 +241,7 @@ void att(double alfa, double rj, dream_idx_type it, double dt, double cp, double
 
   /* Change  units rj [m] */
   rj /= mille;
-  a0  = alfa;
+  a0  = alpha;
   // The 0.95 constant controls the phase only (causality). See:
   // K. Aki and P. G. Richards, "Quantative Seismology: Theory and Methods",
   // San Francisco, CA, Freeman, 1980.
@@ -326,7 +326,7 @@ void att(double alfa, double rj, dream_idx_type it, double dt, double cp, double
  *
  ***/
 
-void att_annu(double alfa, double rj, dream_idx_type it, double  dt, double cp, double *h, dream_idx_type nt, double ai, int ns, int isize)
+void att_annu(double alpha, double rj, dream_idx_type it, double  dt, double cp, double *h, dream_idx_type nt, double ai, int ns, int isize)
 {
   /* Initialized data */
   const double mille = 1000.0;
@@ -393,7 +393,7 @@ void att_annu(double alfa, double rj, dream_idx_type it, double  dt, double cp, 
   //
 
   // dB per cm MHz to Neper per m Hz conversion? (8.686 = 20/log(10)).
-  alfa /= (double) 8.686*10000.0; 
+  alpha /= (double) 8.686*10000.0; 
 
   /*  	dt s, a1 s, */
   dt /= (mille * mille);     // Sampling period [s].
@@ -408,8 +408,8 @@ void att_annu(double alfa, double rj, dream_idx_type it, double  dt, double cp, 
 
   /* Change  units rj [m] */
   rj /= mille;
-  a = -(rj * alfa) / ( (double) 2.0 * pi);
-  tq = rj * alfa * cp / (pi * pi);
+  a = -(rj * alpha) / ( (double) 2.0 * pi);
+  tq = rj * alpha * cp / (pi * pi);
 
 #ifdef USE_FFTW
   xc[0] = Complex(1.0,0.0);	// w = 0 (f = 0 Hz).

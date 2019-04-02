@@ -40,7 +40,7 @@
 //
 
 int circ_arr(double xo, double yo, double zo, double xs, double ys, double r, double dx, double dy, double dt,
-              dream_idx_type nt, double delay, double retfoc, double retsteer, double v, double cp, double alfa,
+              dream_idx_type nt, double delay, double retfoc, double retsteer, double v, double cp, double alpha,
               double weight, double *RESTRICT h, int err_level);
 void xlimit(double yi, double r, double xs, double ys, double *RESTRICT xsmin, double *RESTRICT xsmax);
 
@@ -51,7 +51,7 @@ void xlimit(double yi, double r, double xs, double ys, double *RESTRICT xsmin, d
  ***/
 
 int dream_arr_circ(double xo, double yo, double zo, double r, double dx, double dy, double dt, dream_idx_type nt,
-                    double delay, double v, double cp, double alfa, int  isize,
+                    double delay, double v, double cp, double alpha, int  isize,
                     double *RESTRICT gx, double *RESTRICT gy, double *RESTRICT gz, int ifoc, double focal,
                     int ister, double theta, double phi, double *RESTRICT apod, int iweight,
                     int iapo, double param, double *RESTRICT ha, int err_level)
@@ -80,7 +80,7 @@ int dream_arr_circ(double xo, double yo, double zo, double r, double dx, double 
     beamsteering(ister, theta, phi, xs, ys, xamax, yamax, ramax, cp, &retsteer);
     apodization(iweight, iapo, i, apod, &weight, xs, ys, ramax, param, isize);
 
-    err = circ_arr(xo,yo,zo,xs,ys,r,dx,dy,dt,nt,delay,retfoc,retsteer,v,cp,alfa,weight,h,err_level);
+    err = circ_arr(xo,yo,zo,xs,ys,r,dx,dy,dt,nt,delay,retfoc,retsteer,v,cp,alpha,weight,h,err_level);
     if (err != NONE)
       out_err = err;
 
@@ -99,7 +99,7 @@ int dream_arr_circ(double xo, double yo, double zo, double r, double dx, double 
  ***/
 
 int dream_arr_circ_ud(double xo, double yo, double zo, double r, double dx, double dy, double dt, dream_idx_type nt,
-                    double delay, double v, double cp, double alfa, int  isize,
+                    double delay, double v, double cp, double alpha, int  isize,
                     double *RESTRICT gx, double *RESTRICT gy, double *RESTRICT gz, int ifoc, double *RESTRICT focal,
                     int ister, double theta, double phi, double *RESTRICT apod, int iweight,
                     int iapo, double param, double *RESTRICT ha, int err_level)
@@ -129,7 +129,7 @@ int dream_arr_circ_ud(double xo, double yo, double zo, double r, double dx, doub
     beamsteering(ister, theta, phi, xs, ys, xamax, yamax, ramax, cp, &retsteer);
     apodization(iweight, iapo, i, apod, &weight, xs, ys, ramax, param, isize);
 
-    err = circ_arr(xo,yo,zo,xs,ys,r,dx,dy,dt,nt,delay,retfoc,retsteer,v,cp,alfa,weight,h,err_level);
+    err = circ_arr(xo,yo,zo,xs,ys,r,dx,dy,dt,nt,delay,retfoc,retsteer,v,cp,alpha,weight,h,err_level);
     if (err != NONE)
       out_err = err;
 
@@ -151,7 +151,7 @@ int dream_arr_circ_ud(double xo, double yo, double zo, double r, double dx, doub
  ***/
 
 int circ_arr(double xo, double yo, double zo, double xs, double ys, double r, double dx, double dy, double dt,
-              dream_idx_type nt, double delay, double retfoc, double retsteer, double v, double cp, double alfa,
+              dream_idx_type nt, double delay, double retfoc, double retsteer, double v, double cp, double alpha,
               double weight, double *RESTRICT h, int err_level)
 {
   dream_idx_type    i;
@@ -199,10 +199,10 @@ int circ_arr(double xo, double yo, double zo, double xs, double ys, double r, do
       if ((it < nt) && (it >= 0)) {
 
         // Check if absorbtion is present.
-        if (alfa == (double) 0.0) {
+        if (alpha == (double) 0.0) {
           h[it] += ai;
         } else {
-          att(alfa,ri,it,dt,cp,h,nt,ai);
+          att(alpha,ri,it,dt,cp,h,nt,ai);
         }
       }
       else  {

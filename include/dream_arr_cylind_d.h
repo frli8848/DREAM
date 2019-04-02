@@ -36,7 +36,7 @@ extern "C"
 #endif
 int dream_arr_cylind_d(double xo, double yo, double zo, double a, double b, double R,
                        double dx, double dy, double dt,
-                       dream_idx_type nt, double delay, double v, double cp, double alfa, int isize,
+                       dream_idx_type nt, double delay, double v, double cp, double alpha, int isize,
                        double *gx, double *gy, double *gz, int ifoc, double focal, int ister,
                        double theta, double phi, double *apod, int iweight, int iapo, double param,
                        double *ha, int err_level);
@@ -46,7 +46,7 @@ extern "C"
 #endif
 int dream_arr_cylind_udd(double xo, double yo, double zo, double a, double b, double R,
                          double dx, double dy, double dt,
-                         dream_idx_type nt, double delay, double v, double cp, double alfa, int isize,
+                         dream_idx_type nt, double delay, double v, double cp, double alpha, int isize,
                          double *gx, double *gy, double *gz, int ifoc, double *focal,
                          int ister, double theta, double phi,
                          double *apod, int iweight, int iapo, double param, double *ha, int err_level);

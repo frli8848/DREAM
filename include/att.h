@@ -48,9 +48,9 @@ void att_close();
 #ifdef __cplusplus
 extern "C"
 #endif
-void att(double alfa, double rj, dream_idx_type it, double dt, double cp, double *h, dream_idx_type nt, double ai);
+void att(double alpha, double rj, dream_idx_type it, double dt, double cp, double *h, dream_idx_type nt, double ai);
 
 #ifdef __cplusplus
 extern "C"
 #endif
-void att_annu(double alfa, double rj, dream_idx_type it, double  dt, double cp, double *h, dream_idx_type nt, double ai, int ns, int isize);
+void att_annu(double alpha, double rj, dream_idx_type it, double  dt, double cp, double *h, dream_idx_type nt, double ai, int ns, int isize);

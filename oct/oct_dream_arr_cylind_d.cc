@@ -81,7 +81,7 @@ typedef struct
   double *delay;
   double v;
   double cp;
-  double alfa;
+  double alpha;
   int isize;
   double *G;
   int ifoc;
@@ -124,7 +124,7 @@ void* smp_process(void *arg)
   double a=D.a, b=D.b,  R=D.R, dx=D.dx, dy=D.dy, dt=D.dt;
   octave_idx_type no=D.no, nt=D.nt;
   int tmp_lev, err_level=D.err_level;
-  double *delay=D.delay, *ro=D.ro, v=D.v, cp=D.cp, alfa=D.alfa;
+  double *delay=D.delay, *ro=D.ro, v=D.v, cp=D.cp, alpha=D.alpha;
   octave_idx_type start=D.start, stop=D.stop;
   int    ifoc=D.ifoc, ister=D.ister, iweight=D.iweight,iapo=D.iapo;
   double focal=D.focal, *apod=D.apod, theta=D.theta,fi=D.fi,param=D.param;
@@ -150,7 +150,7 @@ void* smp_process(void *arg)
         yo = ro[n+1*no];
         zo = ro[n+2*no];
 
-        err = dream_arr_cylind_d(xo,yo,zo,a,b,R,dx,dy,dt,nt,delay[0],v,cp,alfa,isize,gx,gy,gz,
+        err = dream_arr_cylind_d(xo,yo,zo,a,b,R,dx,dy,dt,nt,delay[0],v,cp,alpha,isize,gx,gy,gz,
                              ifoc,focal,ister,theta,fi,apod,iweight,iapo,param,&h[n*nt],tmp_lev);
 
         if (err != NONE || out_err ==  PARALLEL_STOP) {
@@ -171,7 +171,7 @@ void* smp_process(void *arg)
         yo = ro[n+1*no];
         zo = ro[n+2*no];
 
-        err = dream_arr_cylind_d(xo,yo,zo,a,b,R,dx,dy,dt,nt,delay[n],v,cp,alfa,isize,gx,gy,gz,
+        err = dream_arr_cylind_d(xo,yo,zo,a,b,R,dx,dy,dt,nt,delay[n],v,cp,alpha,isize,gx,gy,gz,
                              ifoc,focal,ister,theta,fi,apod,iweight,iapo,param,&h[n*nt],tmp_lev);
 
         if (err != NONE || out_err ==  PARALLEL_STOP) {
@@ -196,7 +196,7 @@ void* smp_process(void *arg)
         yo = ro[n+1*no];
         zo = ro[n+2*no];
 
-        err = dream_arr_cylind_udd(xo,yo,zo,a,b,R,dx,dy,dt,nt,delay[0],v,cp,alfa,isize,gx,gy,gz,
+        err = dream_arr_cylind_udd(xo,yo,zo,a,b,R,dx,dy,dt,nt,delay[0],v,cp,alpha,isize,gx,gy,gz,
                                 ifoc,ud_focal,ister,theta,fi,apod,iweight,iapo,param,&h[n*nt],tmp_lev);
 
         if (err != NONE || out_err ==  PARALLEL_STOP) {
@@ -217,7 +217,7 @@ void* smp_process(void *arg)
         yo = ro[n+1*no];
         zo = ro[n+2*no];
 
-        err = dream_arr_cylind_udd(xo,yo,zo,a,b,R,dx,dy,dt,nt,delay[n],v,cp,alfa,isize,gx,gy,gz,
+        err = dream_arr_cylind_udd(xo,yo,zo,a,b,R,dx,dy,dt,nt,delay[n],v,cp,alpha,isize,gx,gy,gz,
                                 ifoc,ud_focal,ister,theta,fi,apod,iweight,iapo,param,&h[n*nt],tmp_lev);
 
         if (err != NONE || out_err ==  PARALLEL_STOP) {
@@ -327,14 +327,14 @@ Start point of SIR:\n\
 Scalar delay for all observation points or a vector with individual delays for each observation point [us].\n\
 @end table\n\
 \n\
-Material parameters: m_par = [v cp alfa];\n\
+Material parameters: m_par = [v cp alpha];\n\
 \n\
 @table @code\n\
 @item v\n\
 Normal velocity [m/s].\n\
 @item cp\n\
 Sound velocity [m/s].\n\
-@item alfa\n\
+@item alpha\n\
 Attenuation coefficient [dB/(cm MHz)] .\n\
 \n\
 @end table\n\
@@ -411,7 +411,7 @@ Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
   int    buflen;
   double a,b,R,dx,dy,dt;
   octave_idx_type nt,no,n;
-  double param=0,*delay,v,cp,alfa;
+  double param=0,*delay,v,cp,alpha;
   int    isize;
   double *G;
   int    ifoc=0;
@@ -528,7 +528,7 @@ Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
   m_par = (double*) tmp5.fortran_vec();
   v     = m_par[0]; // Normal velocity of transducer surface.
   cp    = m_par[1]; // Sound speed.
-  alfa  = m_par[2]; // Attenuation coefficient [dB/(cm MHz)].
+  alpha  = m_par[2]; // Attenuation coefficient [dB/(cm MHz)].
 
   //
   // Focusing parameters.
@@ -853,7 +853,7 @@ Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
   running = true;
 
 #ifdef USE_FFTW
-  if (alfa != (double) 0.0)
+  if (alpha != (double) 0.0)
     att_init(nt,nthreads);
 #endif
 
@@ -889,7 +889,7 @@ Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
     D[thread_n].delay = delay;
     D[thread_n].v = v;
     D[thread_n].cp = cp;
-    D[thread_n].alfa = alfa;
+    D[thread_n].alpha = alpha;
     D[thread_n].isize = isize;
     D[thread_n].G = G;
     D[thread_n].ifoc = ifoc;
@@ -934,7 +934,7 @@ Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
   }
 
 #ifdef USE_FFTW
-  if (alfa != (double) 0.0)
+  if (alpha != (double) 0.0)
     att_close();
 #endif
 

@@ -88,7 +88,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   char   foc_met[50];
   int    buflen;
   double xo,yo,zo,a,b, dx, dy, dt;
-  double *RESTRICT delay, v, cp, alfa, focal=0;
+  double *RESTRICT delay, v, cp, alpha, focal=0;
   double *RESTRICT h, *err_p;
   int    err_level=STOP, err=NONE, out_err = NONE, set = FALSE;
   char   err_str[50];
@@ -162,7 +162,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   m_par = mxGetPr(prhs[4]);
   v     = m_par[0]; // Normal velocity of transducer surface.
   cp    = m_par[1]; // Sound speed.
-  alfa  = m_par[2]; // Attenuation coefficient [dB/(cm MHz)].
+  alpha  = m_par[2]; // Attenuation coefficient [dB/(cm MHz)].
 
 
   //
@@ -278,7 +278,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   running = TRUE;
 
 #ifdef USE_FFTW
-  if (alfa != (double) 0.0)
+  if (alpha != (double) 0.0)
     att_init(nt,1);
 #endif
 
@@ -287,7 +287,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       xo = ro[n];
       yo = ro[n+1*no];
       zo = ro[n+2*no];
-      err = dreamrect_f(xo,yo,zo,a,b,dx,dy,dt,nt,delay[0],v,cp,alfa,ifoc,focal,&h[n*nt],err_level);
+      err = dreamrect_f(xo,yo,zo,a,b,dx,dy,dt,nt,delay[0],v,cp,alpha,ifoc,focal,&h[n*nt],err_level);
       if (err != NONE)
         out_err = err;
 
@@ -300,7 +300,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       xo = ro[n];
       yo = ro[n+1*no];
       zo = ro[n+2*no];
-      err = dreamrect_f(xo,yo,zo,a,b,dx,dy,dt,nt,delay[n],v,cp,alfa,ifoc,focal,&h[n*nt],err_level);
+      err = dreamrect_f(xo,yo,zo,a,b,dx,dy,dt,nt,delay[n],v,cp,alpha,ifoc,focal,&h[n*nt],err_level);
       if (err != NONE)
         out_err = err;
 
@@ -328,7 +328,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   }
 
 #ifdef USE_FFTW
-  if (alfa != (double) 0.0)
+  if (alpha != (double) 0.0)
     att_close();
 #endif
 

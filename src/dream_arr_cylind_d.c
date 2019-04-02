@@ -47,7 +47,7 @@
 
 int cylind_d(double xo, double yo, double zo, double xs, double ys, double zs, double R, double a, double b,
              double dx, double dy, double dt, dream_idx_type nt, double delay, double retfoc, double retsteer,
-             double v, double cp, double alfa,  double weight, double *RESTRICT h, int err_level);
+             double v, double cp, double alpha,  double weight, double *RESTRICT h, int err_level);
 
 void cyl_cart(double xs, double ys, double zs, double r,double haut,double
               xo,double yo,double zo,double *RESTRICT rj, double *RESTRICT du);
@@ -60,7 +60,7 @@ void cyl_cart(double xs, double ys, double zs, double r,double haut,double
 
 int dream_arr_cylind_d(double xo, double yo, double zo, double a, double b, double R,
                        double dx, double dy, double dt,
-                       dream_idx_type nt, double delay, double v, double cp, double alfa, int isize,
+                       dream_idx_type nt, double delay, double v, double cp, double alpha, int isize,
                        double *RESTRICT gx, double *RESTRICT gy, double *RESTRICT gz, int ifoc, double focal, int ister,
                        double theta, double phi, double *RESTRICT apod, int iweight, int iapo, double param,
                        double *RESTRICT ha, int err_level)
@@ -90,7 +90,7 @@ int dream_arr_cylind_d(double xo, double yo, double zo, double a, double b, doub
     beamsteering(ister, theta, phi, xs, ys, xamax, yamax, ramax, cp, &retsteer);
     apodization(iweight, iapo, i, apod, &weight, xs, ys, ramax, param, isize);
 
-    err = cylind_d(xo,yo,zo,xs,ys,zs,R,a,b,dx,dy,dt,nt,delay,retfoc,retsteer,v,cp,alfa,weight,h,err_level);
+    err = cylind_d(xo,yo,zo,xs,ys,zs,R,a,b,dx,dy,dt,nt,delay,retfoc,retsteer,v,cp,alpha,weight,h,err_level);
     if (err != NONE)
       out_err = err;
 
@@ -110,7 +110,7 @@ int dream_arr_cylind_d(double xo, double yo, double zo, double a, double b, doub
 
 int dream_arr_cylind_udd(double xo, double yo, double zo, double a, double b, double R,
                          double dx, double dy, double dt,
-                         dream_idx_type nt, double delay, double v, double cp, double alfa, int isize,
+                         dream_idx_type nt, double delay, double v, double cp, double alpha, int isize,
                          double *RESTRICT gx, double *RESTRICT gy, double *RESTRICT gz, int ifoc, double *RESTRICT focal,
                          int ister, double theta, double phi,
                          double *RESTRICT apod, int iweight, int iapo, double param, double *RESTRICT ha, int err_level)
@@ -140,7 +140,7 @@ int dream_arr_cylind_udd(double xo, double yo, double zo, double a, double b, do
     beamsteering(ister, theta, phi, xs, ys, xamax, yamax, ramax, cp, &retsteer);
     apodization(iweight, iapo, i, apod, &weight, xs, ys, ramax, param, isize);
 
-    err = cylind_d(xo,yo,zo,xs,ys,zs,R,a,b,dx,dy,dt,nt,delay,retfoc,retsteer,v,cp,alfa,weight,h,err_level);
+    err = cylind_d(xo,yo,zo,xs,ys,zs,R,a,b,dx,dy,dt,nt,delay,retfoc,retsteer,v,cp,alpha,weight,h,err_level);
 
     superpos(h, ha, nt);
   }
@@ -161,7 +161,7 @@ int dream_arr_cylind_udd(double xo, double yo, double zo, double a, double b, do
 
 int cylind_d(double xo, double yo, double zo, double xs, double ys, double zs, double R, double a, double b,
              double dx, double dy, double dt, dream_idx_type nt, double delay, double retfoc, double retsteer,
-             double v, double cp, double alfa,  double weight, double *RESTRICT h, int err_level)
+             double v, double cp, double alpha,  double weight, double *RESTRICT h, int err_level)
 {
   double phisj, haut;
   dream_idx_type i, it;
@@ -221,10 +221,10 @@ int cylind_d(double xo, double yo, double zo, double xs, double ys, double zs, d
       if ((it < nt) && (it >= 0)) {
 
         // Check if absorbtion is present.
-        if (alfa == (double) 0.0) {
+        if (alpha == (double) 0.0) {
           h[it] += ai;
         } else {
-          att(alfa,ri,it,dt,cp,h,nt,ai);
+          att(alpha,ri,it,dt,cp,h,nt,ai);
         }
       }
       else   {

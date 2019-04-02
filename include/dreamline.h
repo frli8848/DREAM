@@ -35,4 +35,4 @@ extern "C"
 #endif
 int dreamline(double xo, double yo, double zo, double a,
               double dx, double dy, double dt, dream_idx_type n, double delay, double v,
-              double cp, double alfa, double *h, int err_level);
+              double cp, double alpha, double *h, int err_level);

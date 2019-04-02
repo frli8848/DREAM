@@ -85,7 +85,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   int    buflen;
   double xo, yo, zo, dx, dy, dt;
   dream_idx_type nt, no, n;
-  double param=0,*RESTRICT delay, v, cp, alfa;
+  double param=0,*RESTRICT delay, v, cp, alpha;
   dream_idx_type isize=0;
   double *RESTRICT gr;
   int    ifoc=0;
@@ -163,7 +163,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   m_par = mxGetPr(prhs[4]);
   v     = m_par[0]; // Normal velocity of transducer surface.
   cp    = m_par[1]; // Sound speed.
-  alfa  = m_par[2]; // Attenuation coefficient [dB/(cm MHz)],
+  alpha  = m_par[2]; // Attenuation coefficient [dB/(cm MHz)],
 
 
   //
@@ -358,7 +358,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   running=TRUE;
 
 #ifdef USE_FFTW
-  if (alfa != (double) 0.0)
+  if (alpha != (double) 0.0)
     att_init(nt,1);
 #endif
 
@@ -370,7 +370,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
         yo = ro[n+1*no];
         zo = ro[n+2*no];
 
-        err = dream_arr_annu(xo,yo,zo,dx,dy,dt,nt,delay[0],v,cp,alfa,isize,gr,
+        err = dream_arr_annu(xo,yo,zo,dx,dy,dt,nt,delay[0],v,cp,alpha,isize,gr,
                              ifoc,focal,apod,iweight,iapo,param,&h[n*nt],err_level);
         if (err != NONE)
           out_err = err;
@@ -386,7 +386,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
         yo = ro[n+1*no];
         zo = ro[n+2*no];
 
-        err = dream_arr_annu(xo,yo,zo,dx,dy,dt,nt,delay[n],v,cp,alfa,isize,
+        err = dream_arr_annu(xo,yo,zo,dx,dy,dt,nt,delay[n],v,cp,alpha,isize,
                              gr,ifoc,focal,apod,iweight,iapo,param,&h[n*nt],err_level);
         if (err != NONE)
           out_err = err;
@@ -406,7 +406,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
         yo = ro[n+1*no];
         zo = ro[n+2*no];
 
-        err = dream_arr_annu_ud(xo,yo,zo,dx,dy,dt,nt,delay[0],v,cp,alfa,isize,gr,
+        err = dream_arr_annu_ud(xo,yo,zo,dx,dy,dt,nt,delay[0],v,cp,alpha,isize,gr,
                                 ifoc,ud_focal,apod,iweight,iapo,param,&h[n*nt],err_level);
         if (err != NONE)
           out_err = err;
@@ -422,7 +422,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
         yo = ro[n+1*no];
         zo = ro[n+2*no];
 
-        err = dream_arr_annu_ud(xo,yo,zo,dx,dy,dt,nt,delay[n],v,cp,alfa,isize,
+        err = dream_arr_annu_ud(xo,yo,zo,dx,dy,dt,nt,delay[n],v,cp,alpha,isize,
                                 gr,ifoc,ud_focal,apod,iweight,iapo,param,&h[n*nt],err_level);
         if (err != NONE)
           out_err = err;
@@ -452,7 +452,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   }
 
 #ifdef USE_FFTW
-  if (alfa != (double) 0.0)
+  if (alpha != (double) 0.0)
     att_close();
 #endif
 

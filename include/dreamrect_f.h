@@ -46,7 +46,7 @@ int dreamrect_f(double xo,
                 double delay,
                 double v,
                 double cp,
-                double alfa,
+                double alpha,
                 int ifoc, double focal,
                 double *h,
                 int err_level);

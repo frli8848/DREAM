@@ -57,7 +57,7 @@ int dreamcylind_d(double xo,
                   double delay,
                   double v,
                   double cp,
-                  double alfa,
+                  double alpha,
                   double *RESTRICT h,
                   int err_level)
 
@@ -120,10 +120,10 @@ int dreamcylind_d(double xo,
       if ((it < nt) && (it >= 0)) {
 
         // Check if absorbtion is present.
-        if (alfa == (double) 0.0) {
+        if (alpha == (double) 0.0) {
           h[it] += ai;
         } else {
-          att(alfa,ri,it,dt,cp,h,nt,ai);
+          att(alpha,ri,it,dt,cp,h,nt,ai);
         }
       }
       else   {

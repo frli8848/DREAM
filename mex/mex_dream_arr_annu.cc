@@ -64,7 +64,7 @@ typedef struct
   double *RESTRICT delay;
   double v;
   double cp;
-  double alfa;
+  double alpha;
   size_t isize;
   double *RESTRICT gr;
   int ifoc;
@@ -104,7 +104,7 @@ void* smp_process(void *arg)
   double dx=D.dx, dy=D.dy, dt=D.dt;
   size_t no=D.no, nt=D.nt;
   int    tmp_lev, err_level=D.err_level;
-  double *RESTRICT delay=D.delay, *RESTRICT ro=D.ro, v=D.v, cp=D.cp, alfa=D.alfa;
+  double *RESTRICT delay=D.delay, *RESTRICT ro=D.ro, v=D.v, cp=D.cp, alpha=D.alpha;
   size_t start=D.start, stop=D.stop;
   int    ifoc=D.ifoc, iweight=D.iweight,iapo=D.iapo;
   double focal=D.focal, *apod=D.apod, param=D.param;
@@ -126,7 +126,7 @@ void* smp_process(void *arg)
         yo = ro[n+1*no];
         zo = ro[n+2*no];
 
-        err = dream_arr_annu(xo,yo,zo,dx,dy,dt,nt,delay[0],v,cp,alfa,isize,gr,
+        err = dream_arr_annu(xo,yo,zo,dx,dy,dt,nt,delay[0],v,cp,alpha,isize,gr,
                              ifoc,focal,apod,iweight,iapo,param,&h[n*nt],tmp_lev);
 
         if (err != NONE || out_err ==  PARALLEL_STOP) {
@@ -147,7 +147,7 @@ void* smp_process(void *arg)
         yo = ro[n+1*no];
         zo = ro[n+2*no];
 
-        err = dream_arr_annu(xo,yo,zo,dx,dy,dt,nt,delay[n],v,cp,alfa,isize,
+        err = dream_arr_annu(xo,yo,zo,dx,dy,dt,nt,delay[n],v,cp,alpha,isize,
                              gr,ifoc,focal,apod,iweight,iapo,param,&h[n*nt],tmp_lev);
 
         if (err != NONE || out_err ==  PARALLEL_STOP) {
@@ -172,7 +172,7 @@ void* smp_process(void *arg)
         yo = ro[n+1*no];
         zo = ro[n+2*no];
 
-        err = dream_arr_annu_ud(xo,yo,zo,dx,dy,dt,nt,delay[0],v,cp,alfa,isize,gr,
+        err = dream_arr_annu_ud(xo,yo,zo,dx,dy,dt,nt,delay[0],v,cp,alpha,isize,gr,
                                 ifoc,ud_focal,apod,iweight,iapo,param,&h[n*nt],tmp_lev);
 
         if (err != NONE || out_err ==  PARALLEL_STOP) {
@@ -193,7 +193,7 @@ void* smp_process(void *arg)
         yo = ro[n+1*no];
         zo = ro[n+2*no];
 
-        err = dream_arr_annu_ud(xo,yo,zo,dx,dy,dt,nt,delay[n],v,cp,alfa,isize,
+        err = dream_arr_annu_ud(xo,yo,zo,dx,dy,dt,nt,delay[n],v,cp,alpha,isize,
                                 gr,ifoc,ud_focal,apod,iweight,iapo,param,&h[n*nt],tmp_lev);
 
         if (err != NONE || out_err ==  PARALLEL_STOP) {
@@ -257,7 +257,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   int    buflen;
   double dx,dy,dt;
   size_t nt, no;
-  double param=0,*RESTRICT delay,v,cp,alfa;
+  double param=0,*RESTRICT delay,v,cp,alpha;
   size_t isize=0;
   double *RESTRICT gr;
   int    ifoc=0;
@@ -339,7 +339,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   m_par = mxGetPr(prhs[4]);
   v     = m_par[0]; // Normal velocity of transducer surface.
   cp    = m_par[1]; // Sound speed.
-  alfa  = m_par[2]; // Attenuation coefficient [dB/(cm MHz)],
+  alpha  = m_par[2]; // Attenuation coefficient [dB/(cm MHz)],
 
   //
   // Focusing parameters.
@@ -546,7 +546,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   running = true;
 
 #ifdef USE_FFTW
-  if (alfa != (double) 0.0)
+  if (alpha != (double) 0.0)
     att_init(nt,nthreads);
 #endif
 
@@ -579,7 +579,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     D[thread_n].delay = delay;
     D[thread_n].v = v;
     D[thread_n].cp = cp;
-    D[thread_n].alfa = alfa;
+    D[thread_n].alpha = alpha;
     D[thread_n].isize = isize;
     D[thread_n].gr = gr;
     D[thread_n].ifoc = ifoc;
@@ -620,7 +620,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   }
 
 #ifdef USE_FFTW
-  if (alfa != (double) 0.0)
+  if (alpha != (double) 0.0)
     att_close();
 #endif
 

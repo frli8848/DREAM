@@ -34,19 +34,13 @@
 
 /***
  *
- *      Spatial impulse respone of line (slit)
- *
- ***/
-
-/***
- *
- *  dreamline
+ *  dreamline - Spatial impulse respone of line (slit)
  *
  ***/
 
 int dreamline(double xo, double yo, double zo, double a,
               double dx, double dy, double dt, dream_idx_type nt, double delay, double v,
-              double cp, double alfa, double *RESTRICT h, int err_level)
+              double cp, double alpha, double *RESTRICT h, int err_level)
 {
   dream_idx_type i, it;
   double t;
@@ -57,7 +51,7 @@ int dreamline(double xo, double yo, double zo, double a,
   double xsmax = a/2.0;
   double xsmin = -a/2.0;
 
-  pi = atan((double) 1.0) * 4.0;
+  pi = 4.0 * atan(1.0);
   // dy = width;
   ds = dx * dy;
 
@@ -80,8 +74,8 @@ int dreamline(double xo, double yo, double zo, double a,
 
     ai = v * ds / (2*pi * ri);
     ai /= dt;
-    // Convert to SI units.
-    ai *= 1000.0;
+    ai *= 1000.0;     // Convert to SI units.
+
     // Propagation delay in micro seconds.
     t = ri * 1000.0/cp;
     it = (dream_idx_type) rint((t - delay)/dt);
@@ -89,11 +83,11 @@ int dreamline(double xo, double yo, double zo, double a,
     // Check if index is out of bounds.
     if ((it < nt) && (it >= 0)) {
       // Check if absorbtion is present.
-      if (alfa == (double) 0.0) {
+      if (alpha == (double) 0.0) {
         h[it] += ai;
       }
       else {
-        att(alfa,ri,it,dt,cp,h,nt,ai);
+        att(alpha,ri,it,dt,cp,h,nt,ai);
       }
     }
     else  {

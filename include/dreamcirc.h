@@ -44,6 +44,6 @@ int dreamcirc(double xo,
               double delay,
               double v,
               double cp,
-              double alfa,
+              double alpha,
               double *h,
               int err_level);

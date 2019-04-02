@@ -67,7 +67,7 @@ typedef struct
   double *RESTRICT delay;
   double v;
   double cp;
-  double alfa;
+  double alpha;
   double *RESTRICT h;
   int err_level;
 } DATA;
@@ -97,7 +97,7 @@ void* smp_process(void *arg)
   double a=D.a, b=D.b, R=D.R, dx=D.dx, dy=D.dy, dt=D.dt;
   size_t n, no=D.no, nt=D.nt;
   int    tmp_lev, err_level=D.err_level;
-  double *RESTRICT delay=D.delay, *RESTRICT ro=D.ro, v=D.v, cp=D.cp, alfa=D.alfa;
+  double *RESTRICT delay=D.delay, *RESTRICT ro=D.ro, v=D.v, cp=D.cp, alpha=D.alpha;
   size_t start=D.start, stop=D.stop;
 
   // Let the thread finish and then catch the error.
@@ -111,7 +111,7 @@ void* smp_process(void *arg)
       xo = ro[n];
       yo = ro[n+1*no];
       zo = ro[n+2*no];
-      err = dreamcylind_f(xo,yo,zo,a,b,R,dx,dy,dt,nt,delay[0],v,cp,alfa,
+      err = dreamcylind_f(xo,yo,zo,a,b,R,dx,dy,dt,nt,delay[0],v,cp,alpha,
                       &h[n*nt],tmp_lev);
 
       if (err != NONE || out_err ==  PARALLEL_STOP) {
@@ -131,7 +131,7 @@ void* smp_process(void *arg)
       xo = ro[n];
       yo = ro[n+1*no];
       zo = ro[n+2*no];
-      err = dreamcylind_f(xo,yo,zo,a,b,R,dx,dy,dt,nt,delay[n],v,cp,alfa,
+      err = dreamcylind_f(xo,yo,zo,a,b,R,dx,dy,dt,nt,delay[n],v,cp,alpha,
                       &h[n*nt],tmp_lev);
 
       if (err != NONE || out_err ==  PARALLEL_STOP) {
@@ -191,7 +191,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   double *RESTRICT ro, *RESTRICT geom_par, *RESTRICT s_par, *RESTRICT m_par;
   double  a,b,R,dx,dy,dt;
   size_t  nt, no;
-  double *RESTRICT delay, v, cp, alfa, *RESTRICT h, *err_p;
+  double *RESTRICT delay, v, cp, alpha, *RESTRICT h, *err_p;
   int    err_level=STOP, set = false;
   char   err_str[50];
   size_t buflen;
@@ -274,7 +274,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   m_par = mxGetPr(prhs[4]);
   v     = m_par[0]; // Normal velocity of transducer surface.
   cp    = m_par[1]; // Sound speed.
-  alfa  = m_par[2]; // Attenuation coefficient [dB/(cm MHz)].
+  alpha  = m_par[2]; // Attenuation coefficient [dB/(cm MHz)].
 
   //
   // Number of threads.
@@ -358,7 +358,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   running = true;
 
 #ifdef USE_FFTW
-  if (alfa != (double) 0.0)
+  if (alpha != (double) 0.0)
     att_init(nt,nthreads);
 #endif
 
@@ -394,7 +394,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     D[thread_n].delay = delay;
     D[thread_n].v = v;
     D[thread_n].cp = cp;
-    D[thread_n].alfa = alfa;
+    D[thread_n].alpha = alpha;
     D[thread_n].h = h;
     D[thread_n].err_level = err_level;
 
@@ -426,7 +426,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   }
 
 #ifdef USE_FFTW
-  if (alfa != (double) 0.0)
+  if (alpha != (double) 0.0)
     att_close();
 #endif
 

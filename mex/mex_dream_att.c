@@ -39,7 +39,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   double *RESTRICT ro, *RESTRICT s_par, *RESTRICT m_par;
   int    it, nt, no, n;
   double xo, yo, zo, dt;
-  double *RESTRICT delay, cp, alfa, r;
+  double *RESTRICT delay, cp, alpha, r;
   double *RESTRICT h;
 
   // Check for proper number of arguments
@@ -95,7 +95,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
   m_par = mxGetPr(prhs[3]);
   cp    = m_par[0]; // Sound speed.
-  alfa  = m_par[1]; // Attenuation coefficient [dB/(cm MHz)].
+  alpha  = m_par[1]; // Attenuation coefficient [dB/(cm MHz)].
 
   //
   // Create an output matrix for the impulse response
@@ -119,7 +119,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
       r = sqrt(xo*xo + yo*yo + zo*zo);
       it = (int) ( (r * 1000/cp - delay[0])/dt + 1);
-      att(alfa,r,it,dt,cp,&h[n*nt],nt,1.0);
+      att(alpha,r,it,dt,cp,&h[n*nt],nt,1.0);
 
     }
   } else {
@@ -130,7 +130,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
       r = sqrt(xo*xo + yo*yo + zo*zo);
       it = (int) ( (r * 1000/cp - delay[n])/dt + 1);
-      att(alfa,r,it,dt,cp,&h[n*nt],nt,1.0);
+      att(alpha,r,it,dt,cp,&h[n*nt],nt,1.0);
     }
   }
 

@@ -45,7 +45,7 @@ void focusing_annular(int ifoc, double focal, double rs, double ramax, double cp
 void apodization_annular(int iweight, int iapo, double *RESTRICT apod, double *RESTRICT weight, double rs,
                        double ramax, double param, dream_idx_type i);
 int circ_annular(double xo, double  yo, double  zo, double  a, double dx, double dy, double dt,
-                 dream_idx_type nt, double delay, double v, double cp, double alfa, double weight, double *RESTRICT h,
+                 dream_idx_type nt, double delay, double v, double cp, double alpha, double weight, double *RESTRICT h,
                  dream_idx_type k, int isize,int err_level);
 void distance(double xo, double yo, double zo, double xs, double ys, double zs, double *RESTRICT ri);
 void xlimit(double yi, double a, double *RESTRICT xsmin, double *RESTRICT xsmax);
@@ -58,7 +58,7 @@ void resp_annular(double *RESTRICT h, double *RESTRICT hi, dream_idx_type nt, dr
 ***/
 
 int dream_arr_annu(double xo, double yo, double zo, double dx, double dy, double dt,
-                    dream_idx_type  nt, double delay, double v, double cp, double alfa,
+                    dream_idx_type  nt, double delay, double v, double cp, double alpha,
                     int isize, double *RESTRICT gr, int ifoc, double focal, double *RESTRICT apod, int iweight,
                     int iapo, double param,double *RESTRICT ha,int err_level)
 {
@@ -100,7 +100,7 @@ int dream_arr_annu(double xo, double yo, double zo, double dx, double dy, double
         h[j] = (double) 0.0; // h(j,1) = 0.0;
       }
     } else {
-      err = circ_annular(xo,yo,zo,r,dx,dy,dt,nt,delay,v,cp,alfa,weight,h,i,isize,err_level);
+      err = circ_annular(xo,yo,zo,r,dx,dy,dt,nt,delay,v,cp,alpha,weight,h,i,isize,err_level);
       if (err != NONE)
         out_err = err;
     }
@@ -133,7 +133,7 @@ int dream_arr_annu(double xo, double yo, double zo, double dx, double dy, double
  ***/
 
 int dream_arr_annu_ud(double xo, double yo, double zo, double dx, double dy, double dt,
-                    dream_idx_type  nt, double delay, double v, double cp, double alfa,
+                    dream_idx_type  nt, double delay, double v, double cp, double alpha,
                     int isize, double *RESTRICT gr, int ifoc, double *RESTRICT focal, double *RESTRICT apod, int iweight,
                     int iapo, double param, double *RESTRICT ha,int err_level)
 {
@@ -175,7 +175,7 @@ int dream_arr_annu_ud(double xo, double yo, double zo, double dx, double dy, dou
         h[j] = (double) 0.0; // h(j,1) = 0.0;
       }
     } else {
-      err = circ_annular(xo,yo,zo,r,dx,dy,dt,nt,delay,v,cp,alfa,weight,h,i,isize,err_level);
+      err = circ_annular(xo,yo,zo,r,dx,dy,dt,nt,delay,v,cp,alpha,weight,h,i,isize,err_level);
       if (err != NONE)
         out_err = err;
     }
@@ -320,7 +320,7 @@ void apodization_annular(int iweight, int iapo, double *RESTRICT apod, double *R
  ***/
 
 int circ_annular(double xo, double  yo, double  zo, double  r, double dx, double dy, double dt,
-                  dream_idx_type nt, double delay, double v, double cp, double alfa, double weight, double *RESTRICT h,
+                  dream_idx_type nt, double delay, double v, double cp, double alpha, double weight, double *RESTRICT h,
                   dream_idx_type k, int isize, int err_level)
 {
   double t;
@@ -361,11 +361,11 @@ int circ_annular(double xo, double  yo, double  zo, double  r, double dx, double
 
       if ((it < nt) && (it >= 0))
 
-        if (alfa == (double) 0.0) {
+        if (alpha == (double) 0.0) {
           h[it + k*nt] += ai;
         }
         else {
-          att_annu(alfa, ri, it, dt, cp, h, nt, ai, k, isize);
+          att_annu(alpha, ri, it, dt, cp, h, nt, ai, k, isize);
         }
       else  {
         if  (it >= 0)

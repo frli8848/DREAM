@@ -79,7 +79,7 @@ typedef struct
   double *delay;
   double v;
   double cp;
-  double alfa;
+  double alpha;
   int ifoc;
   double focal;
   double *h;
@@ -112,7 +112,7 @@ void* smp_process(void *arg)
   double a=D.a, b=D.b, dx=D.dx, dy=D.dy, dt=D.dt;
   octave_idx_type n, no=D.no, nt=D.nt;
   int    tmp_lev, err_level=D.err_level;
-  double *delay=D.delay, *ro=D.ro, v=D.v, cp=D.cp, alfa=D.alfa, focal=D.focal;
+  double *delay=D.delay, *ro=D.ro, v=D.v, cp=D.cp, alpha=D.alpha, focal=D.focal;
   octave_idx_type start=D.start, stop=D.stop;
   int    ifoc = D.ifoc;
 
@@ -127,7 +127,7 @@ void* smp_process(void *arg)
       xo = ro[n];
       yo = ro[n+1*no];
       zo = ro[n+2*no];
-      err = dreamrect_f(xo,yo,zo,a,b,dx,dy,dt,nt,delay[0],v,cp,alfa,
+      err = dreamrect_f(xo,yo,zo,a,b,dx,dy,dt,nt,delay[0],v,cp,alpha,
                       ifoc,focal,&h[n*nt],tmp_lev);
 
       if (err != NONE || out_err ==  PARALLEL_STOP) {
@@ -147,7 +147,7 @@ void* smp_process(void *arg)
       xo = ro[n];
       yo = ro[n+1*no];
       zo = ro[n+2*no];
-      err = dreamrect_f(xo,yo,zo,a,b,dx,dy,dt,nt,delay[n],v,cp,alfa,
+      err = dreamrect_f(xo,yo,zo,a,b,dx,dy,dt,nt,delay[n],v,cp,alpha,
                       ifoc,focal,&h[n*nt],tmp_lev);
 
       if (err != NONE || out_err ==  PARALLEL_STOP) {
@@ -244,14 +244,14 @@ Length of impulse response vector.\n\
 Scalar delay for all observation points or a vector with individual delays for each observation point [us].\n\
 @end table\n\
 \n\
-Material parameters: m_par = [v cp alfa];\n\
+Material parameters: m_par = [v cp alpha];\n\
 \n\
 @table @code\n\
 @item v\n\
 Normal velocity [m/s].\n\
 @item cp\n\
 Sound velocity [m/s].\n\
-@item alfa\n\
+@item alpha\n\
 Attenuation coefficient [dB/(cm MHz)].\n\
 \n\
 @end table\n\
@@ -291,7 +291,7 @@ Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
   char   foc_met[50];
   int    buflen;
   double a, b, dx, dy, dt;
-  double *delay,v,cp,alfa,focal=0;
+  double *delay,v,cp,alpha,focal=0;
   double *h, *err_p;
   int    err_level=STOP, is_set = false;
   char   err_str[50];
@@ -389,7 +389,7 @@ Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
   m_par = (double*) tmp4.fortran_vec();
   v     = m_par[0]; // Normal velocity of transducer surface.
   cp    = m_par[1]; // Sound speed.
-  alfa  = m_par[2]; // Attenuation coefficient [dB/(cm MHz)].
+  alpha  = m_par[2]; // Attenuation coefficient [dB/(cm MHz)].
 
   //
   // Focusing parameters.
@@ -547,7 +547,7 @@ Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
   running = true;
 
 #ifdef USE_FFTW
-  if (alfa != (double) 0.0)
+  if (alpha != (double) 0.0)
     att_init(nt,nthreads);
 #endif
 
@@ -582,7 +582,7 @@ Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
     D[thread_n].delay = delay;
     D[thread_n].v = v;
     D[thread_n].cp = cp;
-    D[thread_n].alfa = alfa;
+    D[thread_n].alpha = alpha;
     D[thread_n].ifoc = ifoc;
     D[thread_n].focal = focal;
     D[thread_n].h = h;
@@ -617,7 +617,7 @@ Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
   }
 
 #ifdef USE_FFTW
-  if (alfa != (double) 0.0)
+  if (alpha != (double) 0.0)
     att_close();
 #endif
 

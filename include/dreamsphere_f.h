@@ -36,4 +36,4 @@ extern "C"
 #endif
 int dreamsphere_f(double xo, double yo, double zo, double r, double R, double dx,
                  double dy, double dt, dream_idx_type nt,
-                 double  delay, double v, double cp, double alfa ,double  *h, int err_level);
+                 double  delay, double v, double cp, double alpha ,double  *h, int err_level);

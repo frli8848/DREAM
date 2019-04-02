@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2006,2007,2008,2009,2010,2012,2014,2016 Fredrik Lingvall
+* Copyright (C) 2006,2007,2008,2009,2010,2012,2014,2016,2019 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -61,6 +61,7 @@
 
 
 #include "dream.h"
+#include "affinity.h"
 
 /***
  *
@@ -776,21 +777,8 @@ Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
 
         // Start the threads.
         threads[thread_n] = std::thread(smp_fftconv_process, &D[thread_n]);
-
-#ifdef __linux__
-        // Make sure that each thread run on different CPU/core.
-        cpu_set_t cpuset;
-        CPU_ZERO(&cpuset);
-        CPU_SET(thread_n, &cpuset);
-        int rc = pthread_setaffinity_np(threads[thread_n].native_handle(),
-                                        sizeof(cpu_set_t), &cpuset);
-        if (rc != 0) {
-          octave_stdout << "pthread_setaffinity_np returned: " << rc;
-        }
-#endif
-
-
-      } // for (thread_n = 0; thread_n < nthreads; thread_n++)
+        set_dream_thread_affinity(thread_n, nthreads, threads);
+      }
 
       //
       // Wait for all threads to finish.

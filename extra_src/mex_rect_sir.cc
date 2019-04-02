@@ -1,6 +1,7 @@
+k
 /***
 *
-* Copyright (C) 2004,2006,2007,2008,2009,2014,2015,2016 Fredrik Lingvall
+* Copyright (C) 2004,2006,2007,2008,2009,2014,2015,2016,2019 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -28,6 +29,7 @@
 #include <thread>
 #include <uchar.h>
 #include "mex.h"
+#include "affinity.h.h"
 #include "rect_sir.h"
 #include "dream_error.h"
 
@@ -329,11 +331,8 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
     // Starts the threads.
     threads[thread_n] = std::thread(smp_process, &D[thread_n]); // Start the threads.
-
-    // Set the affinity (eg. make it run on core 'thread_n' only).
-    //set_dream_thread_affinity(thread_n, nthreads, threads);
-
-  } // for (thread_n = 0; thread_n < nthreads; thread_n++)
+    set_dream_thread_affinity(thread_n, nthreads, threads);
+  }
 
   // Wait for all threads to finish.
   for (thread_n = 0; thread_n < nthreads; thread_n++)

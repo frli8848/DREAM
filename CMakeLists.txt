@@ -4,7 +4,7 @@
 
 project (dream-toolbox)
 
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.8)
 
 # Add path to the various cmake files to detect Matlab, Octave, FTTW, etc.
 set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
@@ -1025,6 +1025,7 @@ if (OCTAVE_FOUND)
 
   set (oct_circ_sir_SOURCE_FILES
     extra_src/oct_circ_sir.cc
+    src/affinity.cc
     extra_src/circ_sir.c
     src/dream_error.c
     )
@@ -1048,6 +1049,7 @@ if (MATLAB_FOUND)
 
   set (mex_circ_sir_SOURCE_FILES
     extra_src/mex_circ_sir.cc
+    src/affinity.cc
     extra_src/circ_sir.c
     src/dream_error.c
     )
@@ -1122,6 +1124,7 @@ if (OCTAVE_FOUND)
   set (oct_rect_sir_SOURCE_FILES
     extra_src/oct_rect_sir.cc
     extra_src/rect_sir.c
+    src/affinity.cc
     src/dream_error.c
     )
 
@@ -1145,6 +1148,7 @@ if (MATLAB_FOUND)
   set (mex_rect_sir_SOURCE_FILES
     extra_src/mex_rect_sir.cc
     extra_src/rect_sir.c
+    src/affinity.cc
     src/dream_error.c
     )
 
@@ -1275,6 +1279,7 @@ if (OCTAVE_FOUND)
 
   set (oct_saft_SOURCE_FILES
     extra_src/oct_saft.cc
+    src/affinity.cc
     src/dream_error.c
     )
 
@@ -1325,6 +1330,7 @@ if (OCTAVE_FOUND)
 
   set (oct_conv_p_SOURCE_FILES
     extra_src/oct_conv_p.cc
+    src/affinity.cc
     extra_src/conv.c
     src/dream_error.c
     )
@@ -1349,6 +1355,7 @@ if (MATLAB_FOUND)
 
   set (mex_conv_p_SOURCE_FILES
     extra_src/mex_conv_p.cc
+    src/affinity.cc
     extra_src/conv.c
     src/dream_error.c
     )
@@ -1374,6 +1381,7 @@ if (OCTAVE_FOUND)
 
   set (oct_fftconv_p_SOURCE_FILES
     extra_src/oct_fftconv_p.cc
+    src/affinity.cc
     src/dream_error.c
     )
 
@@ -1397,6 +1405,7 @@ if (MATLAB_FOUND)
 
   set (mex_fftconv_p_SOURCE_FILES
     extra_src/mex_fftconv_p.cc
+    src/affinity.cc
     src/dream_error.c
     )
 
@@ -1423,6 +1432,7 @@ if (OCTAVE_FOUND)
 
   set (oct_sum_fftconv_SOURCE_FILES
     extra_src/oct_sum_fftconv.cc
+    src/affinity.cc
     src/dream_error.c
     )
 
@@ -1446,6 +1456,7 @@ if (MATLAB_FOUND)
 
   set (mex_sum_fftconv_SOURCE_FILES
     extra_src/mex_sum_fftconv.cc
+    src/affinity.cc
     src/dream_error.c
     )
 
@@ -1472,6 +1483,7 @@ if (OCTAVE_FOUND)
 
   set (oct_fftconv_ola_SOURCE_FILES
     extra_src/oct_fftconv_ola.cc
+    src/affinity.cc
     src/dream_error.c
     )
 
@@ -1506,6 +1518,7 @@ if (OCTAVE_FOUND)
 
   set (oct_copy_p_SOURCE_FILES
     extra_src/oct_copy_p.cc
+    src/affinity.cc
     src/dream_error.c
     )
 

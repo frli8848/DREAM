@@ -128,6 +128,24 @@ end
 title('Rectangular transducer')
 fprintf('dreamrect\n');
 
+% Analytical SIR
+[Ha] = rect_sir(Ro,geom_par,s_par(3:4),delay,m_par(1:2));
+hold on;
+if size(Ha,2)>1
+  mesh(xo,t,Ha);
+  axis('tight');
+  view(135,32)
+else
+  plot(t,Ha);
+  ax = axis;
+  axis([0 50 ax(3) ax(4)])
+  %xlabel('t [\mus]')
+  grid('on');
+end
+fprintf('rect_sir\n');
+legend('DREAM','Analytical');
+
+
 % -------------Focused Rectangular Transducer --------------------------
 
 % Geometrical parameters.

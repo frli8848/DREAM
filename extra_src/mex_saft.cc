@@ -79,7 +79,8 @@ typedef void (*sighandler_t)(int);
 //
 // Function prototypes.
 //
-void* smp_process(void *arg);
+
+void* smp_saft(void *arg);
 void sighandler(int signum);
 void sig_abrt_handler(int signum);
 void sig_keyint_handler(int signum);
@@ -90,7 +91,7 @@ void sig_keyint_handler(int signum);
  *
  ***/
 
-void* smp_process(void *arg)
+void* smp_saft(void *arg)
 {
   size_t n, l;
   int  k_shift;			// Can be negative!
@@ -414,7 +415,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     D[thread_n].r_trans = r_trans;
 
     // Start the threads.
-    threads[thread_n] = std::thread(smp_process, &D[thread_n]);
+    threads[thread_n] = std::thread(smp_saft, &D[thread_n]);
     set_dream_thread_affinity(thread_n, nthreads, threads);
   }
 

@@ -92,7 +92,7 @@ typedef void (*sighandler_t)(int);
 // Function prototypes.
 //
 
-void* smp_process(void *arg);
+void* smp_fftconv_p_msvc(void *arg);
 void sighandler(int signum);
 void sig_abrt_handler(int signum);
 void sig_keyint_handler(int signum);
@@ -111,7 +111,7 @@ void fftconv(double *xr, dream_idx_type nx, double *yr, dream_idx_type ny, doubl
  *
  ***/
 
-void* smp_process(void *arg)
+void* smp_fftconv_p_msvc(void *arg)
 {
   DATA D = *(DATA *)arg;
   dream_idx_type    line_start=D.line_start, line_stop=D.line_stop, n;
@@ -701,7 +701,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       D[thread_n].B_N = B_N;
       D[thread_n].Y = Y;
       // Starts the threads.
-      err = pthread_create(&threads[thread_n], NULL, smp_process, &D[thread_n]);
+      err = pthread_create(&threads[thread_n], NULL, smp_fftconv_p_msvc, &D[thread_n]);
       if (err != 0)
         mexErrMsgTxt("Error when creating a new thread!\n");
     }

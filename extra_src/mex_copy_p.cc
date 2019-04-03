@@ -70,7 +70,7 @@ typedef void (*sighandler_t)(int);
 //
 // Function prototypes.
 //
-void* smp_process(void *arg);
+void* smp_copy_p(void *arg);
 void sighandler(int signum);
 void sig_abrt_handler(int signum);
 void sig_keyint_handler(int signum);
@@ -81,7 +81,7 @@ void sig_keyint_handler(int signum);
  *
  ***/
 
-void* smp_process(void *arg)
+void* smp_copy_p(void *arg)
 {
   DATA D = *(DATA *)arg;
   size_t    line_start=D.line_start, line_stop=D.line_stop, n;
@@ -263,7 +263,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     D[thread_n].len = (size_t) (r[1]-r[0]+1);
 
     // Start the threads.
-    threads[thread_n] = std::thread(smp_process, &D[thread_n]);
+    threads[thread_n] = std::thread(smp_copy_p, &D[thread_n]);
     set_dream_thread_affinity(thread_n, nthreads, threads);
   }
 

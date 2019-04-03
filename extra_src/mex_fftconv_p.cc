@@ -86,7 +86,8 @@ typedef void (*sighandler_t)(int);
 //
 // Function prototypes.
 //
-void* smp_process(void *arg);
+
+void* smp_fftconv_p(void *arg);
 void sighandler(int signum);
 void sig_abrt_handler(int signum);
 void sig_keyint_handler(int signum);
@@ -101,7 +102,7 @@ void fftconv(double *xr, size_t nx, double *yr, size_t ny, double *zr,
  *
  ***/
 
-void* smp_process(void *arg)
+void* smp_fftconv_p(void *arg)
 {
   DATA D = *(DATA *)arg;
   size_t    line_start=D.line_start, line_stop=D.line_stop, n;
@@ -657,7 +658,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       D[thread_n].Y = Y;
 
       // Start the threads.
-      threads[thread_n] = std::thread(smp_process, &D[thread_n]);
+      threads[thread_n] = std::thread(smp_fftconv_p, &D[thread_n]);
 
     } // for (thread_n = 0; thread_n < nthreads; thread_n++)
 

@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2002,2003,2006,2007,2008,2009,2014 Fredrik Lingvall
+* Copyright (C) 2002,2003,2006,2007,2008,2009,2014,2019 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -21,7 +21,6 @@
 *
 ***/
 
-
 #include <math.h>
 #include <stdio.h>
 #include "dreamsphere_f.h"
@@ -36,13 +35,15 @@
 // Function prototypes.
 //
 
-void sph_cart(double xi, double yi, double dx, double dy, double r, double haut,
+void sph_cart_f(double xi, double yi, double dx, double dy, double r, double haut,
               double xoi, double yoi, double zoi, double *RESTRICT rj, double *RESTRICT cotetj, double *RESTRICT du);
-void xlimit(double yi, double r, double xs, double ys, double *RESTRICT xsmin, double *RESTRICT xsmax);
+void xlimit_sphere_f(double yi, double r, double xs, double ys, double *RESTRICT xsmin, double *RESTRICT xsmax);
 
 /***
  *
- *  spher_f - pour calculer pulse response of a sperical focussing aperture.
+ *  dreamsphere_f
+ *
+ *  Computes the (spatial) impulse response for a focused (concave) spherical aperture.
  *
  ***/
 
@@ -78,20 +79,17 @@ int dreamsphere_f(double xo, double yo, double zo, double r, double R, double dx
   y = ysmin + dy / 2.0;
   while (y <= ysmax) {
 
-    xlimit(y,r,xs,ys, &xsmin, &xsmax);
+    xlimit_sphere_f(y,r,xs,ys, &xsmin, &xsmax);
 
-    //i=0;
-    //i++;
-    //x = xsmin + (i-1) * dx + dx / 2;
     x = xsmin + dx / 2.0;
     while (x <= xsmax) {
 
-      sph_cart(x,y,dx,dy,R,haut,xo,yo,zo,&ri,&cotet,&ds);
+      sph_cart_f(x,y,dx,dy,R,haut,xo,yo,zo,&ri,&cotet,&ds);
 
       ai = v * ds / (2*pi * ri);
       ai /= dt;
-      // Convert to SI units.
-      ai *= 1000;
+      ai *= 1000;               // Convert to SI units.
+
       // Propagation delay in micro seconds.
       t = ri * 1000/cp;
       it = (dream_idx_type) rint((t - delay)/dt);
@@ -105,8 +103,9 @@ int dreamsphere_f(double xo, double yo, double zo, double r, double R, double dx
         } else {
           att(alpha,ri,it,dt,cp,h,nt,ai);
         }
-      }
-      else  {
+
+      } else {
+
         if  (it >= 0)
           err = dream_out_of_bounds_err("SIR out of bounds",it-nt+1,err_level);
         else
@@ -115,29 +114,23 @@ int dreamsphere_f(double xo, double yo, double zo, double r, double R, double dx
         if ( (err_level == PARALLEL_STOP) || (err_level == STOP) )
           return err; // Bail out.
       }
-
-      //i++;
-      //x = xsmin + (i-1)*dx + dx/2;
       x += dx;
     }
-
-    //j++;
-    //y = ysmin + (j-1)*dy + dy / 2;
     y += dy;
   }
 
   return err;
-} /* dreamspher_f */
-
+}
 
 /***
  *
- * call xlimit(y,a,xs,ys,xsmin,xsmax)
- * subroutine xlimit - pour definir les limits d integration en x
+ * xlimit_sphere_f
+ *
+ * Computes the x-axis integration limits.
  *
  ***/
 
-void  xlimit(double yi, double r, double xs, double ys, double *RESTRICT xsmin, double *RESTRICT xsmax)
+void  xlimit_sphere_f(double yi, double r, double xs, double ys, double *RESTRICT xsmin, double *RESTRICT xsmax)
 {
   double rs;
 
@@ -146,8 +139,7 @@ void  xlimit(double yi, double r, double xs, double ys, double *RESTRICT xsmin, 
   *xsmax =  rs + xs;
 
   return;
-} /* xlimit */
-
+}
 
 /***
  *
@@ -155,7 +147,7 @@ void  xlimit(double yi, double r, double xs, double ys, double *RESTRICT xsmin, 
  *
  ***/
 
-void sph_cart(double xi, double yi, double dx, double dy, double R, double haut,
+void sph_cart_f(double xi, double yi, double dx, double dy, double R, double haut,
               double xoi, double yoi, double zoi, double *RESTRICT rj, double *RESTRICT cotetj, double *RESTRICT du)
 {
   double a, b, d, e, x, y, z, z1, z2, z3, z4, rx, ry, rz, az1, az2;

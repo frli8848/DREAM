@@ -93,7 +93,8 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
 @seealso {dream_arr_rect, dream_arr_circ, dream_arr_cylind_f, dream_arr_cylind_d}\n\
 @end deftypefn")
 {
-  int    iweight=0, apod_type=0, i, num_elements=0, is_set = false;
+  bool do_apod=false;
+  int apod_type=0, i, num_elements=0, is_set = false;
   double *apod=nullptr, weight, xs, ys, ramax, param;
   double *h;
   octave_value_list oct_retval;
@@ -115,7 +116,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   // Apodization.
   //
 
-  // apod_type = 0 - user defined, 1 traingle, 2 Gauss, 3 raised cosine, 4 simply supported, 5 clamped.
+  // apod_type = 0 - user defined, 1 triangle, 2 Gauss, 3 raised cosine, 4 simply supported, 5 clamped.
 
   if (!mxIsChar(0)) {
     error("Argument 1 must be a string");
@@ -124,47 +125,47 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
 
   std::string apod_str = args(0).string_value();
 
-  iweight = 1;			// default off.
+  do_apod = false;			// default off.
   is_set = false;
 
   if (apod_str == "off") {
-    iweight = 1;
+    do_apod = false;
     is_set = true;
   }
 
   if (apod_str == "ud") {
-    iweight = 2;
+    do_apod = true;
     apod_type = APOD_UD;
     error(" 'ud'- (user defined) meaningless for this function!");
     return oct_retval;
   }
 
   if (apod_str == "triangle") {
-    iweight = 2;
+    do_apod = true;
     apod_type = APOD_TRIANGLE;
     is_set = true;
   }
 
   if (apod_str == "gauss") {
-    iweight = 2;
+    do_apod = true;
     apod_type = APOD_GAUSS;
     is_set = true;
   }
 
   if (apod_str == "raised") {
-    iweight = 2;
+    do_apod = true;
     apod_type = APOD_RISED_COSINE;
     is_set = true;
   }
 
   if (apod_str == "simply") {
-    iweight = 2;
+    do_apod = true;
     apod_type = APOD_SIMPLY_SUPPORTED;
       is_set = true;
   }
 
   if (apod_str == "clamped") {
-    iweight = 2;
+    do_apod = true;
     apod_type = APOD_CLAMPED;
     is_set = true;
   }
@@ -207,7 +208,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
 
   ramax = 1;
   ys = 0;
-  if (iweight != 1) {
+  if (do_apod) {
     for (i=0; i<num_elements; i++) {
       xs = 2*ramax * (0.5 - ((double) i / (double) num_elements));
       apodization(apod_type, i, apod, &weight, xs, ys, ramax, param);

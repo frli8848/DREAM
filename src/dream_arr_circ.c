@@ -56,16 +56,13 @@ int dream_arr_circ(double xo, double yo, double zo, double r, double dx, double 
                     int apod_type, double param, double *RESTRICT ha, int err_level)
 {
   double retsteer;
-  double *RESTRICT h;
   dream_idx_type i;
   double ramax, xamax, yamax;
   double xs, ys, zs, retfoc, weight;
   int err = NONE, out_err = NONE;
 
-  h = (double*) malloc(nt*sizeof(double));
-
   for (i=0; i<nt; i++) {
-    ha[i] = (double) 0.0;
+    ha[i] = 0.0;
   }
 
   retfoc   = 0.0;
@@ -81,18 +78,14 @@ int dream_arr_circ(double xo, double yo, double zo, double r, double dx, double 
     if (do_apod) {
       apodization(apod_type, i, apod, &weight, xs, ys, ramax, param);
     }
-
-    err = circ_arr(xo,yo,zo,xs,ys,r,dx,dy,dt,nt,delay,retfoc,retsteer,v,cp,alpha,weight,h,err_level);
+    // Compute the response for the i:th element and add it to the impulse response vector ha.
+    err = circ_arr(xo,yo,zo,xs,ys,r,dx,dy,dt,nt,delay,retfoc,retsteer,v,cp,alpha,weight,ha,err_level);
     if (err != NONE)
       out_err = err;
-
-    superpos(h, ha, nt);
   }
 
-  free(h);
-
   return out_err;
-} /* dream_arr_circ */
+}
 
 /***
  *
@@ -107,13 +100,10 @@ int dream_arr_circ_ud(double xo, double yo, double zo, double r, double dx, doub
                     int apod_type, double param, double *RESTRICT ha, int err_level)
 {
   double retsteer;
-  double *RESTRICT h;
   dream_idx_type i;
   double ramax, xamax, yamax;
   double xs, ys, zs, retfoc, weight;
   int err = NONE, out_err = NONE;
-
-  h = (double*) malloc(nt*sizeof(double));
 
   for (i=0; i<nt; i++) {
     ha[i] = (double) 0.0;
@@ -132,25 +122,21 @@ int dream_arr_circ_ud(double xo, double yo, double zo, double r, double dx, doub
     if (do_apod) {
       apodization(apod_type, i, apod, &weight, xs, ys, ramax, param);
     }
-
-    err = circ_arr(xo,yo,zo,xs,ys,r,dx,dy,dt,nt,delay,retfoc,retsteer,v,cp,alpha,weight,h,err_level);
+    // Compute the response for the i:th element and add it to the impulse response vector ha.
+    err = circ_arr(xo,yo,zo,xs,ys,r,dx,dy,dt,nt,delay,retfoc,retsteer,v,cp,alpha,weight,ha,err_level);
     if (err != NONE)
       out_err = err;
-
-    superpos(h, ha, nt);
   }
 
-  free(h);
-
   return out_err;
-} /* dream_arr_circ_ud */
-
-/********************************************************************/
+}
 
 
 /***
  *
  * circ_arr
+ *
+ * NB. We add (super impose) the response to impulse response vector h!
  *
  ***/
 
@@ -171,10 +157,6 @@ int circ_arr(double xo, double yo, double zo, double xs, double ys, double r, do
   zs = (double) 0.0;
   ysmin = -r + ys;
   ysmax =  r + ys;
-
-  for (i = 0; i < nt; i++) {
-    h[i] = (double) 0.0 ;
-  }
 
   y = ysmin + dy/2.0;
   while (y <= ysmax) {
@@ -221,7 +203,7 @@ int circ_arr(double xo, double yo, double zo, double xs, double ys, double r, do
   }
 
   return err;
-} /* circ_arr */
+}
 
 /***
  *

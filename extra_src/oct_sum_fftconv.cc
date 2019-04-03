@@ -92,7 +92,7 @@ typedef void (*sighandler_t)(int);
 // Function prototypes.
 //
 
-void* smp_sum_fftconv(void *arg);
+void* smp_dream_sum_fftconv(void *arg);
 void sighandler(int signum);
 void sig_abrt_handler(int signum);
 void sig_keyint_handler(int signum);
@@ -108,7 +108,7 @@ void add_fftconv(double **xr, octave_idx_type nidx, octave_idx_type nx, double *
  *
  ***/
 
-void* smp_sum_fftconv(void *arg)
+void* smp_dream_sum_fftconv(void *arg)
 {
   DATA D = *(DATA *)arg;
   octave_idx_type    line_start=D.line_start, line_stop=D.line_stop, n;
@@ -718,7 +718,7 @@ Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
         D[thread_n].L =  A_L;
 
         // Start the threads.
-        threads[thread_n] = std::thread(smp_sum_fftconv, &D[thread_n]);
+        threads[thread_n] = std::thread(smp_dream_sum_fftconv, &D[thread_n]);
 
       } // for (thread_n = 0; thread_n < nthreads; thread_n++)
 
@@ -852,7 +852,7 @@ Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
         D[thread_n].L =  A_L;
 
         // Start the threads.
-        threads[thread_n] = std::thread(smp_sum_fftconv, &D[thread_n]);
+        threads[thread_n] = std::thread(smp_dream_sum_fftconv, &D[thread_n]);
         set_dream_thread_affinity(thread_n, nthreads, threads);
       }
 

@@ -81,7 +81,7 @@ typedef void (*sighandler_t)(int);
 //
 // Function prototypes.
 //
-void* smp_sum_fftconv(void *arg);
+void* smp_dream_sum_fftconv(void *arg);
 void sighandler(int signum);
 void sig_abrt_handler(int signum);
 void sig_keyint_handler(int signum);
@@ -96,7 +96,7 @@ void add_fftconv(double **xr, size_t nidx, size_t nx, double *yr, size_t ny, dou
  *
  ***/
 
-void* smp_sum_fftconv(void *arg)
+void* smp_dream_sum_fftconv(void *arg)
 {
   DATA D = *(DATA *)arg;
   size_t    line_start=D.line_start, line_stop=D.line_stop, n;
@@ -624,7 +624,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       D[thread_n].L = A_L;
 
       // Start the threads.
-      threads[thread_n] = std::thread(smp_sum_fftconv, &D[thread_n]);
+      threads[thread_n] = std::thread(smp_dream_sum_fftconv, &D[thread_n]);
       set_dream_thread_affinity(thread_n, nthreads, threads);
     }
 

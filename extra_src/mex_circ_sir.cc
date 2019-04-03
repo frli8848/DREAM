@@ -77,7 +77,7 @@ typedef void (*sighandler_t)(int);
  *
  ***/
 
-void* smp_circ_sir(void *arg)
+void* smp_dream_circ_sir(void *arg)
 {
   //int tmp_err = NONE, err = NONE;
   DATA D = *(DATA *)arg;
@@ -328,7 +328,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     //D[thread_n].err_level = err_level;
 
     // Start the threads.
-    threads[thread_n] = std::thread(smp_circ_sir, &D[thread_n]); // Start the threads.
+    threads[thread_n] = std::thread(smp_dream_circ_sir, &D[thread_n]); // Start the threads.
     set_dream_thread_affinity(thread_n, nthreads, threads);
   }
 

@@ -87,7 +87,7 @@ typedef void (*sighandler_t)(int);
 // Function prototypes.
 //
 
-void* smp_conv_p(void *arg);
+void* smp_dream_conv_p(void *arg);
 void sighandler(int signum);
 void sig_abrt_handler(int signum);
 void sig_keyint_handler(int signum);
@@ -105,7 +105,7 @@ void conv(double *xr, octave_idx_type nx, double *yr, octave_idx_type ny, double
  *
  ***/
 
-void* smp_conv_p(void *arg)
+void* smp_dream_conv_p(void *arg)
 {
   DATA D = *(DATA *)arg;
   octave_idx_type    line_start=D.line_start, line_stop=D.line_stop, n;
@@ -379,7 +379,7 @@ Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
         D[thread_n].Y = Y;
 
         // Start the threads.
-        threads[thread_n] = std::thread(smp_conv_p, &D[thread_n]);
+        threads[thread_n] = std::thread(smp_dream_conv_p, &D[thread_n]);
 
       } // for (thread_n = 0; thread_n < nthreads; thread_n++)
 
@@ -501,7 +501,7 @@ Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
         D[thread_n].Y = Y;
 
         // Start the threads.
-        threads[thread_n] = std::thread(smp_conv_p, &D[thread_n]);
+        threads[thread_n] = std::thread(smp_dream_conv_p, &D[thread_n]);
       }
 
       // Wait for all threads to finish.

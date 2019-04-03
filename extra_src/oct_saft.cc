@@ -89,7 +89,7 @@ typedef void (*sighandler_t)(int);
 // Function prototypes.
 //
 
-void* smp_saft(void *arg);
+void* smp_dream_saft(void *arg);
 void sighandler(int signum);
 void sig_abrt_handler(int signum);
 void sig_keyint_handler(int signum);
@@ -100,7 +100,7 @@ void sig_keyint_handler(int signum);
  *
  ***/
 
-void* smp_saft(void *arg)
+void* smp_dream_saft(void *arg)
 {
   octave_idx_type n, l;
   int  k_shift;			// Can be negative!
@@ -493,7 +493,7 @@ Copyright @copyright{} 2008-2016 Fredrik Lingvall.\n\
     D[thread_n].r_trans = r_trans;
 
     // Start the threads.
-    threads[thread_n] = std::thread(smp_saft, &D[thread_n]);
+    threads[thread_n] = std::thread(smp_dream_saft, &D[thread_n]);
     set_dream_thread_affinity(thread_n, nthreads, threads);
   }
 

@@ -119,8 +119,8 @@ typedef void (*sighandler_t)(int);
 // Function prototypes.
 //
 
-void* smp_fftconv_ola(void *arg);
-void* smp_s_process(void *arg);
+void* smp_dream_fftconv_ola(void *arg);
+void* smp_dream_s_process(void *arg);
 void sighandler(int signum);
 void sig_abrt_handler(int signum);
 void sig_keyint_handler(int signum);
@@ -139,7 +139,7 @@ void sfftconv(const float *xr, dream_idx_type nx, const float *yr, dream_idx_typ
  *
  ***/
 
-void* smp_fftconv_ola(void *arg)
+void* smp_dream_fftconv_ola(void *arg)
 {
   DATA D = *(DATA *)arg;
   dream_idx_type    line_start=D.line_start, line_stop=D.line_stop, n;
@@ -310,42 +310,42 @@ void* smp_fftconv_ola(void *arg)
   if (a_block)
     fftw_free(a_block);
   else
-    error("smp_fftconv_ola a_block memory free failed in fftconv_ola thread!!");
+    error("smp_dream_fftconv_ola a_block memory free failed in fftconv_ola thread!!");
 
   if (a)
     fftw_free(a);
   else {
-    error("smp_fftconv_ola a memory free failed in fftconv_ola thread!!");
+    error("smp_dream_fftconv_ola a memory free failed in fftconv_ola thread!!");
   }
 
   if(af)
     fftw_free(af);
   else {
-    error("smp_fftconv_ola af memory free failed in fftconv_ola thread!!");
+    error("smp_dream_fftconv_ola af memory free failed in fftconv_ola thread!!");
   }
 
   if(b)
     fftw_free(b);
   else {
-    error("smp_fftconv_ola b memory free failed in fftconv_ola thread!!");
+    error("smp_dream_fftconv_ola b memory free failed in fftconv_ola thread!!");
   }
 
   if (bf)
     fftw_free(bf);
   else {
-    error("smp_fftconv_ola bf memory free failed in fftconv_ola thread!!");
+    error("smp_dream_fftconv_ola bf memory free failed in fftconv_ola thread!!");
   }
 
   if (c)
     fftw_free(c);
   else {
-    error("smp_fftconv_ola c memory free failed in fftconv_ola thread!!");
+    error("smp_dream_fftconv_ola c memory free failed in fftconv_ola thread!!");
   }
 
   if (cf)
     fftw_free(cf);
   else {
-    error("smp_fftconv_ola cf memory free failed in fftconv_ola thread!!");
+    error("smp_dream_fftconv_ola cf memory free failed in fftconv_ola thread!!");
   }
 
   return(NULL);
@@ -357,7 +357,7 @@ void* smp_fftconv_ola(void *arg)
  *
  ***/
 
-void* smp_s_process(void *arg)
+void* smp_dream_s_process(void *arg)
 {
   S_DATA D = *(S_DATA *)arg;
   dream_idx_type    line_start=D.line_start, line_stop=D.line_stop, n;
@@ -528,42 +528,42 @@ void* smp_s_process(void *arg)
   if (a_block)
     fftw_free(a_block);
   else
-    error("smp_s_process a_block memory free failed in fftconv_ola thread!!");
+    error("smp_dream_s_process a_block memory free failed in fftconv_ola thread!!");
 
   if (a)
     fftw_free(a);
   else {
-    error("smp_s_process a memory free failed in fftconv_ola thread!!");
+    error("smp_dream_s_process a memory free failed in fftconv_ola thread!!");
   }
 
   if(af)
     fftw_free(af);
   else {
-    error("smp_s_process af memory free failed in fftconv_ola thread!!");
+    error("smp_dream_s_process af memory free failed in fftconv_ola thread!!");
   }
 
   if(b)
     fftw_free(b);
   else {
-    error("smp_s_process b memory free failed in fftconv_ola thread!!");
+    error("smp_dream_s_process b memory free failed in fftconv_ola thread!!");
   }
 
   if (bf)
     fftw_free(bf);
   else {
-    error("smp_s_process bf memory free failed in fftconv_ola thread!!");
+    error("smp_dream_s_process bf memory free failed in fftconv_ola thread!!");
   }
 
   if (c)
     fftw_free(c);
   else {
-    error("smp_s_process c memory free failed in fftconv_ola thread!!");
+    error("smp_dream_s_process c memory free failed in fftconv_ola thread!!");
   }
 
   if (cf)
     fftw_free(cf);
   else {
-    error("smp_s_process a_block memory free failed in fftconv_ola thread!!");
+    error("smp_dream_s_process a_block memory free failed in fftconv_ola thread!!");
   }
 
   return(NULL);
@@ -1329,7 +1329,7 @@ Copyright @copyright{} 2010-2016 Fredrik Lingvall.\n\
           D[thread_n].Y = Y;
 
           // Start the threads.
-          threads[thread_n] = std::thread(smp_fftconv_ola, &D[thread_n]);
+          threads[thread_n] = std::thread(smp_dream_fftconv_ola, &D[thread_n]);
 
         } // for (thread_n = 0; thread_n < nthreads; thread_n++)
 
@@ -1619,7 +1619,7 @@ Copyright @copyright{} 2010-2016 Fredrik Lingvall.\n\
           D[thread_n].Y = Y;
 
           // Start the threads.
-          threads[thread_n] = std::thread(smp_fftconv_ola, &D[thread_n]);
+          threads[thread_n] = std::thread(smp_dream_fftconv_ola, &D[thread_n]);
 
         } // for (thread_n = 0; thread_n < nthreads; thread_n++)
 
@@ -1896,7 +1896,7 @@ Copyright @copyright{} 2010-2016 Fredrik Lingvall.\n\
           sD[thread_n].Y = sY;
 
           // Start the threads.
-          threads[thread_n] = std::thread(smp_fftconv_ola, &D[thread_n]);
+          threads[thread_n] = std::thread(smp_dream_fftconv_ola, &D[thread_n]);
 
         } // for (thread_n = 0; thread_n < nthreads; thread_n++)
 
@@ -2186,7 +2186,7 @@ Copyright @copyright{} 2010-2016 Fredrik Lingvall.\n\
           sD[thread_n].Y = sY;
 
           // Start the threads.
-          threads[thread_n] = std::thread(smp_fftconv_ola, &D[thread_n]);
+          threads[thread_n] = std::thread(smp_dream_fftconv_ola, &D[thread_n]);
 
         }  // for (thread_n = 0; thread_n < nthreads; thread_n++)
 

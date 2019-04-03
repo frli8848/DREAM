@@ -90,7 +90,7 @@ typedef void (*sighandler_t)(int);
 //
 // Function prototypes.
 //
-void* smp_dreamrect_process(void *arg);
+void* smp_rect(void *arg);
 void sighandler(int signum);
 void sig_abrt_handler(int signum);
 void sig_keyint_handler(int signum);
@@ -101,7 +101,7 @@ void sig_keyint_handler(int signum);
  *
  ***/
 
-void* smp_dreamrect_process(void *arg)
+void* smp_rect(void *arg)
 {
   int tmp_err = NONE, err = NONE;
   DATA D = *(DATA *)arg;
@@ -505,7 +505,7 @@ Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
     D[thread_n].err_level = err_level;
 
     // Start the threads.
-    threads[thread_n] = std::thread(smp_dreamrect_process, &D[thread_n]);
+    threads[thread_n] = std::thread(smp_rect, &D[thread_n]);
     set_dream_thread_affinity(thread_n, nthreads, threads);
   }
 

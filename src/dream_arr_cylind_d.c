@@ -67,13 +67,10 @@ int dream_arr_cylind_d(double xo, double yo, double zo, double a, double b, doub
                        double *RESTRICT ha, int err_level)
 {
   double retsteer;
-  double *RESTRICT h;
   dream_idx_type i;
   double ramax, xamax, yamax;
   double xs, ys, zs, retfoc, weight;
   int err = NONE, out_err = NONE;
-
-  h = (double*) malloc(nt*sizeof(double));
 
   for (i=0; i<nt; i++) {
     ha[i] = (double) 0.0;
@@ -92,17 +89,14 @@ int dream_arr_cylind_d(double xo, double yo, double zo, double a, double b, doub
     if (do_apod) {
       apodization(apod_type, i, apod, &weight, xs, ys, ramax, param);
     }
-    err = cylind_d(xo,yo,zo,xs,ys,zs,R,a,b,dx,dy,dt,nt,delay,retfoc,retsteer,v,cp,alpha,weight,h,err_level);
+    // Compute the response for the i:th element and add it to the impulse response vector ha.
+    err = cylind_d(xo,yo,zo,xs,ys,zs,R,a,b,dx,dy,dt,nt,delay,retfoc,retsteer,v,cp,alpha,weight,ha,err_level);
     if (err != NONE)
       out_err = err;
-
-    superpos(h, ha, nt);
   }
 
-  free(h);
-
   return out_err;
-} /* dream_arr_cylind_f */
+}
 
 /***
  *
@@ -118,13 +112,10 @@ int dream_arr_cylind_udd(double xo, double yo, double zo, double a, double b, do
                          double *RESTRICT apod, bool do_apod, int apod_type, double param, double *RESTRICT ha, int err_level)
 {
   double retsteer;
-  double *RESTRICT h;
   dream_idx_type i;
   double ramax, xamax, yamax;
   double xs, ys, zs, retfoc, weight;
   int err = NONE, out_err = NONE;
-
-  h = (double*) malloc(nt*sizeof(double));
 
   for (i=0; i<nt; i++) {
     ha[i] = (double) 0.0;
@@ -143,24 +134,20 @@ int dream_arr_cylind_udd(double xo, double yo, double zo, double a, double b, do
     if (do_apod) {
       apodization(apod_type, i, apod, &weight, xs, ys, ramax, param);
     }
-    err = cylind_d(xo,yo,zo,xs,ys,zs,R,a,b,dx,dy,dt,nt,delay,retfoc,retsteer,v,cp,alpha,weight,h,err_level);
+    // Compute the response for the i:th element and add it to the impulse response vector ha.
+    err = cylind_d(xo,yo,zo,xs,ys,zs,R,a,b,dx,dy,dt,nt,delay,retfoc,retsteer,v,cp,alpha,weight,ha,err_level);
     if (err != NONE)
       out_err = err;
-
-    superpos(h, ha, nt);
   }
 
-  free(h);
-
   return out_err;
-} /* dream_arr_cylind_udd */
-
-/********************************************************************/
-
+}
 
 /***
  *
  * cylind_d
+ *
+ * NB. We add (super impose) the response to impulse response vector h!
  *
  ***/
 
@@ -195,10 +182,6 @@ int cylind_d(double xo, double yo, double zo, double xs, double ys, double zs, d
   //dphi = dy/R;
   ds = R * dx * dphi;
   //ds = dx * dy; // Approx the same as  ds = R * dx * dphi.
-
-  for (i = 0; i < nt; i++) {
-    h[i] = (double) 0.0 ;
-  }
 
   phi = phismin + dphi/2.0;
   y = R * sin(phi);

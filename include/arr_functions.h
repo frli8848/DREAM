@@ -23,6 +23,7 @@
 ***/
 
 #include "dream.h"
+#include <stdbool.h>
 
 #define NO_FOCUS 1
 #define FOCUS_X 2
@@ -90,4 +91,4 @@ void superpos(double *h, double *ha, dream_idx_type nt);
 #ifdef __cplusplus
 extern "C"
 #endif
-void check_delay(dream_idx_type it, double tt, int *icheck, dream_idx_type nt);
+bool check_delay(dream_idx_type it, double t, dream_idx_type nt);

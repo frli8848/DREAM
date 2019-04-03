@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2002,2003,2006,2007,2008,2009,2014 Fredrik Lingvall
+* Copyright (C) 2002,2003,2006,2007,2008,2009,2014,2019 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -41,8 +41,8 @@
 
 
 int rect_ab(double xo, double yo, double zo, double xs, double ys, double zs, double a, double b,
-            double dx, double dy, double dt, dream_idx_type nt, int icheck, double delay, double retfoc,
-            double retsteer, double v, double cp, double alpha,  double weight, double *RESTRICT h, int err_level);
+            double dx, double dy, double dt, dream_idx_type nt, double delay, double retfoc,
+            double retsteer, double v, double cp, double alpha, double weight, double *RESTRICT h, int err_level);
 
 
 /***
@@ -58,23 +58,18 @@ int dream_arr_rect(double xo, double yo, double zo, double a, double b, double d
                   int err_level)
 {
   double retsteer;
-  double *RESTRICT h;
   dream_idx_type i;
   double ramax, xamax, yamax;
-  int icheck;
   double xs, ys, zs, retfoc, weight;
   int err = NONE, out_err = NONE;
 
-  h = (double*) malloc(nt*sizeof(double));
-
   for (i=0; i<nt; i++) {
-    ha[i] = (double) 0.0;
+    ha[i] = 0.0;
   }
 
   retfoc   = 0.0;
   retsteer = 0.0;
   weight   = 1.0;
-  icheck   = 1;
 
   max_dim_arr(&xamax, &yamax, &ramax, gx, gy, gz, num_elements);
 
@@ -85,21 +80,15 @@ int dream_arr_rect(double xo, double yo, double zo, double a, double b, double d
     if (do_apod) {
       apodization(apod_type, i, apod, &weight, xs, ys, ramax, param);
     }
-    err = rect_ab(xo,yo,zo,xs,ys,zs,a,b,dx,dy,dt,nt,icheck,
-                 delay,retfoc,retsteer,v,cp,alpha,weight,h,err_level);
+    // Compute the response for the i:th elemen and add it to the impulse response vector ha.
+    err = rect_ab(xo, yo, zo, xs, ys, zs, a, b, dx, dy, dt, nt,
+                  delay, retfoc, retsteer, v, cp, alpha, weight, ha, err_level);
     if (err != NONE)
       out_err = err;
-
-    if (icheck == 2) {
-      break;
-    }
-    superpos(h, ha, nt);
   }
 
-  free(h);
-
   return out_err;
-} /* dream_arr_rect */
+}
 
 /***
  *
@@ -117,11 +106,8 @@ int dream_arr_rect_ud(double xo, double yo, double zo, double a, double b, doubl
   double *RESTRICT h;
   dream_idx_type i;
   double ramax, xamax, yamax;
-  int icheck;
   double xs, ys, zs, retfoc, weight;
   int err = NONE, out_err = NONE;
-
-  h = (double*) malloc(nt*sizeof(double));
 
   for (i=0; i<nt; i++) {
     ha[i] = (double) 0.0;
@@ -130,7 +116,6 @@ int dream_arr_rect_ud(double xo, double yo, double zo, double a, double b, doubl
   retfoc   = (double) 0.0;
   retsteer = (double) 0.0;
   weight   = (double) 1.0;
-  icheck   = 1;
 
   max_dim_arr(&xamax, &yamax, &ramax, gx, gy, gz, num_elements);
 
@@ -141,21 +126,16 @@ int dream_arr_rect_ud(double xo, double yo, double zo, double a, double b, doubl
     if (do_apod) {
       apodization(apod_type, i, apod, &weight, xs, ys, ramax, param);
     }
-    err = rect_ab(xo,yo,zo,xs,ys,zs,a,b,dx,dy,dt,nt,icheck,
-                 delay,retfoc,retsteer,v,cp,alpha,weight,h,err_level);
+    // Compute the response for the i:th elemen and add it to the impulse response vector ha.
+    err = rect_ab(xo, yo, zo, xs, ys, zs, a, b, dx, dy, dt, nt,
+                  delay, retfoc, retsteer, v, cp, alpha, weight, ha, err_level);
+
     if (err != NONE)
       out_err = err;
-
-    if (icheck == 2) {
-      break;
-    }
-    superpos(h, ha, nt);
   }
 
-  free(h);
-
   return out_err;
-} /* dream_arr_rect_ud */
+}
 
 
 /********************************************************************/
@@ -166,21 +146,23 @@ int dream_arr_rect_ud(double xo, double yo, double zo, double a, double b, doubl
  *
  * Computes the impulse respone of one rectangular element for use within an array.
  *
+ * NB. We add (super impose) the response to impulse response vector h!
+ *
  ***/
 
 int rect_ab(double xo, double yo, double zo, double xs, double ys, double zs, double a, double b,
-            double dx, double dy, double dt, dream_idx_type nt, int icheck, double delay, double retfoc,
+            double dx, double dy, double dt, dream_idx_type nt, double delay, double retfoc,
             double retsteer, double v, double cp, double alpha, double weight, double *RESTRICT h, int err_level)
 {
   dream_idx_type i;
   double t;
-  double xsmin, ysmin, xsmax, ysmax, ai, ds, pi, ri;
+  double xsmin, ysmin, xsmax, ysmax, ds, pi, r;
   dream_idx_type it;
   double x, y;
   int err = NONE;
 
   double decal = retfoc + retsteer;
-  pi = atan( (double) 1.0) * 4.0;
+  pi = 4.0 * atan(1.0);
   ds = dx * dy;
 
   xsmin = xs - a/2;
@@ -189,31 +171,28 @@ int rect_ab(double xo, double yo, double zo, double xs, double ys, double zs, do
   ysmin = ys - b/2;
   ysmax = ys + b/2;
 
-  for (i = 0; i < nt; i++)
-    h[i] = (double) 0.0;
-
   y = ysmin + dy/2.0;
   while (y <= ysmax) {
 
     x = xsmin + dx/2.0;
     while (x <= xsmax) {
 
-      distance(xo, yo, zo, x, y, zs, &ri);
-      ai = weight * v * ds / (2*pi*ri);
-      ai /= dt;
-      ai *= 1000;      // Convert to SI units.
-
-      t = ri * 1000/cp; // Propagation delay in micro seconds.
+      distance(xo, yo, zo, x, y, zs, &r);
+      t = r * 1000.0/cp; // Propagation delay in micro seconds.
       it = (dream_idx_type) rint((t - delay + decal)/dt);
-
       if ((it < nt) && (it >= 0)) {
 
-        if (alpha == (double) 0.0 )
+        double ai = weight * v * ds / (2*pi*r);
+        ai /= dt;
+        ai *= 1000.0;      // Convert to SI units.
+
+        if (alpha == 0.0 ) {
           h[it] += ai; // No attenuation.
-        else
-          att(alpha, ri, it, dt, cp, h, nt, ai); // Attenuation compensation.
-      }
-      else   {
+        } else {
+          att(alpha, r, it, dt, cp, h, nt, ai); // Attenuation compensation.
+        }
+      } else {
+
         if  (it >= 0)
           err = dream_out_of_bounds_err("SIR out of bounds",it-nt+1,err_level);
         else

@@ -311,13 +311,17 @@ void superpos(double *RESTRICT h, double *RESTRICT ha, dream_idx_type nt)
  *
  ***/
 
-void check_delay(dream_idx_type it, double tt, int *icheck, dream_idx_type nt)
+bool check_delay(dream_idx_type it, double t, dream_idx_type nt)
 {
-  if (tt < (double) 0.0)
-    *icheck = 2;
+  bool retval=true;
 
-  if (it > nt)
-    *icheck = 2;
+  if (t < 0.0) {
+    retval = false;
+  }
 
-  return;
+  if (it > nt) {
+    retval = false;
+  }
+
+  return retval;
 }

@@ -63,7 +63,7 @@ int dream_arr_cylind_d(double xo, double yo, double zo, double a, double b, doub
                        double dx, double dy, double dt,
                        dream_idx_type nt, double delay, double v, double cp, double alpha, int num_elements,
                        double *RESTRICT gx, double *RESTRICT gy, double *RESTRICT gz, int foc_type, double focal, int ister,
-                       double theta, double phi, double *RESTRICT apod, int iweight, int apod_type, double param,
+                       double theta, double phi, double *RESTRICT apod, bool do_apod, int apod_type, double param,
                        double *RESTRICT ha, int err_level)
 {
   double retsteer;
@@ -89,7 +89,7 @@ int dream_arr_cylind_d(double xo, double yo, double zo, double a, double b, doub
     center_pos(&xs, &ys, &zs, i, gx, gy, gz);
     focusing(foc_type, focal, xs, ys, xamax, yamax, ramax, cp, &retfoc);
     beamsteering(ister, theta, phi, xs, ys, xamax, yamax, ramax, cp, &retsteer);
-    if (iweight == 2) {
+    if (do_apod) {
       apodization(apod_type, i, apod, &weight, xs, ys, ramax, param);
     }
     err = cylind_d(xo,yo,zo,xs,ys,zs,R,a,b,dx,dy,dt,nt,delay,retfoc,retsteer,v,cp,alpha,weight,h,err_level);
@@ -115,7 +115,7 @@ int dream_arr_cylind_udd(double xo, double yo, double zo, double a, double b, do
                          dream_idx_type nt, double delay, double v, double cp, double alpha, int num_elements,
                          double *RESTRICT gx, double *RESTRICT gy, double *RESTRICT gz, int foc_type, double *RESTRICT focal,
                          int ister, double theta, double phi,
-                         double *RESTRICT apod, int iweight, int apod_type, double param, double *RESTRICT ha, int err_level)
+                         double *RESTRICT apod, bool do_apod, int apod_type, double param, double *RESTRICT ha, int err_level)
 {
   double retsteer;
   double *RESTRICT h;
@@ -140,7 +140,7 @@ int dream_arr_cylind_udd(double xo, double yo, double zo, double a, double b, do
     center_pos(&xs, &ys, &zs, i, gx, gy, gz);
     focusing(foc_type, focal[i], xs, ys, xamax, yamax, ramax, cp, &retfoc); // Note foc_type must be 6 here!
     beamsteering(ister, theta, phi, xs, ys, xamax, yamax, ramax, cp, &retsteer);
-    if (iweight == 2) {
+    if (do_apod) {
       apodization(apod_type, i, apod, &weight, xs, ys, ramax, param);
     }
     err = cylind_d(xo,yo,zo,xs,ys,zs,R,a,b,dx,dy,dt,nt,delay,retfoc,retsteer,v,cp,alpha,weight,h,err_level);

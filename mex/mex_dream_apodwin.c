@@ -57,46 +57,46 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   buflen = (mxGetM(prhs[0]) * mxGetN(prhs[0]) * sizeof(mxChar)) + 1;
   mxGetString(prhs[0],apod_met,buflen);
 
-  iweight = 1;			// default off.
+  do_apod = false;			// default off.
 
   set = FALSE;
   if (!strcmp(apod_met,"off")) {
-    iweight = 1;
+    do_apod = false;
     set = TRUE;
   }
 
   if (!strcmp(apod_met,"ud")) {
-    iweight = 2;
+    do_apod = true;
     iapo = 0;
     dream_err_msg(" 'ud'- (user defined) meaningless for this function!");
   }
 
   if (!strcmp(apod_met,"triangle")) {
-    iweight = 2;
+    do_apod = true;
     iapo = 1;
     set = TRUE;
   }
 
   if (!strcmp(apod_met,"gauss")) {
-    iweight = 2;
+    do_apod = true;
     iapo = 2;
     set = TRUE;
   }
 
   if (!strcmp(apod_met,"raised")) {
-    iweight = 2;
+    do_apod = true;
     iapo = 3;
     set = TRUE;
   }
 
   if (!strcmp(apod_met,"simply")) {
-    iweight = 2;
+    do_apod = true;
     iapo = 4;
     set = TRUE;
   }
 
   if (!strcmp(apod_met,"clamped")) {
-    iweight = 2;
+    do_apod = true;
     iapo = 5;
     set = TRUE;
   }

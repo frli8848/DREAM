@@ -235,7 +235,7 @@ void apodization(int apod_type, int i, double *RESTRICT apod_vec, double *RESTRI
     break;
 
   case APOD_TRIANGLE:
-    *weight = (double) 1.0 - fabs(r) / ramax;
+    *weight = 1.0 - fabs(r) / ramax;
     break;
 
   case APOD_GAUSS:
@@ -247,11 +247,11 @@ void apodization(int apod_type, int i, double *RESTRICT apod_vec, double *RESTRI
     break;
 
   case APOD_SIMPLY_SUPPORTED:
-    *weight = (double) 1.0 - r*r / (ramax*ramax);
+    *weight = 1.0 - r*r / (ramax*ramax);
     break;
 
   case APOD_CLAMPED:
-    *weight = ((double) 1.0 - r*r / (ramax*ramax)) * ((double) 1.0  - r / (ramax*ramax));
+    *weight = (1.0 - r*r / (ramax*ramax)) * (1.0  - r*r / (ramax*ramax));
 
   default:
     break;

@@ -76,7 +76,7 @@ typedef struct
   double *RESTRICT G;
   int ifoc;
   int ister;
-  int iweight;
+  bool do_apod;
   int iapo;
   double focal;
   double *RESTRICT apod;
@@ -116,7 +116,7 @@ void* smp_process(void *arg)
   int    tmp_lev, err_level=D.err_level;
   double *RESTRICT delay=D.delay, *RESTRICT ro=D.ro, v=D.v, cp=D.cp, alpha=D.alpha;
   size_t    start=D.start, stop=D.stop;
-  int    ifoc=D.ifoc, ister=D.ister, iweight=D.iweight,iapo=D.iapo;
+  int    ifoc=D.ifoc, ister=D.ister, do_apod = D.do_apod,iapo=D.iapo;
   double focal=D.focal, *apod=D.apod, theta=D.theta,phi=D.phi,param=D.param;
   size_t num_elements = D.num_elements;
   double *RESTRICT gx,*RESTRICT gy, *RESTRICT gz;
@@ -141,7 +141,7 @@ void* smp_process(void *arg)
         zo = ro[n+2*no];
 
         err = dream_arr_cylind_d(xo,yo,zo,a,b,R,dx,dy,dt,nt,delay[0],v,cp,alpha,num_elements,gx,gy,gz,
-                             ifoc,focal,ister,theta,phi,apod,iweight,iapo,param,&h[n*nt],tmp_lev);
+                             ifoc,focal,ister,theta,phi,apod,do_apod,iapo,param,&h[n*nt],tmp_lev);
 
         if (err != NONE || out_err ==  PARALLEL_STOP) {
           tmp_err = err;
@@ -162,7 +162,7 @@ void* smp_process(void *arg)
         zo = ro[n+2*no];
 
         err = dream_arr_cylind_d(xo,yo,zo,a,b,R,dx,dy,dt,nt,delay[n],v,cp,alpha,num_elements,gx,gy,gz,
-                             ifoc,focal,ister,theta,phi,apod,iweight,iapo,param,&h[n*nt],tmp_lev);
+                             ifoc,focal,ister,theta,phi,apod,do_apod,iapo,param,&h[n*nt],tmp_lev);
 
         if (err != NONE || out_err ==  PARALLEL_STOP) {
           tmp_err = err;
@@ -187,7 +187,7 @@ void* smp_process(void *arg)
         zo = ro[n+2*no];
 
         err = dream_arr_cylind_udd(xo,yo,zo,a,b,R,dx,dy,dt,nt,delay[0],v,cp,alpha,num_elements,gx,gy,gz,
-                                ifoc,ud_focal,ister,theta,phi,apod,iweight,iapo,param,&h[n*nt],tmp_lev);
+                                ifoc,ud_focal,ister,theta,phi,apod,do_apod,iapo,param,&h[n*nt],tmp_lev);
 
         if (err != NONE || out_err ==  PARALLEL_STOP) {
           tmp_err = err;
@@ -208,7 +208,7 @@ void* smp_process(void *arg)
         zo = ro[n+2*no];
 
         err = dream_arr_cylind_udd(xo,yo,zo,a,b,R,dx,dy,dt,nt,delay[n],v,cp,alpha,num_elements,gx,gy,gz,
-                                ifoc,ud_focal,ister,theta,phi,apod,iweight,iapo,param,&h[n*nt],tmp_lev);
+                                ifoc,ud_focal,ister,theta,phi,apod,do_apod,iapo,param,&h[n*nt],tmp_lev);
 
         if (err != NONE || out_err ==  PARALLEL_STOP) {
           tmp_err = err;
@@ -279,7 +279,8 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   double focal=0, *RESTRICT ud_focal=NULL;
   int    ister=0;
   double theta=0,phi=0,*RESTRICT apod=NULL;
-  int    iweight=0, iapo=0;
+  int    do_apod=false;
+  int    iapo=0;
   double *RESTRICT h, *err_p;
   int    err_level=STOP, set = false;
   char   err_str[50];
@@ -494,7 +495,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Apodization.
   //
 
-  // iweight = 1 - no apodization, 2  apodization.
+  // do_apod = false - no apodization, 2  apodization.
   // iapo = 0 - user defined, 1 traingle, 2 Gauss, 3 raised cosine, 4 simply supported, 5 clamped.
 
   if (nrhs >= 11) {
@@ -505,16 +506,16 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     buflen = (mxGetM(prhs[10]) * mxGetN(prhs[10]) * sizeof(mxChar)) + 1;
     mxGetString(prhs[10],apod_met,buflen);
 
-    iweight = 1;			// default off.
+    do_apod = false;			// default off.
     set = false;
 
     if (!strcmp(apod_met,"off")) {
-      iweight = 1;
+      do_apod = false;
       set = true;
     }
 
     if (!strcmp(apod_met,"ud")) {
-      iweight = 2;
+      do_apod = true;
       iapo = 0;
       set = true;
 
@@ -526,31 +527,31 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     }
 
     if (!strcmp(apod_met,"triangle")) {
-      iweight = 2;
+      do_apod = true;
       iapo = 1;
       set = true;
     }
 
     if (!strcmp(apod_met,"gauss")) {
-      iweight = 2;
+      do_apod = true;
       iapo = 2;
       set = true;
     }
 
     if (!strcmp(apod_met,"raised")) {
-      iweight = 2;
+      do_apod = true;
       iapo = 3;
       set = true;
     }
 
     if (!strcmp(apod_met,"simply")) {
-      iweight = 2;
+      do_apod = true;
       iapo = 4;
       set = true;
     }
 
     if (!strcmp(apod_met,"clamped")) {
-      iweight = 2;
+      do_apod = true;
       iapo = 5;
       set = true;
     }
@@ -565,7 +566,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     param = mxGetScalar(prhs[12]);
   }
   else
-    iweight = 1;
+    do_apod = false;
 
   //
   // Number of threads.
@@ -691,7 +692,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     D[thread_n].G = G;
     D[thread_n].ifoc = ifoc;
     D[thread_n].ister = ister;
-    D[thread_n].iweight = iweight;
+    D[thread_n].do_apod = do_apod;
     D[thread_n].iapo = iapo;
     D[thread_n].focal = focal;
     D[thread_n].apod = apod;

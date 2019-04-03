@@ -222,7 +222,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Apodization.
   //
 
-  // iweight = 1 - no apodization, 2  apodization.
+  // do_apod = false - no apodization, 2  apodization.
   // iapo = 0 - user defined, 1 traingle, 2 Gauss, 3 raised cosine, 4 simply supported, 5 clamped.
 
   if (nrhs >= 8) {
@@ -234,16 +234,16 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     buflen = (mxGetM(prhs[7]) * mxGetN(prhs[7]) * sizeof(mxChar)) + 1;
     mxGetString(prhs[7],apod_met,buflen);
 
-    iweight = 1;			// default off.
+    do_apod = false;			// default off.
     set = FALSE;
 
     if (!strcmp(apod_met,"off")) {
-      iweight = 1;
+      do_apod = false;
       set = TRUE;
     }
 
     if (!strcmp(apod_met,"ud")) {
-      iweight = 2;
+      do_apod = true;
       iapo = 0;
       set = TRUE;
 
@@ -255,31 +255,31 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     }
 
     if (!strcmp(apod_met,"triangle")) {
-      iweight = 2;
+      do_apod = true;
       iapo = 1;
       set = TRUE;
     }
 
     if (!strcmp(apod_met,"gauss")) {
-      iweight = 2;
+      do_apod = true;
       iapo = 2;
       set = TRUE;
     }
 
     if (!strcmp(apod_met,"raised")) {
-      iweight = 2;
+      do_apod = true;
       iapo = 3;
       set = TRUE;
     }
 
     if (!strcmp(apod_met,"simply")) {
-      iweight = 2;
+      do_apod = true;
       iapo = 4;
       set = TRUE;
     }
 
     if (!strcmp(apod_met,"clamped")) {
-      iweight = 2;
+      do_apod = true;
       iapo = 5;
       set = TRUE;
     }
@@ -294,7 +294,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     param = mxGetScalar(prhs[9]);
   }
   else
-    iweight = 1;
+    do_apod = false;
 
   //
   // Error Reporting.

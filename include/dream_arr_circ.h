@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2002,2003,2006,2007,2008,2009 Fredrik Lingvall
+* Copyright (C) 2002,2003,2006,2007,2008,2009,2019 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -24,6 +24,7 @@
 
 
 #include "dream.h"
+#include <stdbool.h>
 
 /***
  *
@@ -37,7 +38,7 @@ extern "C"
 int dream_arr_circ(double xo, double yo, double zo, double r, double dx, double dy, double dt, dream_idx_type nt,
                    double delay, double v, double cp, double alpha, int  num_elements,
                    double *gx, double *gy, double *gz, int foc_type, double focal,
-                   int ister, double theta, double phi, double *apod, int iweight,
+                   int ister, double theta, double phi, double *apod, bool do_apod,
                    int apod_type, double param, double *ha,int err_level);
 
 #ifdef __cplusplus
@@ -46,5 +47,5 @@ extern "C"
 int dream_arr_circ_ud(double xo, double yo, double zo, double r, double dx, double dy, double dt, dream_idx_type nt,
                       double delay, double v, double cp, double alpha, int  num_elements,
                       double *gx, double *gy, double *gz, int foc_type, double *focal,
-                      int ister, double theta, double phi, double *apod, int iweight,
+                      int ister, double theta, double phi, double *apod, bool do_ipod,
                       int apod_type, double param, double *ha,int err_level);

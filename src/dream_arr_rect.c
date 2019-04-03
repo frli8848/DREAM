@@ -54,7 +54,7 @@ int rect_ab(double xo, double yo, double zo, double xs, double ys, double zs, do
 int dream_arr_rect(double xo, double yo, double zo, double a, double b, double dx, double dy, double dt,
                   dream_idx_type nt, double delay, double v, double cp, double alpha, int num_elements,
                   double *RESTRICT gx, double *RESTRICT gy, double *RESTRICT gz, int foc_type, double focal, int ister,
-                  double theta, double phi, double *RESTRICT apod, int iweight, int apod_type, double param, double *RESTRICT ha,
+                  double theta, double phi, double *RESTRICT apod, bool do_apod, int apod_type, double param, double *RESTRICT ha,
                   int err_level)
 {
   double retsteer;
@@ -71,9 +71,9 @@ int dream_arr_rect(double xo, double yo, double zo, double a, double b, double d
     ha[i] = (double) 0.0;
   }
 
-  retfoc   = (double) 0.0;
-  retsteer = (double) 0.0;
-  weight   = (double) 1.0;
+  retfoc   = 0.0;
+  retsteer = 0.0;
+  weight   = 1.0;
   icheck   = 1;
 
   max_dim_arr(&xamax, &yamax, &ramax, gx, gy, gz, num_elements);
@@ -82,7 +82,7 @@ int dream_arr_rect(double xo, double yo, double zo, double a, double b, double d
     center_pos(&xs, &ys, &zs, i, gx, gy, gz);
     focusing(foc_type, focal, xs, ys, xamax, yamax, ramax, cp, &retfoc);
     beamsteering(ister, theta, phi, xs, ys, xamax, yamax, ramax, cp, &retsteer);
-    if (iweight == 2) {
+    if (do_apod) {
       apodization(apod_type, i, apod, &weight, xs, ys, ramax, param);
     }
     err = rect_ab(xo,yo,zo,xs,ys,zs,a,b,dx,dy,dt,nt,icheck,
@@ -110,7 +110,7 @@ int dream_arr_rect(double xo, double yo, double zo, double a, double b, double d
 int dream_arr_rect_ud(double xo, double yo, double zo, double a, double b, double dx, double dy, double dt,
                   dream_idx_type nt, double delay, double v, double cp, double alpha, int num_elements,
                   double *RESTRICT gx, double *RESTRICT gy, double *RESTRICT gz, int foc_type, double *RESTRICT focal, int ister,
-                  double theta, double phi, double *RESTRICT apod, int iweight, int apod_type, double param, double *RESTRICT ha,
+                  double theta, double phi, double *RESTRICT apod, bool do_apod, int apod_type, double param, double *RESTRICT ha,
                   int err_level)
 {
   double retsteer;
@@ -138,7 +138,7 @@ int dream_arr_rect_ud(double xo, double yo, double zo, double a, double b, doubl
     center_pos(&xs, &ys, &zs, i, gx, gy, gz);
     focusing(foc_type, focal[i], xs, ys, xamax, yamax, ramax, cp, &retfoc);  // Note foc_type must be 6 here!
     beamsteering(ister, theta, phi, xs, ys, xamax, yamax, ramax, cp, &retsteer);
-    if (iweight == 2) {
+    if (do_apod) {
       apodization(apod_type, i, apod, &weight, xs, ys, ramax, param);
     }
     err = rect_ab(xo,yo,zo,xs,ys,zs,a,b,dx,dy,dt,nt,icheck,

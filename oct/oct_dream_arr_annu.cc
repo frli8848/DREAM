@@ -82,7 +82,7 @@ typedef struct
   int num_elements;
   double *gr;
   int ifoc;
-  int iweight;
+  bool do_apod;
   int apod_type;
   double focal;
   double *apod;
@@ -120,7 +120,8 @@ void* smp_dream_arr_annu_process(void *arg)
   int    tmp_lev, err_level=D.err_level;
   double *delay=D.delay, *ro=D.ro, v=D.v, cp=D.cp, alpha=D.alpha;
   octave_idx_type start=D.start, stop=D.stop;
-  int    ifoc=D.ifoc, iweight=D.iweight,apod_type=D.apod_type;
+  int    ifoc=D.ifoc, apod_type=D.apod_type;
+  bool   do_apod=D.do_apod;
   double focal=D.focal, *apod=D.apod, param=D.param;
   int    num_elements = D.num_elements;
   double *gr=D.gr;
@@ -141,7 +142,7 @@ void* smp_dream_arr_annu_process(void *arg)
         zo = ro[n+2*no];
 
         err = dream_arr_annu(xo,yo,zo,dx,dy,dt,nt,delay[0],v,cp,alpha,num_elements,gr,
-                             ifoc,focal,apod,iweight,apod_type,param,&h[n*nt],tmp_lev);
+                             ifoc,focal,apod,do_apod,apod_type,param,&h[n*nt],tmp_lev);
 
         if (err != NONE || out_err ==  PARALLEL_STOP) {
           tmp_err = err;
@@ -162,7 +163,7 @@ void* smp_dream_arr_annu_process(void *arg)
         zo = ro[n+2*no];
 
         err = dream_arr_annu(xo,yo,zo,dx,dy,dt,nt,delay[n],v,cp,alpha,num_elements,
-                             gr,ifoc,focal,apod,iweight,apod_type,param,&h[n*nt],tmp_lev);
+                             gr,ifoc,focal,apod,do_apod,apod_type,param,&h[n*nt],tmp_lev);
 
         if (err != NONE || out_err ==  PARALLEL_STOP) {
           tmp_err = err;
@@ -187,7 +188,7 @@ void* smp_dream_arr_annu_process(void *arg)
         zo = ro[n+2*no];
 
         err = dream_arr_annu_ud(xo,yo,zo,dx,dy,dt,nt,delay[0],v,cp,alpha,num_elements,gr,
-                             ifoc,ud_focal,apod,iweight,apod_type,param,&h[n*nt],tmp_lev);
+                             ifoc,ud_focal,apod,do_apod,apod_type,param,&h[n*nt],tmp_lev);
 
         if (err != NONE || out_err ==  PARALLEL_STOP) {
           tmp_err = err;
@@ -208,7 +209,7 @@ void* smp_dream_arr_annu_process(void *arg)
         zo = ro[n+2*no];
 
         err = dream_arr_annu_ud(xo,yo,zo,dx,dy,dt,nt,delay[n],v,cp,alpha,num_elements,
-                                gr,ifoc,ud_focal,apod,iweight,apod_type,param,&h[n*nt],tmp_lev);
+                                gr,ifoc,ud_focal,apod,do_apod,apod_type,param,&h[n*nt],tmp_lev);
 
         if (err != NONE || out_err ==  PARALLEL_STOP) {
           tmp_err = err;
@@ -382,7 +383,8 @@ Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
   int    ifoc=0;
   double focal=0,*ud_focal=NULL;
   double *apod=NULL;
-  int    iweight=0,apod_type=0;
+  bool    do_apod=false;
+  int apod_type=0;
   double *h, *err_p;
   int    err_level=STOP, is_set = false;
   char   err_str[50];
@@ -543,7 +545,6 @@ Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
   // Apodization.
   //
 
-  // iweight = 1 - no apodization, 2  apodization.
   // apod_type = 0 - user defined, 1 traingle, 2 Gauss, 3 raised cosine, 4 simply supported, 5 clamped.
 
   if (nrhs >= 8) {
@@ -560,16 +561,16 @@ Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
     }
     apod_met[buflen] = '\0';
 
-    iweight = 1;			// default off.
+    do_apod = false;			// default off.
     is_set = false;
 
     if (!strcmp(apod_met,"off")) {
-      iweight = 1;
+      do_apod = false;
       is_set = true;
     }
 
     if (!strcmp(apod_met,"ud")) {
-      iweight = 2;
+      do_apod = true;
       apod_type = 0;
       is_set = true;
 
@@ -584,31 +585,31 @@ Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
     }
 
     if (!strcmp(apod_met,"triangle")) {
-      iweight = 2;
+      do_apod = true;
       apod_type = 1;
       is_set = true;
     }
 
     if (!strcmp(apod_met,"gauss")) {
-      iweight = 2;
+      do_apod = true;
       apod_type = 2;
       is_set = true;
     }
 
     if (!strcmp(apod_met,"raised")) {
-      iweight = 2;
+      do_apod = true;
       apod_type = 3;
       is_set = true;
     }
 
     if (!strcmp(apod_met,"simply")) {
-      iweight = 2;
+      do_apod = true;
       apod_type = 4;
       is_set = true;
     }
 
     if (!strcmp(apod_met,"clamped")) {
-      iweight = 2;
+      do_apod = true;
       apod_type = 5;
       is_set = true;
     }
@@ -628,7 +629,7 @@ Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
     param = (double) tmp7.fortran_vec()[0];
   }
   else
-    iweight = 1;
+    do_apod = false;
 
   //
   // Number of threads.
@@ -757,7 +758,7 @@ Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
     D[thread_n].num_elements = num_elements;
     D[thread_n].gr = gr;
     D[thread_n].ifoc = ifoc;
-    D[thread_n].iweight = iweight;
+    D[thread_n].do_apod = do_apod;
     D[thread_n].apod_type = apod_type;
     D[thread_n].focal = focal;
     D[thread_n].apod = apod;

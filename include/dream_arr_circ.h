@@ -35,16 +35,16 @@
 extern "C"
 #endif
 int dream_arr_circ(double xo, double yo, double zo, double r, double dx, double dy, double dt, dream_idx_type nt,
-                   double delay, double v, double cp, double alpha, int  isize,
-                   double *gx, double *gy, double *gz, int ifoc, double focal,
+                   double delay, double v, double cp, double alpha, int  num_elements,
+                   double *gx, double *gy, double *gz, int foc_type, double focal,
                    int ister, double theta, double phi, double *apod, int iweight,
-                   int iapo, double param, double *ha,int err_level);
+                   int apod_type, double param, double *ha,int err_level);
 
 #ifdef __cplusplus
 extern "C"
 #endif
 int dream_arr_circ_ud(double xo, double yo, double zo, double r, double dx, double dy, double dt, dream_idx_type nt,
-                      double delay, double v, double cp, double alpha, int  isize,
-                      double *gx, double *gy, double *gz, int ifoc, double *focal,
+                      double delay, double v, double cp, double alpha, int  num_elements,
+                      double *gx, double *gy, double *gz, int foc_type, double *focal,
                       int ister, double theta, double phi, double *apod, int iweight,
-                      int iapo, double param, double *ha,int err_level);
+                      int apod_type, double param, double *ha,int err_level);

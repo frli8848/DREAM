@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2002,2003,2005,2006,2007,2008,2009,2014 Fredrik Lingvall
+* Copyright (C) 2002,2003,2005,2006,2007,2008,2009,2014,2019 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -34,12 +34,15 @@
 
 /***
  *
- *  xlimit - pour definir les limits d integration en x
+ *  xlimit_circ
  *
+ *
+ *  Computes the x-axis integration limits
  ***/
 
+/*
 //inline MSVC don't like this?!
-void xlimit(double yi,
+void xlimit_circ(double yi,
             double r,
             double x,
             double y,
@@ -53,11 +56,14 @@ void xlimit(double yi,
   *xsmax = rs + x;
 
   return;
-}; /* xlimit */
+};
+*/
 
 /***
  *
- *  subroutine dreamcirc - pour calculer pulse respone of a circular aperture.
+ *  dreamcirc
+ *
+ * Computes the spatial impulse response of a circular aperture.
  *
  ***/
 
@@ -94,22 +100,16 @@ int dreamcirc(double xo,
     h[i] = (double) 0.0 ;
   }
 
-  //j = 0;
-  //j++;
-  //y = ysmin + (j - 1) * dy + dy/2;
   y = ysmin + dy/2;
   while (y <= ysmax) {
 
-    //xlimit(y, r, xs, ys, &xsmin, &xsmax);
+    //xlimit_circ(y, r, xs, ys, &xsmin, &xsmax);
     rs = sqrt(r*r - (ys-y)*(ys-y));
     xsmin = -rs + xs;
     xsmax = rs + xs;
 
     ry = yo - y;
 
-    //i = 0;
-    //i++;
-    //x = xsmin + (i-1) * dx + dx/2;
     x = xsmin + dx / 2.0;
     while (x <= xsmax) {
 
@@ -121,8 +121,8 @@ int dreamcirc(double xo,
 
       ai = v * ds / (2*pi * ri);
       ai /= dt;
-      // Convert to SI units.
-      ai *= 1000;
+      ai *= 1000; // Convert to SI units.
+
       // Propagation delay in micro seconds.
       t = ri * 1000/cp;
       it = (dream_idx_type) rint((t - delay)/dt);
@@ -136,8 +136,9 @@ int dreamcirc(double xo,
         } else {
           att(alpha,ri,it,dt,cp,h,nt,ai);
         }
-      }
-      else   {
+
+      } else {
+
         if  (it >= 0)
           err = dream_out_of_bounds_err("SIR out of bounds",it-nt+1,err_level);
         else
@@ -147,14 +148,11 @@ int dreamcirc(double xo,
           return err; // Bail out.
       }
 
-      //i++;
-      //x = xsmin + (i-1) * dx + dx/2;
       x += dx;
     }
-    //j++;
-    //y = ysmin + (j-1) * dy + dy/2;
+
     y += dy;
   }
 
   return err;
-} /* dreamcirc */
+}

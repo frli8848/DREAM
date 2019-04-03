@@ -82,12 +82,12 @@ typedef struct
   double v;
   double cp;
   double alpha;
-  int isize;
+  int num_elements;
   double *G;
   int ifoc;
   int ister;
   int iweight;
-  int iapo;
+  int apod_type;
   double focal;
   double *apod;
   double theta;
@@ -126,15 +126,15 @@ void* smp_dream_arr_cylind_f_process(void *arg)
   int     tmp_lev, err_level=D.err_level;
   double *delay=D.delay, *ro=D.ro, v=D.v, cp=D.cp, alpha=D.alpha;
   octave_idx_type start=D.start, stop=D.stop;
-  int    ifoc=D.ifoc, ister=D.ister, iweight=D.iweight,iapo=D.iapo;
+  int    ifoc=D.ifoc, ister=D.ister, iweight=D.iweight,apod_type=D.apod_type;
   double focal=D.focal, *apod=D.apod, theta=D.theta,fi=D.fi,param=D.param;
-  int    isize = D.isize;
+  int    num_elements = D.num_elements;
   double *gx,*gy,*gz;
   double *ud_focal=D.ud_focal;
 
   gx    = D.G;			// First column in the matrix.
-  gy    = gx + isize;		// Second column in the matrix.
-  gz    = gy + isize;		// Third column in the matrix.
+  gy    = gx + num_elements;		// Second column in the matrix.
+  gz    = gy + num_elements;		// Third column in the matrix.
 
   // Let the thread finish and then catch the error.
   if (err_level == STOP)
@@ -150,8 +150,8 @@ void* smp_dream_arr_cylind_f_process(void *arg)
         yo = ro[n+1*no];
         zo = ro[n+2*no];
 
-        err = dream_arr_cylind_f(xo,yo,zo,a,b,R,dx,dy,dt,nt,delay[0],v,cp,alpha,isize,gx,gy,gz,
-                             ifoc,focal,ister,theta,fi,apod,iweight,iapo,param,&h[n*nt],tmp_lev);
+        err = dream_arr_cylind_f(xo,yo,zo,a,b,R,dx,dy,dt,nt,delay[0],v,cp,alpha,num_elements,gx,gy,gz,
+                             ifoc,focal,ister,theta,fi,apod,iweight,apod_type,param,&h[n*nt],tmp_lev);
 
         if (err != NONE || out_err ==  PARALLEL_STOP) {
           tmp_err = err;
@@ -171,8 +171,8 @@ void* smp_dream_arr_cylind_f_process(void *arg)
         yo = ro[n+1*no];
         zo = ro[n+2*no];
 
-        err = dream_arr_cylind_f(xo,yo,zo,a,b,R,dx,dy,dt,nt,delay[n],v,cp,alpha,isize,gx,gy,gz,
-                             ifoc,focal,ister,theta,fi,apod,iweight,iapo,param,&h[n*nt],tmp_lev);
+        err = dream_arr_cylind_f(xo,yo,zo,a,b,R,dx,dy,dt,nt,delay[n],v,cp,alpha,num_elements,gx,gy,gz,
+                             ifoc,focal,ister,theta,fi,apod,iweight,apod_type,param,&h[n*nt],tmp_lev);
 
         if (err != NONE || out_err ==  PARALLEL_STOP) {
           tmp_err = err;
@@ -196,8 +196,8 @@ void* smp_dream_arr_cylind_f_process(void *arg)
         yo = ro[n+1*no];
         zo = ro[n+2*no];
 
-        err = dream_arr_cylind_udf(xo,yo,zo,a,b,R,dx,dy,dt,nt,delay[0],v,cp,alpha,isize,gx,gy,gz,
-                                ifoc,ud_focal,ister,theta,fi,apod,iweight,iapo,param,&h[n*nt],tmp_lev);
+        err = dream_arr_cylind_udf(xo,yo,zo,a,b,R,dx,dy,dt,nt,delay[0],v,cp,alpha,num_elements,gx,gy,gz,
+                                ifoc,ud_focal,ister,theta,fi,apod,iweight,apod_type,param,&h[n*nt],tmp_lev);
 
         if (err != NONE || out_err ==  PARALLEL_STOP) {
           tmp_err = err;
@@ -217,8 +217,8 @@ void* smp_dream_arr_cylind_f_process(void *arg)
         yo = ro[n+1*no];
         zo = ro[n+2*no];
 
-        err = dream_arr_cylind_udf(xo,yo,zo,a,b,R,dx,dy,dt,nt,delay[n],v,cp,alpha,isize,gx,gy,gz,
-                                ifoc,ud_focal,ister,theta,fi,apod,iweight,iapo,param,&h[n*nt],tmp_lev);
+        err = dream_arr_cylind_udf(xo,yo,zo,a,b,R,dx,dy,dt,nt,delay[n],v,cp,alpha,num_elements,gx,gy,gz,
+                                ifoc,ud_focal,ister,theta,fi,apod,iweight,apod_type,param,&h[n*nt],tmp_lev);
 
         if (err != NONE || out_err ==  PARALLEL_STOP) {
           tmp_err = err;
@@ -411,13 +411,13 @@ Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
   double a,b,R,dx,dy,dt;
   octave_idx_type nt, no, n;
   double param=0,*delay,v,cp,alpha;
-  int    isize;
+  int    num_elements;
   double *G;
   int    ifoc=0;
   double focal=0, *ud_focal=NULL;
   int    ister=0;
   double theta=0,fi=0,*apod=NULL;
-  int    iweight=0,iapo=0;
+  int    iweight=0,apod_type=0;
   double *h, *err_p;
   int    err_level=STOP, is_set = false;
   char   err_str[50];
@@ -475,7 +475,7 @@ Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
   // Grid function (position vectors of the elements).
   //
 
-  isize = (int) mxGetM(2); // Number of elementents in the array.
+  num_elements = (int) mxGetM(2); // Number of elementents in the array.
   if (mxGetN(2) !=3 ) {
     error("Argument 3  must a (number of array elements) x 3 matrix!");
     return oct_retval;
@@ -483,8 +483,8 @@ Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
 
   const Matrix tmp2 = args(2).matrix_value();
   G = (double*) tmp2.fortran_vec(); // First column in the matrix.
-  //gy    = gx + isize;		// Second column in the matrix.
-  //gz    = gy + isize;		// Third column in the matrix.
+  //gy    = gx + num_elements;		// Second column in the matrix.
+  //gz    = gy + num_elements;		// Third column in the matrix.
 
   //
   // Temporal and spatial sampling parameters.
@@ -580,7 +580,7 @@ Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
       ifoc = 6;
       is_set = true;
 
-      if (mxGetM(7) * mxGetN(7) != isize ) {
+      if (mxGetM(7) * mxGetN(7) != num_elements ) {
         error("The time delay vector (argument 8) for user defined ('ud') focusing\n") ;
         error("delays must have the same length as the number of array elements.!");
         return oct_retval;
@@ -675,7 +675,7 @@ Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
   //
 
   // iweight = 1 - no apodization, 2  apodization.
-  // iapo = 0 - user defined, 1 traingle, 2 Gauss, 3 raised cosine, 4 simply supported, 5 clamped.
+  // apod_type = 0 - user defined, 1 traingle, 2 Gauss, 3 raised cosine, 4 simply supported, 5 clamped.
 
   if (nrhs >= 11) {
 
@@ -701,11 +701,11 @@ Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
 
     if (!strcmp(apod_met,"ud")) {
       iweight = 2;
-      iapo = 0;
+      apod_type = 0;
       is_set = true;
 
       // Vector of apodization weights.
-      if (mxGetM(11) * mxGetN(11) != isize) {
+      if (mxGetM(11) * mxGetN(11) != num_elements) {
         error("The length of argument 12 (apodization vector) must be the same as the number of array elements!");
         return oct_retval;
       }
@@ -716,31 +716,31 @@ Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
 
     if (!strcmp(apod_met,"triangle")) {
       iweight = 2;
-      iapo = 1;
+      apod_type = 1;
       is_set = true;
     }
 
     if (!strcmp(apod_met,"gauss")) {
       iweight = 2;
-      iapo = 2;
+      apod_type = 2;
       is_set = true;
     }
 
     if (!strcmp(apod_met,"raised")) {
       iweight = 2;
-      iapo = 3;
+      apod_type = 3;
       is_set = true;
     }
 
     if (!strcmp(apod_met,"simply")) {
       iweight = 2;
-      iapo = 4;
+      apod_type = 4;
       is_set = true;
     }
 
     if (!strcmp(apod_met,"clamped")) {
       iweight = 2;
-      iapo = 5;
+      apod_type = 5;
       is_set = true;
     }
 
@@ -889,12 +889,12 @@ Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
     D[thread_n].v = v;
     D[thread_n].cp = cp;
     D[thread_n].alpha = alpha;
-    D[thread_n].isize = isize;
+    D[thread_n].num_elements = num_elements;
     D[thread_n].G = G;
     D[thread_n].ifoc = ifoc;
     D[thread_n].ister = ister;
     D[thread_n].iweight = iweight;
-    D[thread_n].iapo = iapo;
+    D[thread_n].apod_type = apod_type;
     D[thread_n].focal = focal;
     D[thread_n].apod = apod;
     D[thread_n].theta = theta;

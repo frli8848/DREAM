@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2003,2006,2007,2008,2009,2014 Fredrik Lingvall
+* Copyright (C) 2003,2006,2007,2008,2009,2014,2019 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -21,7 +21,6 @@
 *
 ***/
 
-
 #include <string.h>
 #include <math.h>
 #include <stdio.h>
@@ -37,21 +36,21 @@
 //  Function prototypes.
 //
 
-void distance(double xo,
+void distance_circ_f(double xo,
            double yo,
            double zo,
            double x,
            double y,
            double *RESTRICT ri);
 
-void xlimit(double yi,
+void xlimit_circ_f(double yi,
             double r,
             double x,
             double y,
             double *RESTRICT xsmin,
             double *RESTRICT xsmax);
 
-void focusing(int ifoc, double focal,
+void focusing_circ_f(int foc_type, double focal,
               double xs, double ys,
               double xamax, double yamax, double ramax,
               double cp, double *RESTRICT retfoc);
@@ -74,7 +73,7 @@ int dreamcirc_f(double xo,
                 double v,
                 double cp,
                 double alpha,
-                int ifoc, double focal,
+                int foc_type, double focal,
                 double *RESTRICT h,
                 int err_level)
 {
@@ -92,30 +91,24 @@ int dreamcirc_f(double xo,
   ysmax =  r + ys;
 
   for (i = 0; i < nt; i++) {
-    h[i] = (double) 0.0 ;
+    h[i] = 0.0 ;
   }
 
-  //j = 0;
-  //j++;
-  //y = ysmin + (j - 1) * dy + dy/2;
   y = ysmin + dy/2;
   while (y <= ysmax) {
 
-    xlimit(y, r, xs, ys, &xsmin, &xsmax);
+    xlimit_circ_f(y, r, xs, ys, &xsmin, &xsmax);
 
-    //i = 0;
-    //i++;
-    //x = xsmin + (i-1) * dx + dx/2;
     x = xsmin + dx/2;
     while (x <= xsmax) {
 
-      distance(xo, yo, zo, x, y, &ri);
-      focusing(ifoc,focal,x,y,r,r,r,cp,&retfoc);
+      distance_circ_f(xo, yo, zo, x, y, &ri);
+      focusing_circ_f(foc_type,focal,x,y,r,r,r,cp,&retfoc);
 
       ai = v * ds / (2*pi * ri);
       ai /= dt;
-      // Convert to SI units.
-      ai *= 1000;
+      ai *= 1000; // Convert to SI units.
+
       // Propagation delay in micro seconds.
       t = ri * 1000/cp;
       it = (dream_idx_type) rint((t - delay + retfoc)/dt);
@@ -140,31 +133,29 @@ int dreamcirc_f(double xo,
         return err; // Bail out.
       }
 
-      //i++;
-      //x = xsmin + (i-1) * dx + dx/2;
       x += dx;
     }
-    //j++;
-    //y = ysmin + (j-1) * dy + dy/2;
     y += dy;
   }
 
   return err;
-} /* dreamcirc_f */
-
+}
 
 /***
  *
- * subrutine distance(xi,xs,hs,ri,rx,rz) pour trouver le longeur du vecteur
+ * distance_circ_f
+ *
+ * Computes the distance (length) from an observation point (xo,yo,zo)
+ * to a point (x,y) on the transducer surface.
  *
  ***/
 
-void distance(double xo,
-           double yo,
-           double zo,
-           double x,
-           double y,
-           double *RESTRICT ri)
+void distance_circ_f(double xo,
+                     double yo,
+                     double zo,
+                     double x,
+                     double y,
+                     double *RESTRICT ri)
 {
   double rx, ry, rz;
 
@@ -172,18 +163,17 @@ void distance(double xo,
   ry = yo - y;
   rz = zo;
   *ri = sqrt(rx*rx + rz*rz + ry*ry);
-
-  return;
-} /* distance */
-
+}
 
 /***
  *
- *  xlimit - pour definir les limits d integration en x
+ *  xlimit_circ_f
+ *
+ * Computes the x-axis integration limits.
  *
  ***/
 
-void xlimit(double yi,
+void xlimit_circ_f(double yi,
             double r,
             double x,
             double y,
@@ -195,10 +185,7 @@ void xlimit(double yi,
   rs = sqrt(r*r - (y-yi)*(y-yi));
   *xsmin = -rs + x;
   *xsmax = rs + x;
-
-  return;
-} /* xlimit */
-
+}
 
 /***
  *
@@ -206,15 +193,15 @@ void xlimit(double yi,
  *
  ***/
 
-void focusing(int ifoc, double focal,
+void focusing_circ_f(int foc_type, double focal,
              double xs, double ys,
              double xamax, double yamax, double ramax,
              double cp, double *RESTRICT retfoc)
 {
   double diff, rmax, retx, rety;
 
-  // ifoc =1 - no foc, 2 foc x ,3 foc y, 4 foc xy 5 foc x+y
-  switch (ifoc) {
+  // foc_type =1 - no foc, 2 foc x ,3 foc y, 4 foc xy 5 foc x+y
+  switch (foc_type) {
 
   case 1:
     return;
@@ -247,7 +234,5 @@ void focusing(int ifoc, double focal,
   default:
     break;
 
-  } // switch
-
-  return;
-} /* focusing */
+  }
+}

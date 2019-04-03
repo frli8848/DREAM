@@ -53,4 +53,4 @@ void att(double alpha, double rj, dream_idx_type it, double dt, double cp, doubl
 #ifdef __cplusplus
 extern "C"
 #endif
-void att_annu(double alpha, double rj, dream_idx_type it, double  dt, double cp, double *h, dream_idx_type nt, double ai, int ns, int isize);
+void att_annu(double alpha, double rj, dream_idx_type it, double  dt, double cp, double *h, dream_idx_type nt, double ai, int ns, int num_elements);

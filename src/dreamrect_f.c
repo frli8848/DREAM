@@ -42,7 +42,7 @@ void distance(double xo,
            double y,
            double *RESTRICT ri);
 
-void focusing(int ifoc, double focal,
+void focusing(int foc_type, double focal,
               double xs, double ys,
               double xamax, double yamax, double ramax,
               double cp, double *RESTRICT retfoc);
@@ -66,7 +66,7 @@ int dreamrect_f(double xo,
                  double v,
                  double cp,
                  double alpha,
-                 int ifoc, double focal,
+                 int foc_type, double focal,
                  double *RESTRICT h,
                  int err_level)
 {
@@ -97,7 +97,7 @@ int dreamrect_f(double xo,
     while (x <= xsmax) {
 
       distance(xo, yo, zo, x, y,  &ri);
-      focusing(ifoc, focal, x, y, a, b, c, cp, &retfoc);
+      focusing(foc_type, focal, x, y, a, b, c, cp, &retfoc);
 
       ai = v * ds / (2*pi * ri);
       ai /= dt;
@@ -161,15 +161,15 @@ void distance(double xo,
  *
  ***/
 
-void focusing(int ifoc, double focal,
+void focusing(int foc_type, double focal,
              double xs, double ys,
              double xamax, double yamax, double ramax,
              double cp, double *RESTRICT retfoc)
 {
   double diff, rmax, retx, rety;
 
-  /* ifoc =1 - no foc, 2 foc x ,3 foc y, 4 foc xy 5 foc x+y */
-  switch (ifoc) {
+  /* foc_type =1 - no foc, 2 foc x ,3 foc y, 4 foc xy 5 foc x+y */
+  switch (foc_type) {
 
   case 1:
     return;

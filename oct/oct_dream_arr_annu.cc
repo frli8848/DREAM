@@ -79,11 +79,11 @@ typedef struct
   double v;
   double cp;
   double alpha;
-  int isize;
+  int num_elements;
   double *gr;
   int ifoc;
   int iweight;
-  int iapo;
+  int apod_type;
   double focal;
   double *apod;
   double param;
@@ -120,9 +120,9 @@ void* smp_dream_arr_annu_process(void *arg)
   int    tmp_lev, err_level=D.err_level;
   double *delay=D.delay, *ro=D.ro, v=D.v, cp=D.cp, alpha=D.alpha;
   octave_idx_type start=D.start, stop=D.stop;
-  int    ifoc=D.ifoc, iweight=D.iweight,iapo=D.iapo;
+  int    ifoc=D.ifoc, iweight=D.iweight,apod_type=D.apod_type;
   double focal=D.focal, *apod=D.apod, param=D.param;
-  int    isize = D.isize;
+  int    num_elements = D.num_elements;
   double *gr=D.gr;
   double *ud_focal=D.ud_focal;
 
@@ -140,8 +140,8 @@ void* smp_dream_arr_annu_process(void *arg)
         yo = ro[n+1*no];
         zo = ro[n+2*no];
 
-        err = dream_arr_annu(xo,yo,zo,dx,dy,dt,nt,delay[0],v,cp,alpha,isize,gr,
-                             ifoc,focal,apod,iweight,iapo,param,&h[n*nt],tmp_lev);
+        err = dream_arr_annu(xo,yo,zo,dx,dy,dt,nt,delay[0],v,cp,alpha,num_elements,gr,
+                             ifoc,focal,apod,iweight,apod_type,param,&h[n*nt],tmp_lev);
 
         if (err != NONE || out_err ==  PARALLEL_STOP) {
           tmp_err = err;
@@ -161,8 +161,8 @@ void* smp_dream_arr_annu_process(void *arg)
         yo = ro[n+1*no];
         zo = ro[n+2*no];
 
-        err = dream_arr_annu(xo,yo,zo,dx,dy,dt,nt,delay[n],v,cp,alpha,isize,
-                             gr,ifoc,focal,apod,iweight,iapo,param,&h[n*nt],tmp_lev);
+        err = dream_arr_annu(xo,yo,zo,dx,dy,dt,nt,delay[n],v,cp,alpha,num_elements,
+                             gr,ifoc,focal,apod,iweight,apod_type,param,&h[n*nt],tmp_lev);
 
         if (err != NONE || out_err ==  PARALLEL_STOP) {
           tmp_err = err;
@@ -186,8 +186,8 @@ void* smp_dream_arr_annu_process(void *arg)
         yo = ro[n+1*no];
         zo = ro[n+2*no];
 
-        err = dream_arr_annu_ud(xo,yo,zo,dx,dy,dt,nt,delay[0],v,cp,alpha,isize,gr,
-                             ifoc,ud_focal,apod,iweight,iapo,param,&h[n*nt],tmp_lev);
+        err = dream_arr_annu_ud(xo,yo,zo,dx,dy,dt,nt,delay[0],v,cp,alpha,num_elements,gr,
+                             ifoc,ud_focal,apod,iweight,apod_type,param,&h[n*nt],tmp_lev);
 
         if (err != NONE || out_err ==  PARALLEL_STOP) {
           tmp_err = err;
@@ -207,8 +207,8 @@ void* smp_dream_arr_annu_process(void *arg)
         yo = ro[n+1*no];
         zo = ro[n+2*no];
 
-        err = dream_arr_annu_ud(xo,yo,zo,dx,dy,dt,nt,delay[n],v,cp,alpha,isize,
-                                gr,ifoc,ud_focal,apod,iweight,iapo,param,&h[n*nt],tmp_lev);
+        err = dream_arr_annu_ud(xo,yo,zo,dx,dy,dt,nt,delay[n],v,cp,alpha,num_elements,
+                                gr,ifoc,ud_focal,apod,iweight,apod_type,param,&h[n*nt],tmp_lev);
 
         if (err != NONE || out_err ==  PARALLEL_STOP) {
           tmp_err = err;
@@ -377,12 +377,12 @@ Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
   double dx,dy,dt;
   octave_idx_type    nt,no,n;
   double param=0,*delay,v,cp,alpha;
-  int    isize=0;
+  int    num_elements=0;
   double *gr;
   int    ifoc=0;
   double focal=0,*ud_focal=NULL;
   double *apod=NULL;
-  int    iweight=0,iapo=0;
+  int    iweight=0,apod_type=0;
   double *h, *err_p;
   int    err_level=STOP, is_set = false;
   char   err_str[50];
@@ -429,7 +429,7 @@ Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
     error("Argument 2 must a vector (number of array elements)");
     return oct_retval;
   }
-  isize = (int) mxGetM(1)*mxGetN(1); // Number of elementents in the array.
+  num_elements = (int) mxGetM(1)*mxGetN(1); // Number of elementents in the array.
   const Matrix tmp1 = args(1).matrix_value();
   gr = (double*) tmp1.fortran_vec(); // Vector of annular radi.
 
@@ -511,7 +511,7 @@ Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
       ifoc = 6;
       is_set = true;
 
-      if (mxGetM(6) * mxGetN(6) != isize ) {
+      if (mxGetM(6) * mxGetN(6) != num_elements ) {
         error("The time delay vector (argument 7) for user defined ('ud') focusing\n") ;
         error("delays must have the same length as the number of array elements.!");
         return oct_retval;
@@ -544,7 +544,7 @@ Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
   //
 
   // iweight = 1 - no apodization, 2  apodization.
-  // iapo = 0 - user defined, 1 traingle, 2 Gauss, 3 raised cosine, 4 simply supported, 5 clamped.
+  // apod_type = 0 - user defined, 1 traingle, 2 Gauss, 3 raised cosine, 4 simply supported, 5 clamped.
 
   if (nrhs >= 8) {
 
@@ -570,11 +570,11 @@ Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
 
     if (!strcmp(apod_met,"ud")) {
       iweight = 2;
-      iapo = 0;
+      apod_type = 0;
       is_set = true;
 
       // Vector of apodization weights.
-      if (mxGetM(8) * mxGetN(8) != isize) {
+      if (mxGetM(8) * mxGetN(8) != num_elements) {
         error("The length of argument 9 (apodization vector) must be the same as the number of array elements!");
         return oct_retval;
       }
@@ -585,31 +585,31 @@ Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
 
     if (!strcmp(apod_met,"triangle")) {
       iweight = 2;
-      iapo = 1;
+      apod_type = 1;
       is_set = true;
     }
 
     if (!strcmp(apod_met,"gauss")) {
       iweight = 2;
-      iapo = 2;
+      apod_type = 2;
       is_set = true;
     }
 
     if (!strcmp(apod_met,"raised")) {
       iweight = 2;
-      iapo = 3;
+      apod_type = 3;
       is_set = true;
     }
 
     if (!strcmp(apod_met,"simply")) {
       iweight = 2;
-      iapo = 4;
+      apod_type = 4;
       is_set = true;
     }
 
     if (!strcmp(apod_met,"clamped")) {
       iweight = 2;
-      iapo = 5;
+      apod_type = 5;
       is_set = true;
     }
 
@@ -754,11 +754,11 @@ Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
     D[thread_n].v = v;
     D[thread_n].cp = cp;
     D[thread_n].alpha = alpha;
-    D[thread_n].isize = isize;
+    D[thread_n].num_elements = num_elements;
     D[thread_n].gr = gr;
     D[thread_n].ifoc = ifoc;
     D[thread_n].iweight = iweight;
-    D[thread_n].iapo = iapo;
+    D[thread_n].apod_type = apod_type;
     D[thread_n].focal = focal;
     D[thread_n].apod = apod;
     D[thread_n].param = param;

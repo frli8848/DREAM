@@ -93,7 +93,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
 @seealso {dream_arr_rect, dream_arr_circ, dream_arr_cylind_f, dream_arr_cylind_d}\n\
 @end deftypefn")
 {
-  int    iweight=0, iapo=0, i, isize=0, is_set = false;
+  int    iweight=0, apod_type=0, i, num_elements=0, is_set = false;
   double *apod=nullptr, weight, xs, ys, ramax, param;
   double *h;
   octave_value_list oct_retval;
@@ -115,7 +115,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   // Apodization.
   //
 
-  // iapo = 0 - user defined, 1 traingle, 2 Gauss, 3 raised cosine, 4 simply supported, 5 clamped.
+  // apod_type = 0 - user defined, 1 traingle, 2 Gauss, 3 raised cosine, 4 simply supported, 5 clamped.
 
   if (!mxIsChar(0)) {
     error("Argument 1 must be a string");
@@ -134,38 +134,38 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
 
   if (apod_str == "ud") {
     iweight = 2;
-    iapo = IPOD_UD;
+    apod_type = APOD_UD;
     error(" 'ud'- (user defined) meaningless for this function!");
     return oct_retval;
   }
 
   if (apod_str == "triangle") {
     iweight = 2;
-    iapo = IPOD_TRIANGLE;
+    apod_type = APOD_TRIANGLE;
     is_set = true;
   }
 
   if (apod_str == "gauss") {
     iweight = 2;
-    iapo = IPOD_GAUSS;
+    apod_type = APOD_GAUSS;
     is_set = true;
   }
 
   if (apod_str == "raised") {
     iweight = 2;
-    iapo = IPOD_RISED_COSINE;
+    apod_type = APOD_RISED_COSINE;
     is_set = true;
   }
 
   if (apod_str == "simply") {
     iweight = 2;
-    iapo = IPOD_SIMPLY_SUPPORTED;
+    apod_type = APOD_SIMPLY_SUPPORTED;
       is_set = true;
   }
 
   if (apod_str == "clamped") {
     iweight = 2;
-    iapo = IPOD_CLAMPED;
+    apod_type = APOD_CLAMPED;
     is_set = true;
   }
 
@@ -183,9 +183,9 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
     return oct_retval;
   }
   const Matrix tmp1 = args(1).matrix_value();
-  isize = (int) tmp1.fortran_vec()[0];
+  num_elements = (int) tmp1.fortran_vec()[0];
 
-  if (isize < 0) {
+  if (num_elements < 0) {
     error("Argument 2 must be a positive integer!");
     return oct_retval;
   }
@@ -202,15 +202,15 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   param = (double) tmp2.fortran_vec()[0];
 
   // Create an output matrix for the impulse response
-  Matrix h_mat(isize,1);
+  Matrix h_mat(num_elements,1);
   h = h_mat.fortran_vec();
 
   ramax = 1;
   ys = 0;
   if (iweight != 1) {
-    for (i=0; i<isize; i++) {
-      xs = 2*ramax * (0.5 - ((double) i / (double) isize));
-      apodization(iweight,iapo,i,apod,&weight,xs,ys,ramax,param,isize);
+    for (i=0; i<num_elements; i++) {
+      xs = 2*ramax * (0.5 - ((double) i / (double) num_elements));
+      apodization(apod_type, i, apod, &weight, xs, ys, ramax, param);
       h[i] = weight;
     }
   }

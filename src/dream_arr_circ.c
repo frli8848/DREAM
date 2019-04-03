@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2002,2003,2006,2007,2008,2009,2014 Fredrik Lingvall
+* Copyright (C) 2002,2003,2006,2007,2008,2009,2014,2019 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -20,7 +20,6 @@
 * 02110-1301, USA.
 *
 ***/
-
 
 #include <math.h>
 #include <stdio.h>
@@ -42,7 +41,7 @@
 int circ_arr(double xo, double yo, double zo, double xs, double ys, double r, double dx, double dy, double dt,
               dream_idx_type nt, double delay, double retfoc, double retsteer, double v, double cp, double alpha,
               double weight, double *RESTRICT h, int err_level);
-void xlimit(double yi, double r, double xs, double ys, double *RESTRICT xsmin, double *RESTRICT xsmax);
+void xlimit_arr_circ(double y, double r, double xs, double ys, double *RESTRICT x_min, double *RESTRICT x_max);
 
 /***
  *
@@ -51,10 +50,10 @@ void xlimit(double yi, double r, double xs, double ys, double *RESTRICT xsmin, d
  ***/
 
 int dream_arr_circ(double xo, double yo, double zo, double r, double dx, double dy, double dt, dream_idx_type nt,
-                    double delay, double v, double cp, double alpha, int  isize,
-                    double *RESTRICT gx, double *RESTRICT gy, double *RESTRICT gz, int ifoc, double focal,
+                    double delay, double v, double cp, double alpha, int  num_elements,
+                    double *RESTRICT gx, double *RESTRICT gy, double *RESTRICT gz, int foc_type, double focal,
                     int ister, double theta, double phi, double *RESTRICT apod, int iweight,
-                    int iapo, double param, double *RESTRICT ha, int err_level)
+                    int apod_type, double param, double *RESTRICT ha, int err_level)
 {
   double retsteer;
   double *RESTRICT h;
@@ -72,13 +71,15 @@ int dream_arr_circ(double xo, double yo, double zo, double r, double dx, double 
   retsteer = (double) 0.0;
   weight   = (double) 1.0;
 
-  max_dim_arr(&xamax, &yamax, &ramax, gx, gy, gz, isize);
+  max_dim_arr(&xamax, &yamax, &ramax, gx, gy, gz, num_elements);
 
-  for (i=0; i<isize; i++) {
+  for (i=0; i<num_elements; i++) {
     center_pos(&xs, &ys, &zs, i, gx, gy, gz);
-    focusing(ifoc, focal, xs, ys, xamax, yamax, ramax, cp, &retfoc);
+    focusing(foc_type, focal, xs, ys, xamax, yamax, ramax, cp, &retfoc);
     beamsteering(ister, theta, phi, xs, ys, xamax, yamax, ramax, cp, &retsteer);
-    apodization(iweight, iapo, i, apod, &weight, xs, ys, ramax, param, isize);
+    if (iweight == 2) {
+      apodization(apod_type, i, apod, &weight, xs, ys, ramax, param);
+    }
 
     err = circ_arr(xo,yo,zo,xs,ys,r,dx,dy,dt,nt,delay,retfoc,retsteer,v,cp,alpha,weight,h,err_level);
     if (err != NONE)
@@ -99,10 +100,10 @@ int dream_arr_circ(double xo, double yo, double zo, double r, double dx, double 
  ***/
 
 int dream_arr_circ_ud(double xo, double yo, double zo, double r, double dx, double dy, double dt, dream_idx_type nt,
-                    double delay, double v, double cp, double alpha, int  isize,
-                    double *RESTRICT gx, double *RESTRICT gy, double *RESTRICT gz, int ifoc, double *RESTRICT focal,
+                    double delay, double v, double cp, double alpha, int  num_elements,
+                    double *RESTRICT gx, double *RESTRICT gy, double *RESTRICT gz, int foc_type, double *RESTRICT focal,
                     int ister, double theta, double phi, double *RESTRICT apod, int iweight,
-                    int iapo, double param, double *RESTRICT ha, int err_level)
+                    int apod_type, double param, double *RESTRICT ha, int err_level)
 {
   double retsteer;
   double *RESTRICT h;
@@ -121,13 +122,15 @@ int dream_arr_circ_ud(double xo, double yo, double zo, double r, double dx, doub
   retsteer = (double) 0.0;
   weight   = (double) 1.0;
 
-  max_dim_arr(&xamax, &yamax, &ramax, gx, gy, gz, isize);
+  max_dim_arr(&xamax, &yamax, &ramax, gx, gy, gz, num_elements);
 
-  for (i=0; i<isize; i++) {
+  for (i=0; i<num_elements; i++) {
     center_pos(&xs, &ys, &zs, i, gx, gy, gz);
-    focusing(ifoc, focal[i], xs, ys, xamax, yamax, ramax, cp, &retfoc);   // Note ifoc must be 6 here!
+    focusing(foc_type, focal[i], xs, ys, xamax, yamax, ramax, cp, &retfoc);   // Note foc_type must be 6 here!
     beamsteering(ister, theta, phi, xs, ys, xamax, yamax, ramax, cp, &retsteer);
-    apodization(iweight, iapo, i, apod, &weight, xs, ys, ramax, param, isize);
+    if (iweight == 2) {
+      apodization(apod_type, i, apod, &weight, xs, ys, ramax, param);
+    }
 
     err = circ_arr(xo,yo,zo,xs,ys,r,dx,dy,dt,nt,delay,retfoc,retsteer,v,cp,alpha,weight,h,err_level);
     if (err != NONE)
@@ -154,43 +157,38 @@ int circ_arr(double xo, double yo, double zo, double xs, double ys, double r, do
               dream_idx_type nt, double delay, double retfoc, double retsteer, double v, double cp, double alpha,
               double weight, double *RESTRICT h, int err_level)
 {
-  dream_idx_type    i;
+  dream_idx_type i;
   double t, decal;
-  double xsmin, ysmin, xsmax, ysmax, ai, ds, pi, ri;
+  double x_min, ysmin, x_max, ysmax, ai, ds, pi, ri;
   dream_idx_type    it;
   double zs, x, y;
   int err = NONE;
 
-  pi = atan((double) 1.0) * 4.0;
+  pi = 4.0 * atan(1.0);
   decal = retfoc + retsteer;
   ds = dx * dy;
   zs = (double) 0.0;
   ysmin = -r + ys;
   ysmax =  r + ys;
 
-  for (i = 0; i < nt; i++)
+  for (i = 0; i < nt; i++) {
     h[i] = (double) 0.0 ;
+  }
 
-  //j = 0;
-  //j++;
-  //y = ysmin + (j-1) * dy + dy/2;
   y = ysmin + dy/2.0;
   while (y <= ysmax) {
 
-    xlimit(y, r, xs, ys, &xsmin, &xsmax);
+    xlimit_arr_circ(y, r, xs, ys, &x_min, &x_max);
 
-    //i = 0;
-    //i++;
-    //x = xsmin + (i-1) * dx + dx/2;
-    x = xsmin + dx/2.0;
-    while (x <= xsmax) {
+    x = x_min + dx/2.0;
+    while (x <= x_max) {
 
       //distance(xo, yo, zo, x, y, zs, &ri, &rx, &ry, &rz);
       distance(xo, yo, zo, x, y, zs, &ri);
       ai = weight * v * ds / (2*pi*ri);
       ai /= dt;
-      // Convert to SI units.
-      ai *= 1000;
+      ai *= 1000; // Convert to SI units.
+
       // Propagation delay in micro seconds.
       t = ri * 1000/cp;
       it = (dream_idx_type) rint((t - delay + decal)/dt);
@@ -199,13 +197,14 @@ int circ_arr(double xo, double yo, double zo, double xs, double ys, double r, do
       if ((it < nt) && (it >= 0)) {
 
         // Check if absorbtion is present.
-        if (alpha == (double) 0.0) {
+        if (alpha == 0.0) {
           h[it] += ai;
         } else {
           att(alpha,ri,it,dt,cp,h,nt,ai);
         }
-      }
-      else  {
+
+      } else {
+
         if  (it >= 0)
           err = dream_out_of_bounds_err("SIR out of bounds",it-nt+1,err_level);
         else
@@ -215,32 +214,30 @@ int circ_arr(double xo, double yo, double zo, double xs, double ys, double r, do
           return err; // Bail out.
       }
 
-      //i++;
-      //x = xsmin + (i-1)*dx + dx/2;
       x += dx;
-    } // while
-    //j++;
-    //y = ysmin + (j-1)*dy + dy/2;
+    }
     y += dy;
-  } // while
+  }
 
   return err;
 } /* circ_arr */
 
 /***
  *
- * subroutine xlimit - pour definir les limits d integration en x
+ * xlimit_arr_circ
+ *
+ * Computes the x-axis integration limits.
  *
  ***/
 
-void xlimit(double yi, double r, double xs, double ys, double *RESTRICT xsmin, double *RESTRICT xsmax)
+void xlimit_arr_circ(double y, double r, double xs, double ys, double *RESTRICT x_min, double *RESTRICT x_max)
 {
   double rs;
 
-  rs = r*r - (ys-yi)*(ys-yi);
+  rs = r*r - (ys-y)*(ys-y);
   rs = sqrt(rs);
-  *xsmin = -rs + xs;
-  *xsmax =  rs + xs;
+  *x_min = -rs + xs;
+  *x_max =  rs + xs;
 
   return;
-} /* xlimit */
+}

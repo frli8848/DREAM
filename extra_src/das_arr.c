@@ -51,10 +51,10 @@ int centroid(double *RESTRICT h,dream_idx_type nt);
  ***/
 
 int das_arr(double xo, double yo, double zo, double dt, dream_idx_type nt,
-            double delay, double cp, int  isize,
+            double delay, double cp, int  num_elements,
             double *RESTRICT gx, double *RESTRICT gy, double *RESTRICT gz, int ifoc, double focal,
             int ister, double theta, double phi, double *RESTRICT apod, int iweight,
-            int iapo, double param, double *RESTRICT ha,int err_level)
+            int apod_type, double param, double *RESTRICT ha,int err_level)
 {
   double retsteer;
   double *RESTRICT h;
@@ -73,14 +73,15 @@ int das_arr(double xo, double yo, double zo, double dt, dream_idx_type nt,
   retsteer = (double) 0.0;
   weight   = (double) 1.0;
 
-  max_dim_arr(&xamax, &yamax, &ramax, gx, gy, gz, isize);
+  max_dim_arr(&xamax, &yamax, &ramax, gx, gy, gz, num_elements);
 
-  for (i=0; i<isize; i++) {
+  for (i=0; i<num_elements; i++) {
     center_pos(&xs, &ys, &zs, i, gx, gy, gz);
     focusing(ifoc, focal, xs, ys, xamax, yamax, ramax, cp, &retfoc);
     beamsteering(ister, theta, phi, xs, ys, xamax, yamax, ramax, cp, &retsteer);
-    apodization(iweight, iapo, i, apod, &weight, xs, ys, ramax, param, isize);
-
+    if (iweight == 2) {
+      apodization(apod_type, i, apod, &weight, xs, ys, ramax, param);
+    }
     err = delay_arr(xo,yo,zo,xs,ys,zs,dt,nt,delay,retfoc,retsteer,cp,weight,h,err_level);
     if (err != NONE) {
       out_err = err;
@@ -125,10 +126,10 @@ int das_arr(double xo, double yo, double zo, double dt, dream_idx_type nt,
  ***/
 
 int das_arr_ud(double xo, double yo, double zo, double dt, dream_idx_type nt,
-                    double delay, double cp, int  isize,
+                    double delay, double cp, int  num_elements,
                       double *RESTRICT gx, double *RESTRICT gy, double *RESTRICT gz, int ifoc, double *RESTRICT focal,
                       int ister, double theta, double phi, double *RESTRICT apod, int iweight,
-                      int iapo, double param, double *RESTRICT ha,int err_level)
+                      int apod_type, double param, double *RESTRICT ha,int err_level)
 {
   double retsteer;
   double *RESTRICT h;
@@ -147,14 +148,15 @@ int das_arr_ud(double xo, double yo, double zo, double dt, dream_idx_type nt,
   retsteer = (double) 0.0;
   weight   = (double) 1.0;
 
-  max_dim_arr(&xamax, &yamax, &ramax, gx, gy, gz, isize);
+  max_dim_arr(&xamax, &yamax, &ramax, gx, gy, gz, num_elements);
 
-  for (i=0; i<isize; i++) {
+  for (i=0; i<num_elements; i++) {
     center_pos(&xs, &ys, &zs, i, gx, gy, gz);
     focusing(ifoc, focal[i], xs, ys, xamax, yamax, ramax, cp, &retfoc);   // Note ifoc must be 6 here!
     beamsteering(ister, theta, phi, xs, ys, xamax, yamax, ramax, cp, &retsteer);
-    apodization(iweight, iapo, i, apod, &weight, xs, ys, ramax, param, isize);
-
+    if (iweight == 2) {
+      apodization(apod_type, i, apod, &weight, xs, ys, ramax, param);
+    }
     err = delay_arr(xo,yo,zo,xs,ys,zs,dt,nt,delay,retfoc,retsteer,cp,weight,h,err_level);
     if (err != NONE) {
       out_err = err;

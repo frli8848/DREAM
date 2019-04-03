@@ -45,6 +45,6 @@ int dreamcirc_f(double xo,
                 double v,
                 double cp,
                 double alpha,
-                int ifoc, double focal,
+                int foc_type, double focal,
                 double *h,
                 int err_level);

@@ -36,12 +36,12 @@ extern "C"
 #endif
 int dream_arr_annu(double xo, double yo, double zo, double dx, double dy, double dt,
                    dream_idx_type nt, double delay, double v, double cp, double alpha,
-                   int isize, double *gr, int ifoc, double focal, double *apod, int iweight,
-                   int iapo, double param,double *ha,int err_level);
+                   int num_elements, double *gr, int foc_type, double focal, double *apod, int iweight,
+                   int apod_type, double param,double *ha,int err_level);
 #ifdef __cplusplus
 extern "C"
 #endif
 int dream_arr_annu_ud(double xo, double yo, double zo, double dx, double dy, double dt,
                       dream_idx_type nt, double delay, double v, double cp, double alpha,
-                      int isize, double *gr, int ifoc, double *focal, double *apod, int iweight,
-                      int iapo, double param,double *ha,int err_level);
+                      int num_elements, double *gr, int foc_type, double *focal, double *apod, int iweight,
+                      int apod_type, double param,double *ha,int err_level);

@@ -36,12 +36,12 @@
 #define STEER_Y 3
 #define STEER_XY 4
 
-#define IPOD_UD 0               // User defined
-#define IPOD_TRIANGLE  1
-#define IPOD_GAUSS  2
-#define IPOD_RISED_COSINE 3
-#define IPOD_SIMPLY_SUPPORTED 4
-#define IPOD_CLAMPED 5
+#define APOD_UD 0               // User defined
+#define APOD_TRIANGLE  1
+#define APOD_GAUSS  2
+#define APOD_RISED_COSINE 3
+#define APOD_SIMPLY_SUPPORTED 4
+#define APOD_CLAMPED 5
 
 /***
  *
@@ -57,30 +57,30 @@ void center_pos(double *xs, double *ys, double *zs, int i, double *gx, double *g
 #ifdef __cplusplus
 extern "C"
 #endif
-void max_dim_arr(double *xamax, double *yamax, double *ramax, double *gx, double *gy, double *gz, int isize);
+void max_dim_arr(double *xamax, double *y_max, double *r_max, double *gx, double *gy, double *gz, int num_elements);
 
 #ifdef __cplusplus
 extern "C"
 #endif
-void focusing(int ifoc, double focal, double xs, double ys,
-              double xamax, double yamax, double ramax, double cp, double *retfoc);
+void focusing(int foc_type, double focal, double xs, double ys,
+              double x_max, double y_max, double r_max, double cp, double *retfoc);
 
 #ifdef __cplusplus
 extern "C"
 #endif
 void beamsteering(int ister, double theta, double phi, double xs, double ys,
-                  double xamax, double yamax, double ramax, double cp, double *retsteer);
+                  double x_max, double y_max, double r_max, double cp, double *retsteer);
 
 #ifdef __cplusplus
 extern "C"
 #endif
-void apodization(int iweight, int iapo, int i, double  *apod, double *weight,
-               double xs, double ys, double ramax, double param, int isize);
+void apodization(int apod_type, int i, double  *apod_vec, double *weight,
+                 double xs, double ys, double r_max, double param);
 
 #ifdef __cplusplus
 extern "C"
 #endif
-void distance(double xo, double yo, double zo,double xs,double ys, double zs,double *ri);
+void distance(double xo, double yo, double zo,double xs,double ys, double zs, double *r);
 
 #ifdef __cplusplus
 extern "C"

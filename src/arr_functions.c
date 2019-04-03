@@ -39,7 +39,7 @@
 *
 *  center_pos
 *
-*  pour calculer le centrn element (?)
+*  Return the center point of an array element.
 *
 ***/
 
@@ -61,28 +61,28 @@ void center_pos(double *RESTRICT xs, double *RESTRICT ys, double *RESTRICT zs, i
  *
  ***/
 
-void max_dim_arr(double *RESTRICT xamax, double *RESTRICT yamax, double *RESTRICT ramax,
-                 double *RESTRICT gx, double *RESTRICT gy, double *RESTRICT gz, int isize)
+void max_dim_arr(double *RESTRICT x_max, double *RESTRICT y_max, double *RESTRICT ramax,
+                 double *RESTRICT gx, double *RESTRICT gy, double *RESTRICT gz, int num_elements)
 {
   int i;
   double ret;
 
-  *xamax = fabs(gx[0]);
-  for (i=1; i<isize; i++) {
+  *x_max = fabs(gx[0]);
+  for (i=1; i<num_elements; i++) {
     ret =  fabs(gx[i]);
-    if (ret > *xamax) {
-      *xamax = ret;
+    if (ret > *x_max) {
+      *x_max = ret;
     }
   }
 
-  *yamax = fabs(gy[0]);
-  for (i=1; i<isize; i++) {
+  *y_max = fabs(gy[0]);
+  for (i=1; i<num_elements; i++) {
     ret = fabs(gy[i]);
-    if (ret > *yamax) {
-      *yamax = ret;
+    if (ret > *y_max) {
+      *y_max = ret;
     }
   }
-  *ramax = sqrt(*xamax * *xamax + *yamax * *yamax);
+  *ramax = sqrt(*x_max * *x_max + *y_max * *y_max);
 
   return;
 }
@@ -96,28 +96,28 @@ void max_dim_arr(double *RESTRICT xamax, double *RESTRICT yamax, double *RESTRIC
  *
  ***/
 
-void focusing(int ifoc, double focal, double xs, double ys,
-              double xamax, double yamax, double ramax, double cp, double *RESTRICT retfoc)
+void focusing(int foc_type, double focal, double xs, double ys,
+              double x_max, double y_max, double ramax, double cp, double *RESTRICT retfoc)
 {
   double diff, rmax, retx, rety;
 
   //
-  // ifoc = 1 No foc, 2 Foc x ,3 Foc y, 4 Foc xy 5 Foc x+y, 6 ud (user defined) */
+  // foc_type = 1 No foc, 2 Foc x ,3 Foc y, 4 Foc xy 5 Foc x+y, 6 ud (user defined) */
   //
 
-  switch(ifoc) {
+  switch(foc_type) {
 
   case NO_FOCUS:
     return;
 
   case FOCUS_X:
-    rmax = sqrt(xamax*xamax + focal*focal);
+    rmax = sqrt(x_max*x_max + focal*focal);
     diff = rmax - sqrt(xs*xs + focal*focal);
     *retfoc = diff*1000/cp;
     break;
 
   case FOCUS_Y:
-    rmax = sqrt(yamax*yamax + focal*focal);
+    rmax = sqrt(y_max*y_max + focal*focal);
     diff  = rmax - sqrt(ys*ys + focal*focal);
     *retfoc = diff*1000/cp;
     break;
@@ -157,7 +157,7 @@ void focusing(int ifoc, double focal, double xs, double ys,
  ***/
 
 void beamsteering(int ister, double theta, double phi, double xs, double ys,
-                  double xamax, double yamax, double ramax, double cp, double *RESTRICT retsteer)
+                  double x_max, double y_max, double ramax, double cp, double *RESTRICT retsteer)
 {
   double diff, rmax, sinx, siny, retsteerx, retsteery;
 
@@ -176,25 +176,25 @@ void beamsteering(int ister, double theta, double phi, double xs, double ys,
 
   case STEER_X:
     sinx = sin(theta * pii);
-    rmax = xamax * sinx;
+    rmax = x_max * sinx;
     diff =  rmax + xs*sinx;
     *retsteer = diff*1000/cp;
     break;
 
   case STEER_Y:
     siny = sin(phi * pii);
-    rmax = yamax * siny;
+    rmax = y_max * siny;
     diff = rmax + ys * siny;
     *retsteer = diff*1000/cp;
     break;
 
   case STEER_XY:
     sinx = sin(theta * pii);
-    rmax = xamax * sinx;
+    rmax = x_max * sinx;
     diff = rmax + xs*sinx;
     retsteerx = diff*1000/cp;
     siny = sin(phi * pii);
-    rmax = yamax * siny;
+    rmax = y_max * siny;
     diff = rmax + ys * siny;
     retsteery = diff*1000/cp;
     *retsteer = retsteerx + retsteery;
@@ -209,54 +209,48 @@ void beamsteering(int ister, double theta, double phi, double xs, double ys,
 
 /***
  *
- *  Weighting (apodization)
+ *  Aperture weighting/Apodization
  *
- * apodization iapo = 0 apodization with user defined apodization function apod(x,y)
+ * param=input parameter
  *
- * iweight = 1 No apodization, 2  Weighting , param=input parameter
- *
- * iapo = 0 User defined
- * iapo = 1 Traingle
- * iapo = 2 Gauss
- * iapo = 3 Rised cosine
- * iapo = 4 Simply supported
- * iapo = 5 Clamped
+ * apod_type = 0 User defined
+ * apod_type = 1 Traingle
+ * apod_type = 2 Gauss
+ * apod_type = 3 Rised cosine
+ * apod_type = 4 Simply supported
+ * apod_type = 5 Clamped
  *
  ***/
 
-void apodization(int iweight, int iapo, int i, double *RESTRICT apod, double *RESTRICT weight,
-               double xs, double ys, double ramax, double param, int isize)
+void apodization(int apod_type, int i, double *RESTRICT apod_vec, double *RESTRICT weight,
+                 double xs, double ys, double ramax, double param)
 {
   double pi = 4.0 * atan(1.0);
   double r = sqrt(xs*xs + ys*ys);
 
-  if (iweight == 1) {
-    return;
-  }
+  switch(apod_type) {
 
-  switch(iapo) {
-
-  case IPOD_UD:
-    *weight = apod[i];
+  case APOD_UD:
+    *weight = apod_vec[i];
     break;
 
-  case IPOD_TRIANGLE:
+  case APOD_TRIANGLE:
     *weight = (double) 1.0 - fabs(r) / ramax;
     break;
 
-  case IPOD_GAUSS:
+  case APOD_GAUSS:
     *weight = exp(-(param * r*r) / (ramax*ramax));
     break;
 
-  case IPOD_RISED_COSINE:
+  case APOD_RISED_COSINE:
     *weight = param + cos(r*pi/ramax);
     break;
 
-  case IPOD_SIMPLY_SUPPORTED:
+  case APOD_SIMPLY_SUPPORTED:
     *weight = (double) 1.0 - r*r / (ramax*ramax);
     break;
 
-  case IPOD_CLAMPED:
+  case APOD_CLAMPED:
     *weight = ((double) 1.0 - r*r / (ramax*ramax)) * ((double) 1.0  - r / (ramax*ramax));
 
   default:
@@ -264,13 +258,15 @@ void apodization(int iweight, int iapo, int i, double *RESTRICT apod, double *RE
   }
 
   return;
-} /* apodization */
+}
 
 /***
  *
  * distance
  *
- * Compute the distance bentween two points (vector length/magnitude)
+ * Compute the distance bentween two points (vector length/magnitude). Normally used here
+ * to compute the distance (length) from an observation point (xo,yo,zo)
+ * to a point (xs,ys,zs) on the transducer surface.
  *
  ***/
 

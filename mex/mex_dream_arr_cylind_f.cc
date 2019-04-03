@@ -71,7 +71,7 @@ typedef struct
   double v;
   double cp;
   double alpha;
-  size_t isize;
+  size_t num_elements;
   double *RESTRICT G;
   int ifoc;
   int ister;
@@ -117,13 +117,13 @@ void* smp_process(void *arg)
   size_t start=D.start, stop=D.stop;
   int    ifoc=D.ifoc, ister=D.ister, iweight=D.iweight,iapo=D.iapo;
   double focal=D.focal, *apod=D.apod, theta=D.theta,phi=D.phi,param=D.param;
-  size_t    isize = D.isize;
+  size_t    num_elements = D.num_elements;
   double *RESTRICT gx, *RESTRICT gy, *RESTRICT gz;
   double *RESTRICT ud_focal=D.ud_focal;
 
   gx = D.G;			// First column in the matrix.
-  gy = gx + isize;		// Second column in the matrix.
-  gz = gy + isize;		// Third column in the matrix.
+  gy = gx + num_elements;		// Second column in the matrix.
+  gz = gy + num_elements;		// Third column in the matrix.
 
   // Let the thread finish and then catch the error.
   if (err_level == STOP)
@@ -139,7 +139,7 @@ void* smp_process(void *arg)
         yo = ro[n+1*no];
         zo = ro[n+2*no];
 
-        err = dream_arr_cylind_f(xo,yo,zo,a,b,R,dx,dy,dt,nt,delay[0],v,cp,alpha,isize,gx,gy,gz,
+        err = dream_arr_cylind_f(xo,yo,zo,a,b,R,dx,dy,dt,nt,delay[0],v,cp,alpha,num_elements,gx,gy,gz,
                              ifoc,focal,ister,theta,phi,apod,iweight,iapo,param,&h[n*nt],tmp_lev);
 
         if (err != NONE || out_err ==  PARALLEL_STOP) {
@@ -160,7 +160,7 @@ void* smp_process(void *arg)
         yo = ro[n+1*no];
         zo = ro[n+2*no];
 
-        err = dream_arr_cylind_f(xo,yo,zo,a,b,R,dx,dy,dt,nt,delay[n],v,cp,alpha,isize,gx,gy,gz,
+        err = dream_arr_cylind_f(xo,yo,zo,a,b,R,dx,dy,dt,nt,delay[n],v,cp,alpha,num_elements,gx,gy,gz,
                              ifoc,focal,ister,theta,phi,apod,iweight,iapo,param,&h[n*nt],tmp_lev);
 
         if (err != NONE || out_err ==  PARALLEL_STOP) {
@@ -185,7 +185,7 @@ void* smp_process(void *arg)
         yo = ro[n+1*no];
         zo = ro[n+2*no];
 
-        err = dream_arr_cylind_udf(xo,yo,zo,a,b,R,dx,dy,dt,nt,delay[0],v,cp,alpha,isize,gx,gy,gz,
+        err = dream_arr_cylind_udf(xo,yo,zo,a,b,R,dx,dy,dt,nt,delay[0],v,cp,alpha,num_elements,gx,gy,gz,
                                 ifoc,ud_focal,ister,theta,phi,apod,iweight,iapo,param,&h[n*nt],tmp_lev);
 
         if (err != NONE || out_err ==  PARALLEL_STOP) {
@@ -206,7 +206,7 @@ void* smp_process(void *arg)
         yo = ro[n+1*no];
         zo = ro[n+2*no];
 
-        err = dream_arr_cylind_udf(xo,yo,zo,a,b,R,dx,dy,dt,nt,delay[n],v,cp,alpha,isize,gx,gy,gz,
+        err = dream_arr_cylind_udf(xo,yo,zo,a,b,R,dx,dy,dt,nt,delay[n],v,cp,alpha,num_elements,gx,gy,gz,
                                 ifoc,ud_focal,ister,theta,phi,apod,iweight,iapo,param,&h[n*nt],tmp_lev);
 
         if (err != NONE || out_err ==  PARALLEL_STOP) {
@@ -271,7 +271,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   double a,b,R,dx,dy,dt;
   size_t nt, no;
   double param=0, *RESTRICT delay, v, cp, alpha;
-  size_t isize=0;
+  size_t num_elements=0;
   double *RESTRICT G;
   int    ifoc=0;
   double focal=0, *RESTRICT ud_focal=NULL;
@@ -325,13 +325,13 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Grid function (position vectors of the elements).
   //
 
-  isize = mxGetM(prhs[2]); // Number of elementents in the array.
+  num_elements = mxGetM(prhs[2]); // Number of elementents in the array.
   if (mxGetN(prhs[2]) !=3 )
     dream_err_msg("Argument 3  must a (number of array elements) x 3 matrix!");
 
   G = mxGetPr(prhs[2]);		// First column in the matrix.
-  //gy    = gx + isize;		// Second column in the matrix.
-  //gz    = gy + isize;		// Third column in the matrix.
+  //gy    = gx + num_elements;		// Second column in the matrix.
+  //gz    = gy + num_elements;		// Third column in the matrix.
 
   //
   // Temporal and spatial sampling parameters.
@@ -415,7 +415,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       ifoc = 6;
       set = true;
 
-      if (mxGetM(prhs[7]) * mxGetN(prhs[7]) != isize ) {
+      if (mxGetM(prhs[7]) * mxGetN(prhs[7]) != num_elements ) {
         mexPrintf("The time delay vector (argument 8) for user defined ('ud') focusing\n") ;
         dream_err_msg("delays must have the same length as the number of array elements.!");
       }
@@ -517,7 +517,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       set = true;
 
       // Vector of apodization weights.
-      if (mxGetM(prhs[11]) * mxGetN(prhs[11]) != isize)
+      if (mxGetM(prhs[11]) * mxGetN(prhs[11]) != num_elements)
         dream_err_msg("The length of argument 12 (apodization vector) must be the same as the number of array elements!");
 
       apod = mxGetPr(prhs[11]);
@@ -685,7 +685,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     D[thread_n].v = v;
     D[thread_n].cp = cp;
     D[thread_n].alpha = alpha;
-    D[thread_n].isize = isize;
+    D[thread_n].num_elements = num_elements;
     D[thread_n].G = G;
     D[thread_n].ifoc = ifoc;
     D[thread_n].ister = ister;

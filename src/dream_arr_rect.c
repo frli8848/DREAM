@@ -52,9 +52,9 @@ int rect_ab(double xo, double yo, double zo, double xs, double ys, double zs, do
  ***/
 
 int dream_arr_rect(double xo, double yo, double zo, double a, double b, double dx, double dy, double dt,
-                  dream_idx_type nt, double delay, double v, double cp, double alpha, int isize,
-                  double *RESTRICT gx, double *RESTRICT gy, double *RESTRICT gz, int ifoc, double focal, int ister,
-                  double theta, double phi, double *RESTRICT apod, int iweight, int iapo, double param, double *RESTRICT ha,
+                  dream_idx_type nt, double delay, double v, double cp, double alpha, int num_elements,
+                  double *RESTRICT gx, double *RESTRICT gy, double *RESTRICT gz, int foc_type, double focal, int ister,
+                  double theta, double phi, double *RESTRICT apod, int iweight, int apod_type, double param, double *RESTRICT ha,
                   int err_level)
 {
   double retsteer;
@@ -76,14 +76,15 @@ int dream_arr_rect(double xo, double yo, double zo, double a, double b, double d
   weight   = (double) 1.0;
   icheck   = 1;
 
-  max_dim_arr(&xamax, &yamax, &ramax, gx, gy, gz, isize);
+  max_dim_arr(&xamax, &yamax, &ramax, gx, gy, gz, num_elements);
 
-  for (i=0; i<isize; i++) {
+  for (i=0; i<num_elements; i++) {
     center_pos(&xs, &ys, &zs, i, gx, gy, gz);
-    focusing(ifoc, focal, xs, ys, xamax, yamax, ramax, cp, &retfoc);
+    focusing(foc_type, focal, xs, ys, xamax, yamax, ramax, cp, &retfoc);
     beamsteering(ister, theta, phi, xs, ys, xamax, yamax, ramax, cp, &retsteer);
-    apodization(iweight, iapo, i, apod, &weight, xs, ys, ramax, param, isize);
-
+    if (iweight == 2) {
+      apodization(apod_type, i, apod, &weight, xs, ys, ramax, param);
+    }
     err = rect_ab(xo,yo,zo,xs,ys,zs,a,b,dx,dy,dt,nt,icheck,
                  delay,retfoc,retsteer,v,cp,alpha,weight,h,err_level);
     if (err != NONE)
@@ -107,9 +108,9 @@ int dream_arr_rect(double xo, double yo, double zo, double a, double b, double d
  ***/
 
 int dream_arr_rect_ud(double xo, double yo, double zo, double a, double b, double dx, double dy, double dt,
-                  dream_idx_type nt, double delay, double v, double cp, double alpha, int isize,
-                  double *RESTRICT gx, double *RESTRICT gy, double *RESTRICT gz, int ifoc, double *RESTRICT focal, int ister,
-                  double theta, double phi, double *RESTRICT apod, int iweight, int iapo, double param, double *RESTRICT ha,
+                  dream_idx_type nt, double delay, double v, double cp, double alpha, int num_elements,
+                  double *RESTRICT gx, double *RESTRICT gy, double *RESTRICT gz, int foc_type, double *RESTRICT focal, int ister,
+                  double theta, double phi, double *RESTRICT apod, int iweight, int apod_type, double param, double *RESTRICT ha,
                   int err_level)
 {
   double retsteer;
@@ -131,14 +132,15 @@ int dream_arr_rect_ud(double xo, double yo, double zo, double a, double b, doubl
   weight   = (double) 1.0;
   icheck   = 1;
 
-  max_dim_arr(&xamax, &yamax, &ramax, gx, gy, gz, isize);
+  max_dim_arr(&xamax, &yamax, &ramax, gx, gy, gz, num_elements);
 
-  for (i=0; i<isize; i++) {
+  for (i=0; i<num_elements; i++) {
     center_pos(&xs, &ys, &zs, i, gx, gy, gz);
-    focusing(ifoc, focal[i], xs, ys, xamax, yamax, ramax, cp, &retfoc);  // Note ifoc must be 6 here!
+    focusing(foc_type, focal[i], xs, ys, xamax, yamax, ramax, cp, &retfoc);  // Note foc_type must be 6 here!
     beamsteering(ister, theta, phi, xs, ys, xamax, yamax, ramax, cp, &retsteer);
-    apodization(iweight, iapo, i, apod, &weight, xs, ys, ramax, param, isize);
-
+    if (iweight == 2) {
+      apodization(apod_type, i, apod, &weight, xs, ys, ramax, param);
+    }
     err = rect_ab(xo,yo,zo,xs,ys,zs,a,b,dx,dy,dt,nt,icheck,
                  delay,retfoc,retsteer,v,cp,alpha,weight,h,err_level);
     if (err != NONE)
@@ -162,7 +164,7 @@ int dream_arr_rect_ud(double xo, double yo, double zo, double a, double b, doubl
  *
  * rect_ab
  *
- * for calculatung the impulse respone of one rectangular element for use within an array.
+ * Computes the impulse respone of one rectangular element for use within an array.
  *
  ***/
 
@@ -171,13 +173,13 @@ int rect_ab(double xo, double yo, double zo, double xs, double ys, double zs, do
             double retsteer, double v, double cp, double alpha, double weight, double *RESTRICT h, int err_level)
 {
   dream_idx_type i;
-  double t, decal;
+  double t;
   double xsmin, ysmin, xsmax, ysmax, ai, ds, pi, ri;
   dream_idx_type it;
   double x, y;
   int err = NONE;
 
-  decal = retfoc + retsteer;
+  double decal = retfoc + retsteer;
   pi = atan( (double) 1.0) * 4.0;
   ds = dx * dy;
 

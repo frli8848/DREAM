@@ -66,7 +66,7 @@ typedef struct
   double v;
   double cp;
   double alpha;
-  size_t isize;
+  size_t num_elements;
   double *RESTRICT gr;
   int ifoc;
   int iweight;
@@ -109,7 +109,7 @@ void* smp_process(void *arg)
   size_t start=D.start, stop=D.stop;
   int    ifoc=D.ifoc, iweight=D.iweight,iapo=D.iapo;
   double focal=D.focal, *apod=D.apod, param=D.param;
-  size_t  isize = D.isize;
+  size_t  num_elements = D.num_elements;
   double *RESTRICT gr=D.gr;
   double *RESTRICT ud_focal=D.ud_focal;
 
@@ -127,7 +127,7 @@ void* smp_process(void *arg)
         yo = ro[n+1*no];
         zo = ro[n+2*no];
 
-        err = dream_arr_annu(xo,yo,zo,dx,dy,dt,nt,delay[0],v,cp,alpha,isize,gr,
+        err = dream_arr_annu(xo,yo,zo,dx,dy,dt,nt,delay[0],v,cp,alpha,num_elements,gr,
                              ifoc,focal,apod,iweight,iapo,param,&h[n*nt],tmp_lev);
 
         if (err != NONE || out_err ==  PARALLEL_STOP) {
@@ -148,7 +148,7 @@ void* smp_process(void *arg)
         yo = ro[n+1*no];
         zo = ro[n+2*no];
 
-        err = dream_arr_annu(xo,yo,zo,dx,dy,dt,nt,delay[n],v,cp,alpha,isize,
+        err = dream_arr_annu(xo,yo,zo,dx,dy,dt,nt,delay[n],v,cp,alpha,num_elements,
                              gr,ifoc,focal,apod,iweight,iapo,param,&h[n*nt],tmp_lev);
 
         if (err != NONE || out_err ==  PARALLEL_STOP) {
@@ -173,7 +173,7 @@ void* smp_process(void *arg)
         yo = ro[n+1*no];
         zo = ro[n+2*no];
 
-        err = dream_arr_annu_ud(xo,yo,zo,dx,dy,dt,nt,delay[0],v,cp,alpha,isize,gr,
+        err = dream_arr_annu_ud(xo,yo,zo,dx,dy,dt,nt,delay[0],v,cp,alpha,num_elements,gr,
                                 ifoc,ud_focal,apod,iweight,iapo,param,&h[n*nt],tmp_lev);
 
         if (err != NONE || out_err ==  PARALLEL_STOP) {
@@ -194,7 +194,7 @@ void* smp_process(void *arg)
         yo = ro[n+1*no];
         zo = ro[n+2*no];
 
-        err = dream_arr_annu_ud(xo,yo,zo,dx,dy,dt,nt,delay[n],v,cp,alpha,isize,
+        err = dream_arr_annu_ud(xo,yo,zo,dx,dy,dt,nt,delay[n],v,cp,alpha,num_elements,
                                 gr,ifoc,ud_focal,apod,iweight,iapo,param,&h[n*nt],tmp_lev);
 
         if (err != NONE || out_err ==  PARALLEL_STOP) {
@@ -259,7 +259,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   double dx,dy,dt;
   size_t nt, no;
   double param=0,*RESTRICT delay,v,cp,alpha;
-  size_t isize=0;
+  size_t num_elements=0;
   double *RESTRICT gr;
   int    ifoc=0;
   double focal=0,*RESTRICT ud_focal=NULL;
@@ -301,7 +301,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   if ((mxGetM(prhs[1]) > 1) & (mxGetN(prhs[1]) > 1))
     dream_err_msg("Argument 2 must a vector (number of array elements)");
 
-  isize = (int) mxGetM(prhs[1])*mxGetN(prhs[1]); // Number of elementents in the array.
+  num_elements = (int) mxGetM(prhs[1])*mxGetN(prhs[1]); // Number of elementents in the array.
   gr = mxGetPr(prhs[1]);	// Vector of annular radi,
 
   //
@@ -366,7 +366,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       ifoc = 6;
       is_set = true;
 
-      if (mxGetM(prhs[6]) * mxGetN(prhs[6]) != isize ) {
+      if (mxGetM(prhs[6]) * mxGetN(prhs[6]) != num_elements ) {
         printf("The time delay vector (argument 7) for user defined ('ud') focusing\n") ;
         dream_err_msg("delays must have the same length as the number of array elements.!");
 
@@ -416,7 +416,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       is_set = true;
 
       // Vector of apodization weights.
-      if (mxGetM(prhs[8]) * mxGetN(prhs[8]) != isize)
+      if (mxGetM(prhs[8]) * mxGetN(prhs[8]) != num_elements)
         dream_err_msg("The length of argument 9 (apodization vector) must be the same as the number of array elements!");
 
       apod = mxGetPr(prhs[8]);
@@ -581,7 +581,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     D[thread_n].v = v;
     D[thread_n].cp = cp;
     D[thread_n].alpha = alpha;
-    D[thread_n].isize = isize;
+    D[thread_n].num_elements = num_elements;
     D[thread_n].gr = gr;
     D[thread_n].ifoc = ifoc;
     D[thread_n].iweight = iweight;

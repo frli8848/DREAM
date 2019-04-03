@@ -39,14 +39,14 @@
 // Function prototypes
 //
 
-void center_pos_annular(double *RESTRICT rs, double *RESTRICT gr, int isize, int nv, double *RESTRICT ramax);
+void center_pos_annular(double *RESTRICT rs, double *RESTRICT gr, int num_elements, int nv, double *RESTRICT ramax);
 void superpos_annular(double *RESTRICT hi, double *RESTRICT ha, dream_idx_type  nt, double weight, double retfoc, dream_idx_type j, double  dt);
-void focusing_annular(int ifoc, double focal, double rs, double ramax, double cp, double *RESTRICT retfoc);
-void apodization_annular(int iweight, int iapo, double *RESTRICT apod, double *RESTRICT weight, double rs,
+void focusing_annular(int foc_type, double focal, double rs, double ramax, double cp, double *RESTRICT retfoc);
+void apodization_annular(int iweight, int apod_type, double *RESTRICT apod, double *RESTRICT weight, double rs,
                        double ramax, double param, dream_idx_type i);
 int circ_annular(double xo, double  yo, double  zo, double  a, double dx, double dy, double dt,
                  dream_idx_type nt, double delay, double v, double cp, double alpha, double weight, double *RESTRICT h,
-                 dream_idx_type k, int isize,int err_level);
+                 dream_idx_type k, int num_elements,int err_level);
 void distance(double xo, double yo, double zo, double xs, double ys, double zs, double *RESTRICT ri);
 void xlimit(double yi, double a, double *RESTRICT xsmin, double *RESTRICT xsmax);
 void resp_annular(double *RESTRICT h, double *RESTRICT hi, dream_idx_type nt, dream_idx_type j);
@@ -59,8 +59,8 @@ void resp_annular(double *RESTRICT h, double *RESTRICT hi, dream_idx_type nt, dr
 
 int dream_arr_annu(double xo, double yo, double zo, double dx, double dy, double dt,
                     dream_idx_type  nt, double delay, double v, double cp, double alpha,
-                    int isize, double *RESTRICT gr, int ifoc, double focal, double *RESTRICT apod, int iweight,
-                    int iapo, double param,double *RESTRICT ha,int err_level)
+                    int num_elements, double *RESTRICT gr, int foc_type, double focal, double *RESTRICT apod, int iweight,
+                    int apod_type, double param,double *RESTRICT ha,int err_level)
 {
   double r, *h;
   double *RESTRICT hi;
@@ -70,9 +70,9 @@ int dream_arr_annu(double xo, double yo, double zo, double dx, double dy, double
   double *RESTRICT rs, retfoc = 0, weight = 0;
   int err = NONE, out_err = NONE;
 
-  h  = (double*) malloc( nt*isize * sizeof(double));
-  hi = (double*) malloc( nt*isize * sizeof(double));
-  rs = (double*) malloc(isize*sizeof(double));
+  h  = (double*) malloc( nt*num_elements * sizeof(double));
+  hi = (double*) malloc( nt*num_elements * sizeof(double));
+  rs = (double*) malloc(num_elements*sizeof(double));
 
   for (i=0; i< nt; i++) {
     ha[i] = (double) 0.0;
@@ -81,18 +81,18 @@ int dream_arr_annu(double xo, double yo, double zo, double dx, double dy, double
   retfoc = (double) 0.0;
   weight = (double) 1.0;
   // nv - number of annulus.
-  nv = (isize+1)/2;
-  //nv = (isize)/2; // This is wrong!!
+  nv = (num_elements+1)/2;
+  //nv = (num_elements)/2; // This is wrong!!
 
   for (i=0; i<nt; i++) {
-    for (j=0; j<isize; j++) {
+    for (j=0; j<num_elements; j++) {
       h[i+j*nt] = (double) 0.0;
     }
   }
 
   /* ----------------------------------------- */
 
-  for (i=0; i<isize; i++) {
+  for (i=0; i<num_elements; i++) {
     r = gr[i];
 
     if (i==0 && r == (double) 0.0 ) {
@@ -100,7 +100,7 @@ int dream_arr_annu(double xo, double yo, double zo, double dx, double dy, double
         h[j] = (double) 0.0; // h(j,1) = 0.0;
       }
     } else {
-      err = circ_annular(xo,yo,zo,r,dx,dy,dt,nt,delay,v,cp,alpha,weight,h,i,isize,err_level);
+      err = circ_annular(xo,yo,zo,r,dx,dy,dt,nt,delay,v,cp,alpha,weight,h,i,num_elements,err_level);
       if (err != NONE)
         out_err = err;
     }
@@ -108,11 +108,11 @@ int dream_arr_annu(double xo, double yo, double zo, double dx, double dy, double
 
   /* --------------------------------------------- */
 
-  center_pos_annular(rs, gr, isize, nv, &ramax);
+  center_pos_annular(rs, gr, num_elements, nv, &ramax);
 
   for (i=0; i<nv; i++) {
-    focusing_annular(ifoc, focal, rs[i], ramax, cp, &retfoc);
-    apodization_annular(iweight, iapo, apod, &weight, rs[i], ramax, param, i);
+    focusing_annular(foc_type, focal, rs[i], ramax, cp, &retfoc);
+    apodization_annular(iweight, apod_type, apod, &weight, rs[i], ramax, param, i);
     resp_annular(h, hi, nt, i);
     superpos_annular(hi, ha, nt, weight, retfoc, i, dt);
   }
@@ -134,8 +134,8 @@ int dream_arr_annu(double xo, double yo, double zo, double dx, double dy, double
 
 int dream_arr_annu_ud(double xo, double yo, double zo, double dx, double dy, double dt,
                     dream_idx_type  nt, double delay, double v, double cp, double alpha,
-                    int isize, double *RESTRICT gr, int ifoc, double *RESTRICT focal, double *RESTRICT apod, int iweight,
-                    int iapo, double param, double *RESTRICT ha,int err_level)
+                    int num_elements, double *RESTRICT gr, int foc_type, double *RESTRICT focal, double *RESTRICT apod, int iweight,
+                    int apod_type, double param, double *RESTRICT ha,int err_level)
 {
   double r, *h;
   double *RESTRICT hi;
@@ -145,9 +145,9 @@ int dream_arr_annu_ud(double xo, double yo, double zo, double dx, double dy, dou
   double *RESTRICT rs, retfoc = 0, weight = 0;
   int err = NONE, out_err = NONE;
 
-  h  = (double*) malloc( nt*isize * sizeof(double));
-  hi = (double*) malloc( nt*isize * sizeof(double));
-  rs = (double*) malloc(isize*sizeof(double));
+  h  = (double*) malloc( nt*num_elements * sizeof(double));
+  hi = (double*) malloc( nt*num_elements * sizeof(double));
+  rs = (double*) malloc(num_elements*sizeof(double));
 
   for (i=0; i< nt; i++)
     ha[i] = (double) 0.0;
@@ -156,18 +156,18 @@ int dream_arr_annu_ud(double xo, double yo, double zo, double dx, double dy, dou
   weight = (double) 1.0;
 
   // nv - number of annulus.
-  nv = (isize+1)/2;
-  //nv = (isize)/2; // This is wrong!!
+  nv = (num_elements+1)/2;
+  //nv = (num_elements)/2; // This is wrong!!
 
   for (i=0; i<nt; i++) {
-    for (j=0; j<isize; j++) {
+    for (j=0; j<num_elements; j++) {
       h[i+j*nt] = (double) 0.0;
     }
   }
 
   /* ----------------------------------------- */
 
-  for (i=0; i<isize; i++) {
+  for (i=0; i<num_elements; i++) {
     r = gr[i];
 
     if (i==0 && r == (double) 0.0 ) {
@@ -175,7 +175,7 @@ int dream_arr_annu_ud(double xo, double yo, double zo, double dx, double dy, dou
         h[j] = (double) 0.0; // h(j,1) = 0.0;
       }
     } else {
-      err = circ_annular(xo,yo,zo,r,dx,dy,dt,nt,delay,v,cp,alpha,weight,h,i,isize,err_level);
+      err = circ_annular(xo,yo,zo,r,dx,dy,dt,nt,delay,v,cp,alpha,weight,h,i,num_elements,err_level);
       if (err != NONE)
         out_err = err;
     }
@@ -183,11 +183,11 @@ int dream_arr_annu_ud(double xo, double yo, double zo, double dx, double dy, dou
 
   /* --------------------------------------------- */
 
-  center_pos_annular(rs, gr, isize, nv, &ramax);
+  center_pos_annular(rs, gr, num_elements, nv, &ramax);
 
   for (i=0; i<nv; i++) {
-    focusing_annular(ifoc, focal[i], rs[i], ramax, cp, &retfoc);  // Note ifoc must be 6 here!
-    apodization_annular(iweight, iapo, apod, &weight, rs[i], ramax, param, i);
+    focusing_annular(foc_type, focal[i], rs[i], ramax, cp, &retfoc);  // Note foc_type must be 6 here!
+    apodization_annular(iweight, apod_type, apod, &weight, rs[i], ramax, param, i);
     resp_annular(h, hi, nt, i);
     superpos_annular(hi, ha, nt, weight, retfoc, i, dt);
   }
@@ -206,12 +206,12 @@ int dream_arr_annu_ud(double xo, double yo, double zo, double dx, double dy, dou
  *
  ***/
 
-void center_pos_annular(double *RESTRICT rs, double *RESTRICT gr, int isize, int nv, double *RESTRICT ramax)
+void center_pos_annular(double *RESTRICT rs, double *RESTRICT gr, int num_elements, int nv, double *RESTRICT ramax)
 {
   int i, ns = 0;
 
   rs[0] = gr[0]/2;
-  for (i=2; i<isize; i += 2) {
+  for (i=2; i<num_elements; i += 2) {
     ns = (i+1) / 2;
     rs[ns] = (gr[i]+gr[i-1]) / 2;
   }
@@ -227,17 +227,17 @@ void center_pos_annular(double *RESTRICT rs, double *RESTRICT gr, int isize, int
 *
 ***/
 
-void focusing_annular(int ifoc, double focal, double rs, double ramax, double cp, double *RESTRICT retfoc)
+void focusing_annular(int foc_type, double focal, double rs, double ramax, double cp, double *RESTRICT retfoc)
 {
   double diff, rmax;
 
-  // ifoc = 1 - no foc, 2 foc xy.
-  if (ifoc == 1) {
+  // foc_type = 1 - no foc, 2 foc xy.
+  if (foc_type == 1) {
     *retfoc = 0.0;
     return;
   }
 
-  if (ifoc == 2) {
+  if (foc_type == 2) {
     rmax = sqrt(ramax*ramax + focal*focal);
     diff = rmax - sqrt(rs*rs + focal*focal);
 
@@ -245,7 +245,7 @@ void focusing_annular(int ifoc, double focal, double rs, double ramax, double cp
   }
 
   // User defined focusing.
-  if (ifoc == 6)
+  if (foc_type == 6)
     *retfoc = focal; // Here focal is the user defined time delay in [us] (not the focal depth)
 
   return;
@@ -255,20 +255,20 @@ void focusing_annular(int ifoc, double focal, double rs, double ramax, double cp
  *
  *  apodization
  *
- * apodization iapo = 0 apodization with imported apodisation function apod(x,y)
+ * apodization apod_type = 0 apodization with imported apodisation function apod(x,y)
  *
  * iweight = 1 - no apodization, 2  apodization , param=input parameter
  *
- * iapo = 0 - user defined.
- * iapo = 1 traingle.
- * iapo = 2 gauss.
- * iapo = 3 rised cosine
- * iapo = 4 simply supported.
- * iapo = 5 clamped.
+ * apod_type = 0 - user defined.
+ * apod_type = 1 traingle.
+ * apod_type = 2 gauss.
+ * apod_type = 3 rised cosine
+ * apod_type = 4 simply supported.
+ * apod_type = 5 clamped.
  *
  ***/
 
-void apodization_annular(int iweight, int iapo, double *RESTRICT apod, double *RESTRICT weight, double rs,
+void apodization_annular(int iweight, int apod_type, double *RESTRICT apod, double *RESTRICT weight, double rs,
                        double ramax, double param, dream_idx_type i)
 {
   double pi = atan((double) 1.0) * (double) 4.0;
@@ -277,7 +277,7 @@ void apodization_annular(int iweight, int iapo, double *RESTRICT apod, double *R
     return;
   }
 
-  switch(iapo) {
+  switch(apod_type) {
 
   case 0:
     *weight = apod[i];
@@ -315,13 +315,13 @@ void apodization_annular(int iweight, int iapo, double *RESTRICT apod, double *R
  *
  * subroutine circ - pour calculer pulse respone of a circular aperture
  *
- * a = R1,R2,...,Rk,...,Risize = gr(k)
+ * a = R1,R2,...,Rk,...,Rnum_elements = gr(k)
  *
  ***/
 
 int circ_annular(double xo, double  yo, double  zo, double  r, double dx, double dy, double dt,
                   dream_idx_type nt, double delay, double v, double cp, double alpha, double weight, double *RESTRICT h,
-                  dream_idx_type k, int isize, int err_level)
+                  dream_idx_type k, int num_elements, int err_level)
 {
   double t;
   double xsmin, ysmin, xsmax, ysmax, ai, ds, pi, ri;
@@ -365,7 +365,7 @@ int circ_annular(double xo, double  yo, double  zo, double  r, double dx, double
           h[it + k*nt] += ai;
         }
         else {
-          att_annu(alpha, ri, it, dt, cp, h, nt, ai, k, isize);
+          att_annu(alpha, ri, it, dt, cp, h, nt, ai, k, num_elements);
         }
       else  {
         if  (it >= 0)

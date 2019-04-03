@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2002,2006,2007,2008,2009,2014 Fredrik Lingvall
+* Copyright (C) 2002,2006,2007,2008,2009,2014,2019 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -61,9 +61,9 @@ void cyl_arr_d(double xs, double ys, double zs, double R, double haut,
 
 int dream_arr_cylind_d(double xo, double yo, double zo, double a, double b, double R,
                        double dx, double dy, double dt,
-                       dream_idx_type nt, double delay, double v, double cp, double alpha, int isize,
-                       double *RESTRICT gx, double *RESTRICT gy, double *RESTRICT gz, int ifoc, double focal, int ister,
-                       double theta, double phi, double *RESTRICT apod, int iweight, int iapo, double param,
+                       dream_idx_type nt, double delay, double v, double cp, double alpha, int num_elements,
+                       double *RESTRICT gx, double *RESTRICT gy, double *RESTRICT gz, int foc_type, double focal, int ister,
+                       double theta, double phi, double *RESTRICT apod, int iweight, int apod_type, double param,
                        double *RESTRICT ha, int err_level)
 {
   double retsteer;
@@ -83,14 +83,15 @@ int dream_arr_cylind_d(double xo, double yo, double zo, double a, double b, doub
   retsteer = (double) 0.0;
   weight   = (double) 1.0;
 
-  max_dim_arr(&xamax, &yamax, &ramax, gx, gy, gz, isize);
+  max_dim_arr(&xamax, &yamax, &ramax, gx, gy, gz, num_elements);
 
-  for (i=0; i<isize; i++) {
+  for (i=0; i<num_elements; i++) {
     center_pos(&xs, &ys, &zs, i, gx, gy, gz);
-    focusing(ifoc, focal, xs, ys, xamax, yamax, ramax, cp, &retfoc);
+    focusing(foc_type, focal, xs, ys, xamax, yamax, ramax, cp, &retfoc);
     beamsteering(ister, theta, phi, xs, ys, xamax, yamax, ramax, cp, &retsteer);
-    apodization(iweight, iapo, i, apod, &weight, xs, ys, ramax, param, isize);
-
+    if (iweight == 2) {
+      apodization(apod_type, i, apod, &weight, xs, ys, ramax, param);
+    }
     err = cylind_d(xo,yo,zo,xs,ys,zs,R,a,b,dx,dy,dt,nt,delay,retfoc,retsteer,v,cp,alpha,weight,h,err_level);
     if (err != NONE)
       out_err = err;
@@ -111,10 +112,10 @@ int dream_arr_cylind_d(double xo, double yo, double zo, double a, double b, doub
 
 int dream_arr_cylind_udd(double xo, double yo, double zo, double a, double b, double R,
                          double dx, double dy, double dt,
-                         dream_idx_type nt, double delay, double v, double cp, double alpha, int isize,
-                         double *RESTRICT gx, double *RESTRICT gy, double *RESTRICT gz, int ifoc, double *RESTRICT focal,
+                         dream_idx_type nt, double delay, double v, double cp, double alpha, int num_elements,
+                         double *RESTRICT gx, double *RESTRICT gy, double *RESTRICT gz, int foc_type, double *RESTRICT focal,
                          int ister, double theta, double phi,
-                         double *RESTRICT apod, int iweight, int iapo, double param, double *RESTRICT ha, int err_level)
+                         double *RESTRICT apod, int iweight, int apod_type, double param, double *RESTRICT ha, int err_level)
 {
   double retsteer;
   double *RESTRICT h;
@@ -133,14 +134,15 @@ int dream_arr_cylind_udd(double xo, double yo, double zo, double a, double b, do
   retsteer = (double) 0.0;
   weight   = (double) 1.0;
 
-  max_dim_arr(&xamax, &yamax, &ramax, gx, gy, gz, isize);
+  max_dim_arr(&xamax, &yamax, &ramax, gx, gy, gz, num_elements);
 
-  for (i=0; i<isize; i++) {
+  for (i=0; i<num_elements; i++) {
     center_pos(&xs, &ys, &zs, i, gx, gy, gz);
-    focusing(ifoc, focal[i], xs, ys, xamax, yamax, ramax, cp, &retfoc); // Note ifoc must be 6 here!
+    focusing(foc_type, focal[i], xs, ys, xamax, yamax, ramax, cp, &retfoc); // Note foc_type must be 6 here!
     beamsteering(ister, theta, phi, xs, ys, xamax, yamax, ramax, cp, &retsteer);
-    apodization(iweight, iapo, i, apod, &weight, xs, ys, ramax, param, isize);
-
+    if (iweight == 2) {
+      apodization(apod_type, i, apod, &weight, xs, ys, ramax, param);
+    }
     err = cylind_d(xo,yo,zo,xs,ys,zs,R,a,b,dx,dy,dt,nt,delay,retfoc,retsteer,v,cp,alpha,weight,h,err_level);
     if (err != NONE)
       out_err = err;
@@ -209,8 +211,8 @@ int cylind_d(double xo, double yo, double zo, double xs, double ys, double zs, d
       cyl_arr_d(x, y, zs, R, haut, xo, yo, zo, &r, &du);
       ai = v * ds * du/(2*pi * r);
       ai /= dt;
-      // Convert to SI units.
-      ai *= 1000;
+      ai *= 1000; // Convert to SI units.
+
       // Propagation delay in micro seconds.
       t = r * 1000/cp;
       it = (dream_idx_type) rint((t - delay + decal)/dt);
@@ -219,7 +221,7 @@ int cylind_d(double xo, double yo, double zo, double xs, double ys, double zs, d
       if ((it < nt) && (it >= 0)) {
 
         // Check if absorbtion is present.
-        if (alpha == (double) 0.0) {
+        if (alpha == 0.0) {
           h[it] += ai;
         } else {
           att(alpha,r,it,dt,cp,h,nt,ai);
@@ -236,8 +238,6 @@ int cylind_d(double xo, double yo, double zo, double xs, double ys, double zs, d
           return err; // Bail out.
       }
 
-      //i++;
-      //x = xsmin + (i-1) * dx + dx/2;
       x += dx;
     }
 

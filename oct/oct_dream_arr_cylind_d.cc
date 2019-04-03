@@ -401,7 +401,7 @@ An error message is printed and the program is stopped.\n\
 @code{dream_arr_cylind_d} is an oct-function that is a part of the DREAM Toolbox available at\n\
 @url{http://www.signal.uu.se/Toolbox/dream/}.\n\
 \n\
-Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
+Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
 @seealso {dream_arr_cylind_f, dreamcylind_d}\n\
 @end deftypefn")
 {

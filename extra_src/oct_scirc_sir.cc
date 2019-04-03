@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2008,2009,2012,2015,2016 Fredrik Lingvall
+* Copyright (C) 2008,2009,2012,2015,2016,2019 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -228,7 +228,7 @@ Scalar the number of points used for for sampling the analytic SIR in each sampl
 scirc_sir is an oct-function that is a part of the DREAM Toolbox available at\n\
 @url{http://www.signal.uu.se/Toolbox/dream/}.\n\
 \n\
-Copyright @copyright{} 2008-2016 Fredrik Lingvall.\n\
+Copyright @copyright{} 2008-2019 Fredrik Lingvall.\n\
 @seealso {dreamcirc, circ_sir}\n\
 @end deftypefn")
 {

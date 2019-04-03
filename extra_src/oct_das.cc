@@ -101,7 +101,7 @@ An error message is printed and the program is stopped.\n\
 das is an oct-function that is a part of the DREAM Toolbox available at\n\
 @url{http://www.signal.uu.se/Toolbox/dream/}.\n\
 \n\
-Copyright @copyright{} 2008-2016 Fredrik Lingvall.\n\
+Copyright @copyright{} 2008-2019 Fredrik Lingvall.\n\
 @seealso {das_arr,saft,saft_p}\n\
 @end deftypefn")
 {

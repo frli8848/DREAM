@@ -432,7 +432,7 @@ NOTE: fftconv_p requires the FFTW library version 3 @url{http://www.fftw.org}.\n
 fftconv_p is a part of the DREAM Toolbox available at\n\
 @url{http://www.signal.uu.se/Toolbox/dream/}.\n\
 \n\
-Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
+Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
 @seealso {conv_p, fftconv, conv, fftw_wisdom}\n\
 @end deftypefn")
 {

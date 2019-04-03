@@ -224,7 +224,7 @@ Sound velocity [m/s].\n\
 rect_sir is an oct-function that is a part of the DREAM Toolbox available at\n\
 @url{http://www.signal.uu.se/Toolbox/dream/}.\n\
 \n\
-Copyright @copyright{} 2008-2016 Fredrik Lingvall.\n\
+Copyright @copyright{} 2008-2019 Fredrik Lingvall.\n\
 @seealso {dreamrect,circ_sir}\n\
 @end deftypefn")
 {

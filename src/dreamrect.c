@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2002,2003,2006,2007,2008,2009,2014 Fredrik Lingvall
+* Copyright (C) 2002,2003,2006,2007,2008,2009,2014,2019 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -20,7 +20,6 @@
 * 02110-1301, USA.
 *
 ***/
-
 
 #include <math.h>
 #include <stdio.h>
@@ -150,7 +149,7 @@ int dreamrect(double xo,
       y += dy;
     }
 
-  } // if (alpha == ...)
+  }
 
   return err;
 }

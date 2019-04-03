@@ -167,7 +167,7 @@ There are no output arguments for @code{copy_p}.\n\
 \n\
 @code{copy_p} is an oct-function that is a part of the DREAM Toolbox available at @url{http://www.signal.uu.se/Toolbox/dream/}.\n\
 \n\
-Copyright @copyright{} 2006-2016 Fredrik Lingvall.\n\
+Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
 @end deftypefn")
 {
   double         *A,*B;

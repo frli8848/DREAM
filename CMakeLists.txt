@@ -304,7 +304,7 @@ if (OCTAVE_FOUND)
     )
 
   if (OpenCL_FOUND)
-    set (oct_dreamcirc_SOURCE_FILES ${oct_dreamrect_SOURCE_FILES} "opencl/cl_dreamcirc.cc")
+    set (oct_dreamcirc_SOURCE_FILES ${oct_dreamcirc_SOURCE_FILES} "opencl/cl_dreamcirc.cc")
   endif (OpenCL_FOUND)
 
   add_library (oct_dreamcirc MODULE

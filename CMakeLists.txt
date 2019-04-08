@@ -17,6 +17,17 @@ set (DREAM_VERSION_PATCH 0)
 option(BUILD_MEX "Enable building of the mex-files." OFF)
 option(BUILD_OCT "Enable building of the oct-files." ON)
 option(BUILD_USERMAN "Enable building of the user manual." OFF)
+option(USE_OPENCL "Enable OpenCL support." OFF)
+
+if (USE_OPENCL)
+
+  find_package (OpenCL 1.2)
+
+  if (OpenCL_FOUND)
+    add_definitions(-DUSE_OPENCL)
+  endif (OpenCL_FOUND)
+
+endif (USE_OPENCL)
 
 if (BUILD_OCT OR BUILD_MEX)
 
@@ -162,6 +173,10 @@ if (OCTAVE_FOUND)
     src/dream_error.c
     )
 
+  if (OpenCL_FOUND)
+    set (oct_dreamrect_SOURCE_FILES ${oct_dreamrect_SOURCE_FILES} "opencl/cl_dreamrect.cc")
+  endif (OpenCL_FOUND)
+
   add_library (oct_dreamrect MODULE
     ${oct_dreamrect_SOURCE_FILES}
     )
@@ -169,6 +184,7 @@ if (OCTAVE_FOUND)
   target_link_libraries (oct_dreamrect
     ${OCTAVE_LIBRARIES}
     ${FFTW_LIBRARIES}
+    ${OpenCL_LIBRARIES}
     )
 
   set_target_properties (oct_dreamrect PROPERTIES

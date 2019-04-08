@@ -48,3 +48,18 @@ int dreamrect(double xo,
               double alpha,
               double *h,
               int err_level);
+
+#ifdef USE_OPENCL
+int cl_dreamrect(const double *Ro,
+                 int No,
+                 double a,
+                 double b,
+                 double dx,
+                 double dy,
+                 double dt,
+                 int nt,
+                 double delay,
+                 double v,
+                 double cp,
+                 double *H);
+#endif

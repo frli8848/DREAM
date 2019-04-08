@@ -47,3 +47,17 @@ int dreamcirc(double xo,
               double alpha,
               double *h,
               int err_level);
+
+#ifdef USE_OPENCL
+int cl_dreamcirc(const double *Ro,
+                 int No,
+                 double r,
+                 double dx,
+                 double dy,
+                 double dt,
+                 int nt,
+                 double delay,
+                 double v,
+                 double cp,
+                 double *H);
+#endif

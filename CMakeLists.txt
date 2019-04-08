@@ -303,6 +303,10 @@ if (OCTAVE_FOUND)
     src/dream_error.c
     )
 
+  if (OpenCL_FOUND)
+    set (oct_dreamcirc_SOURCE_FILES ${oct_dreamrect_SOURCE_FILES} "opencl/cl_dreamcirc.cc")
+  endif (OpenCL_FOUND)
+
   add_library (oct_dreamcirc MODULE
     ${oct_dreamcirc_SOURCE_FILES}
     )
@@ -310,6 +314,7 @@ if (OCTAVE_FOUND)
   target_link_libraries (oct_dreamcirc
     ${OCTAVE_LIBRARIES}
     ${FFTW_LIBRARIES}
+    ${OpenCL_LIBRARIES}
     )
 
   set_target_properties (oct_dreamcirc PROPERTIES

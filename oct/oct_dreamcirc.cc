@@ -199,7 +199,7 @@ void sig_keyint_handler(int signum) {
 
 DEFUN_DLD (dreamcirc, args, nlhs,
            "-*- texinfo -*-\n\
-@deftypefn {Loadable Function} {} [H,err] = dreamcirc(Ro,geom_par,s_par,delay,m_par,err_level)\n\
+@deftypefn {Loadable Function} {} [H,err] = dreamcirc(Ro,geom_par,s_par,delay,m_par,err_level,device)\n\
 \n\
 DREAMCIRC - Computes the spatial impulse response\n\
 for a circular transducer using parallel processing\n\
@@ -261,6 +261,8 @@ argument is negative if an error occured.\n\
 An error message is printed but the program in not stopped (and err is negative).\n\
 @item 'stop'\n\
 An error message is printed and the program is stopped.\n\
+@item 'device'\n\
+A string which can be one of 'cpu' or 'gpu'.\n\
 @end table\n\
 \n\
 dreamcirc is an oct-function that is a part of the DREAM Toolbox available at\n\
@@ -281,21 +283,22 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   std::thread *threads;
   unsigned int thread_n, nthreads;
   sighandler_t old_handler, old_handler_abrt, old_handler_keyint;
+  std::string device;
   octave_value_list oct_retval;
 
   int nrhs = args.length ();
 
   // Check for proper number of arguments
 
-  if (!((nrhs == 5) || (nrhs == 6))) {
-    error("dreamcirc requires 5 or 6 input arguments!");
+  if ((nrhs < 5) || (nrhs > 7)) {
+    error("dreamcirc requires 5, 6, or 7 input arguments!");
     return oct_retval;
-  }
-  else
+  } else {
     if (nlhs > 2) {
       error("Too many output arguments for dreamcirc!");
       return oct_retval;
     }
+  }
 
   //
   // Observation point.
@@ -429,6 +432,20 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   else
     err_level = STOP; // Default.
 
+  //
+  // Compute device
+  //
+
+  if (nrhs == 7) {
+
+    if (!mxIsChar(6)) {
+      error("Argument 7 must be a string");
+      return oct_retval;
+    }
+
+    device = args(6).string_value();
+  }
+
 
   // Create an output matrix for the impulse response
   Matrix h_mat(nt, no);
@@ -457,56 +474,66 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   out_err = NONE;
   running = true;
 
+    // Check if we should use the GPU
+
+  if (device == "gpu") {
+
+    cl_dreamcirc(ro, no, r,  dx, dy, dt, nt,  delay[0], v, cp, h);
+
+  } else { // Otherwise use the cpu
+
+
 #ifdef USE_FFTW
-  if (alpha != (double) 0.0)
-    att_init(nt,nthreads);
+    if (alpha != (double) 0.0)
+      att_init(nt,nthreads);
 #endif
 
-  // Allocate local data.
-  D = (DATA*) malloc(nthreads*sizeof(DATA));
+    // Allocate local data.
+    D = (DATA*) malloc(nthreads*sizeof(DATA));
 
-  // Allocate mem for the threads.
-  threads = new std::thread[nthreads]; // Init thread data.
+    // Allocate mem for the threads.
+    threads = new std::thread[nthreads]; // Init thread data.
 
-  for (thread_n = 0; thread_n < nthreads; thread_n++) {
+    for (thread_n = 0; thread_n < nthreads; thread_n++) {
 
-    start = thread_n * no/nthreads;
-    stop =  (thread_n+1) * no/nthreads;
+      start = thread_n * no/nthreads;
+      stop =  (thread_n+1) * no/nthreads;
 
-    // Init local data.
-    D[thread_n].start = start; // Local start index;
-    D[thread_n].stop = stop; // Local stop index;
-    D[thread_n].no = no;
-    D[thread_n].ro = ro;
-    D[thread_n].r = r;
-    D[thread_n].dx = dx;
-    D[thread_n].dy = dy;
-    D[thread_n].dt = dt;
-    D[thread_n].nt = nt;
+      // Init local data.
+      D[thread_n].start = start; // Local start index;
+      D[thread_n].stop = stop; // Local stop index;
+      D[thread_n].no = no;
+      D[thread_n].ro = ro;
+      D[thread_n].r = r;
+      D[thread_n].dx = dx;
+      D[thread_n].dy = dy;
+      D[thread_n].dt = dt;
+      D[thread_n].nt = nt;
 
-    if (mxGetM(3) * mxGetN(3) == 1)
-      D[thread_n].delay_method = SINGLE; // delay is a scalar.
-    else
-      D[thread_n].delay_method = MULTIPLE; // delay is a vector.
+      if (mxGetM(3) * mxGetN(3) == 1)
+        D[thread_n].delay_method = SINGLE; // delay is a scalar.
+      else
+        D[thread_n].delay_method = MULTIPLE; // delay is a vector.
 
-    D[thread_n].delay = delay;
-    D[thread_n].v = v;
-    D[thread_n].cp = cp;
-    D[thread_n].alpha = alpha;
-    D[thread_n].h = h;
-    D[thread_n].err_level = err_level;
+      D[thread_n].delay = delay;
+      D[thread_n].v = v;
+      D[thread_n].cp = cp;
+      D[thread_n].alpha = alpha;
+      D[thread_n].h = h;
+      D[thread_n].err_level = err_level;
 
-    // Start the threads.
-    threads[thread_n] = std::thread(smp_dream_circ, &D[thread_n]); // Start the threads.
-    set_dream_thread_affinity(thread_n, nthreads, threads);
+      // Start the threads.
+      threads[thread_n] = std::thread(smp_dream_circ, &D[thread_n]); // Start the threads.
+      set_dream_thread_affinity(thread_n, nthreads, threads);
+    }
+
+    // Wait for all threads to finish.
+    for (thread_n = 0; thread_n < nthreads; thread_n++)
+      threads[thread_n].join();
+
+    // Free memory.
+    free((void*) D);
   }
-
-  // Wait for all threads to finish.
-  for (thread_n = 0; thread_n < nthreads; thread_n++)
-    threads[thread_n].join();
-
-  // Free memory.
-  free((void*) D);
 
   //
   // Restore old signal handlers.

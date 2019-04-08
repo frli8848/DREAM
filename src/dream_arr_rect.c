@@ -126,7 +126,7 @@ int dream_arr_rect_ud(double xo, double yo, double zo, double a, double b, doubl
     if (do_apod) {
       apodization(apod_type, i, apod, &weight, xs, ys, ramax, param);
     }
-    // Compute the response for the i:th elemen and add it to the impulse response vector ha.
+    // Compute the response for the i:th element and add it to the impulse response vector ha.
     err = rect_ab(xo, yo, zo, xs, ys, zs, a, b, dx, dy, dt, nt,
                   delay, retfoc, retsteer, v, cp, alpha, weight, ha, err_level);
 

@@ -91,7 +91,7 @@ int dreamcirc(double xo,
   double rs = 0.0;
   int    err = NONE;
 
-  pi = atan( (double) 1.0) * 4.0;
+  pi = 4.0*atan(1.0);
   ds = dx * dy;
   ysmin = -r + ys;
   ysmax =  r + ys;

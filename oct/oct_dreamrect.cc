@@ -264,7 +264,7 @@ An error message is printed but the program in not stopped (and err is negative)
 @item 'stop'\n\
 An error message is printed and the program is stopped.\n\
 @item 'device'\n\
-Aa string which can be one of 'cpu' or 'gpu'.\n\
+A string which can be one of 'cpu' or 'gpu'.\n\
 @end table\n\
 \n\
 dreamrect is an oct-function that is a part of the DREAM Toolbox available at\n\
@@ -296,12 +296,12 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   if ((nrhs < 5) || (nrhs > 7)) {
     error("dreamrect requires 5, 6, or 7 input arguments!");
     return oct_retval;
-  }
-  else
+  } else {
     if (nlhs > 2) {
       error("Too many output arguments for dreamrect!");
       return oct_retval;
     }
+  }
 
   //
   // Observation point.

@@ -483,11 +483,12 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
 
   // Check if we should use the GPU
 
+#ifdef USE_OPENCL
   if (device == "gpu") {
-
     cl_dreamrect(ro, no, a, b,  dx, dy, dt, nt,  delay[0], v, cp, h);
 
   } else { // Otherwise use the cpu
+#endif
 
 #ifdef USE_FFTW
     if (alpha != (double) 0.0)
@@ -543,7 +544,10 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
     if (D) {
       free((void*) D);
     }
+
+#ifdef USE_OPENCL
   }
+#endif
 
   //
   // Restore old signal handlers.

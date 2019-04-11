@@ -203,7 +203,7 @@ int cl_dreamrect(const double *Ro,
   //
 
   size_t global_item_size = No; // Process the entire number of observation points
-  size_t local_item_size = 128; // NB No must be dividable by the local item  size (work group size).
+  size_t local_item_size = 64; // NB No must be dividable by the local item  size (work group size).
   ret = clEnqueueNDRangeKernel(command_queue, kernel, 1, NULL, &global_item_size, &local_item_size, 0, NULL, NULL);
   if (ret < 0) std::cout << "cl enqueue ret: " << ret << std::endl;
 

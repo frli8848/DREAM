@@ -10,8 +10,6 @@
 ONE_POINT = 1;
 %ONE_POINT = 0; %Many points.
 
-% Number of threads to use in the "_p" functions.
-% n_cpus = 1;
 
 % Are we running on a Linux machine?
 tmp_str = computer;
@@ -125,7 +123,6 @@ else
   %xlabel('t [\mus]')
   grid('on');
 end
-title('Rectangular transducer')
 fprintf('dreamrect\n');
 
 % Analytical SIR
@@ -143,6 +140,8 @@ else
   grid('on');
 end
 fprintf('rect_sir\n');
+
+title('Rectangular transducer')
 legend('DREAM','Analytical');
 
 

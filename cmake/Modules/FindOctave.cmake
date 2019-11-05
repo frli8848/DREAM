@@ -55,7 +55,7 @@ if(MKOCTFILE_EXECUTABLE)
     RESULT_VARIABLE _mkoctfile_failed)
   string(REGEX REPLACE "[\r\n]" " " _mkoctfile_ldflags "${_mkoctfile_ldflags}")
   execute_process(
-    COMMAND ${MKOCTFILE_EXECUTABLE} -p LFLAGS
+    COMMAND ${MKOCTFILE_EXECUTABLE} -p OCTLIBDIR
     OUTPUT_VARIABLE _mkoctfile_ldirs
     RESULT_VARIABLE _mkoctfile_failed)
 

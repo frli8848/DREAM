@@ -12,7 +12,6 @@
 
 # This file is from: http://www.coolprop.org/coolprop/wrappers/Octave/index.html
 
-
 cmake_minimum_required(VERSION 2.8)
 
 IF (WIN32)
@@ -26,6 +25,45 @@ IF( "$ENV{OCTAVE_ROOT}" STREQUAL "" )
 ELSE()
     set(OCTAVE_BIN $ENV{OCTAVE_ROOT}/bin)
 ENDIF()
+
+
+# use octave_config
+set(OCTAVE_CONFIG_EXECUTABLE OCTAVE_CONFIG_EXECUTABLE-NOTFOUND)
+find_program(OCTAVE_CONFIG_EXECUTABLE
+             NAME octave-config
+             PATHS ${OCTAVE_BIN})
+mark_as_advanced(OCTAVE_CONFIG_EXECUTABLE)
+
+if(OCTAVE_CONFIG_EXECUTABLE)
+  message(STATUS "Found octave-config executable")
+  execute_process(
+    COMMAND ${OCTAVE_CONFIG_EXECUTABLE} -v
+    OUTPUT_VARIABLE OCTAVE_VERSION
+    RESULT_VARIABLE _octave_config_failed)
+  string(REGEX REPLACE "[\r\n]" "" OCTAVE_VERSION "${OCTAVE_VERSION}")
+  execute_process(
+    COMMAND ${OCTAVE_CONFIG_EXECUTABLE} -p CANONICAL_HOST_TYPE
+    OUTPUT_VARIABLE _octave_config_host_type
+    RESULT_VARIABLE _octave_config_failed)
+  string(REGEX REPLACE "[\r\n]" "" _octave_config_host_type "${_octave_config_host_type}")
+  execute_process(
+    COMMAND ${OCTAVE_CONFIG_EXECUTABLE} -p API_VERSION
+    OUTPUT_VARIABLE _octave_config_api_version
+    RESULT_VARIABLE _octave_config_failed)
+  string(REGEX REPLACE "[\r\n]" "" _octave_config_api_version "${_octave_config_api_version}")
+  execute_process(
+    COMMAND ${OCTAVE_CONFIG_EXECUTABLE} -p LOCALVEROCTFILEDIR
+    OUTPUT_VARIABLE _octave_config_localveroctfiledir
+    RESULT_VARIABLE _octave_config_failed)
+  string(REGEX REPLACE "[\r\n]" "" _octave_config_localveroctfiledir "${_octave_config_api_version}")
+
+  set( OCTAVE_HOST_TYPE "${_octave_config_host_type}" )
+  set( OCTAVE_API_VERSION "${_octave_config_api_version}" )
+  set( OCTAVE_LOCALVEROCTFILEDIR "${_octave_config_localveroctfiledir}" )
+
+else()
+  message(FATAL_ERROR "Did not find octave-config executable")
+endif()
 
 # use mkoctfile
 set(MKOCTFILE_EXECUTABLE MKOCTFILE_EXECUTABLE-NOTFOUND)
@@ -54,11 +92,19 @@ if(MKOCTFILE_EXECUTABLE)
     OUTPUT_VARIABLE _mkoctfile_ldflags
     RESULT_VARIABLE _mkoctfile_failed)
   string(REGEX REPLACE "[\r\n]" " " _mkoctfile_ldflags "${_mkoctfile_ldflags}")
-  execute_process(
-    COMMAND ${MKOCTFILE_EXECUTABLE} -p OCTLIBDIR
-    OUTPUT_VARIABLE _mkoctfile_ldirs
-    RESULT_VARIABLE _mkoctfile_failed)
 
+  # The mkoctfile vars changed in Octave 5.x
+  if("${OCTAVE_VERSION}" VERSION_LESS 5)
+    execute_process(
+      COMMAND ${MKOCTFILE_EXECUTABLE} -p LFLAGS
+      OUTPUT_VARIABLE _mkoctfile_ldirs
+      RESULT_VARIABLE _mkoctfile_failed)
+  else("${OCTAVE_VERSION}" VERSION_LESS 5)
+    execute_process(
+      COMMAND ${MKOCTFILE_EXECUTABLE} -p OCTLIBDIR
+      OUTPUT_VARIABLE _mkoctfile_ldirs
+      RESULT_VARIABLE _mkoctfile_failed)
+  endif ("${OCTAVE_VERSION}" VERSION_LESS 5)
   string(REGEX REPLACE "[\r\n]" " " _mkoctfile_ldirs "${_mkoctfile_ldirs}")
   string(REGEX REPLACE "-L" "" _mkoctfile_ldirs "${_mkoctfile_ldirs}")
 
@@ -117,6 +163,7 @@ if(MKOCTFILE_EXECUTABLE)
   set( OCTAVE_LINK_FLAGS " ${_mkoctfile_ldflags} " )
   set( OCTAVE_INCLUDE_DIRS " ${_mkoctfile_includedir}")
   set( OCTAVE_LINK_DIRS ${_mkoctfile_ldirs})
+
   set( OCTAVE_LIBRARY ${_mkoctfile_libs})
   set( OCTAVE_LIBRARY_RELEASE " ${OCTAVE_LIBRARY} ")
   set( OCTAVE_LIBRARY_DEBUG " ${OCTAVE_LIBRARY} ")
@@ -131,44 +178,6 @@ else()
     endif()
 
         message(FATAL_ERROR "Unable to find mkoctfile executable")
-endif()
-
-# use octave_config
-set(OCTAVE_CONFIG_EXECUTABLE OCTAVE_CONFIG_EXECUTABLE-NOTFOUND)
-find_program(OCTAVE_CONFIG_EXECUTABLE
-             NAME octave-config
-             PATHS ${OCTAVE_BIN})
-mark_as_advanced(OCTAVE_CONFIG_EXECUTABLE)
-
-if(OCTAVE_CONFIG_EXECUTABLE)
-  message(STATUS "Found octave-config executable")
-  execute_process(
-    COMMAND ${OCTAVE_CONFIG_EXECUTABLE} -v
-    OUTPUT_VARIABLE OCTAVE_VERSION
-    RESULT_VARIABLE _octave_config_failed)
-  string(REGEX REPLACE "[\r\n]" "" OCTAVE_VERSION "${OCTAVE_VERSION}")
-  execute_process(
-    COMMAND ${OCTAVE_CONFIG_EXECUTABLE} -p CANONICAL_HOST_TYPE
-    OUTPUT_VARIABLE _octave_config_host_type
-    RESULT_VARIABLE _octave_config_failed)
-  string(REGEX REPLACE "[\r\n]" "" _octave_config_host_type "${_octave_config_host_type}")
-  execute_process(
-    COMMAND ${OCTAVE_CONFIG_EXECUTABLE} -p API_VERSION
-    OUTPUT_VARIABLE _octave_config_api_version
-    RESULT_VARIABLE _octave_config_failed)
-  string(REGEX REPLACE "[\r\n]" "" _octave_config_api_version "${_octave_config_api_version}")
-  execute_process(
-    COMMAND ${OCTAVE_CONFIG_EXECUTABLE} -p LOCALVEROCTFILEDIR
-    OUTPUT_VARIABLE _octave_config_localveroctfiledir
-    RESULT_VARIABLE _octave_config_failed)
-  string(REGEX REPLACE "[\r\n]" "" _octave_config_localveroctfiledir "${_octave_config_api_version}")
-
-  set( OCTAVE_HOST_TYPE "${_octave_config_host_type}" )
-  set( OCTAVE_API_VERSION "${_octave_config_api_version}" )
-  set( OCTAVE_LOCALVEROCTFILEDIR "${_octave_config_localveroctfiledir}" )
-
-else()
-  message(FATAL_ERROR "Did not find octave-config executable")
 endif()
 
 IF (WIN32)

@@ -45,3 +45,16 @@ void rect_sir(double xo,
               double v,
               double cp,
               double *h);
+
+#ifdef USE_OPENCL
+int cl_rect_sir(const double *Ro,
+                int No,
+                double a,
+                double b,
+                double dt,
+                int nt,
+                double delay,
+                double v,
+                double cp,
+                double *H);
+#endif

@@ -1230,12 +1230,17 @@ if (OCTAVE_FOUND)
     src/dream_error.c
     )
 
+  if (OpenCL_FOUND)
+    set (oct_rect_sir_SOURCE_FILES ${oct_rect_sir_SOURCE_FILES} "opencl/cl_rect_sir.cc")
+  endif (OpenCL_FOUND)
+
   add_library (oct_rect_sir MODULE
     ${oct_rect_sir_SOURCE_FILES}
     )
 
   target_link_libraries (oct_rect_sir
     ${OCTAVE_LIBRARIES}
+    ${OpenCL_LIBRARIES}
     )
 
   set_target_properties (oct_rect_sir PROPERTIES

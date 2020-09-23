@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2019 Fredrik Lingvall
+* Copyright (C) 2020 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -27,37 +27,34 @@
 #include <fstream>
 #include <streambuf>
 
-#include "dreamcirc.h"
-#include "dream_error.h"
+#include "rect_sir.h"
 
 #define CL_TARGET_OPENCL_VERSION 120
 #include <CL/cl.h>
 
-
 /***
  *
- * OpenCL version of dreamcirc
+ * OpenCL version of rect_sir
  *
  ***/
 
-int cl_dreamcirc(const double *Ro,
-                 int No,
-                 double r,
-                 double dx,
-                 double dy,
-                 double dt,
-                 int nt,
-                 double delay,
-                 double v,
-                 double cp,
-                 double *H)
+int cl_rect_sir(const double *Ro,
+                int No,
+                double a,
+                double b,
+                double dt,
+                int nt,
+                double delay,
+                double v,
+                double cp,
+                double *H)
 {
   std::string kernel_str;
 
 #if 1
   // Load the kernel from a file into a string.
 
-  std::ifstream f_kernel("/home/fl/projects/DREAM/opencl/dreamcirc.cl");
+  std::ifstream f_kernel("/home/fl/projects/DREAM/opencl/rect_sir.cl");
 
   f_kernel.seekg(0, std::ios::end);
   kernel_str.reserve(f_kernel.tellg());
@@ -108,9 +105,8 @@ int cl_dreamcirc(const double *Ro,
   if (ret < 0) std::cout << "cl Ro mem ret: " << ret << std::endl;
   cl_int No_mo = No;
 
-  cl_double r_mo = r;
-  cl_double dx_mo = dx;
-  cl_double dy_mo = dy;
+  cl_double a_mo = a;
+  cl_double b_mo = b;
   cl_double dt_mo = dt;
   cl_int nt_mo = nt;
   cl_double delay_mo = delay;
@@ -161,7 +157,7 @@ int cl_dreamcirc(const double *Ro,
   }
 
   // Create the OpenCL kernel
-  cl_kernel kernel = clCreateKernel(program, "dreamcirc", &ret);
+  cl_kernel kernel = clCreateKernel(program, "rect_sir", &ret);
   if (ret < 0) std::cout << "cl kernel ret: " << ret << std::endl;
 
   // Set the arguments of the kernel
@@ -172,27 +168,25 @@ int cl_dreamcirc(const double *Ro,
   ret = clSetKernelArg(kernel, 1, sizeof(cl_int), (void *) &No_mo);
   if (ret < 0) std::cout << "cl kernel arg No ret: " << ret << std::endl;
 
-  ret = clSetKernelArg(kernel, 2, sizeof(cl_double), (void *) &r_mo);
-  if (ret < 0) std::cout << "cl kernel arg r ret: " << ret << std::endl;
+  ret = clSetKernelArg(kernel, 2, sizeof(cl_double), (void *) &a_mo);
+  if (ret < 0) std::cout << "cl kernel arg a ret: " << ret << std::endl;
+  ret = clSetKernelArg(kernel, 3, sizeof(cl_double), (void *) &b_mo);
+  if (ret < 0) std::cout << "cl kernel arg b ret: " << ret << std::endl;
 
-  ret = clSetKernelArg(kernel, 3, sizeof(cl_double), (void *) &dx_mo);
-  if (ret < 0) std::cout << "cl kernel arg dx ret: " << ret << std::endl;
-  ret = clSetKernelArg(kernel, 4, sizeof(cl_double), (void *) &dy_mo);
-  if (ret < 0) std::cout << "cl kernel arg dy ret: " << ret << std::endl;
-  ret = clSetKernelArg(kernel, 5, sizeof(cl_double), (void *) &dt_mo);
+  ret = clSetKernelArg(kernel, 4, sizeof(cl_double), (void *) &dt_mo);
   if (ret < 0) std::cout << "cl kernel arg dt ret: " << ret << std::endl;
 
-  ret = clSetKernelArg(kernel, 6, sizeof(cl_int), (void *) &nt_mo);
+  ret = clSetKernelArg(kernel, 5, sizeof(cl_int), (void *) &nt_mo);
   if (ret < 0) std::cout << "cl kernel arg nt ret: " << ret << std::endl;
 
-  ret = clSetKernelArg(kernel, 7, sizeof(cl_double), (void *) &delay_mo);
+  ret = clSetKernelArg(kernel, 6, sizeof(cl_double), (void *) &delay_mo);
   if (ret < 0) std::cout << "cl kernel arg delay ret: " << ret << std::endl;
-  ret = clSetKernelArg(kernel, 8, sizeof(cl_double), (void *) &v_mo);
+  ret = clSetKernelArg(kernel, 7, sizeof(cl_double), (void *) &v_mo);
   if (ret < 0) std::cout << "cl kernel arg v ret: " << ret << std::endl;
-  ret = clSetKernelArg(kernel, 9, sizeof(cl_double), (void *) &cp_mo);
+  ret = clSetKernelArg(kernel, 8, sizeof(cl_double), (void *) &cp_mo);
   if (ret < 0) std::cout << "cl kernel arg cp ret: " << ret << std::endl;
 
-  ret = clSetKernelArg(kernel, 10, sizeof(cl_mem), (void *) &H_mo);
+  ret = clSetKernelArg(kernel, 9, sizeof(cl_mem), (void *) &H_mo);
   if (ret < 0) std::cout << "cl kernel arg H ret: " << ret << std::endl;
 
   //
@@ -200,7 +194,7 @@ int cl_dreamcirc(const double *Ro,
   //
 
   size_t global_item_size = No; // Process the entire number of observation points
-  size_t local_item_size = 128; // NB No must be dividable by the local item  size (work group size).
+  size_t local_item_size = 64; // NB No must be dividable by the local item  size (work group size).
   ret = clEnqueueNDRangeKernel(command_queue, kernel, 1, NULL, &global_item_size, &local_item_size, 0, NULL, NULL);
   if (ret < 0) std::cout << "cl enqueue ret: " << ret << std::endl;
 

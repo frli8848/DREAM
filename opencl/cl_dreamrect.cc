@@ -30,8 +30,8 @@
 #include "dreamrect.h"
 #include "dream_error.h"
 
+#define CL_TARGET_OPENCL_VERSION 120
 #include <CL/cl.h>
-
 
 /***
  *

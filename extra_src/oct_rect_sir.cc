@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2008,2009,2012,2015,2016,2019 Fredrik Lingvall
+* Copyright (C) 2008,2009,2012,2015,2016,2019,2020 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -175,7 +175,7 @@ void sig_keyint_handler(int signum) {
 
 DEFUN_DLD (rect_sir, args, nlhs,
            "-*- texinfo -*-\n\
-@deftypefn {Loadable Function} {}  [Y] = rect_sir(Ro,geom_par,delay,s_par,m_par).\n \
+@deftypefn {Loadable Function} {}  [Y] = rect_sir(Ro,geom_par,delay,s_par,m_par,device).\n \
 \n\
 RECT_SIR Computes the time-continous (analytic) spatial impulse response(s) for a\n\
 rectangular transducer.\n\
@@ -218,13 +218,19 @@ Material parameters: m_par = [v cp];\n\
 Normal velocity [m/s].\n\
 @item cp\n\
 Sound velocity [m/s].\n\
+@end table\n\
 \n\
+Compute device:\n\
+\n\
+@table @code\n\
+@item 'device'\n\
+A string which can be one of 'cpu' or 'gpu'.\n\
 @end table\n\
 \n\
 rect_sir is an oct-function that is a part of the DREAM Toolbox available at\n\
 @url{http://www.signal.uu.se/Toolbox/dream/}.\n\
 \n\
-Copyright @copyright{} 2008-2019 Fredrik Lingvall.\n\
+Copyright @copyright{} 2008-2020 Fredrik Lingvall.\n\
 @seealso {dreamrect,circ_sir}\n\
 @end deftypefn")
 {
@@ -238,14 +244,15 @@ Copyright @copyright{} 2008-2019 Fredrik Lingvall.\n\
   std::thread *threads;
   unsigned int thread_n, nthreads;
   sighandler_t  old_handler, old_handler_abrt, old_handler_keyint;
+  std::string device;
   octave_value_list oct_retval;
 
   int nrhs = args.length ();
 
   // Check for proper number of arguments
 
-  if (nrhs != 5) {
-    dream_err_msg("rect_sir requires 5 input arguments!");
+  if (nrhs != 5 && nrhs != 6) {
+    dream_err_msg("rect_sir requires 5 or 6 input arguments!");
   }
   else
     if (nlhs > 1) {
@@ -325,15 +332,18 @@ Copyright @copyright{} 2008-2019 Fredrik Lingvall.\n\
   cp    = m_par[1]; // Sound speed.
 
   //
-  // Number of threads.
+  // Compute device
   //
 
-  // Get number of CPU cores (including hypethreading, C++11)
-  nthreads = std::thread::hardware_concurrency();
+  if (nrhs == 6) {
 
-  // nthreads can't be larger then the number of observation points.
-  if (nthreads > (unsigned int) no) {
-    nthreads = no;
+    if (!mxIsChar(5)) {
+      error("Argument 6 must be a string");
+      return oct_retval;
+    }
+
+    device = args(5).string_value();
+    octave_stdout << "Compute device: " <<   device  << "\n";
   }
 
   //
@@ -364,6 +374,36 @@ Copyright @copyright{} 2008-2019 Fredrik Lingvall.\n\
   //
 
   running = true;
+
+  // Check if we should use the GPU
+
+#ifdef USE_OPENCL
+  if (device == "gpu") {
+    cl_rect_sir(ro, no, a, b, dt, nt,  delay[0], v, cp, h);
+
+  } else { // Otherwise use the cpu
+#endif
+
+    //
+    // Number of threads.
+    //
+
+    // Get number of CPU cores (including hypethreading, C++11)
+    nthreads = std::thread::hardware_concurrency();
+
+    // Read OMP_NUM_THREADS env var
+    if(const char* env_p = std::getenv("OMP_NUM_THREADS")) {
+      unsigned int omp_threads = std::stoul(env_p);
+      if (omp_threads < nthreads) {
+        nthreads = omp_threads;
+      }
+    }
+
+    // nthreads can't be larger then the number of observation points.
+    if (nthreads > (unsigned int) no) {
+      nthreads = no;
+    }
+
 
    // Allocate local data.
   D = (DATA*) malloc(nthreads*sizeof(DATA));
@@ -409,6 +449,10 @@ Copyright @copyright{} 2008-2019 Fredrik Lingvall.\n\
 
   // Free memory.
   free((void*) D);
+
+#ifdef USE_OPENCL
+  }
+#endif
 
   //
   // Restore old signal handlers.

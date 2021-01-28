@@ -1,10 +1,10 @@
 #
-# Copyright (C) 2016, 2019 Fredrik Lingvall
+# Copyright (C) 2016, 2019, 2021 Fredrik Lingvall
 #
 
 project (dream-toolbox)
 
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.10)
 
 # Add path to the various cmake files to detect Matlab, Octave, FTTW, etc.
 set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")

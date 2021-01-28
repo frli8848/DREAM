@@ -12,7 +12,7 @@
 
 # This file is from: http://www.coolprop.org/coolprop/wrappers/Octave/index.html
 
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.10)
 
 IF (WIN32)
   IF( "$ENV{OCTAVE_ROOT}" STREQUAL "" )

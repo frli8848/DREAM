@@ -46,7 +46,7 @@ int set_dream_thread_affinity(dream_idx_type thread_n, dream_idx_type nthreads, 
 
   cpu_set_t cpuset;
 
-  #ifdef DEBUG
+#ifdef DEBUG
   printf("\nInitial CPU affinity mask for thread is : | ");
   for (cpu = 0; cpu < nthreads; cpu++)
     printf("%d | ", CPU_ISSET(cpu, &cpuset));

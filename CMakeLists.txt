@@ -52,15 +52,14 @@ endif (BUILD_OCT)
 
 if (BUILD_MEX)
   find_package (Matlab)
-  #message (STATUS "MATLAB_VERSION = ${MATLAB_VERSION}")
   message (STATUS "Matlab_MEX_EXTENSION = ${Matlab_MEX_EXTENSION}")
   #message (STATUS "MATLAB_INCLUDE_DIR = ${MATLAB_INCLUDE_DIR}")
   #message (STATUS "MATLAB_LIBARARIES = ${MATLAB_LIBRARIES}")
 
-  if (MATLAB_FOUND)
+  if (Matlab_FOUND)
     # mex libs
     set (MEX_LD_FLAGS "${CMAKE_LD_FLAGS} ${MATLAB_MEX_LIBRARY} ${MATLAB_MX_LIBRARY} -lstdc++ -lfftw3")
-  endif (MATLAB_FOUND)
+  endif (Matlab_FOUND)
 
 endif (BUILD_MEX)
 
@@ -84,9 +83,9 @@ include_directories (
   if (OCTAVE_FOUND)
     ${OCTAVE_INCLUDE_DIRS}
   endif (OCTAVE_FOUND)
-  if (MATLAB_FOUND)
+  if (Matlab_FOUND)
     ${Matlab_INCLUDE_DIRS}
-  endif (MATLAB_FOUND)
+  endif (Matlab_FOUND)
   )
 
 add_definitions( -DUSE_FFTW )	# Build with FFTW support
@@ -129,7 +128,7 @@ endif (OCTAVE_FOUND)
 
 # mex
 
-if (MATLAB_FOUND)
+if (Matlab_FOUND)
 
   set (mex_dreamline_SOURCE_FILES
     mex/mex_dreamline.cc
@@ -156,7 +155,7 @@ if (MATLAB_FOUND)
     LINK_FLAGS ${MEX_LD_FLAGS}
     SUFFIX ".${Matlab_MEX_EXTENSION}" PREFIX "" OUTPUT_NAME "dreamline")
 
-endif (MATLAB_FOUND)
+endif (Matlab_FOUND)
 
 #
 # dreamrect
@@ -196,7 +195,7 @@ if (OCTAVE_FOUND)
 
 endif (OCTAVE_FOUND)
 
-if (MATLAB_FOUND)
+if (Matlab_FOUND)
 
   set (mex_dreamrect_SOURCE_FILES
     mex/mex_dreamrect.cc
@@ -223,7 +222,7 @@ if (MATLAB_FOUND)
     LINK_FLAGS ${MEX_LD_FLAGS}
     SUFFIX ".${Matlab_MEX_EXTENSION}" PREFIX "" OUTPUT_NAME "dreamrect")
 
-endif (MATLAB_FOUND)
+endif (Matlab_FOUND)
 
 #
 # dreamrect_f
@@ -258,7 +257,7 @@ if (OCTAVE_FOUND)
 
 endif (OCTAVE_FOUND)
 
-if (MATLAB_FOUND)
+if (Matlab_FOUND)
 
   set (mex_dreamrect_f_SOURCE_FILES
     mex/mex_dreamrect_f.cc
@@ -285,7 +284,7 @@ if (MATLAB_FOUND)
     LINK_FLAGS ${MEX_LD_FLAGS}
     SUFFIX ".${Matlab_MEX_EXTENSION}" PREFIX "" OUTPUT_NAME "dreamrect_f")
 
-endif (MATLAB_FOUND)
+endif (Matlab_FOUND)
 
 
 #
@@ -326,7 +325,7 @@ if (OCTAVE_FOUND)
 
 endif (OCTAVE_FOUND)
 
-if (MATLAB_FOUND)
+if (Matlab_FOUND)
 
   set (mex_dreamcirc_SOURCE_FILES
     mex/mex_dreamcirc.cc
@@ -353,7 +352,7 @@ if (MATLAB_FOUND)
     LINK_FLAGS ${MEX_LD_FLAGS}
     SUFFIX ".${Matlab_MEX_EXTENSION}" PREFIX "" OUTPUT_NAME "dreamcirc")
 
-endif (MATLAB_FOUND)
+endif (Matlab_FOUND)
 
 #
 # dreamcirc_f
@@ -388,7 +387,7 @@ if (OCTAVE_FOUND)
 
 endif (OCTAVE_FOUND)
 
-if (MATLAB_FOUND)
+if (Matlab_FOUND)
 
   set (mex_dreamcirc_f_SOURCE_FILES
     mex/mex_dreamcirc_f.cc
@@ -415,7 +414,7 @@ if (MATLAB_FOUND)
     LINK_FLAGS ${MEX_LD_FLAGS}
     SUFFIX ".${Matlab_MEX_EXTENSION}" PREFIX "" OUTPUT_NAME "dreamcirc_f")
 
-endif (MATLAB_FOUND)
+endif (Matlab_FOUND)
 
 #
 # dreamsphere_f
@@ -450,7 +449,7 @@ if (OCTAVE_FOUND)
 
 endif (OCTAVE_FOUND)
 
-if (MATLAB_FOUND)
+if (Matlab_FOUND)
 
   set (mex_dreamsphere_f_SOURCE_FILES
     mex/mex_dreamsphere_f.cc
@@ -477,7 +476,7 @@ if (MATLAB_FOUND)
     LINK_FLAGS ${MEX_LD_FLAGS}
     SUFFIX ".${Matlab_MEX_EXTENSION}" PREFIX "" OUTPUT_NAME "dreamsphere_f")
 
-endif (MATLAB_FOUND)
+endif (Matlab_FOUND)
 
 
 #
@@ -513,7 +512,7 @@ if (OCTAVE_FOUND)
 
 endif (OCTAVE_FOUND)
 
-if (MATLAB_FOUND)
+if (Matlab_FOUND)
 
   set (mex_dreamsphere_d_SOURCE_FILES
     mex/mex_dreamsphere_d.cc
@@ -540,7 +539,7 @@ if (MATLAB_FOUND)
     LINK_FLAGS ${MEX_LD_FLAGS}
     SUFFIX ".${Matlab_MEX_EXTENSION}" PREFIX "" OUTPUT_NAME "dreamsphere_d")
 
-endif (MATLAB_FOUND)
+endif (Matlab_FOUND)
 
 #
 # dreamcylind_f
@@ -575,7 +574,7 @@ if (OCTAVE_FOUND)
 
 endif (OCTAVE_FOUND)
 
-if (MATLAB_FOUND)
+if (Matlab_FOUND)
 
   set (mex_dreamcylind_f_SOURCE_FILES
     mex/mex_dreamcylind_f.cc
@@ -602,7 +601,7 @@ if (MATLAB_FOUND)
     LINK_FLAGS ${MEX_LD_FLAGS}
     SUFFIX ".${Matlab_MEX_EXTENSION}" PREFIX "" OUTPUT_NAME "dreamcylind_f")
 
-endif (MATLAB_FOUND)
+endif (Matlab_FOUND)
 
 #
 # dreamcylind_d
@@ -637,7 +636,7 @@ if (OCTAVE_FOUND)
 
 endif (OCTAVE_FOUND)
 
-if (MATLAB_FOUND)
+if (Matlab_FOUND)
 
   set (mex_dreamcylind_d_SOURCE_FILES
     mex/mex_dreamcylind_d.cc
@@ -665,7 +664,7 @@ if (MATLAB_FOUND)
     SUFFIX ".${Matlab_MEX_EXTENSION}" PREFIX "" OUTPUT_NAME "dreamcylind_d")
 
 
-endif (MATLAB_FOUND)
+endif (Matlab_FOUND)
 
 #
 # dream_arr_rect
@@ -701,7 +700,7 @@ if (OCTAVE_FOUND)
 
 endif (OCTAVE_FOUND)
 
-if (MATLAB_FOUND)
+if (Matlab_FOUND)
 
   set (mex_dream_arr_circ_SOURCE_FILES
     mex/mex_dream_arr_circ.cc
@@ -729,7 +728,7 @@ if (MATLAB_FOUND)
     LINK_FLAGS ${MEX_LD_FLAGS}
     SUFFIX ".${Matlab_MEX_EXTENSION}" PREFIX "" OUTPUT_NAME "dream_arr_circ")
 
-endif (MATLAB_FOUND)
+endif (Matlab_FOUND)
 
 #
 # dream_arr_circ
@@ -765,7 +764,7 @@ if (OCTAVE_FOUND)
 
 endif (OCTAVE_FOUND)
 
-if (MATLAB_FOUND)
+if (Matlab_FOUND)
 
   set (mex_dream_arr_rect_SOURCE_FILES
     mex/mex_dream_arr_rect.cc
@@ -793,7 +792,7 @@ if (MATLAB_FOUND)
     LINK_FLAGS ${MEX_LD_FLAGS}
     SUFFIX ".${Matlab_MEX_EXTENSION}" PREFIX "" OUTPUT_NAME "dream_arr_rect")
 
-endif (MATLAB_FOUND)
+endif (Matlab_FOUND)
 
 #
 # dream_arr_cylind_f
@@ -829,7 +828,7 @@ if (OCTAVE_FOUND)
 
 endif (OCTAVE_FOUND)
 
-if (MATLAB_FOUND)
+if (Matlab_FOUND)
 
   set (mex_dream_arr_cylind_f_SOURCE_FILES
     mex/mex_dream_arr_cylind_f.cc
@@ -857,7 +856,7 @@ if (MATLAB_FOUND)
     LINK_FLAGS ${MEX_LD_FLAGS}
     SUFFIX ".${Matlab_MEX_EXTENSION}" PREFIX "" OUTPUT_NAME "dream_arr_cylind_f")
 
-endif (MATLAB_FOUND)
+endif (Matlab_FOUND)
 
 #
 # dream_arr_cylind_d
@@ -893,7 +892,7 @@ if (OCTAVE_FOUND)
 
 endif (OCTAVE_FOUND)
 
-if (MATLAB_FOUND)
+if (Matlab_FOUND)
 
   set (mex_dream_arr_cylind_d_SOURCE_FILES
     mex/mex_dream_arr_cylind_d.cc
@@ -921,7 +920,7 @@ if (MATLAB_FOUND)
     LINK_FLAGS ${MEX_LD_FLAGS}
     SUFFIX ".${Matlab_MEX_EXTENSION}" PREFIX "" OUTPUT_NAME "dream_arr_cylind_d")
 
-endif (MATLAB_FOUND)
+endif (Matlab_FOUND)
 
 #
 # dream_arr_annu
@@ -957,12 +956,13 @@ if (OCTAVE_FOUND)
 
 endif (OCTAVE_FOUND)
 
-if (MATLAB_FOUND)
+if (Matlab_FOUND)
 
   set (mex_dream_arr_annu_SOURCE_FILES
     mex/mex_dream_arr_annu.cc
     src/att.cc
     src/affinity.cc
+    src/arr_functions.c
     src/dream_arr_annu.c
     src/fft.c
     src/dream_error.c
@@ -984,7 +984,7 @@ if (MATLAB_FOUND)
     LINK_FLAGS ${MEX_LD_FLAGS}
     SUFFIX ".${Matlab_MEX_EXTENSION}" PREFIX "" OUTPUT_NAME "dream_arr_annu")
 
-endif (MATLAB_FOUND)
+endif (Matlab_FOUND)
 
 #
 # Misc routines.
@@ -1021,10 +1021,10 @@ if (OCTAVE_FOUND)
 
 endif (OCTAVE_FOUND)
 
-if (MATLAB_FOUND)
+if (Matlab_FOUND)
 
   set (mex_dream_apodwin_SOURCE_FILES
-    mex/mex_dream_apodwin.c
+    mex/mex_dream_apodwin.cc
     src/arr_functions.c
     src/dream_error.c
     )
@@ -1045,7 +1045,7 @@ if (MATLAB_FOUND)
     LINK_FLAGS ${MEX_LD_FLAGS}
     SUFFIX ".${Matlab_MEX_EXTENSION}" PREFIX "" OUTPUT_NAME "dream_apodwin")
 
-endif (MATLAB_FOUND)
+endif (Matlab_FOUND)
 
 #
 # dream_att
@@ -1080,7 +1080,7 @@ if (OCTAVE_FOUND)
 
 endif (OCTAVE_FOUND)
 
-if (MATLAB_FOUND)
+if (Matlab_FOUND)
 
   set (mex_dream_att_SOURCE_FILES
     mex/mex_dream_att.c
@@ -1106,7 +1106,7 @@ if (MATLAB_FOUND)
     LINK_FLAGS ${MEX_LD_FLAGS}
     SUFFIX ".${Matlab_MEX_EXTENSION}" PREFIX "" OUTPUT_NAME "dream_att")
 
-endif (MATLAB_FOUND)
+endif (Matlab_FOUND)
 
 
 #
@@ -1141,7 +1141,7 @@ if (OCTAVE_FOUND)
 
 endif (OCTAVE_FOUND)
 
-if (MATLAB_FOUND)
+if (Matlab_FOUND)
 
   set (mex_circ_sir_SOURCE_FILES
     extra_src/mex_circ_sir.cc
@@ -1165,7 +1165,7 @@ if (MATLAB_FOUND)
     LINK_FLAGS ${MEX_LD_FLAGS}
     SUFFIX ".${Matlab_MEX_EXTENSION}" PREFIX "" OUTPUT_NAME "circ_sir")
 
-endif (MATLAB_FOUND)
+endif (Matlab_FOUND)
 
 # Sampled analytic circ
 
@@ -1194,7 +1194,7 @@ if (OCTAVE_FOUND)
 
 endif (OCTAVE_FOUND)
 
-if (MATLAB_FOUND)
+if (Matlab_FOUND)
 
   set (mex_scirc_sir_SOURCE_FILES
     extra_src/mex_scirc_sir.cc
@@ -1217,7 +1217,7 @@ if (MATLAB_FOUND)
     LINK_FLAGS ${MEX_LD_FLAGS}
     SUFFIX ".${Matlab_MEX_EXTENSION}" PREFIX "" OUTPUT_NAME "scirc_sir")
 
-endif (MATLAB_FOUND)
+endif (Matlab_FOUND)
 
 # Rect
 
@@ -1252,7 +1252,7 @@ if (OCTAVE_FOUND)
 
 endif (OCTAVE_FOUND)
 
-if (MATLAB_FOUND)
+if (Matlab_FOUND)
 
   set (mex_rect_sir_SOURCE_FILES
     extra_src/mex_rect_sir.cc
@@ -1276,7 +1276,7 @@ if (MATLAB_FOUND)
     LINK_FLAGS ${MEX_LD_FLAGS}
     SUFFIX ".${Matlab_MEX_EXTENSION}" PREFIX "" OUTPUT_NAME "rect_sir")
 
-endif (MATLAB_FOUND)
+endif (Matlab_FOUND)
 
 #
 # Delay-and-sum (DAS)
@@ -1309,7 +1309,7 @@ if (OCTAVE_FOUND)
 
 endif (OCTAVE_FOUND)
 
-if (MATLAB_FOUND)
+if (Matlab_FOUND)
 
   set (mex_das_SOURCE_FILES
     extra_src/mex_das.c
@@ -1333,7 +1333,7 @@ if (MATLAB_FOUND)
     LINK_FLAGS ${MEX_LD_FLAGS}
     SUFFIX ".${Matlab_MEX_EXTENSION}" PREFIX "" OUTPUT_NAME "das")
 
-endif (MATLAB_FOUND)
+endif (Matlab_FOUND)
 
 # das_err
 
@@ -1363,7 +1363,7 @@ if (OCTAVE_FOUND)
 
 endif (OCTAVE_FOUND)
 
-if (MATLAB_FOUND)
+if (Matlab_FOUND)
 
   set (mex_das_arr_SOURCE_FILES
     extra_src/mex_das_arr.c
@@ -1388,7 +1388,7 @@ if (MATLAB_FOUND)
     LINK_FLAGS ${MEX_LD_FLAGS}
     SUFFIX ".${Matlab_MEX_EXTENSION}" PREFIX "" OUTPUT_NAME "das_arr")
 
-endif (MATLAB_FOUND)
+endif (Matlab_FOUND)
 
 #
 # SAFT
@@ -1419,7 +1419,7 @@ if (OCTAVE_FOUND)
 
 endif (OCTAVE_FOUND)
 
-if (MATLAB_FOUND)
+if (Matlab_FOUND)
 
   set (mex_saft_SOURCE_FILES
     extra_src/mex_saft.cc
@@ -1441,7 +1441,7 @@ if (MATLAB_FOUND)
     LINK_FLAGS ${MEX_LD_FLAGS}
     SUFFIX ".${Matlab_MEX_EXTENSION}" PREFIX "" OUTPUT_NAME "saft")
 
-endif (MATLAB_FOUND)
+endif (Matlab_FOUND)
 
 #
 # Convolution algorithms
@@ -1476,7 +1476,7 @@ if (OCTAVE_FOUND)
 
 endif (OCTAVE_FOUND)
 
-if (MATLAB_FOUND)
+if (Matlab_FOUND)
 
   set (mex_conv_p_SOURCE_FILES
     extra_src/mex_conv_p.cc
@@ -1500,7 +1500,7 @@ if (MATLAB_FOUND)
     LINK_FLAGS ${MEX_LD_FLAGS}
     SUFFIX ".${Matlab_MEX_EXTENSION}" PREFIX "" OUTPUT_NAME "conv_p")
 
-endif (MATLAB_FOUND)
+endif (Matlab_FOUND)
 
 # fftconv_p
 
@@ -1530,7 +1530,7 @@ if (OCTAVE_FOUND)
 
 endif (OCTAVE_FOUND)
 
-if (MATLAB_FOUND)
+if (Matlab_FOUND)
 
   set (mex_fftconv_p_SOURCE_FILES
     extra_src/mex_fftconv_p.cc
@@ -1554,7 +1554,7 @@ if (MATLAB_FOUND)
     LINK_FLAGS ${MEX_LD_FLAGS}
     SUFFIX ".${Matlab_MEX_EXTENSION}" PREFIX "" OUTPUT_NAME "fftconv_p")
 
-endif (MATLAB_FOUND)
+endif (Matlab_FOUND)
 
 
 # sum_fftconv
@@ -1585,7 +1585,7 @@ if (OCTAVE_FOUND)
 
 endif (OCTAVE_FOUND)
 
-if (MATLAB_FOUND)
+if (Matlab_FOUND)
 
   set (mex_sum_fftconv_SOURCE_FILES
     extra_src/mex_sum_fftconv.cc
@@ -1609,7 +1609,7 @@ if (MATLAB_FOUND)
     LINK_FLAGS ${MEX_LD_FLAGS}
     SUFFIX ".${Matlab_MEX_EXTENSION}" PREFIX "" OUTPUT_NAME "sum_fftconv")
 
-endif (MATLAB_FOUND)
+endif (Matlab_FOUND)
 
 
 # fftconv_ola
@@ -1641,11 +1641,11 @@ if (OCTAVE_FOUND)
 
 endif (OCTAVE_FOUND)
 
-if (MATLAB_FOUND)
+if (Matlab_FOUND)
 
   # Not implemented yet.
 
-endif (MATLAB_FOUND)
+endif (Matlab_FOUND)
 
 #
 # Copy
@@ -1676,7 +1676,7 @@ if (OCTAVE_FOUND)
 
 endif (OCTAVE_FOUND)
 
-if (MATLAB_FOUND)
+if (Matlab_FOUND)
 
   set (mex_copy_p_SOURCE_FILES
     extra_src/mex_copy_p.cc
@@ -1698,7 +1698,7 @@ if (MATLAB_FOUND)
     LINK_FLAGS ${MEX_LD_FLAGS}
     SUFFIX ".${Matlab_MEX_EXTENSION}" PREFIX "" OUTPUT_NAME "copy_p")
 
-endif (MATLAB_FOUND)
+endif (Matlab_FOUND)
 
 #
 # User manual (N.B., we need CMake 3.x on Windows due to a MikTeX related bug).

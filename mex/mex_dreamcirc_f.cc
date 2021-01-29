@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2003,2006,2007,2008,2009,2014,2015,2019 Fredrik Lingvall
+* Copyright (C) 2003,2006,2007,2008,2009,2014,2015,2019,2021 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -21,7 +21,6 @@
 *
 ***/
 
-
 #include <string.h>
 #include <stdlib.h>
 #include <iostream>
@@ -29,7 +28,7 @@
 #include <mutex>
 #include <signal.h>
 #include "mex.h"
-#inclide "affinity.h"
+#include "affinity.h"
 #include "dreamcirc_f.h"
 #include "dream_error.h"
 

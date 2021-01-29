@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2006,2007,2008,2009,2014,2015,2016,2019 Fredrik Lingvall
+* Copyright (C) 2006,2007,2008,2009,2014,2015,2016,2019,2021 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -23,6 +23,7 @@
 
 
 #include <string.h>
+#include <string>
 #include <stdlib.h>
 #include <math.h>
 #include <thread>
@@ -217,15 +218,15 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   //
 
   if ((old_handler = signal(SIGTERM, &sighandler)) == SIG_ERR) {
-    printf("Couldn't register signal handler.\n");
+    mexErrMsgTxt("Couldn't register signal handler.\n");
   }
 
   if ((old_handler_abrt=signal(SIGABRT, &sighandler)) == SIG_ERR) {
-    printf("Couldn't register signal handler.\n");
+    mexErrMsgTxt("Couldn't register signal handler.\n");
   }
 
   if ((old_handler_keyint=signal(SIGINT, &sighandler)) == SIG_ERR) {
-    printf("Couldn't register signal handler.\n");
+    mexErrMsgTxt("Couldn't register signal handler.\n");
   }
 
   //

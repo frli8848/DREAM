@@ -56,26 +56,26 @@ typedef struct
   size_t no;
   size_t start;
   size_t stop;
-  double *RESTRICT ro;
+  double *ro;
   double dx;
   double dy;
   double dt;
   size_t nt;
   int delay_method;
-  double *RESTRICT delay;
+  double *delay;
   double v;
   double cp;
   double alpha;
   size_t num_elements;
-  double *RESTRICT gr;
+  double *gr;
   int ifoc;
   bool do_apod;
   int iapo;
   double focal;
-  double *RESTRICT apod;
+  double *apod;
   double param;
   double  *ud_focal;
-  double *RESTRICT h;
+  double *h;
   int err_level;
 } DATA;
 
@@ -102,17 +102,17 @@ void* smp_dream_arr_annu(void *arg)
   size_t n;
   DATA D = *(DATA *)arg;
   double xo, yo, zo;
-  double *RESTRICT h = D.h;
+  double *h = D.h;
   double dx=D.dx, dy=D.dy, dt=D.dt;
   size_t no=D.no, nt=D.nt;
   int    tmp_lev, err_level=D.err_level;
-  double *RESTRICT delay=D.delay, *RESTRICT ro=D.ro, v=D.v, cp=D.cp, alpha=D.alpha;
+  double *delay=D.delay, *ro=D.ro, v=D.v, cp=D.cp, alpha=D.alpha;
   size_t start=D.start, stop=D.stop;
   int    ifoc=D.ifoc, do_apod = D.do_apod,iapo=D.iapo;
   double focal=D.focal, *apod=D.apod, param=D.param;
   size_t  num_elements = D.num_elements;
-  double *RESTRICT gr=D.gr;
-  double *RESTRICT ud_focal=D.ud_focal;
+  double *gr=D.gr;
+  double *ud_focal=D.ud_focal;
 
   // Let the thread finish and then catch the error.
   if (err_level == STOP)
@@ -254,20 +254,20 @@ extern void _main();
 
 void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
-  double *RESTRICT ro, *RESTRICT s_par,*RESTRICT m_par;
+  double *ro, *s_par,*m_par;
   char   apod_met[50],foc_met[50];
   int    buflen;
   double dx,dy,dt;
   size_t nt, no;
-  double param=0,*RESTRICT delay,v,cp,alpha;
+  double param=0,*delay,v,cp,alpha;
   size_t num_elements=0;
-  double *RESTRICT gr;
+  double *gr;
   int    ifoc=0;
-  double focal=0,*RESTRICT ud_focal=NULL;
-  double *RESTRICT apod=NULL;
+  double focal=0,*ud_focal=NULL;
+  double *apod=NULL;
   bool   do_apod=false;
   int    iapo=0;
-  double *RESTRICT h, *err_p;
+  double *h, *err_p;
   int    err_level=STOP, is_set = false;
   char   err_str[50];
   DATA   *D;

@@ -29,7 +29,9 @@
 
 #include "affinity.h"
 
-#ifdef __linux__
+// NB. We only support pthreads for setting the affinity
+
+#ifdef HAVE_PTHREADS
 #include <pthread.h>
 #include <sched.h>
 #endif
@@ -40,9 +42,7 @@ int set_dream_thread_affinity(dream_idx_type thread_n, dream_idx_type nthreads, 
 {
   int err = 0;
 
-#ifdef __linux__
-
-  // Linux uses pthreads.
+#ifdef HAVE_PTHREAD
 
   cpu_set_t cpuset;
 

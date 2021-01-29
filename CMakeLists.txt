@@ -63,6 +63,12 @@ if (BUILD_MEX)
 
 endif (BUILD_MEX)
 
+# Check if we have pthreads (for setting the thread affinity)
+find_package(Threads)
+if (CMAKE_USE_PTHREADS_INIT)
+  message (STATUS "We have pthread support -> enabing thread affinity control!")
+  add_definitions( -DHAVE_THREAD )
+endif(CMAKE_USE_PTHREADS_INIT)
 #
 # Common flags for the oct and mex interfaces.
 #

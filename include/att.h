@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2002,2003,2004,2006,2007,2008,2009,2012,2014,2015 Fredrik Lingvall
+* Copyright (C) 2002,2003,2004,2006,2007,2008,2009,2012,2014,2015,2021 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -31,7 +31,7 @@
  *
  ***/
 
-#ifdef USE_FFTW
+#ifdef HAVE_FFTW
 
 #ifdef __cplusplus
 extern "C"
@@ -43,7 +43,7 @@ extern "C"
 #endif
 void att_close();
 
-#endif // USE_FFTW
+#endif // HAVE_FFTW
 
 #ifdef __cplusplus
 extern "C"

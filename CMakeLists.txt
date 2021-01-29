@@ -31,8 +31,11 @@ endif (USE_OPENCL)
 
 if (BUILD_OCT OR BUILD_MEX)
 
-  find_package (FFTW REQUIRED)  # Will define FFTW_INCLUDE_DIR and FFTW_LIBRARIES
-  message (STATUS "${FFTW_LIBRARIES}")
+  find_package (FFTW)  # Will define FFTW_INCLUDE_DIR, FFTW_LIBRARIES, and FFTW_FOUND
+  if (FFTW_FOUND)
+    message (STATUS "${FFTW_LIBRARIES}")
+    add_definitions( -DHAVE_FFTW )	# Build with FFTW support
+  endif (FFTW_FOUND)
 
 endif (BUILD_OCT OR BUILD_MEX)
 
@@ -58,7 +61,10 @@ if (BUILD_MEX)
 
   if (Matlab_FOUND)
     # mex libs
-    set (MEX_LD_FLAGS "${CMAKE_LD_FLAGS} ${MATLAB_MEX_LIBRARY} ${MATLAB_MX_LIBRARY} -lstdc++ -lfftw3")
+    set (MEX_LD_FLAGS "${CMAKE_LD_FLAGS} ${MATLAB_MEX_LIBRARY} ${MATLAB_MX_LIBRARY} -lstdc++")
+    if (FFTW_FOUND)
+      set (MEX_LD_FLAGS "${MEX_LD_FLAGS}  -lfftw3")
+    endif (FFTW_FOUND)
   endif (Matlab_FOUND)
 
 endif (BUILD_MEX)
@@ -85,17 +91,19 @@ set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 include_directories (
   ${PROJECT_BINARY_DIR}
   ${PROJECT_SOURCE_DIR}/include
-  ${FFTW_INCLUDE_DIR}
+
+  if (FFTW_FOUND)
+    ${FFTW_INCLUDE_DIR}
+  endif (FFTW_FOUND)
+
   if (OCTAVE_FOUND)
     ${OCTAVE_INCLUDE_DIRS}
   endif (OCTAVE_FOUND)
+
   if (Matlab_FOUND)
     ${Matlab_INCLUDE_DIRS}
   endif (Matlab_FOUND)
   )
-
-add_definitions( -DUSE_FFTW )	# Build with FFTW support
-add_definitions( -DPARALLEL )	# att.cc needs this.
 
 #
 # dreamline
@@ -109,9 +117,9 @@ if (OCTAVE_FOUND)
     oct/oct_dreamline.cc
     src/att.cc
     src/affinity.cc
-    src/dreamline.c
+    src/dreamline.cc
     src/fft_octave.cc
-    src/dream_error.c
+    src/dream_error.cc
     )
 
   add_library (oct_dreamline MODULE
@@ -124,7 +132,6 @@ if (OCTAVE_FOUND)
     )
 
   set_target_properties (oct_dreamline PROPERTIES
-    C_STANDARD 99
     CXX_STANDARD 11
     COMPILE_FLAGS "${OCT_FLAGS}"
     LINK_FLAGS ${OCT_LD_FLAGS}
@@ -140,9 +147,9 @@ if (Matlab_FOUND)
     mex/mex_dreamline.cc
     src/att.cc
     src/affinity.cc
-    src/dreamline.c
-    src/fft.c
-    src/dream_error.c
+    src/dreamline.cc
+    src/fft.cc
+    src/dream_error.cc
     )
 
   add_library (mex_dreamline MODULE
@@ -155,7 +162,6 @@ if (Matlab_FOUND)
     )
 
   set_target_properties (mex_dreamline PROPERTIES
-    C_STANDARD 99
     CXX_STANDARD 11
     COMPILE_FLAGS ""
     LINK_FLAGS ${MEX_LD_FLAGS}
@@ -171,11 +177,11 @@ if (OCTAVE_FOUND)
 
   set (oct_dreamrect_SOURCE_FILES
     oct/oct_dreamrect.cc
-    src/dreamrect.c
+    src/dreamrect.cc
     src/att.cc
     src/affinity.cc
     src/fft_octave.cc
-    src/dream_error.c
+    src/dream_error.cc
     )
 
   if (OpenCL_FOUND)
@@ -193,7 +199,6 @@ if (OCTAVE_FOUND)
     )
 
   set_target_properties (oct_dreamrect PROPERTIES
-    C_STANDARD 99
     CXX_STANDARD 11
     COMPILE_FLAGS "${OCT_FLAGS}"
     LINK_FLAGS ${OCT_LD_FLAGS}
@@ -207,9 +212,9 @@ if (Matlab_FOUND)
     mex/mex_dreamrect.cc
     src/att.cc
     src/affinity.cc
-    src/dreamrect.c
-    src/fft.c
-    src/dream_error.c
+    src/dreamrect.cc
+    src/fft.cc
+    src/dream_error.cc
     )
 
   add_library (mex_dreamrect MODULE
@@ -222,7 +227,6 @@ if (Matlab_FOUND)
     )
 
   set_target_properties (mex_dreamrect PROPERTIES
-    C_STANDARD 99
     CXX_STANDARD 11
     COMPILE_FLAGS ""
     LINK_FLAGS ${MEX_LD_FLAGS}
@@ -240,9 +244,9 @@ if (OCTAVE_FOUND)
     oct/oct_dreamrect_f.cc
     src/att.cc
     src/affinity.cc
-    src/dreamrect_f.c
+    src/dreamrect_f.cc
     src/fft_octave.cc
-    src/dream_error.c
+    src/dream_error.cc
     )
 
   add_library (oct_dreamrect_f MODULE
@@ -255,7 +259,6 @@ if (OCTAVE_FOUND)
     )
 
   set_target_properties (oct_dreamrect_f PROPERTIES
-    C_STANDARD 99
     CXX_STANDARD 11
     COMPILE_FLAGS "${OCT_FLAGS}"
     LINK_FLAGS ${OCT_LD_FLAGS}
@@ -269,9 +272,9 @@ if (Matlab_FOUND)
     mex/mex_dreamrect_f.cc
     src/att.cc
     src/affinity.cc
-    src/dreamrect_f.c
-    src/fft.c
-    src/dream_error.c
+    src/dreamrect_f.cc
+    src/fft.cc
+    src/dream_error.cc
     )
 
   add_library (mex_dreamrect_f MODULE
@@ -284,7 +287,6 @@ if (Matlab_FOUND)
     )
 
   set_target_properties (mex_dreamrect_f PROPERTIES
-    C_STANDARD 99
     CXX_STANDARD 11
     COMPILE_FLAGS ""
     LINK_FLAGS ${MEX_LD_FLAGS}
@@ -303,9 +305,9 @@ if (OCTAVE_FOUND)
     oct/oct_dreamcirc.cc
     src/att.cc
     src/affinity.cc
-    src/dreamcirc.c
+    src/dreamcirc.cc
     src/fft_octave.cc
-    src/dream_error.c
+    src/dream_error.cc
     )
 
   if (OpenCL_FOUND)
@@ -323,7 +325,6 @@ if (OCTAVE_FOUND)
     )
 
   set_target_properties (oct_dreamcirc PROPERTIES
-    C_STANDARD 99
     CXX_STANDARD 11
     COMPILE_FLAGS "${OCT_FLAGS}"
     LINK_FLAGS ${OCT_LD_FLAGS}
@@ -337,9 +338,9 @@ if (Matlab_FOUND)
     mex/mex_dreamcirc.cc
     src/att.cc
     src/affinity.cc
-    src/dreamcirc.c
-    src/fft.c
-    src/dream_error.c
+    src/dreamcirc.cc
+    src/fft.cc
+    src/dream_error.cc
     )
 
   add_library (mex_dreamcirc MODULE
@@ -352,7 +353,6 @@ if (Matlab_FOUND)
     )
 
   set_target_properties (mex_dreamcirc PROPERTIES
-    C_STANDARD 99
     CXX_STANDARD 11
     COMPILE_FLAGS ""
     LINK_FLAGS ${MEX_LD_FLAGS}
@@ -370,9 +370,9 @@ if (OCTAVE_FOUND)
     oct/oct_dreamcirc_f.cc
     src/att.cc
     src/affinity.cc
-    src/dreamcirc_f.c
+    src/dreamcirc_f.cc
     src/fft_octave.cc
-    src/dream_error.c
+    src/dream_error.cc
     )
 
   add_library (oct_dreamcirc_f MODULE
@@ -385,7 +385,6 @@ if (OCTAVE_FOUND)
     )
 
   set_target_properties (oct_dreamcirc_f PROPERTIES
-    C_STANDARD 99
     CXX_STANDARD 11
     COMPILE_FLAGS "${OCT_FLAGS}"
     LINK_FLAGS ${OCT_LD_FLAGS}
@@ -399,9 +398,9 @@ if (Matlab_FOUND)
     mex/mex_dreamcirc_f.cc
     src/att.cc
     src/affinity.cc
-    src/dreamcirc_f.c
-    src/fft.c
-    src/dream_error.c
+    src/dreamcirc_f.cc
+    src/fft.cc
+    src/dream_error.cc
     )
 
   add_library (mex_dreamcirc_f MODULE
@@ -414,7 +413,6 @@ if (Matlab_FOUND)
     )
 
   set_target_properties (mex_dreamcirc_f PROPERTIES
-    C_STANDARD 99
     CXX_STANDARD 11
     COMPILE_FLAGS ""
     LINK_FLAGS ${MEX_LD_FLAGS}
@@ -432,9 +430,9 @@ if (OCTAVE_FOUND)
     oct/oct_dreamsphere_f.cc
     src/att.cc
     src/affinity.cc
-    src/dreamsphere_f.c
+    src/dreamsphere_f.cc
     src/fft_octave.cc
-    src/dream_error.c
+    src/dream_error.cc
     )
 
   add_library (oct_dreamsphere_f MODULE
@@ -447,7 +445,6 @@ if (OCTAVE_FOUND)
     )
 
   set_target_properties (oct_dreamsphere_f PROPERTIES
-    C_STANDARD 99
     CXX_STANDARD 11
     COMPILE_FLAGS "${OCT_FLAGS}"
     LINK_FLAGS ${OCT_LD_FLAGS}
@@ -461,9 +458,9 @@ if (Matlab_FOUND)
     mex/mex_dreamsphere_f.cc
     src/att.cc
     src/affinity.cc
-    src/dreamsphere_f.c
-    src/fft.c
-    src/dream_error.c
+    src/dreamsphere_f.cc
+    src/fft.cc
+    src/dream_error.cc
     )
 
   add_library (mex_dreamsphere_f MODULE
@@ -476,7 +473,6 @@ if (Matlab_FOUND)
     )
 
   set_target_properties (mex_dreamsphere_f PROPERTIES
-    C_STANDARD 99
     CXX_STANDARD 11
     COMPILE_FLAGS ""
     LINK_FLAGS ${MEX_LD_FLAGS}
@@ -495,9 +491,9 @@ if (OCTAVE_FOUND)
     oct/oct_dreamsphere_d.cc
     src/att.cc
     src/affinity.cc
-    src/dreamsphere_d.c
+    src/dreamsphere_d.cc
     src/fft_octave.cc
-    src/dream_error.c
+    src/dream_error.cc
     )
 
   add_library (oct_dreamsphere_d MODULE
@@ -510,7 +506,6 @@ if (OCTAVE_FOUND)
     )
 
   set_target_properties (oct_dreamsphere_d PROPERTIES
-    C_STANDARD 99
     CXX_STANDARD 11
     COMPILE_FLAGS "${OCT_FLAGS}"
     LINK_FLAGS ${OCT_LD_FLAGS}
@@ -524,9 +519,9 @@ if (Matlab_FOUND)
     mex/mex_dreamsphere_d.cc
     src/att.cc
     src/affinity.cc
-    src/dreamsphere_d.c
-    src/fft.c
-    src/dream_error.c
+    src/dreamsphere_d.cc
+    src/fft.cc
+    src/dream_error.cc
     )
 
   add_library (mex_dreamsphere_d MODULE
@@ -539,7 +534,6 @@ if (Matlab_FOUND)
     )
 
   set_target_properties (mex_dreamsphere_d PROPERTIES
-    C_STANDARD 99
     CXX_STANDARD 11
     COMPILE_FLAGS ""
     LINK_FLAGS ${MEX_LD_FLAGS}
@@ -557,9 +551,9 @@ if (OCTAVE_FOUND)
     oct/oct_dreamcylind_f.cc
     src/att.cc
     src/affinity.cc
-    src/dreamcylind_f.c
+    src/dreamcylind_f.cc
     src/fft_octave.cc
-    src/dream_error.c
+    src/dream_error.cc
     )
 
   add_library (oct_dreamcylind_f MODULE
@@ -572,7 +566,6 @@ if (OCTAVE_FOUND)
     )
 
   set_target_properties (oct_dreamcylind_f PROPERTIES
-    C_STANDARD 99
     CXX_STANDARD 11
     COMPILE_FLAGS "${OCT_FLAGS}"
     LINK_FLAGS ${OCT_LD_FLAGS}
@@ -586,9 +579,9 @@ if (Matlab_FOUND)
     mex/mex_dreamcylind_f.cc
     src/att.cc
     src/affinity.cc
-    src/dreamcylind_f.c
-    src/fft.c
-    src/dream_error.c
+    src/dreamcylind_f.cc
+    src/fft.cc
+    src/dream_error.cc
     )
 
   add_library (mex_dreamcylind_f MODULE
@@ -601,7 +594,6 @@ if (Matlab_FOUND)
     )
 
   set_target_properties (mex_dreamcylind_f PROPERTIES
-    C_STANDARD 99
     CXX_STANDARD 11
     COMPILE_FLAGS ""
     LINK_FLAGS ${MEX_LD_FLAGS}
@@ -619,9 +611,9 @@ if (OCTAVE_FOUND)
     oct/oct_dreamcylind_d.cc
     src/att.cc
     src/affinity.cc
-    src/dreamcylind_d.c
+    src/dreamcylind_d.cc
     src/fft_octave.cc
-    src/dream_error.c
+    src/dream_error.cc
     )
 
   add_library (oct_dreamcylind_d MODULE
@@ -634,7 +626,6 @@ if (OCTAVE_FOUND)
     )
 
   set_target_properties (oct_dreamcylind_d PROPERTIES
-    C_STANDARD 99
     CXX_STANDARD 11
     COMPILE_FLAGS "${OCT_FLAGS}"
     LINK_FLAGS ${OCT_LD_FLAGS}
@@ -648,9 +639,9 @@ if (Matlab_FOUND)
     mex/mex_dreamcylind_d.cc
     src/att.cc
     src/affinity.cc
-    src/dreamcylind_d.c
-    src/fft.c
-    src/dream_error.c
+    src/dreamcylind_d.cc
+    src/fft.cc
+    src/dream_error.cc
     )
 
   add_library (mex_dreamcylind_d MODULE
@@ -663,7 +654,6 @@ if (Matlab_FOUND)
     )
 
   set_target_properties (mex_dreamcylind_d PROPERTIES
-    C_STANDARD 99
     CXX_STANDARD 11
     COMPILE_FLAGS ""
     LINK_FLAGS ${MEX_LD_FLAGS}
@@ -682,10 +672,10 @@ if (OCTAVE_FOUND)
     oct/oct_dream_arr_rect.cc
     src/att.cc
     src/affinity.cc
-    src/arr_functions.c
-    src/dream_arr_rect.c
+    src/arr_functions.cc
+    src/dream_arr_rect.cc
     src/fft_octave.cc
-    src/dream_error.c
+    src/dream_error.cc
     )
 
   add_library (oct_dream_arr_rect MODULE
@@ -698,7 +688,6 @@ if (OCTAVE_FOUND)
     )
 
   set_target_properties (oct_dream_arr_rect PROPERTIES
-    C_STANDARD 99
     CXX_STANDARD 11
     COMPILE_FLAGS "${OCT_FLAGS}"
     LINK_FLAGS ${OCT_LD_FLAGS}
@@ -712,10 +701,10 @@ if (Matlab_FOUND)
     mex/mex_dream_arr_circ.cc
     src/att.cc
     src/affinity.cc
-    src/arr_functions.c
-    src/dream_arr_circ.c
-    src/fft.c
-    src/dream_error.c
+    src/arr_functions.cc
+    src/dream_arr_circ.cc
+    src/fft.cc
+    src/dream_error.cc
     )
 
   add_library (mex_dream_arr_circ MODULE
@@ -728,7 +717,6 @@ if (Matlab_FOUND)
     )
 
   set_target_properties (mex_dream_arr_circ PROPERTIES
-    C_STANDARD 99
     CXX_STANDARD 11
     COMPILE_FLAGS ""
     LINK_FLAGS ${MEX_LD_FLAGS}
@@ -746,10 +734,10 @@ if (OCTAVE_FOUND)
     oct/oct_dream_arr_circ.cc
     src/att.cc
     src/affinity.cc
-    src/arr_functions.c
-    src/dream_arr_circ.c
+    src/arr_functions.cc
+    src/dream_arr_circ.cc
     src/fft_octave.cc
-    src/dream_error.c
+    src/dream_error.cc
     )
 
   add_library (oct_dream_arr_circ MODULE
@@ -762,7 +750,6 @@ if (OCTAVE_FOUND)
     )
 
   set_target_properties (oct_dream_arr_circ PROPERTIES
-    C_STANDARD 99
     CXX_STANDARD 11
     COMPILE_FLAGS "${OCT_FLAGS}"
     LINK_FLAGS ${OCT_LD_FLAGS}
@@ -776,10 +763,10 @@ if (Matlab_FOUND)
     mex/mex_dream_arr_rect.cc
     src/att.cc
     src/affinity.cc
-    src/arr_functions.c
-    src/dream_arr_rect.c
-    src/fft.c
-    src/dream_error.c
+    src/arr_functions.cc
+    src/dream_arr_rect.cc
+    src/fft.cc
+    src/dream_error.cc
     )
 
   add_library (mex_dream_arr_rect MODULE
@@ -792,7 +779,6 @@ if (Matlab_FOUND)
     )
 
   set_target_properties (mex_dream_arr_rect PROPERTIES
-    C_STANDARD 99
     CXX_STANDARD 11
     COMPILE_FLAGS ""
     LINK_FLAGS ${MEX_LD_FLAGS}
@@ -810,10 +796,10 @@ if (OCTAVE_FOUND)
     oct/oct_dream_arr_cylind_f.cc
     src/att.cc
     src/affinity.cc
-    src/arr_functions.c
-    src/dream_arr_cylind_f.c
+    src/arr_functions.cc
+    src/dream_arr_cylind_f.cc
     src/fft_octave.cc
-    src/dream_error.c
+    src/dream_error.cc
     )
 
   add_library (oct_dream_arr_cylind_f MODULE
@@ -826,7 +812,6 @@ if (OCTAVE_FOUND)
     )
 
   set_target_properties (oct_dream_arr_cylind_f PROPERTIES
-    C_STANDARD 99
     CXX_STANDARD 11
     COMPILE_FLAGS "${OCT_FLAGS}"
     LINK_FLAGS ${OCT_LD_FLAGS}
@@ -840,10 +825,10 @@ if (Matlab_FOUND)
     mex/mex_dream_arr_cylind_f.cc
     src/att.cc
     src/affinity.cc
-    src/arr_functions.c
-    src/dream_arr_cylind_f.c
-    src/fft.c
-    src/dream_error.c
+    src/arr_functions.cc
+    src/dream_arr_cylind_f.cc
+    src/fft.cc
+    src/dream_error.cc
     )
 
   add_library (mex_dream_arr_cylind_f MODULE
@@ -856,7 +841,6 @@ if (Matlab_FOUND)
     )
 
   set_target_properties (mex_dream_arr_cylind_f PROPERTIES
-    C_STANDARD 99
     CXX_STANDARD 11
     COMPILE_FLAGS ""
     LINK_FLAGS ${MEX_LD_FLAGS}
@@ -874,10 +858,10 @@ if (OCTAVE_FOUND)
     oct/oct_dream_arr_cylind_d.cc
     src/att.cc
     src/affinity.cc
-    src/arr_functions.c
-    src/dream_arr_cylind_d.c
+    src/arr_functions.cc
+    src/dream_arr_cylind_d.cc
     src/fft_octave.cc
-    src/dream_error.c
+    src/dream_error.cc
     )
 
   add_library (oct_dream_arr_cylind_d MODULE
@@ -890,7 +874,6 @@ if (OCTAVE_FOUND)
     )
 
   set_target_properties (oct_dream_arr_cylind_d PROPERTIES
-    C_STANDARD 99
     CXX_STANDARD 11
     COMPILE_FLAGS "${OCT_FLAGS}"
     LINK_FLAGS ${OCT_LD_FLAGS}
@@ -904,10 +887,10 @@ if (Matlab_FOUND)
     mex/mex_dream_arr_cylind_d.cc
     src/att.cc
     src/affinity.cc
-    src/arr_functions.c
-    src/dream_arr_cylind_d.c
-    src/fft.c
-    src/dream_error.c
+    src/arr_functions.cc
+    src/dream_arr_cylind_d.cc
+    src/fft.cc
+    src/dream_error.cc
     )
 
   add_library (mex_dream_arr_cylind_d MODULE
@@ -920,7 +903,6 @@ if (Matlab_FOUND)
     )
 
   set_target_properties (mex_dream_arr_cylind_d PROPERTIES
-    C_STANDARD 99
     CXX_STANDARD 11
     COMPILE_FLAGS ""
     LINK_FLAGS ${MEX_LD_FLAGS}
@@ -938,10 +920,10 @@ if (OCTAVE_FOUND)
     oct/oct_dream_arr_annu.cc
     src/att.cc
     src/affinity.cc
-    src/arr_functions.c
-    src/dream_arr_annu.c
+    src/arr_functions.cc
+    src/dream_arr_annu.cc
     src/fft_octave.cc
-    src/dream_error.c
+    src/dream_error.cc
     )
 
   add_library (oct_dream_arr_annu MODULE
@@ -954,7 +936,6 @@ if (OCTAVE_FOUND)
     )
 
   set_target_properties (oct_dream_arr_annu PROPERTIES
-    C_STANDARD 99
     CXX_STANDARD 11
     COMPILE_FLAGS "${OCT_FLAGS}"
     LINK_FLAGS ${OCT_LD_FLAGS}
@@ -968,10 +949,10 @@ if (Matlab_FOUND)
     mex/mex_dream_arr_annu.cc
     src/att.cc
     src/affinity.cc
-    src/arr_functions.c
-    src/dream_arr_annu.c
-    src/fft.c
-    src/dream_error.c
+    src/arr_functions.cc
+    src/dream_arr_annu.cc
+    src/fft.cc
+    src/dream_error.cc
     )
 
   add_library (mex_dream_arr_annu MODULE
@@ -984,7 +965,6 @@ if (Matlab_FOUND)
     )
 
   set_target_properties (mex_dream_arr_annu PROPERTIES
-    C_STANDARD 99
     CXX_STANDARD 11
     COMPILE_FLAGS ""
     LINK_FLAGS ${MEX_LD_FLAGS}
@@ -1005,8 +985,8 @@ if (OCTAVE_FOUND)
 
   set (oct_dream_apodwin_SOURCE_FILES
     oct/oct_dream_apodwin.cc
-    src/arr_functions.c
-    src/dream_error.c
+    src/arr_functions.cc
+    src/dream_error.cc
     )
 
   add_library (oct_dream_apodwin MODULE
@@ -1019,7 +999,6 @@ if (OCTAVE_FOUND)
     )
 
   set_target_properties (oct_dream_apodwin PROPERTIES
-    C_STANDARD 99
     CXX_STANDARD 11
     COMPILE_FLAGS "${OCT_FLAGS}"
     LINK_FLAGS ${OCT_LD_FLAGS}
@@ -1031,8 +1010,8 @@ if (Matlab_FOUND)
 
   set (mex_dream_apodwin_SOURCE_FILES
     mex/mex_dream_apodwin.cc
-    src/arr_functions.c
-    src/dream_error.c
+    src/arr_functions.cc
+    src/dream_error.cc
     )
 
   add_library (mex_dream_apodwin MODULE
@@ -1045,7 +1024,6 @@ if (Matlab_FOUND)
     )
 
   set_target_properties (mex_dream_apodwin PROPERTIES
-    C_STANDARD 99
     CXX_STANDARD 11
     COMPILE_FLAGS ""
     LINK_FLAGS ${MEX_LD_FLAGS}
@@ -1065,7 +1043,7 @@ if (OCTAVE_FOUND)
     src/att.cc
     src/affinity.cc
     src/fft_octave.cc
-    src/dream_error.c
+    src/dream_error.cc
     )
 
   add_library (oct_dream_att MODULE
@@ -1078,7 +1056,6 @@ if (OCTAVE_FOUND)
     )
 
   set_target_properties (oct_dream_att PROPERTIES
-    C_STANDARD 99
     CXX_STANDARD 11
     COMPILE_FLAGS "${OCT_FLAGS}"
     LINK_FLAGS ${OCT_LD_FLAGS}
@@ -1089,11 +1066,11 @@ endif (OCTAVE_FOUND)
 if (Matlab_FOUND)
 
   set (mex_dream_att_SOURCE_FILES
-    mex/mex_dream_att.c
+    mex/mex_dream_att.cc
     src/att.cc
     src/affinity.cc
-    src/fft.c
-    src/dream_error.c
+    src/fft.cc
+    src/dream_error.cc
     )
 
   add_library (mex_dream_att MODULE
@@ -1106,7 +1083,6 @@ if (Matlab_FOUND)
     )
 
   set_target_properties (mex_dream_att PROPERTIES
-    C_STANDARD 99
     CXX_STANDARD 11
     COMPILE_FLAGS ""
     LINK_FLAGS ${MEX_LD_FLAGS}
@@ -1126,8 +1102,8 @@ if (OCTAVE_FOUND)
   set (oct_circ_sir_SOURCE_FILES
     extra_src/oct_circ_sir.cc
     src/affinity.cc
-    extra_src/circ_sir.c
-    src/dream_error.c
+    extra_src/circ_sir.cc
+    src/dream_error.cc
     )
 
   add_library (oct_circ_sir MODULE
@@ -1139,7 +1115,6 @@ if (OCTAVE_FOUND)
     )
 
   set_target_properties (oct_circ_sir PROPERTIES
-    C_STANDARD 99
     CXX_STANDARD 11
     COMPILE_FLAGS "${OCT_FLAGS}"
     LINK_FLAGS ${OCT_LD_FLAGS}
@@ -1152,8 +1127,8 @@ if (Matlab_FOUND)
   set (mex_circ_sir_SOURCE_FILES
     extra_src/mex_circ_sir.cc
     src/affinity.cc
-    extra_src/circ_sir.c
-    src/dream_error.c
+    extra_src/circ_sir.cc
+    src/dream_error.cc
     )
 
   add_library (mex_circ_sir MODULE
@@ -1165,7 +1140,6 @@ if (Matlab_FOUND)
     )
 
   set_target_properties (mex_circ_sir PROPERTIES
-    C_STANDARD 99
     CXX_STANDARD 11
     COMPILE_FLAGS ""
     LINK_FLAGS ${MEX_LD_FLAGS}
@@ -1179,8 +1153,8 @@ if (OCTAVE_FOUND)
 
   set (oct_scirc_sir_SOURCE_FILES
     extra_src/oct_scirc_sir.cc
-    extra_src/scirc_sir.c
-    src/dream_error.c
+    extra_src/scirc_sir.cc
+    src/dream_error.cc
     )
 
   add_library (oct_scirc_sir MODULE
@@ -1192,7 +1166,6 @@ if (OCTAVE_FOUND)
     )
 
   set_target_properties (oct_scirc_sir PROPERTIES
-    C_STANDARD 99
     CXX_STANDARD 11
     COMPILE_FLAGS "${OCT_FLAGS}"
     LINK_FLAGS ${OCT_LD_FLAGS}
@@ -1204,8 +1177,8 @@ if (Matlab_FOUND)
 
   set (mex_scirc_sir_SOURCE_FILES
     extra_src/mex_scirc_sir.cc
-    extra_src/scirc_sir.c
-    src/dream_error.c
+    extra_src/scirc_sir.cc
+    src/dream_error.cc
     )
 
   add_library (mex_scirc_sir MODULE
@@ -1217,7 +1190,6 @@ if (Matlab_FOUND)
     )
 
   set_target_properties (mex_scirc_sir PROPERTIES
-    C_STANDARD 99
     CXX_STANDARD 11
     COMPILE_FLAGS ""
     LINK_FLAGS ${MEX_LD_FLAGS}
@@ -1231,9 +1203,9 @@ if (OCTAVE_FOUND)
 
   set (oct_rect_sir_SOURCE_FILES
     extra_src/oct_rect_sir.cc
-    extra_src/rect_sir.c
+    extra_src/rect_sir.cc
     src/affinity.cc
-    src/dream_error.c
+    src/dream_error.cc
     )
 
   if (OpenCL_FOUND)
@@ -1250,7 +1222,6 @@ if (OCTAVE_FOUND)
     )
 
   set_target_properties (oct_rect_sir PROPERTIES
-    C_STANDARD 99
     CXX_STANDARD 11
     COMPILE_FLAGS "${OCT_FLAGS}"
     LINK_FLAGS ${OCT_LD_FLAGS}
@@ -1262,9 +1233,9 @@ if (Matlab_FOUND)
 
   set (mex_rect_sir_SOURCE_FILES
     extra_src/mex_rect_sir.cc
-    extra_src/rect_sir.c
+    extra_src/rect_sir.cc
     src/affinity.cc
-    src/dream_error.c
+    src/dream_error.cc
     )
 
   add_library (mex_rect_sir MODULE
@@ -1276,7 +1247,6 @@ if (Matlab_FOUND)
     )
 
   set_target_properties (mex_rect_sir PROPERTIES
-    C_STANDARD 99
     CXX_STANDARD 11
     COMPILE_FLAGS ""
     LINK_FLAGS ${MEX_LD_FLAGS}
@@ -1294,8 +1264,8 @@ if (OCTAVE_FOUND)
 
   set (oct_das_SOURCE_FILES
     extra_src/oct_das.cc
-    extra_src/das.c
-    src/dream_error.c
+    extra_src/das.cc
+    src/dream_error.cc
     )
 
   add_library (oct_das MODULE
@@ -1307,7 +1277,6 @@ if (OCTAVE_FOUND)
     )
 
   set_target_properties (oct_das PROPERTIES
-    C_STANDARD 99
     CXX_STANDARD 11
     COMPILE_FLAGS "${OCT_FLAGS}"
     LINK_FLAGS ${OCT_LD_FLAGS}
@@ -1318,9 +1287,9 @@ endif (OCTAVE_FOUND)
 if (Matlab_FOUND)
 
   set (mex_das_SOURCE_FILES
-    extra_src/mex_das.c
-    extra_src/das.c
-    src/dream_error.c
+    extra_src/mex_das.cc
+    extra_src/das.cc
+    src/dream_error.cc
     )
 
   add_library (mex_das MODULE
@@ -1333,7 +1302,6 @@ if (Matlab_FOUND)
     )
 
   set_target_properties (mex_das PROPERTIES
-    C_STANDARD 99
     CXX_STANDARD 11
     COMPILE_FLAGS ""
     LINK_FLAGS ${MEX_LD_FLAGS}
@@ -1347,9 +1315,9 @@ if (OCTAVE_FOUND)
 
   set (oct_das_arr_SOURCE_FILES
     extra_src/oct_das_arr.cc
-    extra_src/das_arr.c
-    src/arr_functions.c
-    src/dream_error.c
+    extra_src/das_arr.cc
+    src/arr_functions.cc
+    src/dream_error.cc
     )
 
   add_library (oct_das_arr MODULE
@@ -1361,7 +1329,6 @@ if (OCTAVE_FOUND)
     )
 
   set_target_properties (oct_das_arr PROPERTIES
-    C_STANDARD 99
     CXX_STANDARD 11
     COMPILE_FLAGS "${OCT_FLAGS}"
     LINK_FLAGS ${OCT_LD_FLAGS}
@@ -1372,10 +1339,10 @@ endif (OCTAVE_FOUND)
 if (Matlab_FOUND)
 
   set (mex_das_arr_SOURCE_FILES
-    extra_src/mex_das_arr.c
-    extra_src/das_arr.c
-    src/arr_functions.c
-    src/dream_error.c
+    extra_src/mex_das_arr.cc
+    extra_src/das_arr.cc
+    src/arr_functions.cc
+    src/dream_error.cc
     )
 
   add_library (mex_das_arr MODULE
@@ -1388,7 +1355,6 @@ if (Matlab_FOUND)
     )
 
   set_target_properties (mex_das_arr PROPERTIES
-    C_STANDARD 99
     CXX_STANDARD 11
     COMPILE_FLAGS ""
     LINK_FLAGS ${MEX_LD_FLAGS}
@@ -1405,7 +1371,7 @@ if (OCTAVE_FOUND)
   set (oct_saft_SOURCE_FILES
     extra_src/oct_saft.cc
     src/affinity.cc
-    src/dream_error.c
+    src/dream_error.cc
     )
 
   add_library (oct_saft MODULE
@@ -1417,7 +1383,6 @@ if (OCTAVE_FOUND)
     )
 
   set_target_properties (oct_saft PROPERTIES
-    C_STANDARD 99
     CXX_STANDARD 11
     COMPILE_FLAGS "${OCT_FLAGS}"
     LINK_FLAGS ${OCT_LD_FLAGS}
@@ -1429,7 +1394,7 @@ if (Matlab_FOUND)
 
   set (mex_saft_SOURCE_FILES
     extra_src/mex_saft.cc
-    src/dream_error.c
+    src/dream_error.cc
     )
 
   add_library (mex_saft MODULE
@@ -1441,7 +1406,6 @@ if (Matlab_FOUND)
     )
 
   set_target_properties (mex_saft PROPERTIES
-    C_STANDARD 99
     CXX_STANDARD 11
     COMPILE_FLAGS ""
     LINK_FLAGS ${MEX_LD_FLAGS}
@@ -1460,8 +1424,8 @@ if (OCTAVE_FOUND)
   set (oct_conv_p_SOURCE_FILES
     extra_src/oct_conv_p.cc
     src/affinity.cc
-    extra_src/conv.c
-    src/dream_error.c
+    extra_src/conv.cc
+    src/dream_error.cc
     )
 
   add_library (oct_conv_p MODULE
@@ -1474,7 +1438,6 @@ if (OCTAVE_FOUND)
     )
 
   set_target_properties (oct_conv_p PROPERTIES
-    C_STANDARD 99
     CXX_STANDARD 11
     COMPILE_FLAGS "${OCT_FLAGS}"
     LINK_FLAGS ${OCT_LD_FLAGS}
@@ -1487,8 +1450,8 @@ if (Matlab_FOUND)
   set (mex_conv_p_SOURCE_FILES
     extra_src/mex_conv_p.cc
     src/affinity.cc
-    extra_src/conv.c
-    src/dream_error.c
+    extra_src/conv.cc
+    src/dream_error.cc
     )
 
   add_library (mex_conv_p MODULE
@@ -1500,7 +1463,6 @@ if (Matlab_FOUND)
     )
 
   set_target_properties (mex_conv_p PROPERTIES
-    C_STANDARD 99
     CXX_STANDARD 11
     COMPILE_FLAGS ""
     LINK_FLAGS ${MEX_LD_FLAGS}
@@ -1515,7 +1477,7 @@ if (OCTAVE_FOUND)
   set (oct_fftconv_p_SOURCE_FILES
     extra_src/oct_fftconv_p.cc
     src/affinity.cc
-    src/dream_error.c
+    src/dream_error.cc
     )
 
   add_library (oct_fftconv_p MODULE
@@ -1528,7 +1490,6 @@ if (OCTAVE_FOUND)
     )
 
   set_target_properties (oct_fftconv_p PROPERTIES
-    C_STANDARD 99
     CXX_STANDARD 11
     COMPILE_FLAGS "${OCT_FLAGS}"
     LINK_FLAGS ${OCT_LD_FLAGS}
@@ -1541,7 +1502,7 @@ if (Matlab_FOUND)
   set (mex_fftconv_p_SOURCE_FILES
     extra_src/mex_fftconv_p.cc
     src/affinity.cc
-    src/dream_error.c
+    src/dream_error.cc
     )
 
   add_library (mex_fftconv_p MODULE
@@ -1554,7 +1515,6 @@ if (Matlab_FOUND)
     )
 
   set_target_properties (mex_fftconv_p PROPERTIES
-    C_STANDARD 99
     CXX_STANDARD 11
     COMPILE_FLAGS ""
     LINK_FLAGS ${MEX_LD_FLAGS}
@@ -1570,7 +1530,7 @@ if (OCTAVE_FOUND)
   set (oct_sum_fftconv_SOURCE_FILES
     extra_src/oct_sum_fftconv.cc
     src/affinity.cc
-    src/dream_error.c
+    src/dream_error.cc
     )
 
   add_library (oct_sum_fftconv MODULE
@@ -1583,7 +1543,6 @@ if (OCTAVE_FOUND)
     )
 
   set_target_properties (oct_sum_fftconv PROPERTIES
-    C_STANDARD 99
     CXX_STANDARD 11
     COMPILE_FLAGS "${OCT_FLAGS}"
     LINK_FLAGS ${OCT_LD_FLAGS}
@@ -1596,7 +1555,7 @@ if (Matlab_FOUND)
   set (mex_sum_fftconv_SOURCE_FILES
     extra_src/mex_sum_fftconv.cc
     src/affinity.cc
-    src/dream_error.c
+    src/dream_error.cc
     )
 
   add_library (mex_sum_fftconv MODULE
@@ -1609,7 +1568,6 @@ if (Matlab_FOUND)
     )
 
   set_target_properties (mex_sum_fftconv PROPERTIES
-    C_STANDARD 99
     CXX_STANDARD 11
     COMPILE_FLAGS ""
     LINK_FLAGS ${MEX_LD_FLAGS}
@@ -1625,7 +1583,7 @@ if (OCTAVE_FOUND)
   set (oct_fftconv_ola_SOURCE_FILES
     extra_src/oct_fftconv_ola.cc
     src/affinity.cc
-    src/dream_error.c
+    src/dream_error.cc
     )
 
   add_library (oct_fftconv_ola MODULE
@@ -1639,7 +1597,6 @@ if (OCTAVE_FOUND)
     )
 
   set_target_properties (oct_fftconv_ola PROPERTIES
-    C_STANDARD 99
     CXX_STANDARD 11
     COMPILE_FLAGS "${OCT_FLAGS}"
     LINK_FLAGS ${OCT_LD_FLAGS}
@@ -1662,7 +1619,7 @@ if (OCTAVE_FOUND)
   set (oct_copy_p_SOURCE_FILES
     extra_src/oct_copy_p.cc
     src/affinity.cc
-    src/dream_error.c
+    src/dream_error.cc
     )
 
   add_library (oct_copy_p MODULE
@@ -1674,7 +1631,6 @@ if (OCTAVE_FOUND)
     )
 
   set_target_properties (oct_copy_p PROPERTIES
-    C_STANDARD 99
     CXX_STANDARD 11
     COMPILE_FLAGS "${OCT_FLAGS}"
     LINK_FLAGS ${OCT_LD_FLAGS}
@@ -1686,7 +1642,7 @@ if (Matlab_FOUND)
 
   set (mex_copy_p_SOURCE_FILES
     extra_src/mex_copy_p.cc
-    src/dream_error.c
+    src/dream_error.cc
     )
 
   add_library (mex_copy_p MODULE
@@ -1698,7 +1654,6 @@ if (Matlab_FOUND)
     )
 
   set_target_properties (mex_copy_p PROPERTIES
-    C_STANDARD 99
     CXX_STANDARD 11
     COMPILE_FLAGS ""
     LINK_FLAGS ${MEX_LD_FLAGS}

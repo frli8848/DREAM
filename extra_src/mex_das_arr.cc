@@ -210,8 +210,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       set = TRUE;
 
       if (mxGetM(prhs[6]) * mxGetN(prhs[6]) != isize ) {
-        mexMexPrintf("The time delay vector (argument 7) for user defined ('ud') focusing\n") ;
-        dream_err_msg("delays must have the same length as the number of array elements.!");
+        dream_err_msg("The time delay vector (argument 7) for user defined ('ud') focusing\n delays must have the same length as the number of array elements.!");
       }
       ud_focal = mxGetPr(prhs[6]);
     }

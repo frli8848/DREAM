@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2002,2003,2006,2007,2008,2009,2014,2016 Fredrik Lingvall
+* Copyright (C) 2002,2003,2006,2007,2008,2009,2014,2016,2021 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -107,7 +107,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Call the attenuation subroutine.
   //
 
-#ifdef USE_FFTW
+#ifdef HAVE_FFTW
   att_init(nt,1);
 #endif
 
@@ -134,7 +134,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     }
   }
 
-#ifdef USE_FFTW
+#ifdef HAVE_FFTW
   att_close();
 #endif
 

@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2002,2003,2004,2006,2007,2008,2009,2012,2014 Fredrik Lingvall
+* Copyright (C) 2002,2003,2004,2006,2007,2008,2009,2012,2014,2021 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -21,8 +21,9 @@
 *
 ***/
 
+#pragma once
 
-#ifdef USE_FFTW
+#ifdef HAVE_FFTW
 
 #ifdef __cplusplus
 #include <complex> // Must be included before fftw3.h
@@ -36,7 +37,7 @@
 #include "dream.h"
 
 
-#ifdef USE_FFTW
+#ifdef HAVE_FFTW
 
 #ifdef __cplusplus
 extern "C"
@@ -60,7 +61,7 @@ extern "C"
 void dream_ifft(double *x, double *y, dream_idx_type n);
 
 
-#ifdef USE_FFTW
+#ifdef HAVE_FFTW
 
 #ifdef __cplusplus
 extern "C"

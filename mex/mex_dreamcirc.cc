@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2003,2005,2006,2007,2008,2009,2014,2015,2019 Fredrik Lingvall
+* Copyright (C) 2003,2005,2006,2007,2008,2009,2014,2015,2019,2021 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -59,18 +59,18 @@ typedef struct
   dream_idx_type no;
   dream_idx_type start;
   dream_idx_type stop;
-  double *RESTRICT ro;
+  double *ro;
   double r;
   double dx;
   double dy;
   double dt;
   dream_idx_type nt;
   int delay_method;
-  double *RESTRICT delay;
+  double *delay;
   double v;
   double cp;
   double alpha;
-  double *RESTRICT h;
+  double *h;
   int err_level;
 } DATA;
 
@@ -96,11 +96,11 @@ void* smp_dream_circ(void *arg)
   int tmp_err = NONE, err = NONE;
   DATA D = *(DATA *)arg;
   double xo, yo, zo;
-  double *RESTRICT h = D.h;
+  double *h = D.h;
   double r=D.r, dx=D.dx, dy=D.dy, dt=D.dt;
   size_t n, no=D.no, nt=D.nt;
   int    tmp_lev, err_level=D.err_level;
-  double *RESTRICT delay=D.delay, *RESTRICT ro=D.ro, v=D.v, cp=D.cp, alpha=D.alpha;
+  double *delay=D.delay, *ro=D.ro, v=D.v, cp=D.cp, alpha=D.alpha;
   size_t start=D.start, stop=D.stop;
 
   // Let the thread finish and then catch the error.
@@ -191,11 +191,11 @@ extern void _main();
 
 void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
-  double *RESTRICT ro, *RESTRICT geom_par, *RESTRICT s_par, *RESTRICT m_par;
+  double *ro, *geom_par, *s_par, *m_par;
   size_t  nt, no;
   double  r, dx, dy, dt;
-  double *RESTRICT delay, v, cp, alpha;
-  double *RESTRICT h, *err_p;
+  double *delay, v, cp, alpha;
+  double *h, *err_p;
   int     err_level=STOP, set = false;
   char    err_str[50];
   size_t  buflen;

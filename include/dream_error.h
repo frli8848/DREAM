@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2003,2004,2005,2006,2008,2009,2012 Fredrik Lingvall
+* Copyright (C) 2003,2004,2005,2006,2008,2009,2012,2021 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -32,12 +32,5 @@
 #define TRUE 1
 #define FALSE 0
 
-#ifdef __cplusplus
-extern "C"
-#endif
 int dream_out_of_bounds_err(const char *msg, int idx, int err_level);
-
-#ifdef __cplusplus
-extern "C"
-#endif
 void dream_err_msg(const char *msg);

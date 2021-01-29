@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2002,2003,2006,2007,2008,2009,2019 Fredrik Lingvall
+* Copyright (C) 2002,2003,2006,2007,2008,2009,2019,2021 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -32,9 +32,6 @@
  *
  ***/
 
-#ifdef __cplusplus
-extern "C"
-#endif
 int dream_arr_cylind_d(double xo, double yo, double zo, double a, double b, double R,
                        double dx, double dy, double dt,
                        dream_idx_type nt, double delay, double v, double cp, double alpha, int num_elements,
@@ -42,9 +39,6 @@ int dream_arr_cylind_d(double xo, double yo, double zo, double a, double b, doub
                        double theta, double phi, double *apod, bool do_apod, int apod_type, double param,
                        double *ha, int err_level);
 
-#ifdef __cplusplus
-extern "C"
-#endif
 int dream_arr_cylind_udd(double xo, double yo, double zo, double a, double b, double R,
                          double dx, double dy, double dt,
                          dream_idx_type nt, double delay, double v, double cp, double alpha, int num_elements,

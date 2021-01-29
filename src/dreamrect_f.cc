@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2003,2006,2007,2008,2009,2014,2019 Fredrik Lingvall
+* Copyright (C) 2003,2006,2007,2008,2009,2014,2019,2021 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -23,13 +23,9 @@
 
 #include <math.h>
 #include <stdio.h>
-#include "dreamrect.h"
+#include "dreamrect_f.h"
 #include "att.h"
 #include "dream_error.h"
-
-#if defined(_MSC_VER) || defined(__LCC__)
-#include "msvc_rint.h"
-#endif
 
 //
 //  Function prototypes.
@@ -40,35 +36,35 @@ void distance(double xo,
            double zo,
            double x,
            double y,
-           double *RESTRICT ri);
+           double *ri);
 
 void focusing(int foc_type, double focal,
               double xs, double ys,
               double xamax, double yamax, double ramax,
-              double cp, double *RESTRICT retfoc);
+              double cp, double *retfoc);
 
 /***
  *
- * subroutine dreamrect_f - Focused rectangular transducer.
+ * dreamrect_f - Focused rectangular transducer.
  *
  ***/
 
 int dreamrect_f(double xo,
-                 double yo,
-                 double zo,
-                 double a,
-                 double b,
-                 double dx,
-                 double dy,
-                 double dt,
-                 dream_idx_type nt,
-                 double delay,
-                 double v,
-                 double cp,
-                 double alpha,
-                 int foc_type, double focal,
-                 double *RESTRICT h,
-                 int err_level)
+                double yo,
+                double zo,
+                double a,
+                double b,
+                double dx,
+                double dy,
+                double dt,
+                dream_idx_type nt,
+                double delay,
+                double v,
+                double cp,
+                double alpha,
+                int foc_type, double focal,
+                double *h,
+                int err_level)
 {
   dream_idx_type i, it;
   double t;
@@ -142,7 +138,7 @@ void distance(double xo,
            double zo,
            double x,
            double y,
-           double *RESTRICT ri)
+           double *ri)
 {
   double rx, ry, rz;
 
@@ -164,7 +160,7 @@ void distance(double xo,
 void focusing(int foc_type, double focal,
              double xs, double ys,
              double xamax, double yamax, double ramax,
-             double cp, double *RESTRICT retfoc)
+             double cp, double *retfoc)
 {
   double diff, rmax, retx, rety;
 

@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2003,2006,2007,2008,2009,2014,2015,2016 Fredrik Lingvall
+* Copyright (C) 2003,2006,2007,2008,2009,2014,2015,2016,2021 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -76,11 +76,11 @@ void sig_keyint_handler(int signum) {
 
 void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
-  double *RESTRICT ro, *RESTRICT s_par, *RESTRICT m_par;
+  double *ro, *s_par, *m_par;
   size_t nt, no, n;
   double xo, yo, zo, dt;
-  double *RESTRICT delay, cp;
-  double *RESTRICT h, *err_p;
+  double *delay, cp;
+  double *h, *err_p;
   int    err_level=STOP, err=NONE, out_err = NONE, is_set = FALSE;
   char   err_str[50];
   int    buflen;

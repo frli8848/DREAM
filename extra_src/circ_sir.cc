@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2003,2006,2007,2008,2009,2014 Fredrik Lingvall
+* Copyright (C) 2003,2006,2007,2008,2009,2014,2021 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -46,7 +46,7 @@ void circ_sir(double xo_i,
               double delay,
               double v,
               double cp,
-              double *RESTRICT h)
+              double *h)
 {
   dream_idx_type it;
   double t, r_cyl, xo, yo, zo, r;

@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2003,2006,2007,2008,2009 Fredrik Lingvall
+* Copyright (C) 2003,2006,2007,2008,2009,2021 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -31,9 +31,6 @@
  *
  ***/
 
-#ifdef __cplusplus
-extern "C"
-#endif
 int dreamrect_f(double xo,
                 double yo,
                 double zo,

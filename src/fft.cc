@@ -29,18 +29,18 @@
 #include "mex.h"
 #include "fft.h"
 
-#ifdef USE_FFTW
+#ifdef HAVE_FFTW
 #include <fftw3.h>
 #endif
 
-#ifdef USE_FFTW
+#ifdef HAVE_FFTW
 
 // Global plans.
 fftw_plan    p_forward;		// Double precision.
 fftw_plan    p_backward;
 
 // Double precision.
-void fft_init(dream_idx_type n, fftw_complex *xc, double *RESTRICT y)
+void fft_init(dream_idx_type n, fftw_complex *xc, double *y)
 {
   p_backward = fftw_plan_dft_c2r_1d(n, xc, y, FFTW_MEASURE);
 
@@ -65,14 +65,14 @@ void fft_close()
 
 // Double precision.
 
-#ifdef USE_FFTW
-void cr_ifft(fftw_complex *xc, double *RESTRICT y, dream_idx_type n)
+#ifdef HAVE_FFTW
+void cr_ifft(fftw_complex *xc, double *y, dream_idx_type n)
 #else
-void cr_ifft(double *RESTRICT xir, double *RESTRICT xii, double *RESTRICT y, dream_idx_type n)
+void cr_ifft(double *xir, double *xii, double *y, dream_idx_type n)
 #endif
 {
 
-#ifdef USE_FFTW
+#ifdef HAVE_FFTW
   dream_idx_type k;
 
   fftw_execute_dft_c2r(p_backward,xc,y);
@@ -83,28 +83,27 @@ void cr_ifft(double *RESTRICT xir, double *RESTRICT xii, double *RESTRICT y, dre
 
 #else
 
-  mxArray *RESTRICT X, *RESTRICT Y;
-  double *RESTRICT yr, *RESTRICT yi, *RESTRICT xr, *RESTRICT xi;
+  mxArray *X, *Y;
+  double *yr, *yi, *xr, *xi;
   dream_idx_type k;
 
   X = mxCreateDoubleMatrix(n,1,mxCOMPLEX);
-  xr = mxGetPr(X);
-  xi = mxGetPi(X);
+  mxComplexDouble *x = mxGetComplexDoubles(X);
 
   // Copy input vector to a Matlab Matrix.
   for (k=0; k<n; k++) {
-    xr[k] = xir[k];
-    xi[k] = xii[k];
+    xr[k] = x[k].real;
+    xi[k] = x[k].imag;
   }
 
   // Let Matlab do the job!
   mexCallMATLAB(1, &Y, 1, &X, "ifft");
-  yr = mxGetPr(Y);
-  yi = mxGetPi(Y);
+  mxComplexDouble *yo = mxGetComplexDoubles(Y);
 
   // Use the real part only.
-  for (k=0; k<n; k++)
-    y[k] = yr[k];
+  for (k=0; k<n; k++) {
+    y[k] = yo[k].real;
+  }
 
   mxDestroyArray(X);
   mxDestroyArray(Y);
@@ -119,48 +118,57 @@ void cr_ifft(double *RESTRICT xir, double *RESTRICT xii, double *RESTRICT y, dre
  *
  ***/
 
-#ifdef USE_FFTW
+#ifdef HAVE_FFTW
 void cc_ifft(fftw_complex *xc, fftw_complex *yc, dream_idx_type n)
 #else
-void cc_ifft(double *RESTRICT xir, double *RESTRICT xii, double *RESTRICT yor, double *RESTRICT yoi, dream_idx_type n)
+void cc_ifft(double *xir, double *xii, double *yor, double *yoi, dream_idx_type n)
 #endif
 {
 
-#ifdef USE_FFTW
+#ifdef HAVE_FFTW
 
   dream_idx_type k;
 
   fftw_execute_dft(p_backward,xc,yc);
 
   // Normalize.
-  for (k=0; k<n; k++)
-    yc[k] /= (double) n;
+  std::complex<double> *y = reinterpret_cast<std::complex<double>*>(yc);
+  std::complex<double> len_inv(1.0/double(n), 0.0);
+  for (k=0; k<n; k++) {
+    y[k] *= len_inv;
+  }
 
 #else
 
   dream_idx_type i;
   mxArray *X,*Y;
-  double *RESTRICT yr, *RESTRICT yi, *RESTRICT xr, *RESTRICT xi;
+  double *yr, *yi, *xr, *xi;
 
   X = mxCreateDoubleMatrix(n,1,mxCOMPLEX);
-  xr = mxGetPr(X);
-  xi = mxGetPi(X);
+  mxComplexDouble *x = mxGetComplexDoubles(X);
+  //xr = mxGetPr(X);
+  //xi = mxGetPi(X);
 
   // Copy input vector to a Matlab Matrix.
   for (i=0; i<n; i++) {
-    xr[i] = xir[i];
-    xi[i] = xii[i];
+    //xr[i] = xir[i];
+    //xi[i] = xii[i];
+    x[i].real = xir[i];
+    x[i].imag = xii[i];
   }
 
   // Let Matlab do the job!
   mexCallMATLAB(1, &Y, 1, &X, "ifft");
-  yr = mxGetPr(Y);
-  yi = mxGetPi(Y);
+  mxComplexDouble *y = mxGetComplexDoubles(Y);
+  //yr = mxGetPr(Y);
+  //yi = mxGetPi(Y);
 
   // Copy data.
   for (i=0; i<n; i++) {
-    yor[i] = yr[i];
-    yoi[i] = yi[i];
+    //yor[i] = yr[i];
+    //yoi[i] = yi[i];
+    yor[i] = y[i].real;
+    yoi[i] = y[i].imag;
   }
 
   mxDestroyArray(X);

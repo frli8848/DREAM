@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2003,2006,2007,2008,2009,2014,2019 Fredrik Lingvall
+* Copyright (C) 2003,2006,2007,2008,2009,2014,2019,2021 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -28,10 +28,6 @@
 #include "att.h"
 #include "dream_error.h"
 
-#if defined(_MSC_VER) || defined(__LCC__)
-#include "msvc_rint.h"
-#endif
-
 //
 //  Function prototypes.
 //
@@ -41,19 +37,19 @@ void distance_circ_f(double xo,
            double zo,
            double x,
            double y,
-           double *RESTRICT ri);
+           double *ri);
 
 void xlimit_circ_f(double yi,
             double r,
             double x,
             double y,
-            double *RESTRICT xsmin,
-            double *RESTRICT xsmax);
+            double *xsmin,
+            double *xsmax);
 
 void focusing_circ_f(int foc_type, double focal,
               double xs, double ys,
               double xamax, double yamax, double ramax,
-              double cp, double *RESTRICT retfoc);
+              double cp, double *retfoc);
 
 /***
  *
@@ -74,7 +70,7 @@ int dreamcirc_f(double xo,
                 double cp,
                 double alpha,
                 int foc_type, double focal,
-                double *RESTRICT h,
+                double *h,
                 int err_level)
 {
   dream_idx_type i, it;
@@ -155,7 +151,7 @@ void distance_circ_f(double xo,
                      double zo,
                      double x,
                      double y,
-                     double *RESTRICT ri)
+                     double *ri)
 {
   double rx, ry, rz;
 
@@ -177,8 +173,8 @@ void xlimit_circ_f(double yi,
             double r,
             double x,
             double y,
-            double *RESTRICT xsmin,
-            double *RESTRICT xsmax)
+            double *xsmin,
+            double *xsmax)
 {
   double rs;
 
@@ -196,7 +192,7 @@ void xlimit_circ_f(double yi,
 void focusing_circ_f(int foc_type, double focal,
              double xs, double ys,
              double xamax, double yamax, double ramax,
-             double cp, double *RESTRICT retfoc)
+             double cp, double *retfoc)
 {
   double diff, rmax, retx, rety;
 

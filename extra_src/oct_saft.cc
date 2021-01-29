@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2008,2009,2013,2014,2015,2016,2019 Fredrik Lingvall
+* Copyright (C) 2008,2009,2013,2014,2015,2016,2019,2021 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -105,14 +105,14 @@ void* smp_dream_saft(void *arg)
   octave_idx_type n, l;
   int  k_shift;			// Can be negative!
   DATA D = *(DATA *)arg;
-  double *RESTRICT Bsaft = D.Bsaft;
-  double *RESTRICT B = D.B;
+  double *Bsaft = D.Bsaft;
+  double *B = D.B;
   double dt=D.dt;
   int    no=D.no, K=D.K, L=D.L;
-  double *RESTRICT delay=D.delay, *ro=D.ro, cp=D.cp;
+  double *delay=D.delay, *ro=D.ro, cp=D.cp;
   double xo, yo, zo, r_xy;
   octave_idx_type  start=D.start, stop=D.stop;
-  double *RESTRICT r_trans = D.r_trans, a = D.a;
+  double *r_trans = D.r_trans, a = D.a;
   double x_trans, y_trans, z_trans, d, z, z_prim, tmp;
 
   if (D.delay_method == SINGLE) {
@@ -305,10 +305,10 @@ Copyright @copyright{} 2008-2019 Fredrik Lingvall.\n\
 @seealso {saft,das,das_arr}\n\
 @end deftypefn")
 {
-  double *RESTRICT s_par, *RESTRICT m_par;
+  double *s_par, *m_par;
   octave_idx_type K, L, no;
-  double *RESTRICT B, *RESTRICT Bsaft, cp , a, dt, *ro;
-  double *RESTRICT r_trans, *RESTRICT delay;
+  double *B, *Bsaft, cp , a, dt, *ro;
+  double *r_trans, *delay;
   sighandler_t old_handler, old_handler_abrt, old_handler_keyint;
   octave_idx_type start, stop;
   std::thread *threads;

@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2002,2003,2005,2006,2007,2008,2009,2014,2019 Fredrik Lingvall
+* Copyright (C) 2002,2003,2005,2006,2007,2008,2009,2014,2019,2021 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -30,24 +30,20 @@
 #include "dream_arr_annu.h"
 #include "dream_error.h"
 
-#if defined(_MSC_VER) || defined(__LCC__)
-#include "msvc_rint.h"
-#endif
-
 //
 // Function prototypes
 //
 
-void center_pos_annular(double *RESTRICT rs, double *RESTRICT gr, int num_elements, int nv, double *RESTRICT ramax);
-void superpos_annular(double *RESTRICT hi, double *RESTRICT ha, dream_idx_type  nt, double weight, double retfoc, dream_idx_type j, double  dt);
-void focusing_annular(int foc_type, double focal, double rs, double ramax, double cp, double *RESTRICT retfoc);
-void apodization_annular(int apod_type, int i, double *RESTRICT apod, double *RESTRICT weight, double rs,
+void center_pos_annular(double *rs, double *gr, int num_elements, int nv, double *ramax);
+void superpos_annular(double *hi, double *ha, dream_idx_type  nt, double weight, double retfoc, dream_idx_type j, double  dt);
+void focusing_annular(int foc_type, double focal, double rs, double ramax, double cp, double *retfoc);
+void apodization_annular(int apod_type, int i, double *apod, double *weight, double rs,
                          double ramax, double param);
 int circ_annular(double xo, double  yo, double  zo, double  a, double dx, double dy, double dt,
-                 dream_idx_type nt, double delay, double v, double cp, double alpha, double weight, double *RESTRICT h,
+                 dream_idx_type nt, double delay, double v, double cp, double alpha, double weight, double *h,
                  dream_idx_type k, int num_elements,int err_level);
-void xlimit_annular(double yi, double a, double *RESTRICT xsmin, double *RESTRICT xsmax);
-void resp_annular(double *RESTRICT h, double *RESTRICT hi, dream_idx_type nt, dream_idx_type j);
+void xlimit_annular(double yi, double a, double *xsmin, double *xsmax);
+void resp_annular(double *h, double *hi, dream_idx_type nt, dream_idx_type j);
 
 /***
 *
@@ -59,15 +55,15 @@ void resp_annular(double *RESTRICT h, double *RESTRICT hi, dream_idx_type nt, dr
 
 int dream_arr_annu(double xo, double yo, double zo, double dx, double dy, double dt,
                     dream_idx_type  nt, double delay, double v, double cp, double alpha,
-                    int num_elements, double *RESTRICT gr, int foc_type, double focal, double *RESTRICT apod, bool do_apod,
-                    int apod_type, double param,double *RESTRICT ha,int err_level)
+                    int num_elements, double *gr, int foc_type, double focal, double *apod, bool do_apod,
+                    int apod_type, double param,double *ha,int err_level)
 {
   double r, *h;
-  double *RESTRICT hi;
+  double *hi;
   dream_idx_type i, j;
   double ramax;
   int    nv;
-  double *RESTRICT rs, retfoc = 0, weight = 0;
+  double *rs, retfoc = 0, weight = 0;
   int err = NONE, out_err = NONE;
 
   h  = (double*) malloc( nt*num_elements * sizeof(double));
@@ -137,15 +133,15 @@ int dream_arr_annu(double xo, double yo, double zo, double dx, double dy, double
 
 int dream_arr_annu_ud(double xo, double yo, double zo, double dx, double dy, double dt,
                       dream_idx_type  nt, double delay, double v, double cp, double alpha,
-                      int num_elements, double *RESTRICT gr, int foc_type, double *RESTRICT focal, double *RESTRICT apod, bool do_apod,
-                      int apod_type, double param, double *RESTRICT ha,int err_level)
+                      int num_elements, double *gr, int foc_type, double *focal, double *apod, bool do_apod,
+                      int apod_type, double param, double *ha,int err_level)
 {
   double r, *h;
-  double *RESTRICT hi;
+  double *hi;
   dream_idx_type i, j;
   double ramax;
   int    nv;
-  double *RESTRICT rs, retfoc = 0, weight = 0;
+  double *rs, retfoc = 0, weight = 0;
   int err = NONE, out_err = NONE;
 
   h  = (double*) malloc( nt*num_elements * sizeof(double));
@@ -212,7 +208,7 @@ int dream_arr_annu_ud(double xo, double yo, double zo, double dx, double dy, dou
  *
  ***/
 
-void center_pos_annular(double *RESTRICT rs, double *RESTRICT gr, int num_elements, int nv, double *RESTRICT ramax)
+void center_pos_annular(double *rs, double *gr, int num_elements, int nv, double *ramax)
 {
   int i, ns = 0;
 
@@ -232,7 +228,7 @@ void center_pos_annular(double *RESTRICT rs, double *RESTRICT gr, int num_elemen
 *
 ***/
 
-void focusing_annular(int foc_type, double focal, double rs, double ramax, double cp, double *RESTRICT retfoc)
+void focusing_annular(int foc_type, double focal, double rs, double ramax, double cp, double *retfoc)
 {
   double diff, rmax;
 
@@ -273,7 +269,7 @@ void focusing_annular(int foc_type, double focal, double rs, double ramax, doubl
  *
  ***/
 
-void apodization_annular(int apod_type, int i, double *RESTRICT apod, double *RESTRICT weight, double rs,
+void apodization_annular(int apod_type, int i, double *apod, double *weight, double rs,
                          double ramax, double param)
 {
   double pi = atan((double) 1.0) * (double) 4.0;
@@ -320,7 +316,7 @@ void apodization_annular(int apod_type, int i, double *RESTRICT apod, double *RE
  ***/
 
 int circ_annular(double xo, double  yo, double  zo, double  r, double dx, double dy, double dt,
-                  dream_idx_type nt, double delay, double v, double cp, double alpha, double weight, double *RESTRICT h,
+                  dream_idx_type nt, double delay, double v, double cp, double alpha, double weight, double *h,
                   dream_idx_type k, int num_elements, int err_level)
 {
   double t;
@@ -387,7 +383,7 @@ int circ_annular(double xo, double  yo, double  zo, double  r, double dx, double
  *
  ***/
 
-void xlimit_annular(double yi, double a, double *RESTRICT xsmin, double *RESTRICT xsmax)
+void xlimit_annular(double yi, double a, double *xsmin, double *xsmax)
 {
   double rs;
 
@@ -406,9 +402,9 @@ void xlimit_annular(double yi, double a, double *RESTRICT xsmin, double *RESTRIC
  * h  = input responce of actual element
  ***/
 
-void superpos_annular(double *RESTRICT hi, double *RESTRICT ha, dream_idx_type  nt, double weight, double retfoc, dream_idx_type j, double  dt)
+void superpos_annular(double *hi, double *ha, dream_idx_type  nt, double weight, double retfoc, dream_idx_type j, double  dt)
 {
-  double *RESTRICT buf;
+  double *buf;
   dream_idx_type    i,it1;
 
   buf = (double*) malloc(2*nt*sizeof(double));
@@ -436,7 +432,7 @@ void superpos_annular(double *RESTRICT hi, double *RESTRICT ha, dream_idx_type  
  *
  ***/
 
-void resp_annular(double *RESTRICT h, double *RESTRICT hi, dream_idx_type nt, dream_idx_type j)
+void resp_annular(double *h, double *hi, dream_idx_type nt, dream_idx_type j)
 {
   dream_idx_type i, k;
 

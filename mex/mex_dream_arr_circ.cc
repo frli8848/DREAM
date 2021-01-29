@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2002,2003,2006,2007,2008,2009,2014,2015,2019 Fredrik Lingvall
+* Copyright (C) 2002,2003,2006,2007,2008,2009,2014,2015,2019,2021 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -58,30 +58,30 @@ typedef struct
   size_t no;
   size_t start;
   size_t stop;
-  double *RESTRICT ro;
+  double *ro;
   double r;
   double dx;
   double dy;
   double dt;
   size_t nt;
   int delay_method;
-  double *RESTRICT delay;
+  double *delay;
   double v;
   double cp;
   double alpha;
   size_t num_elements;
-  double *RESTRICT G;
+  double *G;
   int ifoc;
   int ister;
   bool do_apod;
   int iapo;
   double focal;
-  double *RESTRICT apod;
+  double *apod;
   double theta;
   double phi;
   double param;
-  double *RESTRICT ud_focal;
-  double *RESTRICT h;
+  double *ud_focal;
+  double *h;
   int err_level;
 } DATA;
 
@@ -107,17 +107,17 @@ void* smp_dream_arr_circ(void *arg)
   int tmp_err = NONE, err = NONE;
   DATA D = *(DATA *)arg;
   double  xo, yo, zo;
-  double *RESTRICT h = D.h;
+  double *h = D.h;
   double  r=D.r, dx=D.dx, dy=D.dy, dt=D.dt;
   size_t  n, no=D.no, nt=D.nt;
   int     tmp_lev, err_level=D.err_level;
-  double *RESTRICT delay=D.delay, *RESTRICT ro=D.ro, v=D.v, cp=D.cp, alpha=D.alpha;
+  double *delay=D.delay, *ro=D.ro, v=D.v, cp=D.cp, alpha=D.alpha;
   size_t  start=D.start, stop=D.stop;
   int     ifoc=D.ifoc, ister=D.ister, do_apod = D.do_apod,iapo=D.iapo;
   double  focal=D.focal, *apod=D.apod, theta=D.theta, phi=D.phi, param=D.param;
   size_t  num_elements = D.num_elements;
-  double *RESTRICT gx, *RESTRICT gy, *RESTRICT gz;
-  double *RESTRICT ud_focal=D.ud_focal;
+  double *gx, *gy, *gz;
+  double *ud_focal=D.ud_focal;
 
   gx    = D.G;			// First column in the matrix.
   gy    = gx + num_elements;		// Second column in the matrix.
@@ -264,22 +264,22 @@ extern void _main();
 
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
-  double *RESTRICT ro, *RESTRICT s_par, *RESTRICT m_par;
-  double *RESTRICT steer_par;
+  double *ro, *s_par, *m_par;
+  double *steer_par;
   char   apod_met[50],foc_met[50],steer_met[50];
   size_t buflen;
   double r,dx,dy,dt;
   size_t nt, no;
-  double param=0, *RESTRICT delay, v, cp, alpha;
+  double param=0, *delay, v, cp, alpha;
   size_t num_elements=0;
-  double *RESTRICT G;
+  double *G;
   int    ifoc=0;
-  double focal=0, *RESTRICT ud_focal=NULL;
+  double focal=0, *ud_focal=NULL;
   int    ister=0;
-  double theta=0,phi=0,*RESTRICT apod=NULL;
+  double theta=0,phi=0,*apod=NULL;
   bool   do_apod=false;
   int    iapo=0;
-  double *RESTRICT h, *err_p;
+  double *h, *err_p;
   int    err_level=STOP, set = false;
   char   err_str[50];
   DATA   *D ;

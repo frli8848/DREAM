@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2002,2003,2006,2007,2008,2009,2014,2019 Fredrik Lingvall
+* Copyright (C) 2002,2003,2006,2007,2008,2009,2014,2019,2021 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -30,18 +30,14 @@
 #include "arr_functions.h"
 #include "dream_error.h"
 
-#if defined(_MSC_VER) || defined(__LCC__)
-#include "msvc_rint.h"
-#endif
-
 //
 // Function prototypes.
 //
 
 int circ_arr(double xo, double yo, double zo, double xs, double ys, double r, double dx, double dy, double dt,
               dream_idx_type nt, double delay, double retfoc, double retsteer, double v, double cp, double alpha,
-              double weight, double *RESTRICT h, int err_level);
-void xlimit_arr_circ(double y, double r, double xs, double ys, double *RESTRICT x_min, double *RESTRICT x_max);
+              double weight, double *h, int err_level);
+void xlimit_arr_circ(double y, double r, double xs, double ys, double *x_min, double *x_max);
 
 /***
  *
@@ -51,9 +47,9 @@ void xlimit_arr_circ(double y, double r, double xs, double ys, double *RESTRICT 
 
 int dream_arr_circ(double xo, double yo, double zo, double r, double dx, double dy, double dt, dream_idx_type nt,
                     double delay, double v, double cp, double alpha, int  num_elements,
-                    double *RESTRICT gx, double *RESTRICT gy, double *RESTRICT gz, int foc_type, double focal,
-                    int ister, double theta, double phi, double *RESTRICT apod, bool do_apod,
-                    int apod_type, double param, double *RESTRICT ha, int err_level)
+                    double *gx, double *gy, double *gz, int foc_type, double focal,
+                    int ister, double theta, double phi, double *apod, bool do_apod,
+                    int apod_type, double param, double *ha, int err_level)
 {
   double retsteer;
   dream_idx_type i;
@@ -95,9 +91,9 @@ int dream_arr_circ(double xo, double yo, double zo, double r, double dx, double 
 
 int dream_arr_circ_ud(double xo, double yo, double zo, double r, double dx, double dy, double dt, dream_idx_type nt,
                     double delay, double v, double cp, double alpha, int  num_elements,
-                    double *RESTRICT gx, double *RESTRICT gy, double *RESTRICT gz, int foc_type, double *RESTRICT focal,
-                    int ister, double theta, double phi, double *RESTRICT apod, bool do_apod,
-                    int apod_type, double param, double *RESTRICT ha, int err_level)
+                    double *gx, double *gy, double *gz, int foc_type, double *focal,
+                    int ister, double theta, double phi, double *apod, bool do_apod,
+                    int apod_type, double param, double *ha, int err_level)
 {
   double retsteer;
   dream_idx_type i;
@@ -142,7 +138,7 @@ int dream_arr_circ_ud(double xo, double yo, double zo, double r, double dx, doub
 
 int circ_arr(double xo, double yo, double zo, double xs, double ys, double r, double dx, double dy, double dt,
               dream_idx_type nt, double delay, double retfoc, double retsteer, double v, double cp, double alpha,
-              double weight, double *RESTRICT h, int err_level)
+              double weight, double *h, int err_level)
 {
   dream_idx_type i;
   double t, decal;
@@ -213,7 +209,7 @@ int circ_arr(double xo, double yo, double zo, double xs, double ys, double r, do
  *
  ***/
 
-void xlimit_arr_circ(double y, double r, double xs, double ys, double *RESTRICT x_min, double *RESTRICT x_max)
+void xlimit_arr_circ(double y, double r, double xs, double ys, double *x_min, double *x_max)
 {
   double rs;
 

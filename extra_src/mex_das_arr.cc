@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2003,2006,2007,2008,2009,2014,2015,2016 Fredrik Lingvall
+* Copyright (C) 2003,2006,2007,2008,2009,2014,2015,2016,2021 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -79,21 +79,21 @@ void sig_keyint_handler(int signum) {
 
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
-  double *RESTRICT ro,*RESTRICT s_par,*RESTRICT m_par;
-  double *RESTRICT steer_par;
+  double *ro,*s_par,*m_par;
+  double *steer_par;
   char   apod_met[50],foc_met[50],steer_met[50];
   int    buflen;
   double xo,yo,zo,dt;
   size_t nt,no,n;
-  double param=0,*RESTRICT delay,cp;
+  double param=0,*delay,cp;
   int    isize=0;
-  double *RESTRICT gx, *RESTRICT gy, *RESTRICT gz;
+  double *gx, *gy, *gz;
   int    ifoc=0;
-  double focal=0, *RESTRICT ud_focal=NULL;
+  double focal=0, *ud_focal=NULL;
   int    ister=0;
-  double theta=0,phi=0,*RESTRICT apod=NULL;
+  double theta=0,phi=0,*apod=NULL;
   int    iweight=0, iapo=0;
-  double *RESTRICT h, *err_p;
+  double *h, *err_p;
   int    err_level=STOP, err=NONE, out_err = NONE, set = FALSE;
   char   err_str[50];
   sighandler_t old_handler, old_handler_abrt, old_handler_keyint;

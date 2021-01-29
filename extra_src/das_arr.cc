@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2003,2006,2006,2007,2008,2009,2014 Fredrik Lingvall
+* Copyright (C) 2003,2006,2006,2007,2008,2009,2014,2021 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -30,19 +30,15 @@
 #include "arr_functions.h"
 #include "dream_error.h"
 
-#if defined(_MSC_VER) || defined(__LCC__)
-#include "msvc_rint.h"
-#endif
-
 //
 // Function prototypes.
 //
 
 int delay_arr(double xo, double yo, double zo, double xs, double ys, double zs, double dt,
               dream_idx_type nt, double delay, double retfoc, double retsteer, double cp,
-              double weight, double *RESTRICT h, int err_level);
+              double weight, double *h, int err_level);
 
-int centroid(double *RESTRICT h,dream_idx_type nt);
+int centroid(double *h,dream_idx_type nt);
 
 /***
  *
@@ -52,12 +48,12 @@ int centroid(double *RESTRICT h,dream_idx_type nt);
 
 int das_arr(double xo, double yo, double zo, double dt, dream_idx_type nt,
             double delay, double cp, int  num_elements,
-            double *RESTRICT gx, double *RESTRICT gy, double *RESTRICT gz, int ifoc, double focal,
-            int ister, double theta, double phi, double *RESTRICT apod, bool do_apod,
-            int apod_type, double param, double *RESTRICT ha,int err_level)
+            double *gx, double *gy, double *gz, int ifoc, double focal,
+            int ister, double theta, double phi, double *apod, bool do_apod,
+            int apod_type, double param, double *ha,int err_level)
 {
   double retsteer;
-  double *RESTRICT h;
+  double *h;
   dream_idx_type i, i_c;
   double ramax, xamax, yamax;
   double xs, ys, zs, retfoc, weight;
@@ -127,12 +123,12 @@ int das_arr(double xo, double yo, double zo, double dt, dream_idx_type nt,
 
 int das_arr_ud(double xo, double yo, double zo, double dt, dream_idx_type nt,
                     double delay, double cp, int  num_elements,
-                      double *RESTRICT gx, double *RESTRICT gy, double *RESTRICT gz, int ifoc, double *RESTRICT focal,
-                      int ister, double theta, double phi, double *RESTRICT apod, bool do_apod,
-                      int apod_type, double param, double *RESTRICT ha,int err_level)
+                      double *gx, double *gy, double *gz, int ifoc, double *focal,
+                      int ister, double theta, double phi, double *apod, bool do_apod,
+                      int apod_type, double param, double *ha,int err_level)
 {
   double retsteer;
-  double *RESTRICT h;
+  double *h;
   dream_idx_type i, i_c;
   double ramax, xamax, yamax;
   double xs, ys, zs, retfoc, weight;
@@ -207,7 +203,7 @@ int das_arr_ud(double xo, double yo, double zo, double dt, dream_idx_type nt,
 
 int delay_arr(double xo, double yo, double zo, double xs, double ys, double zs, double dt,
               dream_idx_type nt, double delay, double retfoc, double retsteer, double cp,
-              double weight, double *RESTRICT h, int err_level)
+              double weight, double *h, int err_level)
 {
   dream_idx_type    i;
   double t,decal,tt;
@@ -251,7 +247,7 @@ int delay_arr(double xo, double yo, double zo, double xs, double ys, double zs, 
  *
  ***/
 
-int centroid(double *RESTRICT h, dream_idx_type nt)
+int centroid(double *h, dream_idx_type nt)
 {
   dream_idx_type n;
   double sum=0.0, t_c = 0.0;

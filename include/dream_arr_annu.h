@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2002,2003,2005,2006,2007,2008,2009,2019 Fredrik Lingvall
+* Copyright (C) 2002,2003,2005,2006,2007,2008,2009,2019,2021 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -32,17 +32,12 @@
  *
  ***/
 
-#ifdef __cplusplus
-extern "C"
-#endif
 int dream_arr_annu(double xo, double yo, double zo, double dx, double dy, double dt,
                    dream_idx_type nt, double delay, double v, double cp, double alpha,
                    int num_elements, double *gr, int foc_type, double focal,
                    double *apod, bool do_apod, int apod_type, double param,
                    double *ha,int err_level);
-#ifdef __cplusplus
-extern "C"
-#endif
+
 int dream_arr_annu_ud(double xo, double yo, double zo, double dx, double dy, double dt,
                       dream_idx_type nt, double delay, double v, double cp, double alpha,
                       int num_elements, double *gr, int foc_type, double *focal,

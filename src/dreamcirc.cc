@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2002,2003,2005,2006,2007,2008,2009,2014,2019 Fredrik Lingvall
+* Copyright (C) 2002,2003,2005,2006,2007,2008,2009,2014,2019,2021 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -28,10 +28,6 @@
 #include "att.h"
 #include "dream_error.h"
 
-#if defined(_MSC_VER) || defined(__LCC__)
-#include "msvc_rint.h"
-#endif
-
 /***
  *
  *  xlimit_circ
@@ -46,8 +42,8 @@ void xlimit_circ(double yi,
             double r,
             double x,
             double y,
-            double *RESTRICT xsmin,
-            double *RESTRICT xsmax)
+            double *xsmin,
+            double *xsmax)
 {
   double rs;
 
@@ -79,7 +75,7 @@ int dreamcirc(double xo,
                double v,
                double cp,
                double alpha,
-               double *RESTRICT h,
+               double *h,
                int err_level)
 {
   dream_idx_type i, it;

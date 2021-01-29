@@ -92,12 +92,8 @@ void sighandler(int signum);
 void sig_abrt_handler(int signum);
 void sig_keyint_handler(int signum);
 
-#ifdef __cplusplus
-extern "C"
-#endif
 void conv(double *xr, octave_idx_type nx, double *yr, octave_idx_type ny, double *zr,
            int in_place, int mode);
-
 
 /***
  *

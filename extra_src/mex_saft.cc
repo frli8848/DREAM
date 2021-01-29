@@ -37,10 +37,6 @@
 #define SINGLE 0
 #define MULTIPLE 1
 
-#if defined(_MSC_VER) || defined(__LCC__)
-#include "msvc_rint.h"
-#endif
-
 /***
  *
  * (Monostatic) Synthetic Aperture Focusing Technique - Parallel version.
@@ -97,14 +93,14 @@ void* smp_dream_saft(void *arg)
   size_t n, l;
   int  k_shift;			// Can be negative!
   DATA D = *(DATA *)arg;
-  double *RESTRICT Bsaft = D.Bsaft;
-  double *RESTRICT B = D.B;
+  double *Bsaft = D.Bsaft;
+  double *B = D.B;
   double dt=D.dt;
   int  no=D.no, K=D.K, L=D.L;
-  double *RESTRICT delay=D.delay, *ro=D.ro, cp=D.cp;
+  double *delay=D.delay, *ro=D.ro, cp=D.cp;
   double xo, yo, zo, r_xy;
   size_t start=D.start, stop=D.stop;
-  double *RESTRICT r_trans = D.r_trans, a = D.a;
+  double *r_trans = D.r_trans, a = D.a;
   double x_trans, y_trans, z_trans, d, z, z_prim, tmp;
 
   if (D.delay_method == SINGLE) {
@@ -242,10 +238,10 @@ void sig_keyint_handler(int signum) {
 
 void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
-  double *RESTRICT s_par,*m_par;
+  double *s_par,*m_par;
   size_t  K, L, no;
-  double *RESTRICT B, *RESTRICT Bsaft, cp , a, dt, *RESTRICT ro;
-  double *RESTRICT r_trans, *RESTRICT delay;
+  double *B, *Bsaft, cp , a, dt, *ro;
+  double *r_trans, *delay;
   sighandler_t   old_handler, old_handler_abrt, old_handler_keyint;
   std::thread *threads;
   unsigned int thread_n, nthreads;

@@ -86,7 +86,7 @@ void* smp_dream_copy_p(void *arg)
 {
   DATA D = *(DATA *)arg;
   size_t    line_start=D.line_start, line_stop=D.line_stop, n;
-  double *RESTRICT A = (double*) D.A, *RESTRICT B = D.B;
+  double *A = (double*) D.A, *B = D.B;
   size_t A_M = D.A_M, B_M = D.B_M, r = D.r, k = D.k, len = D.len;
 
   for (n=line_start; n<line_stop; n++) {

@@ -36,11 +36,11 @@
 
 void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
-  double *RESTRICT ro, *RESTRICT s_par, *RESTRICT m_par;
+  double *ro, *s_par, *m_par;
   int    it, nt, no, n;
   double xo, yo, zo, dt;
-  double *RESTRICT delay, cp, alpha, r;
-  double *RESTRICT h;
+  double *delay, cp, alpha, r;
+  double *h;
 
   // Check for proper number of arguments
 

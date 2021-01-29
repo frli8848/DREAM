@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2002,2003,2006,2007,2008,2009,2012,2014 Fredrik Lingvall
+* Copyright (C) 2002,2003,2006,2007,2008,2009,2012,2014,2021 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -28,10 +28,6 @@
 #include "att.h"
 #include "dream_error.h"
 
-#if defined(_MSC_VER) || defined(__LCC__)
-#include "msvc_rint.h"
-#endif
-
 /***
  *
  *  dreamline - Spatial impulse respone of line (slit)
@@ -40,7 +36,7 @@
 
 int dreamline(double xo, double yo, double zo, double a,
               double dx, double dy, double dt, dream_idx_type nt, double delay, double v,
-              double cp, double alpha, double *RESTRICT h, int err_level)
+              double cp, double alpha, double *h, int err_level)
 {
   dream_idx_type i, it;
   double t;

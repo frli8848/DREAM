@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2002,2003,2006,2007,2008,2009,2014,2019 Fredrik Lingvall
+* Copyright (C) 2002,2003,2006,2007,2008,2009,2014,2019,2021 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -31,10 +31,6 @@
 #include "att.h"
 #include "arr_functions.h"
 
-#if defined(_MSC_VER) || defined(__LCC__)
-#include "msvc_rint.h"
-#endif
-
 //
 // Function prototypes
 //
@@ -42,7 +38,7 @@
 
 int rect_ab(double xo, double yo, double zo, double xs, double ys, double zs, double a, double b,
             double dx, double dy, double dt, dream_idx_type nt, double delay, double retfoc,
-            double retsteer, double v, double cp, double alpha, double weight, double *RESTRICT h, int err_level);
+            double retsteer, double v, double cp, double alpha, double weight, double *h, int err_level);
 
 
 /***
@@ -53,8 +49,8 @@ int rect_ab(double xo, double yo, double zo, double xs, double ys, double zs, do
 
 int dream_arr_rect(double xo, double yo, double zo, double a, double b, double dx, double dy, double dt,
                   dream_idx_type nt, double delay, double v, double cp, double alpha, int num_elements,
-                  double *RESTRICT gx, double *RESTRICT gy, double *RESTRICT gz, int foc_type, double focal, int ister,
-                  double theta, double phi, double *RESTRICT apod, bool do_apod, int apod_type, double param, double *RESTRICT ha,
+                  double *gx, double *gy, double *gz, int foc_type, double focal, int ister,
+                  double theta, double phi, double *apod, bool do_apod, int apod_type, double param, double *ha,
                   int err_level)
 {
   double retsteer;
@@ -98,12 +94,12 @@ int dream_arr_rect(double xo, double yo, double zo, double a, double b, double d
 
 int dream_arr_rect_ud(double xo, double yo, double zo, double a, double b, double dx, double dy, double dt,
                   dream_idx_type nt, double delay, double v, double cp, double alpha, int num_elements,
-                  double *RESTRICT gx, double *RESTRICT gy, double *RESTRICT gz, int foc_type, double *RESTRICT focal, int ister,
-                  double theta, double phi, double *RESTRICT apod, bool do_apod, int apod_type, double param, double *RESTRICT ha,
+                  double *gx, double *gy, double *gz, int foc_type, double *focal, int ister,
+                  double theta, double phi, double *apod, bool do_apod, int apod_type, double param, double *ha,
                   int err_level)
 {
   double retsteer;
-  double *RESTRICT h;
+  double *h;
   dream_idx_type i;
   double ramax, xamax, yamax;
   double xs, ys, zs, retfoc, weight;
@@ -152,7 +148,7 @@ int dream_arr_rect_ud(double xo, double yo, double zo, double a, double b, doubl
 
 int rect_ab(double xo, double yo, double zo, double xs, double ys, double zs, double a, double b,
             double dx, double dy, double dt, dream_idx_type nt, double delay, double retfoc,
-            double retsteer, double v, double cp, double alpha, double weight, double *RESTRICT h, int err_level)
+            double retsteer, double v, double cp, double alpha, double weight, double *h, int err_level)
 {
   dream_idx_type i;
   double t;

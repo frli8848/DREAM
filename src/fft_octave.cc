@@ -129,8 +129,9 @@ void cr_ifft(double *xir, double *xii, double *y, dream_idx_type n)
   fftw_execute_dft_c2r(p_backward,xc,y);
 
   // Normalize.
-  for (k=0; k<n; k++)
+  for (k=0; k<n; k++) {
     y[k] /= (double) n;
+  }
 
 #else
 

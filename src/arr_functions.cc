@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2002,2003,2006,2007,2008,2009,2014,2019 Fredrik Lingvall
+* Copyright (C) 2002,2003,2006,2007,2008,2009,2014,2019,2021 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -43,8 +43,8 @@
 *
 ***/
 
-void center_pos(double *RESTRICT xs, double *RESTRICT ys, double *RESTRICT zs, int i,
-                double *RESTRICT gx, double *RESTRICT gy, double *RESTRICT gz)
+void center_pos(double *xs, double *ys, double *zs, int i,
+                double *gx, double *gy, double *gz)
 {
   *xs = gx[i];
   *ys = gy[i];
@@ -61,8 +61,8 @@ void center_pos(double *RESTRICT xs, double *RESTRICT ys, double *RESTRICT zs, i
  *
  ***/
 
-void max_dim_arr(double *RESTRICT x_max, double *RESTRICT y_max, double *RESTRICT ramax,
-                 double *RESTRICT gx, double *RESTRICT gy, double *RESTRICT gz, int num_elements)
+void max_dim_arr(double *x_max, double *y_max, double *ramax,
+                 double *gx, double *gy, double *gz, int num_elements)
 {
   int i;
   double ret;
@@ -97,7 +97,7 @@ void max_dim_arr(double *RESTRICT x_max, double *RESTRICT y_max, double *RESTRIC
  ***/
 
 void focusing(int foc_type, double focal, double xs, double ys,
-              double x_max, double y_max, double ramax, double cp, double *RESTRICT retfoc)
+              double x_max, double y_max, double ramax, double cp, double *retfoc)
 {
   double diff, rmax, retx, rety;
 
@@ -157,7 +157,7 @@ void focusing(int foc_type, double focal, double xs, double ys,
  ***/
 
 void beamsteering(int ister, double theta, double phi, double xs, double ys,
-                  double x_max, double y_max, double ramax, double cp, double *RESTRICT retsteer)
+                  double x_max, double y_max, double ramax, double cp, double *retsteer)
 {
   double diff, rmax, sinx, siny, retsteerx, retsteery;
 
@@ -222,7 +222,7 @@ void beamsteering(int ister, double theta, double phi, double xs, double ys,
  *
  ***/
 
-void apodization(int apod_type, int i, double *RESTRICT apod_vec, double *RESTRICT weight,
+void apodization(int apod_type, int i, double *apod_vec, double *weight,
                  double xs, double ys, double ramax, double param)
 {
   double pi = 4.0 * atan(1.0);
@@ -270,7 +270,7 @@ void apodization(int apod_type, int i, double *RESTRICT apod_vec, double *RESTRI
  *
  ***/
 
-void distance(double xo, double yo, double zo,double xs,double ys, double zs, double *RESTRICT ri)
+void distance(double xo, double yo, double zo,double xs,double ys, double zs, double *ri)
 {
   double rx, ry, rz;
 
@@ -293,12 +293,13 @@ void distance(double xo, double yo, double zo,double xs,double ys, double zs, do
  *
  ***/
 
-void superpos(double *RESTRICT h, double *RESTRICT ha, dream_idx_type nt)
+void superpos(double *h, double *ha, dream_idx_type nt)
 {
   dream_idx_type i;
 
-  for (i=0; i< nt; i++)
+  for (i=0; i< nt; i++) {
     ha[i] += h[i];
+  }
 
   return;
 }

@@ -167,11 +167,11 @@ void sig_keyint_handler(int signum) {
 
 void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
-  double *RESTRICT ro,*RESTRICT geom_par,*RESTRICT s_par,*RESTRICT m_par;
+  double *ro,*geom_par,*s_par,*m_par;
   size_t nt, no;
   double  a, b, dt;
-  double *RESTRICT delay,v,cp;
-  double *RESTRICT h;
+  double *delay,v,cp;
+  double *h;
   DATA   *D;
   size_t start, stop;
   std::thread *threads;

@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2004,2006,2007,2008,2009,2014 Fredrik Lingvall
+* Copyright (C) 2004,2006,2007,2008,2009,2014,2021 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -44,11 +44,11 @@ void rect_sir(double xo_i,
               double a_i,
               double b_i,
               double dt,
-              dream_idx_type    nt,
+              dream_idx_type nt,
               double delay,
               double v,
               double cp,
-              double *RESTRICT h)
+              double *h)
 {
   dream_idx_type    it, k;
   double t, t_z, xo, yo, zo;

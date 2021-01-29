@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2002,2006,2007,2008,2009,2014,2019 Fredrik Lingvall
+* Copyright (C) 2002,2006,2007,2008,2009,2014,2019,2021 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -31,10 +31,6 @@
 #include "arr_functions.h"
 #include "dream_error.h"
 
-#if defined(_MSC_VER) || defined(__LCC__)
-#include "msvc_rint.h"
-#endif
-
 /***
  *
  * Array with cylindrical convex elements.
@@ -47,11 +43,11 @@
 
 int cylind_d(double xo, double yo, double zo, double xs, double ys, double zs, double R, double a, double b,
              double dx, double dy, double dt, dream_idx_type nt, double delay, double retfoc, double retsteer,
-             double v, double cp, double alpha,  double weight, double *RESTRICT h, int err_level);
+             double v, double cp, double alpha,  double weight, double *h, int err_level);
 
 void cyl_arr_d(double xs, double ys, double zs, double R, double haut,
                double xo, double yo, double zo,
-               double *RESTRICT r, double *RESTRICT du);
+               double *r, double *du);
 
 /***
  *
@@ -62,9 +58,9 @@ void cyl_arr_d(double xs, double ys, double zs, double R, double haut,
 int dream_arr_cylind_d(double xo, double yo, double zo, double a, double b, double R,
                        double dx, double dy, double dt,
                        dream_idx_type nt, double delay, double v, double cp, double alpha, int num_elements,
-                       double *RESTRICT gx, double *RESTRICT gy, double *RESTRICT gz, int foc_type, double focal, int ister,
-                       double theta, double phi, double *RESTRICT apod, bool do_apod, int apod_type, double param,
-                       double *RESTRICT ha, int err_level)
+                       double *gx, double *gy, double *gz, int foc_type, double focal, int ister,
+                       double theta, double phi, double *apod, bool do_apod, int apod_type, double param,
+                       double *ha, int err_level)
 {
   double retsteer;
   dream_idx_type i;
@@ -107,9 +103,9 @@ int dream_arr_cylind_d(double xo, double yo, double zo, double a, double b, doub
 int dream_arr_cylind_udd(double xo, double yo, double zo, double a, double b, double R,
                          double dx, double dy, double dt,
                          dream_idx_type nt, double delay, double v, double cp, double alpha, int num_elements,
-                         double *RESTRICT gx, double *RESTRICT gy, double *RESTRICT gz, int foc_type, double *RESTRICT focal,
+                         double *gx, double *gy, double *gz, int foc_type, double *focal,
                          int ister, double theta, double phi,
-                         double *RESTRICT apod, bool do_apod, int apod_type, double param, double *RESTRICT ha, int err_level)
+                         double *apod, bool do_apod, int apod_type, double param, double *ha, int err_level)
 {
   double retsteer;
   dream_idx_type i;
@@ -153,7 +149,7 @@ int dream_arr_cylind_udd(double xo, double yo, double zo, double a, double b, do
 
 int cylind_d(double xo, double yo, double zo, double xs, double ys, double zs, double R, double a, double b,
              double dx, double dy, double dt, dream_idx_type nt, double delay, double retfoc, double retsteer,
-             double v, double cp, double alpha,  double weight, double *RESTRICT h, int err_level)
+             double v, double cp, double alpha,  double weight, double *h, int err_level)
 {
   double haut;
   dream_idx_type i, it;
@@ -239,7 +235,7 @@ int cylind_d(double xo, double yo, double zo, double xs, double ys, double zs, d
  ***/
 
 void cyl_arr_d(double xs, double ys, double zs, double R, double haut,double xo,
-              double yo,double zo,double *RESTRICT r, double *RESTRICT du)
+              double yo,double zo,double *r, double *du)
 {
   double z, rx, ry, rz;
   double cotetj;

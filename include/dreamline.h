@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2002,2003,2005,2006,2007,2008,2009,2014 Fredrik Lingvall
+* Copyright (C) 2002,2003,2005,2006,2007,2008,2009,2014,2021 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -30,9 +30,6 @@
  *
  ***/
 
-#ifdef __cplusplus
-extern "C"
-#endif
 int dreamline(double xo, double yo, double zo, double a,
               double dx, double dy, double dt, dream_idx_type n, double delay, double v,
               double cp, double alpha, double *h, int err_level);

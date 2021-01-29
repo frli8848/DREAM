@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2007-2009,2012,2014-x2016,2019 Fredrik Lingvall
+* Copyright (C) 2007-2009,2012,2014-x2016,2019,2021 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -24,14 +24,6 @@
 
 #ifndef __DREAM__
 #define __DREAM__
-
-// Check if we support C99.
-#if __STDC_VERSION__ >= 199901L
-#define RESTRICT restrict
-//#define RESTRICT
-#else
-#define RESTRICT
-#endif
 
 #define DOUBLE_PRECISION 0
 #define SINGLE_PRECISION 1

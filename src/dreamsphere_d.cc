@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2002,2003,2006,2007,2008,2009,2014,2019 Fredrik Lingvall
+* Copyright (C) 2002,2003,2006,2007,2008,2009,2014,2019,2021 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -27,17 +27,13 @@
 #include "att.h"
 #include "dream_error.h"
 
-#if defined(_MSC_VER) || defined(__LCC__)
-#include "msvc_rint.h"
-#endif
-
 //
 // Function prototypes.
 //
 
 void sph_cart_d(double xi, double yi, double dx, double dy, double R, double haut,
-              double xoi, double yoi, double zoi, double *RESTRICT rj, double *RESTRICT cotetj, double *RESTRICT du);
-void xlimit_sphere_d(double yi, double r, double xs, double ys, double *RESTRICT xsmin, double *RESTRICT xsmax);
+              double xoi, double yoi, double zoi, double *rj, double *cotetj, double *du);
+void xlimit_sphere_d(double yi, double r, double xs, double ys, double *xsmin, double *xsmax);
 
 /***
  *
@@ -125,7 +121,7 @@ int dreamsphere_d(double xo, double yo, double zo, double r, double R, double
  *
  ***/
 
-void  xlimit_sphere_d(double yi, double r, double xs, double ys, double *RESTRICT xsmin, double *RESTRICT xsmax)
+void  xlimit_sphere_d(double yi, double r, double xs, double ys, double *xsmin, double *xsmax)
 {
   double rs;
 
@@ -144,7 +140,7 @@ void  xlimit_sphere_d(double yi, double r, double xs, double ys, double *RESTRIC
  ***/
 
 void sph_cart_d(double xi, double yi, double dx, double dy, double R, double haut,
-              double xoi, double yoi, double zoi, double *RESTRICT rj, double *RESTRICT cotetj, double *RESTRICT du)
+              double xoi, double yoi, double zoi, double *rj, double *cotetj, double *du)
 {
   double a, b, d, e, x, y, z, z1, z2, z3, z4, rx, ry, rz, az1, az2;
   double az3, az4;

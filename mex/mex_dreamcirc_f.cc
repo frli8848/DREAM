@@ -57,20 +57,20 @@ typedef struct
   dream_idx_type no;
   dream_idx_type start;
   dream_idx_type stop;
-  double *RESTRICT ro;
+  double *ro;
   double r;
   double dx;
   double dy;
   double dt;
   dream_idx_type nt;
   int delay_method;
-  double *RESTRICT delay;
+  double *delay;
   double v;
   double cp;
   double alpha;
   int ifoc;
   double focal;
-  double *RESTRICT h;
+  double *h;
   int err_level;
 } DATA;
 
@@ -96,11 +96,11 @@ void* smp_dream_circ_f(void *arg)
   int tmp_err = NONE, err = NONE;
   DATA D = *(DATA *)arg;
   double xo, yo, zo;
-  double *RESTRICT h = D.h;
+  double *h = D.h;
   double r=D.r, dx=D.dx, dy=D.dy, dt=D.dt;
   size_t n, no=D.no, nt=D.nt;
   int    tmp_lev, err_level=D.err_level;
-  double *RESTRICT delay=D.delay, *ro=D.ro, v=D.v, cp=D.cp, alpha=D.alpha, focal=D.focal;
+  double *delay=D.delay, *ro=D.ro, v=D.v, cp=D.cp, alpha=D.alpha, focal=D.focal;
   size_t  start=D.start, stop=D.stop;
   int ifoc = D.ifoc;
 
@@ -192,14 +192,14 @@ extern void _main();
 
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
-  double *RESTRICT ro, *RESTRICT geom_par, *RESTRICT s_par, *RESTRICT m_par;
+  double *ro, *geom_par, *s_par, *m_par;
   size_t nt, no;
   int    ifoc=0;
   char   foc_met[50];
   int    buflen;
   double r, dx, dy, dt;
-  double *RESTRICT delay, v, cp, alpha,focal=0;
-  double *RESTRICT h, *err_p;
+  double *delay, v, cp, alpha,focal=0;
+  double *h, *err_p;
   int    err_level=STOP, set = false;
   char   err_str[50];
   DATA   *D;

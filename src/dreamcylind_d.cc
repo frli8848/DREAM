@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2002,2003,2006,2007,2008,2009,2014 Fredrik Lingvall
+* Copyright (C) 2002,2003,2006,2007,2008,2009,2014,2021 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -28,15 +28,11 @@
 #include "att.h"
 #include "dream_error.h"
 
-#if defined(_MSC_VER) || defined(__LCC__)
-#include "msvc_rint.h"
-#endif
-
 //
 //  Function prototypes.
 //
 
-void cyl_cart(double x,double y,double R,double haut,double xo,double yo,double zo,double *RESTRICT rj, double *RESTRICT du);
+void cyl_cart(double x,double y,double R,double haut,double xo,double yo,double zo,double *rj, double *du);
 
 /***
  *
@@ -58,7 +54,7 @@ int dreamcylind_d(double xo,
                   double v,
                   double cp,
                   double alpha,
-                  double *RESTRICT h,
+                  double *h,
                   int err_level)
 
 {
@@ -157,7 +153,7 @@ int dreamcylind_d(double xo,
  *
  ***/
 
-void cyl_cart(double x,double y,double R,double haut,double xo,double yo,double zo,double *RESTRICT rj, double *RESTRICT du)
+void cyl_cart(double x,double y,double R,double haut,double xo,double yo,double zo,double *rj, double *du)
 {
   double  z, rx, ry, rz;
   double cotetj;

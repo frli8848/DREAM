@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2003,2006,2007,2008,2009,2014,2015,2016,2019 Fredrik Lingvall
+* Copyright (C) 2003,2006,2007,2008,2009,2014,2015,2016,2019,2021 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -167,11 +167,11 @@ void sig_keyint_handler(int signum) {
 
 void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
-  double *RESTRICT ro,*RESTRICT geom_par, *RESTRICT s_par, *RESTRICT m_par;
+  double *ro,*geom_par, *s_par, *m_par;
   size_t nt, no;
   double r, dt;
-  double *RESTRICT delay, v, cp;
-  double *RESTRICT h;
+  double *delay, v, cp;
+  double *h;
   DATA   *D;
   size_t start, stop;
   std::thread *threads;

@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2003,2006,2007,2008,2009,2012,2014 Fredrik Lingvall
+* Copyright (C) 2003,2006,2007,2008,2009,2012,2014,2021 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -29,10 +29,8 @@
 #include "fft.h"
 
 #ifdef HAVE_FFTW
-#include <fftw3.h>
-#endif
 
-#ifdef HAVE_FFTW
+#include <fftw3.h>
 
 // Global plans.
 fftw_plan    p_forward;
@@ -53,62 +51,6 @@ void fft_close()
 }
 
 #endif
-
-/***
- *
- * Amplitude spectrum of a real vector. (Not used in DREAM)
- *
- ***/
-
-void dream_fft(double *x, double *y, dream_idx_type n)
-{
-  dim_vector dims(n,1);
-  NDArray xi(dims);
-  ComplexNDArray yc;
-  NDArray yr;
-  dream_idx_type i;
-
-  // Copy input vector to a Matlab Matrix.
-  for (i=0; i<n; i++)
-    xi(i) = x[i];
-
-  // Let Octave do the job!
-  yc = xi.fourier();
-  yr = real(yc);
-
-  for (i=0; i<n; i++)
-    y[i] = yr(i);
-
-  return;
-}
-
-/***
- *
- * Inverse DFT of a real vector (returns the real part). (Not used in DREAM)
- *
- ***/
-
-void dream_ifft(double *x, double *y, dream_idx_type n)
-{
-  dim_vector dims(n,1);
-  NDArray xi(dims);
-  ComplexNDArray yc;
-  NDArray yr;
-  dream_idx_type i;
-
-  // Copy input vector to a Octave Matrix.
-  for (i=0; i<n; i++)
-    xi(i) = x[i];
-
-  // Let Octave do the job!
-  yc = xi.ifourier();
-  yr = real(yc);
-
-  for (i=0; i<n; i++)
-    y[i] = yr(i);
-
-  return;
-}
 
 /***
  *

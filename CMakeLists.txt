@@ -29,15 +29,9 @@ if (USE_OPENCL)
 
 endif (USE_OPENCL)
 
-if (BUILD_OCT OR BUILD_MEX)
-
-  find_package (FFTW)  # Will define FFTW_INCLUDE_DIR, FFTW_LIBRARIES, and FFTW_FOUND
-  if (FFTW_FOUND)
-    message (STATUS "${FFTW_LIBRARIES}")
-    add_definitions( -DHAVE_FFTW )	# Build with FFTW support
-  endif (FFTW_FOUND)
-
-endif (BUILD_OCT OR BUILD_MEX)
+#
+# Octave
+#
 
 if (BUILD_OCT)
 
@@ -52,6 +46,10 @@ if (BUILD_OCT)
     set (OCT_LD_FLAGS "${CMAKE_LD_FLAGS} ${OCTAVE_LINK_FLAGS}")
   endif (UNIX)
 endif (BUILD_OCT)
+
+#
+# Matlab
+#
 
 if (BUILD_MEX)
   find_package (Matlab)
@@ -70,22 +68,19 @@ if (BUILD_MEX)
 
 endif (BUILD_MEX)
 
+# Check if we have FFTW installed
+find_package (FFTW)  # Will define FFTW_INCLUDE_DIR, FFTW_LIBRARIES, and FFTW_FOUND
+if (FFTW_FOUND)
+  message (STATUS "${FFTW_LIBRARIES}")
+  add_definitions( -DHAVE_FFTW )	# Build with FFTW support
+endif (FFTW_FOUND)
+
 # Check if we have pthreads (for setting the thread affinity)
 find_package(Threads)
 if (CMAKE_USE_PTHREADS_INIT)
   message (STATUS "We have pthread support -> enabing thread affinity control!")
   add_definitions( -DHAVE_PTHREAD )
 endif(CMAKE_USE_PTHREADS_INIT)
-
-#
-# Common flags for the oct and mex interfaces.
-#
-#
-
-# NB We use C++11 threads.
-
-#set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
-#set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 
 #
 # Include paths
@@ -116,6 +111,8 @@ message (STATUS "DREAM_MEX_INCLUDE_DIRS: ${DREAM_MEX_INCLUDE_DIRS}")
 # The DREAM functions
 #
 ########################
+
+# NB We use C++11 threads.
 
 #
 # dreamline
@@ -161,7 +158,7 @@ if (Matlab_FOUND)
     src/att.cc
     src/affinity.cc
     src/dreamline.cc
-    src/fft.cc
+    src/fft_matlab.cc
     src/dream_error.cc
     )
 
@@ -228,7 +225,7 @@ if (Matlab_FOUND)
     src/att.cc
     src/affinity.cc
     src/dreamrect.cc
-    src/fft.cc
+    src/fft_matlab.cc
     src/dream_error.cc
     )
 
@@ -290,7 +287,7 @@ if (Matlab_FOUND)
     src/att.cc
     src/affinity.cc
     src/dreamrect_f.cc
-    src/fft.cc
+    src/fft_matlab.cc
     src/dream_error.cc
     )
 
@@ -358,7 +355,7 @@ if (Matlab_FOUND)
     src/att.cc
     src/affinity.cc
     src/dreamcirc.cc
-    src/fft.cc
+    src/fft_matlab.cc
     src/dream_error.cc
     )
 
@@ -420,7 +417,7 @@ if (Matlab_FOUND)
     src/att.cc
     src/affinity.cc
     src/dreamcirc_f.cc
-    src/fft.cc
+    src/fft_matlab.cc
     src/dream_error.cc
     )
 
@@ -482,7 +479,7 @@ if (Matlab_FOUND)
     src/att.cc
     src/affinity.cc
     src/dreamsphere_f.cc
-    src/fft.cc
+    src/fft_matlab.cc
     src/dream_error.cc
     )
 
@@ -545,7 +542,7 @@ if (Matlab_FOUND)
     src/att.cc
     src/affinity.cc
     src/dreamsphere_d.cc
-    src/fft.cc
+    src/fft_matlab.cc
     src/dream_error.cc
     )
 
@@ -607,7 +604,7 @@ if (Matlab_FOUND)
     src/att.cc
     src/affinity.cc
     src/dreamcylind_f.cc
-    src/fft.cc
+    src/fft_matlab.cc
     src/dream_error.cc
     )
 
@@ -669,7 +666,7 @@ if (Matlab_FOUND)
     src/att.cc
     src/affinity.cc
     src/dreamcylind_d.cc
-    src/fft.cc
+    src/fft_matlab.cc
     src/dream_error.cc
     )
 
@@ -734,7 +731,7 @@ if (Matlab_FOUND)
     src/affinity.cc
     src/arr_functions.cc
     src/dream_arr_circ.cc
-    src/fft.cc
+    src/fft_matlab.cc
     src/dream_error.cc
     )
 
@@ -798,7 +795,7 @@ if (Matlab_FOUND)
     src/affinity.cc
     src/arr_functions.cc
     src/dream_arr_rect.cc
-    src/fft.cc
+    src/fft_matlab.cc
     src/dream_error.cc
     )
 
@@ -862,7 +859,7 @@ if (Matlab_FOUND)
     src/affinity.cc
     src/arr_functions.cc
     src/dream_arr_cylind_f.cc
-    src/fft.cc
+    src/fft_matlab.cc
     src/dream_error.cc
     )
 
@@ -926,7 +923,7 @@ if (Matlab_FOUND)
     src/affinity.cc
     src/arr_functions.cc
     src/dream_arr_cylind_d.cc
-    src/fft.cc
+    src/fft_matlab.cc
     src/dream_error.cc
     )
 
@@ -990,7 +987,7 @@ if (Matlab_FOUND)
     src/affinity.cc
     src/arr_functions.cc
     src/dream_arr_annu.cc
-    src/fft.cc
+    src/fft_matlab.cc
     src/dream_error.cc
     )
 
@@ -1112,7 +1109,7 @@ if (Matlab_FOUND)
     mex/mex_dream_att.cc
     src/att.cc
     src/affinity.cc
-    src/fft.cc
+    src/fft_matlab.cc
     src/dream_error.cc
     )
 

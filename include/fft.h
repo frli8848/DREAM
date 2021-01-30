@@ -24,65 +24,21 @@
 #pragma once
 
 #ifdef HAVE_FFTW
-
-#ifdef __cplusplus
 #include <complex> // Must be included before fftw3.h
-#else
-#include <complex.h> // Must be included before fftw3.h
-#endif
-
 #include <fftw3.h>
 #endif
 
 #include "dream.h"
 
-
 #ifdef HAVE_FFTW
-
-#ifdef __cplusplus
-extern "C"
-#endif
 void fft_init(dream_idx_type n, fftw_complex *xc, double *y);
-
-#ifdef __cplusplus
-extern "C"
-#endif
 void fft_close();
-
 #endif
-
-#ifdef __cplusplus
-extern "C"
-#endif
-void dream_fft(double *x, double *y, dream_idx_type n);
-#ifdef __cplusplus
-extern "C"
-#endif
-void dream_ifft(double *x, double *y, dream_idx_type n);
-
 
 #ifdef HAVE_FFTW
-
-#ifdef __cplusplus
-extern "C"
-#endif
 void cr_ifft(fftw_complex *xc, double *y, dream_idx_type n);
-
-#ifdef __cplusplus
-extern "C"
-#endif
 void cc_ifft(fftw_complex *xc, fftw_complex *yc, dream_idx_type n);
-
 #else
-
-#ifdef __cplusplus
-extern "C"
-#endif
 void cr_ifft(double *xir, double *xii, double *y, dream_idx_type n);
-
-#ifdef __cplusplus
-extern "C"
-#endif
 void cc_ifft(double *xir, double *xii, double *yor, double *yoi, dream_idx_type n);
-
 #endif

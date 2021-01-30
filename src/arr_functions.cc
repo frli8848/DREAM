@@ -303,26 +303,3 @@ void superpos(double *h, double *ha, dream_idx_type nt)
 
   return;
 }
-
-/***
- *
- * check_delay
- *
- * Check that the delay is within bounds of the impulse response vector.
- *
- ***/
-
-bool check_delay(dream_idx_type it, double t, dream_idx_type nt)
-{
-  bool retval=true;
-
-  if (t < 0.0) {
-    retval = false;
-  }
-
-  if (it > nt) {
-    retval = false;
-  }
-
-  return retval;
-}

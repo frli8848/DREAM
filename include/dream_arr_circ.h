@@ -24,7 +24,6 @@
 
 
 #include "dream.h"
-#include <stdbool.h>
 
 /***
  *

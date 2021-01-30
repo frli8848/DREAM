@@ -23,7 +23,6 @@
 ***/
 
 #include "dream.h"
-#include <stdbool.h>
 
 #define NO_FOCUS 1
 #define FOCUS_X 2
@@ -50,45 +49,13 @@
  *
  ***/
 
-#ifdef __cplusplus
-extern "C"
-#endif
 void center_pos(double *xs, double *ys, double *zs, int i, double *gx, double *gy, double *gz);
-
-#ifdef __cplusplus
-extern "C"
-#endif
 void max_dim_arr(double *xamax, double *y_max, double *r_max, double *gx, double *gy, double *gz, int num_elements);
-
-#ifdef __cplusplus
-extern "C"
-#endif
 void focusing(int foc_type, double focal, double xs, double ys,
               double x_max, double y_max, double r_max, double cp, double *retfoc);
-
-#ifdef __cplusplus
-extern "C"
-#endif
 void beamsteering(int ister, double theta, double phi, double xs, double ys,
                   double x_max, double y_max, double r_max, double cp, double *retsteer);
-
-#ifdef __cplusplus
-extern "C"
-#endif
 void apodization(int apod_type, int i, double  *apod_vec, double *weight,
                  double xs, double ys, double r_max, double param);
-
-#ifdef __cplusplus
-extern "C"
-#endif
 void distance(double xo, double yo, double zo,double xs,double ys, double zs, double *r);
-
-#ifdef __cplusplus
-extern "C"
-#endif
 void superpos(double *h, double *ha, dream_idx_type nt);
-
-#ifdef __cplusplus
-extern "C"
-#endif
-bool check_delay(dream_idx_type it, double t, dream_idx_type nt);

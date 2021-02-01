@@ -33,20 +33,18 @@
 #define SUM 1
 #define NEG 2
 
-// We pobably need fftw >= 3.2.x to handle 64-bit array indexing.
-// TODO If we have fftw 3.2.x we can use fftw_plan_dft_r2c_1d_64 etc.
-
+#include <iostream>
 #include <complex>
 
 #include <stdio.h>
-#include <fftw3.h>
 #include <math.h>
 
 #include "dream.h"
+#include "fft.h"
 
 /***
  *
- *  Parallel (threaded) FFTW based convolution.
+ *  Parallel (threaded) FFT based convolution.
  *
  ***/
 
@@ -57,12 +55,6 @@ volatile int running;
 volatile int in_place;
 int mode = EQU;
 int plan_method = 4; // Default to ESTIMATE method.
-
-// FFTW plans.
-//static  fftw_plan    p_forward   = NULL;
-//static  fftw_plan    p_backward  = NULL;
-fftw_plan    p_forward;
-fftw_plan    p_backward;
 
 //
 // typedef:s
@@ -79,6 +71,7 @@ typedef struct
   size_t B_M;
   size_t B_N;
   double *Y;
+  FFT *fft;
 } DATA;
 
 typedef void (*sighandler_t)(int);
@@ -92,7 +85,8 @@ void sighandler(int signum);
 void sig_abrt_handler(int signum);
 void sig_keyint_handler(int signum);
 
-void fftconv(double *xr, size_t nx, double *yr, size_t ny, double *zr,
+void fftconv(FFT &fft,
+             double *xr, size_t nx, double *yr, size_t ny, double *zr,
              double *a, double *b, double *c,
              std::complex<double> *af, std::complex<double> *bf, std::complex<double> *cf);
 
@@ -108,30 +102,21 @@ void* smp_dream_fftconv_p(void *arg)
   size_t    line_start=D.line_start, line_stop=D.line_stop, n;
   double *A = D.A, *B = D.B, *Y = D.Y;
   size_t A_M = D.A_M, B_M = D.B_M, B_N = D.B_N;
+  FFT fft = *D.fft;
+
+  dream_idx_type fft_len = A_M+B_M-1;
 
   // Input vectors.
-  double *a  = NULL, *b  = NULL;
-  double *c  = NULL;
+  FFTVec a_v(fft_len);
+  FFTVec b_v(fft_len);
+  FFTVec c_v(fft_len);
+  double *a = a_v.get(), *b = b_v.get(), *c  = c_v.get();
 
   // Fourier Coefficients.
-  // fftw_complex *af  = NULL, *bf  = NULL, *cf  = NULL;
-  std::complex<double> *af  = NULL, *bf  = NULL, *cf  = NULL;
-  size_t fft_len;
-
-  // Allocate space for input vectors.
-
-  fft_len = A_M+B_M-1;
-
-  a = (double*) fftw_malloc(sizeof(double)*2*(fft_len/2+1));
-  af = (std::complex<double>*) fftw_malloc(sizeof(fftw_complex)*2*(fft_len/2+1));
-
-  b = (double*) fftw_malloc(sizeof(double)*2*(fft_len/2+1));
-  bf = (std::complex<double>*) fftw_malloc(sizeof(fftw_complex)*2*(fft_len/2+1));
-
-  // Allocate space for output vector.
-
-  c = (double*) fftw_malloc(sizeof(double)*2*(fft_len/2+1));
-  cf = (std::complex<double>*) fftw_malloc(sizeof(fftw_complex)*2*(fft_len/2+1));
+  FFTCVec af_v(fft_len);
+  FFTCVec bf_v(fft_len);
+  FFTCVec cf_v(fft_len);
+  std::complex<double> *af  = af_v.get(), *bf  = bf_v.get(), *cf  = cf_v.get();
 
   //
   // Do the convolution.
@@ -141,7 +126,7 @@ void* smp_dream_fftconv_p(void *arg)
 
     for (n=line_start; n<line_stop; n++) {
 
-      fftconv( &A[0+n*A_M], A_M, &B[0+n*B_M], B_M, &Y[0+n*(A_M+B_M-1)],
+      fftconv(fft, &A[0+n*A_M], A_M, &B[0+n*B_M], B_M, &Y[0+n*(A_M+B_M-1)],
                a,b,c,af,bf,cf);
 
       if (running==false) {
@@ -154,7 +139,7 @@ void* smp_dream_fftconv_p(void *arg)
 
     for (n=line_start; n<line_stop; n++) {
 
-      fftconv( &A[0+n*A_M], A_M, B, B_M, &Y[0+n*(A_M+B_M-1)],
+      fftconv(fft, &A[0+n*A_M], A_M, B, B_M, &Y[0+n*(A_M+B_M-1)],
                a,b,c,af,bf,cf);
 
       if (running==false) {
@@ -163,58 +148,7 @@ void* smp_dream_fftconv_p(void *arg)
       }
 
     } // end-for
-  } // end.if
-
-  //
-  //  Cleanup
-  //
-
-  // Free buffer memory.
-  if (a) {
-    fftw_free(a);
-    //mxFree(a);
-  }
-  else
-    mexErrMsgTxt("Error in freeing memory in conv_p thread!!");
-
-  if(af) {
-    fftw_free(af);
-    //mxFree(af);
-  }
-  else
-    mexErrMsgTxt("Error in freeing memory in conv_p thread!!");
-
-  if(b) {
-    fftw_free(b);
-    //mxFree(b);
-  }
-  else
-    mexErrMsgTxt("Error in freeing memory in conv_p thread!!");
-
-  if (bf) {
-    fftw_free(bf);
-    //mxFree(bf);
-  }
-  else
-    mexErrMsgTxt("Error in freeing memory in conv_p thread!!");
-
-  if (c) {
-    fftw_free(c);
-    //mxFree(c);
-  }
-  else
-    mexErrMsgTxt("Error in freeing memory in conv_p thread!!");
-
-  if (cf) {
-    fftw_free(cf);
-    //mxFree(cf);
-  }
-  else
-    mexErrMsgTxt("Error in freeing memory in conv_p thread!!");
-
-#ifdef DEBUG
-   printf("done!\n");
-#endif
+  } // end-if
 
   return(NULL);
 }
@@ -226,7 +160,8 @@ void* smp_dream_fftconv_p(void *arg)
  *
  ***/
 
-void fftconv(double *xr, size_t nx, double *yr, size_t ny, double *zr,
+void fftconv(FFT &fft,
+             double *xr, size_t nx, double *yr, size_t ny, double *zr,
              double *a, double *b, double *c,
              std::complex<double> *af, std::complex<double> *bf, std::complex<double> *cf)
 {
@@ -248,20 +183,35 @@ void fftconv(double *xr, size_t nx, double *yr, size_t ny, double *zr,
     b[n] = 0.0; // Zero-pad.
 
   // Fourier transform xr.
-  fftw_execute_dft_r2c(p_forward,a,reinterpret_cast<fftw_complex*>(af));
+  FFTVec a_v(fft_len, a);
+  FFTCVec af_v(fft_len, af);
+  fft.fft(a_v, af_v);
 
   // Fourier transform yr.
-  fftw_execute_dft_r2c(p_forward,b,reinterpret_cast<fftw_complex*>(bf));
+  FFTVec b_v(fft_len, b);
+  FFTCVec bf_v(fft_len, bf);
+  fft.fft(b_v, bf_v);
 
   // Do the filtering.
-  for (n = 0; n < fft_len; n++)
-    cf[n] = (af[n] * bf[n]) / ( double(fft_len) );
+#if defined DREAM_OCTAVE || defined HAVE_FFTW
+  for (n = 0; n < fft_len; n++) {
+    cf[n] = (af[n] * bf[n]) / ( double(fft_len) ); // FFT's are not normalized in FFTW.
+  }
+#endif
+
+#if defined DREAM_MATLAB && not defined HAVE_FFTW
+  for (n = 0; n < fft_len; n++) {
+    cf[n] = (af[n] * bf[n]); // Matlab's build in FFT is normalized.
+  }
+#endif
 
   //
   // Compute the inverse DFT of the filtered data.
   //
 
-  fftw_execute_dft_c2r(p_backward,reinterpret_cast<fftw_complex*>(cf),c);
+  FFTCVec cf_v(fft_len, cf);
+  FFTVec c_v(fft_len, c);
+  fft.ifft(cf_v, c_v);
 
   // Copy data to output matrix.
   if (in_place == false) {
@@ -343,16 +293,10 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   size_t thread_n, nthreads;
   size_t line_start, line_stop, A_M, A_N, B_M, B_N, n;
   DATA   *D;
-  // Input vectors (only used for creating fftw plans).
-  double *a  = NULL, *b  = NULL;
-  double *c  = NULL;
-  // Fourier Coefficients (only used for creating fftw plans).
-  std::complex<double> *af  = NULL, *bf  = NULL, *cf  = NULL;
-  size_t fft_len;
+  dream_idx_type fft_len;
   int  return_wisdom = false, load_wisdom = false;
   char *the_str = NULL;
   int  buflen, is_set = false;
-
   in_place = false;
 
   //
@@ -379,32 +323,37 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     if (nlhs > 2) {
       mexErrMsgTxt("Too many output arguments for fftconv_p!");
     }
-    if (nlhs == 2)
+    if (nlhs == 2) {
       return_wisdom = true;
-
+    }
     break;
 
   case 3:
-    if (mxIsChar(prhs[2])) { // 3rd arg is a string.
-      buflen = mxGetM(prhs[2])*mxGetN(prhs[3])+1;
-      the_str = (char*) fftw_malloc(buflen * sizeof(char));
-      mxGetString(prhs[2], the_str, buflen); // Obsolete in Matlab 7.x
+    {
+      mexErrMsgTxt("FFTW support is currentøy disabled!");
+      /*
+      if (mxIsChar(prhs[2])) { // 3rd arg is a string.
+        buflen = mxGetM(prhs[2])*mxGetN(prhs[3])+1;
+        the_str = (char*) fftw_malloc(buflen * sizeof(char));
+        mxGetString(prhs[2], the_str, buflen); // Obsolete in Matlab 7.x
 
-      //
-      // If 3rd arg is a string then only a wisdom string is valid.
-      //
+        //
+        // If 3rd arg is a string then only a wisdom string is valid.
+        //
 
-      if (strcmp("fftw_wisdom",the_str) < 0) {
-        mexErrMsgTxt("The string in arg 3 do not seem to be in fftw wisdom format!");
+        if (strcmp("fftw_wisdom",the_str) < 0) {
+          mexErrMsgTxt("The string in arg 3 do not seem to be in fftw wisdom format!");
+        }
+        else {
+          load_wisdom = true;
+        }
+      } else { // 3rd arg not a string then assume in-place mode.
+        fftw_forget_wisdom(); // Clear wisdom history (a new wisdom will be created below).
+        if (nlhs > 0) {
+          mexErrMsgTxt("3rd arg is not a fftw wisdom string and in-place mode is assumed. But then there should be no output args!");
+        }
       }
-      else {
-        load_wisdom = true;
-      }
-    } else { // 3rd arg not a string then assume in-place mode.
-      fftw_forget_wisdom(); // Clear wisdom history (a new wisdom will be created below).
-      if (nlhs > 0) {
-        mexErrMsgTxt("3rd arg is not a fftw wisdom string and in-place mode is assumed. But then there should be no output args!");
-      }
+      */
     }
     break;
 
@@ -412,7 +361,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     if (mxIsChar(prhs[3])) { // 5th arg is a string (=,+=,-=,or wisdom).
       //the_str = (char*) mxGetChars(prhs[4]);
       buflen = mxGetM(prhs[3])*mxGetN(prhs[3])+1;
-      the_str = (char*) fftw_malloc(buflen * sizeof(char));
+      the_str = (char*) malloc(buflen * sizeof(char));
       mxGetString(prhs[3], the_str, buflen); // Obsolete in Matlab 7.x ?
 
       // Valid strings are:
@@ -453,21 +402,23 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 
   case 5: // In-place mode if input 5 args.
-    if (mxIsChar(prhs[4])) { // 6th arg is a string (=,+=,or -=).
+    {
+      if (mxIsChar(prhs[4])) { // 6th arg is a string (=,+=,or -=).
 
-      // Read the wisdom string.
-      //the_str = (char*) mxGetChars(prhs[4]);
-      buflen = mxGetM(prhs[4])*mxGetN(prhs[4])+1;
-      the_str = (char*) fftw_malloc(buflen * sizeof(char));
-      mxGetString(prhs[4], the_str, buflen); // Obsolete in Matlab 7.x ?
+        // Read the wisdom string.
+        //the_str = (char*) mxGetChars(prhs[4]);
+        buflen = mxGetM(prhs[4])*mxGetN(prhs[4])+1;
+        the_str = (char*) malloc(buflen * sizeof(char));
+        mxGetString(prhs[4], the_str, buflen); // Obsolete in Matlab 7.x ?
 
-      if (strcmp("fftw_wisdom",the_str) < 0 )
-        mexErrMsgTxt("The string in 5th arg do not seem to be in a fftw wisdom format!");
-      else
-        load_wisdom = true;
-    }
-    else { // 5th arg not a string
-      mexErrMsgTxt("Argument 5 is not a valid string format!");
+        if (strcmp("fftw_wisdom",the_str) < 0 )
+          mexErrMsgTxt("The string in 5th arg do not seem to be in a fftw wisdom format!");
+        else
+          load_wisdom = true;
+      }
+      else { // 5th arg not a string
+        mexErrMsgTxt("Argument 5 is not a valid string format!");
+      }
     }
     break;
 
@@ -533,54 +484,34 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
   fft_len = A_M+B_M-1;
 
-  a = (double*) fftw_malloc(sizeof(double)*2*(fft_len/2+1));
-  af = (std::complex<double>*) fftw_malloc(sizeof(fftw_complex)*2*(fft_len/2+1));
+  FFTVec a_v(fft_len);
+  FFTVec b_v(fft_len);
+  FFTVec c_v(fft_len);
+  double *a = a_v.get(), *b = b_v.get(), *c  = c_v.get();
 
-  b = (double*) fftw_malloc(sizeof(double)*2*(fft_len/2+1));
-  bf = (std::complex<double>*) fftw_malloc(sizeof(fftw_complex)*2*(fft_len/2+1));
-
-  c = (double*) fftw_malloc(sizeof(double)*2*(fft_len/2+1));
-  cf = (std::complex<double>*) fftw_malloc(sizeof(fftw_complex)*2*(fft_len/2+1));
+  FFTCVec af_v(fft_len);
+  FFTCVec bf_v(fft_len);
+  FFTCVec cf_v(fft_len);
+  std::complex<double> *af  = af_v.get(), *bf  = bf_v.get(), *cf  = cf_v.get();
 
   //
-  // Init the FFTW plans.
+  // Init the FFTW plans - currently disabled.
   //
 
+  /*
   if(load_wisdom) {
     if (!fftw_import_wisdom_from_string(the_str))
       mexErrMsgTxt("Failed to load fftw wisdom!");
     else
-      fftw_free(the_str); // Clean up.
+      free(the_str); // Clean up.
   }
-
-  // 1) Very slow
-  if (plan_method == 1) {
-    p_forward = fftw_plan_dft_r2c_1d(fft_len, a, reinterpret_cast<fftw_complex*>(af), FFTW_EXHAUSTIVE);
-    p_backward = fftw_plan_dft_c2r_1d(fft_len, reinterpret_cast<fftw_complex*>(cf), c, FFTW_EXHAUSTIVE);
-  }
-
-  // 2) Slow
-  if (plan_method == 2) {
-    p_forward = fftw_plan_dft_r2c_1d(fft_len, a, reinterpret_cast<fftw_complex*>(af), FFTW_PATIENT);
-    p_backward = fftw_plan_dft_c2r_1d(fft_len, reinterpret_cast<fftw_complex*>(cf), c, FFTW_PATIENT);
-  }
-
-  // 3) Too slow on long FFTs.
-  if (plan_method == 3) {
-    p_forward = fftw_plan_dft_r2c_1d(fft_len, a, reinterpret_cast<fftw_complex*>(af), FFTW_MEASURE);
-    p_backward = fftw_plan_dft_c2r_1d(fft_len, reinterpret_cast<fftw_complex*>(cf), c, FFTW_MEASURE);
-  }
-
-  // 4)
-  if (plan_method == 4) {
-    p_forward = fftw_plan_dft_r2c_1d(fft_len, a, reinterpret_cast<fftw_complex*>(af),  FFTW_ESTIMATE);
-    p_backward = fftw_plan_dft_c2r_1d(fft_len, reinterpret_cast<fftw_complex*>(cf), c,  FFTW_ESTIMATE);
-  }
+  */
 
   //
   // Return the FFTW Wisdom so that the plans can be re-used.
   //
 
+  /*
   if (return_wisdom) { // TODO move it down?
     //if (the_str)
     //  free(the_str);
@@ -593,6 +524,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     //free(the_str);
     //fftw_free(the_str);
   }
+  */
 
   //
   // Normal (non in-place) mode.
@@ -629,6 +561,15 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
   running = true;
 
+  std::mutex fft_mutex;
+  FFT fft(fft_len, &fft_mutex);
+
+  // This is a hack to avoid segfaults in Matlab since  mexCallMatlab
+  // is not thread safe,
+#if defined DREAM_MATLAB && not defined HAVE_FFTW
+  nthreads = 1;
+#endif
+
   if (nthreads>1) { // Use threads
 
     // Allocate local data.
@@ -656,6 +597,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       D[thread_n].B_M = B_M;
       D[thread_n].B_N = B_N;
       D[thread_n].Y = Y;
+      D[thread_n].fft = &fft;
 
       // Start the threads.
       threads[thread_n] = std::thread(smp_dream_fftconv_p, &D[thread_n]);
@@ -667,8 +609,9 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       threads[thread_n].join();
 
     // Free memory.
-    if (D)
+    if (D) {
       free((void*) D);
+    }
 
   } else { // Do not use threads.
 
@@ -676,7 +619,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
       for (n=0; n<A_N; n++) {
 
-        fftconv( &A[0+n*A_M], A_M, &B[0+n*B_M], B_M, &Y[0+n*(A_M+B_M-1)],
+        fftconv(fft, &A[0+n*A_M], A_M, &B[0+n*B_M], B_M, &Y[0+n*(A_M+B_M-1)],
                  a,b,c,af,bf,cf);
 
         if (running==false) {
@@ -689,7 +632,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
       for (n=0; n<A_N; n++) {
 
-        fftconv( &A[0+n*A_M], A_M, B, B_M, &Y[0+n*(A_M+B_M-1)],
+        fftconv(fft, &A[0+n*A_M], A_M, B, B_M, &Y[0+n*(A_M+B_M-1)],
                  a,b,c,af,bf,cf);
 
         if (running==false) {
@@ -721,25 +664,6 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   if (!running) {
     mexErrMsgTxt("CTRL-C pressed!\n"); // Bail out.
   }
-
-
-  // Clear temp vectors used for the FFTW plans.
-
-  fftw_free(a);
-  fftw_free(af);
-
-  fftw_free(b);
-  fftw_free(bf);
-
-  fftw_free(c);
-  fftw_free(cf);
-
-  // Cleanup the plans.
-  fftw_destroy_plan(p_forward);
-  fftw_destroy_plan(p_backward);
-
-  // Clean up FFTW
-  //fftw_cleanup(); This causes troubles for subsequent FFTW calls (at least in Octave).
 
   return;
 }

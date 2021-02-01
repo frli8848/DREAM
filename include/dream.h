@@ -28,7 +28,7 @@
 #define DOUBLE_PRECISION 0
 #define SINGLE_PRECISION 1
 
-#ifdef OCTAVE
+#ifdef DREAM_OCTAVE
 
 // Use the index type that Octave was build with.
 #include <octave-config.h>

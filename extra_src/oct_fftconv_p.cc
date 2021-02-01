@@ -148,7 +148,6 @@ void* smp_dream_fftconv(void *arg)
   //
 
   a = (double*) fftw_malloc(sizeof(double)*2*(fft_len/2+1));
-  //af = (fftw_complex*) fftw_malloc(sizeof(fftw_complex)*2*(fft_len/2+1));
   af = (std::complex<double>*) fftw_malloc(sizeof(fftw_complex)*2*(fft_len/2+1));
 
   b = (double*) fftw_malloc(sizeof(double)*2*(fft_len/2+1));
@@ -157,13 +156,13 @@ void* smp_dream_fftconv(void *arg)
   // Allocate space for output vector.
 
   c = (double*) fftw_malloc(sizeof(double)*2*(fft_len/2+1));
-  //cf = (fftw_complex*) fftw_malloc(sizeof(fftw_complex)*2*(fft_len/2+1));
   cf = (std::complex<double>*) fftw_malloc(sizeof(fftw_complex)*2*(fft_len/2+1));
 
   //
   // Do the convolution.
   //
-  size_t k = 0;
+
+   size_t k = 0;
 
   if (B_N > 1) {// B is a matrix.
 
@@ -669,17 +668,14 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
 
   fft_len = A_M+B_M-1;
 
-  a = (double*) fftw_malloc(sizeof(double)*2*(fft_len/2+1));
-  //af = (fftw_complex*) fftw_malloc(sizeof(fftw_complex)*2*(fft_len/2+1));
-  af = (std::complex<double>*) fftw_malloc(sizeof(fftw_complex)*2*(fft_len/2+1));
+  a = (double*) fftw_malloc(sizeof(double)*fft_len);
+  af = (std::complex<double>*) fftw_malloc(sizeof(fftw_complex)*fft_len);
 
-  b = (double*) fftw_malloc(sizeof(double)*2*(fft_len/2+1));
-  //bf = (fftw_complex*) fftw_malloc(sizeof(fftw_complex)*2*(fft_len/2+1));
-  bf = (std::complex<double>*) fftw_malloc(sizeof(fftw_complex)*2*(fft_len/2+1));
+  b = (double*) fftw_malloc(sizeof(double)*fft_len);
+  bf = (std::complex<double>*) fftw_malloc(sizeof(fftw_complex)*fft_len);
 
-  c = (double*) fftw_malloc(sizeof(double)*2*(fft_len/2+1));
-  //cf = (fftw_complex*) fftw_malloc(sizeof(fftw_complex)*2*(fft_len/2+1));
-  cf = (std::complex<double>*) fftw_malloc(sizeof(fftw_complex)*2*(fft_len/2+1));
+  c = (double*) fftw_malloc(sizeof(double)*fft_len);
+  cf = (std::complex<double>*) fftw_malloc(sizeof(fftw_complex)*fft_len);
 
   //
   // Init the FFTW plans.

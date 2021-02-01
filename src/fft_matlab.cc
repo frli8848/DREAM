@@ -29,11 +29,11 @@
 #include "mex.h"
 #include "fft.h"
 
-#ifdef HAVE_FFTW
-#include <fftw3.h>
-#endif
+//#undef HAVE_FFTW
 
 #ifdef HAVE_FFTW
+
+#include <fftw3.h>
 
 // Global plans.
 fftw_plan    p_forward;		// Double precision.

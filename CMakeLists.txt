@@ -29,6 +29,20 @@ if (USE_OPENCL)
 
 endif (USE_OPENCL)
 
+# Check if we have FFTW installed
+find_package (FFTW)  # Will define FFTW_INCLUDE_DIR, FFTW_LIBRARIES, and FFTW_FOUND
+if (FFTW_FOUND)
+  message (STATUS "${FFTW_LIBRARIES}")
+  #add_definitions( -DHAVE_FFTW )	# Build with FFTW support
+endif (FFTW_FOUND)
+
+# Check if we have pthreads (for setting the thread affinity)
+find_package(Threads)
+if (CMAKE_USE_PTHREADS_INIT)
+  message (STATUS "We have pthread support -> enabing thread affinity control!")
+  add_definitions( -DHAVE_PTHREAD )
+endif(CMAKE_USE_PTHREADS_INIT)
+
 #
 # Octave
 #
@@ -39,7 +53,7 @@ if (BUILD_OCT)
   find_package (Octave)
 
   # Octave oct flags.
-  set (OCT_FLAGS "-DOCTAVE") # So that octave_idx_type is used for matrix/vector indexing.
+  set (OCT_FLAGS "-DDREAM_OCTAVE") # So that octave_idx_type is used for matrix/vector indexing.
   if (UNIX)
     set (OCT_LD_FLAGS "${CMAKE_LD_FLAGS} ${OCTAVE_LINK_FLAGS} -pthread") # We need phread to use pthread_setaffinity_np.
   else (UNIX)
@@ -58,29 +72,20 @@ if (BUILD_MEX)
   #message (STATUS "MATLAB_LIBARARIES = ${MATLAB_LIBRARIES}")
 
   if (Matlab_FOUND)
+
+    set (DREAM_FFT_MEX_FLAGS "-DDREAM_MATLAB") # Make Matlab use its internal FFT:s
+
     # mex libs
     set (MEX_LD_FLAGS "${CMAKE_LD_FLAGS} ${MATLAB_MEX_LIBRARY} ${MATLAB_MX_LIBRARY} -lstdc++")
     message (STATUS "Matlab_INCLUDE_DIRS ${Matlab_INCLUDE_DIRS}")
+    message (STATUS "Matlab_LIBRARIES  ${Matlab_LIBRARIES}")
+    message (STATUS "MEX_LD_FLAGS ${MEX_LD_FLAGS}")
     if (FFTW_FOUND)
-      set (MEX_LD_FLAGS "${MEX_LD_FLAGS}  -lfftw3")
+      set (MEX_LD_FLAGS "${MEX_LD_FLAGS} -lfftw3")
     endif (FFTW_FOUND)
   endif (Matlab_FOUND)
 
 endif (BUILD_MEX)
-
-# Check if we have FFTW installed
-find_package (FFTW)  # Will define FFTW_INCLUDE_DIR, FFTW_LIBRARIES, and FFTW_FOUND
-if (FFTW_FOUND)
-  message (STATUS "${FFTW_LIBRARIES}")
-  add_definitions( -DHAVE_FFTW )	# Build with FFTW support
-endif (FFTW_FOUND)
-
-# Check if we have pthreads (for setting the thread affinity)
-find_package(Threads)
-if (CMAKE_USE_PTHREADS_INIT)
-  message (STATUS "We have pthread support -> enabing thread affinity control!")
-  add_definitions( -DHAVE_PTHREAD )
-endif(CMAKE_USE_PTHREADS_INIT)
 
 #
 # Include paths
@@ -173,8 +178,9 @@ if (Matlab_FOUND)
 
   set_target_properties (mex_dreamline PROPERTIES
     CXX_STANDARD 11
-    COMPILE_FLAGS ""
+    COMPILE_FLAGS "${DREAM_FFT_MEX_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
+
     LINK_FLAGS ${MEX_LD_FLAGS}
     SUFFIX ".${Matlab_MEX_EXTENSION}" PREFIX "" OUTPUT_NAME "dreamline")
 
@@ -240,7 +246,7 @@ if (Matlab_FOUND)
 
   set_target_properties (mex_dreamrect PROPERTIES
     CXX_STANDARD 11
-    COMPILE_FLAGS ""
+    COMPILE_FLAGS "${DREAM_FFT_MEX_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
     LINK_FLAGS ${MEX_LD_FLAGS}
     SUFFIX ".${Matlab_MEX_EXTENSION}" PREFIX "" OUTPUT_NAME "dreamrect")
@@ -302,8 +308,9 @@ if (Matlab_FOUND)
 
   set_target_properties (mex_dreamrect_f PROPERTIES
     CXX_STANDARD 11
-    COMPILE_FLAGS ""
+    COMPILE_FLAGS "${DREAM_FFT_MEX_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
+
     LINK_FLAGS ${MEX_LD_FLAGS}
     SUFFIX ".${Matlab_MEX_EXTENSION}" PREFIX "" OUTPUT_NAME "dreamrect_f")
 
@@ -370,8 +377,9 @@ if (Matlab_FOUND)
 
   set_target_properties (mex_dreamcirc PROPERTIES
     CXX_STANDARD 11
-    COMPILE_FLAGS ""
+    COMPILE_FLAGS "${DREAM_FFT_MEX_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
+
     LINK_FLAGS ${MEX_LD_FLAGS}
     SUFFIX ".${Matlab_MEX_EXTENSION}" PREFIX "" OUTPUT_NAME "dreamcirc")
 
@@ -432,8 +440,9 @@ if (Matlab_FOUND)
 
   set_target_properties (mex_dreamcirc_f PROPERTIES
     CXX_STANDARD 11
-    COMPILE_FLAGS ""
+    COMPILE_FLAGS "${DREAM_FFT_MEX_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
+
     LINK_FLAGS ${MEX_LD_FLAGS}
     SUFFIX ".${Matlab_MEX_EXTENSION}" PREFIX "" OUTPUT_NAME "dreamcirc_f")
 
@@ -494,8 +503,9 @@ if (Matlab_FOUND)
 
   set_target_properties (mex_dreamsphere_f PROPERTIES
     CXX_STANDARD 11
-    COMPILE_FLAGS ""
+    COMPILE_FLAGS "${DREAM_FFT_MEX_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
+
     LINK_FLAGS ${MEX_LD_FLAGS}
     SUFFIX ".${Matlab_MEX_EXTENSION}" PREFIX "" OUTPUT_NAME "dreamsphere_f")
 
@@ -557,8 +567,9 @@ if (Matlab_FOUND)
 
   set_target_properties (mex_dreamsphere_d PROPERTIES
     CXX_STANDARD 11
-    COMPILE_FLAGS ""
+    COMPILE_FLAGS "${DREAM_FFT_MEX_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
+
     LINK_FLAGS ${MEX_LD_FLAGS}
     SUFFIX ".${Matlab_MEX_EXTENSION}" PREFIX "" OUTPUT_NAME "dreamsphere_d")
 
@@ -619,8 +630,9 @@ if (Matlab_FOUND)
 
   set_target_properties (mex_dreamcylind_f PROPERTIES
     CXX_STANDARD 11
-    COMPILE_FLAGS ""
+    COMPILE_FLAGS "${DREAM_FFT_MEX_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
+
     LINK_FLAGS ${MEX_LD_FLAGS}
     SUFFIX ".${Matlab_MEX_EXTENSION}" PREFIX "" OUTPUT_NAME "dreamcylind_f")
 
@@ -681,8 +693,9 @@ if (Matlab_FOUND)
 
   set_target_properties (mex_dreamcylind_d PROPERTIES
     CXX_STANDARD 11
-    COMPILE_FLAGS ""
+    COMPILE_FLAGS "${DREAM_FFT_MEX_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
+
     LINK_FLAGS ${MEX_LD_FLAGS}
     SUFFIX ".${Matlab_MEX_EXTENSION}" PREFIX "" OUTPUT_NAME "dreamcylind_d")
 
@@ -746,8 +759,9 @@ if (Matlab_FOUND)
 
   set_target_properties (mex_dream_arr_circ PROPERTIES
     CXX_STANDARD 11
-    COMPILE_FLAGS ""
+    COMPILE_FLAGS "${DREAM_FFT_MEX_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
+
     LINK_FLAGS ${MEX_LD_FLAGS}
     SUFFIX ".${Matlab_MEX_EXTENSION}" PREFIX "" OUTPUT_NAME "dream_arr_circ")
 
@@ -810,8 +824,9 @@ if (Matlab_FOUND)
 
   set_target_properties (mex_dream_arr_rect PROPERTIES
     CXX_STANDARD 11
-    COMPILE_FLAGS ""
+    COMPILE_FLAGS "${DREAM_FFT_MEX_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
+
     LINK_FLAGS ${MEX_LD_FLAGS}
     SUFFIX ".${Matlab_MEX_EXTENSION}" PREFIX "" OUTPUT_NAME "dream_arr_rect")
 
@@ -874,8 +889,9 @@ if (Matlab_FOUND)
 
   set_target_properties (mex_dream_arr_cylind_f PROPERTIES
     CXX_STANDARD 11
-    COMPILE_FLAGS ""
+    COMPILE_FLAGS "${DREAM_FFT_MEX_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
+
     LINK_FLAGS ${MEX_LD_FLAGS}
     SUFFIX ".${Matlab_MEX_EXTENSION}" PREFIX "" OUTPUT_NAME "dream_arr_cylind_f")
 
@@ -938,8 +954,9 @@ if (Matlab_FOUND)
 
   set_target_properties (mex_dream_arr_cylind_d PROPERTIES
     CXX_STANDARD 11
-    COMPILE_FLAGS ""
+    COMPILE_FLAGS "${DREAM_FFT_MEX_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
+
     LINK_FLAGS ${MEX_LD_FLAGS}
     SUFFIX ".${Matlab_MEX_EXTENSION}" PREFIX "" OUTPUT_NAME "dream_arr_cylind_d")
 
@@ -1002,8 +1019,9 @@ if (Matlab_FOUND)
 
   set_target_properties (mex_dream_arr_annu PROPERTIES
     CXX_STANDARD 11
-    COMPILE_FLAGS ""
+    COMPILE_FLAGS "${DREAM_FFT_MEX_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
+
     LINK_FLAGS ${MEX_LD_FLAGS}
     SUFFIX ".${Matlab_MEX_EXTENSION}" PREFIX "" OUTPUT_NAME "dream_arr_annu")
 
@@ -1063,8 +1081,9 @@ if (Matlab_FOUND)
 
   set_target_properties (mex_dream_apodwin PROPERTIES
     CXX_STANDARD 11
-    COMPILE_FLAGS ""
+    COMPILE_FLAGS "${DREAM_FFT_MEX_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
+
     LINK_FLAGS ${MEX_LD_FLAGS}
     SUFFIX ".${Matlab_MEX_EXTENSION}" PREFIX "" OUTPUT_NAME "dream_apodwin")
 
@@ -1124,7 +1143,7 @@ if (Matlab_FOUND)
 
   set_target_properties (mex_dream_att PROPERTIES
     CXX_STANDARD 11
-    COMPILE_FLAGS ""
+    COMPILE_FLAGS "${DREAM_FFT_MEX_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
     LINK_FLAGS ${MEX_LD_FLAGS}
     SUFFIX ".${Matlab_MEX_EXTENSION}" PREFIX "" OUTPUT_NAME "dream_att")
@@ -1183,8 +1202,9 @@ if (Matlab_FOUND)
 
   set_target_properties (mex_circ_sir PROPERTIES
     CXX_STANDARD 11
-    COMPILE_FLAGS ""
+    COMPILE_FLAGS "${DREAM_FFT_MEX_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
+
     LINK_FLAGS ${MEX_LD_FLAGS}
     SUFFIX ".${Matlab_MEX_EXTENSION}" PREFIX "" OUTPUT_NAME "circ_sir")
 
@@ -1235,8 +1255,9 @@ if (Matlab_FOUND)
 
   set_target_properties (mex_scirc_sir PROPERTIES
     CXX_STANDARD 11
-    COMPILE_FLAGS ""
+    COMPILE_FLAGS "${DREAM_FFT_MEX_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
+
     LINK_FLAGS ${MEX_LD_FLAGS}
     SUFFIX ".${Matlab_MEX_EXTENSION}" PREFIX "" OUTPUT_NAME "scirc_sir")
 
@@ -1294,8 +1315,9 @@ if (Matlab_FOUND)
 
   set_target_properties (mex_rect_sir PROPERTIES
     CXX_STANDARD 11
-    COMPILE_FLAGS ""
+    COMPILE_FLAGS "${DREAM_FFT_MEX_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
+
     LINK_FLAGS ${MEX_LD_FLAGS}
     SUFFIX ".${Matlab_MEX_EXTENSION}" PREFIX "" OUTPUT_NAME "rect_sir")
 
@@ -1351,8 +1373,9 @@ if (Matlab_FOUND)
 
   set_target_properties (mex_das PROPERTIES
     CXX_STANDARD 11
-    COMPILE_FLAGS ""
+    COMPILE_FLAGS "${DREAM_FFT_MEX_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
+
     LINK_FLAGS ${MEX_LD_FLAGS}
     SUFFIX ".${Matlab_MEX_EXTENSION}" PREFIX "" OUTPUT_NAME "das")
 
@@ -1406,8 +1429,9 @@ if (Matlab_FOUND)
 
   set_target_properties (mex_das_arr PROPERTIES
     CXX_STANDARD 11
-    COMPILE_FLAGS ""
+    COMPILE_FLAGS "${DREAM_FFT_MEX_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
+
     LINK_FLAGS ${MEX_LD_FLAGS}
     SUFFIX ".${Matlab_MEX_EXTENSION}" PREFIX "" OUTPUT_NAME "das_arr")
 
@@ -1459,8 +1483,9 @@ if (Matlab_FOUND)
 
   set_target_properties (mex_saft PROPERTIES
     CXX_STANDARD 11
-    COMPILE_FLAGS ""
+    COMPILE_FLAGS "${DREAM_FFT_MEX_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
+
     LINK_FLAGS ${MEX_LD_FLAGS}
     SUFFIX ".${Matlab_MEX_EXTENSION}" PREFIX "" OUTPUT_NAME "saft")
 
@@ -1518,8 +1543,9 @@ if (Matlab_FOUND)
 
   set_target_properties (mex_conv_p PROPERTIES
     CXX_STANDARD 11
-    COMPILE_FLAGS ""
+    COMPILE_FLAGS "${DREAM_FFT_MEX_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
+
     LINK_FLAGS ${MEX_LD_FLAGS}
     SUFFIX ".${Matlab_MEX_EXTENSION}" PREFIX "" OUTPUT_NAME "conv_p")
 
@@ -1572,8 +1598,9 @@ if (Matlab_FOUND)
 
   set_target_properties (mex_fftconv_p PROPERTIES
     CXX_STANDARD 11
-    COMPILE_FLAGS ""
+    COMPILE_FLAGS "${DREAM_FFT_MEX_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
+
     LINK_FLAGS ${MEX_LD_FLAGS}
     SUFFIX ".${Matlab_MEX_EXTENSION}" PREFIX "" OUTPUT_NAME "fftconv_p")
 
@@ -1627,8 +1654,9 @@ if (Matlab_FOUND)
 
   set_target_properties (mex_sum_fftconv PROPERTIES
     CXX_STANDARD 11
-    COMPILE_FLAGS ""
+    COMPILE_FLAGS "${DREAM_FFT_MEX_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
+
     LINK_FLAGS ${MEX_LD_FLAGS}
     SUFFIX ".${Matlab_MEX_EXTENSION}" PREFIX "" OUTPUT_NAME "sum_fftconv")
 
@@ -1716,7 +1744,7 @@ if (Matlab_FOUND)
 
   set_target_properties (mex_copy_p PROPERTIES
     CXX_STANDARD 11
-    COMPILE_FLAGS ""
+    COMPILE_FLAGS "${DREAM_FFT_MEX_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
     LINK_FLAGS ${MEX_LD_FLAGS}
     SUFFIX ".${Matlab_MEX_EXTENSION}" PREFIX "" OUTPUT_NAME "copy_p")

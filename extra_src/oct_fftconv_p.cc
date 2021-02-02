@@ -28,10 +28,8 @@
 #include <thread>
 #include <signal.h>
 
-//#include <complex.h> // C (iso C99).
 #include <complex> // C++
 #include <stdio.h>
-#include <fftw3.h>
 
 //
 // Octave headers.
@@ -59,9 +57,9 @@
 //#include <mutex>
 //std::mutex print_mutex;         // Debug print mutex (C++11)
 
-
 #include "dream.h"
 #include "affinity.h"
+#include "fft.h"
 
 /***
  *
@@ -76,13 +74,6 @@
 volatile int running;
 volatile int in_place;
 int mode = EQU;
-int plan_method = 4; // Default to ESTIMATE method.
-
-// FFTW plans.
-//static  fftw_plan    p_forward   = NULL;
-//static  fftw_plan    p_backward  = NULL;
-fftw_plan    p_forward;
-fftw_plan    p_backward;
 
 //
 // typedef:s
@@ -99,6 +90,7 @@ typedef struct
   octave_idx_type B_M;
   octave_idx_type B_N;
   double *Y;
+  FFT *fft;
 } DATA;
 
 typedef void (*sighandler_t)(int);
@@ -112,7 +104,8 @@ void sighandler(int signum);
 void sig_abrt_handler(int signum);
 void sig_keyint_handler(int signum);
 
-void fftconv(double *xr, octave_idx_type nx, double *yr, octave_idx_type ny, double *zr,
+void fftconv(FFT &fft,
+             double *xr, octave_idx_type nx, double *yr, octave_idx_type ny, double *zr,
              double      *a,  double *b, double *c,
              std::complex<double> *af, std::complex<double> *bf, std::complex<double> *cf);
 
@@ -128,35 +121,21 @@ void* smp_dream_fftconv(void *arg)
   octave_idx_type    col_start=D.col_start, col_stop=D.col_stop, n;
   double *A = D.A, *B = D.B, *Y = D.Y;
   octave_idx_type A_M = D.A_M, B_M = D.B_M, B_N = D.B_N;
+  FFT fft = *D.fft;
+
+  dream_idx_type fft_len = A_M+B_M-1;
 
   // Input vectors.
-  double *a  = NULL, *b  = NULL;
-  double *c  = NULL;
+  FFTVec a_v(fft_len);
+  FFTVec b_v(fft_len);
+  FFTVec c_v(fft_len);
+  double *a = a_v.get(), *b = b_v.get(), *c  = c_v.get();
 
   // Fourier Coefficients.
-  //fftw_complex *af  = NULL, *bf  = NULL, *cf  = NULL;
-  std::complex<double> *af  = NULL, *bf  = NULL, *cf  = NULL;
-  octave_idx_type fft_len;
-
-  // Allocate space for input vectors.
-
-  fft_len = A_M+B_M-1;
-
-
-  //
-  // fftw_malloc may not be thread safe! Check this!!!
-  //
-
-  a = (double*) fftw_malloc(sizeof(double)*2*(fft_len/2+1));
-  af = (std::complex<double>*) fftw_malloc(sizeof(fftw_complex)*2*(fft_len/2+1));
-
-  b = (double*) fftw_malloc(sizeof(double)*2*(fft_len/2+1));
-  bf = (std::complex<double>*) fftw_malloc(sizeof(fftw_complex)*2*(fft_len/2+1));
-
-  // Allocate space for output vector.
-
-  c = (double*) fftw_malloc(sizeof(double)*2*(fft_len/2+1));
-  cf = (std::complex<double>*) fftw_malloc(sizeof(fftw_complex)*2*(fft_len/2+1));
+  FFTCVec af_v(fft_len);
+  FFTCVec bf_v(fft_len);
+  FFTCVec cf_v(fft_len);
+  std::complex<double> *af  = af_v.get(), *bf  = bf_v.get(), *cf  = cf_v.get();
 
   //
   // Do the convolution.
@@ -172,7 +151,7 @@ void* smp_dream_fftconv(void *arg)
     double *Yp = &Y[0+n*(A_M+B_M-1)];
     for (n=col_start; n<col_stop; n++) {
 
-      fftconv( Ap, A_M, Bp, B_M, Yp, a,b,c,af,bf,cf);
+      fftconv(fft, Ap, A_M, Bp, B_M, Yp, a,b,c,af,bf,cf);
 
       Ap += A_M;
       Bp += B_M;
@@ -193,7 +172,7 @@ void* smp_dream_fftconv(void *arg)
     double *Yp = &Y[0+n*(A_M+B_M-1)];
     for (n=col_start; n<col_stop; n++) {
 
-      fftconv( Ap, A_M, B, B_M, Yp, a,b,c,af,bf,cf);
+      fftconv(fft, Ap, A_M, B, B_M, Yp, a,b,c,af,bf,cf);
 
       Ap += A_M;
       Yp += (A_M+B_M-1);
@@ -219,51 +198,8 @@ void* smp_dream_fftconv(void *arg)
   }
   */
 
-  //
-  //  Cleanup
-  //
-
-  // Free buffer memory.
-  if (a)
-    fftw_free(a);
-  else {
-    error("Error in freeing memory in fftconv_p thread!!");
-  }
-
-  if(af)
-    fftw_free(af);
-  else {
-    error("Error in freeing memory in  fftconv_p thread!!");
-  }
-
-  if(b)
-    fftw_free(b);
-  else {
-    error("Error in freeing memory in  fftconv_p thread!!");
-  }
-
-  if (bf)
-    fftw_free(bf);
-  else {
-    error("Error in freeing memory in  fftconv_p thread!!");
-  }
-
-  if (c)
-    fftw_free(c);
-  else {
-    error("Error in freeing memory in  fftconv_p thread!!");
-  }
-
-  if (cf)
-    fftw_free(cf);
-  else {
-    error("Error in freeing memory in  fftconv_p thread!!");
-  }
-
   return(NULL);
 }
-
-
 
 /***
  *
@@ -271,7 +207,8 @@ void* smp_dream_fftconv(void *arg)
  *
  ***/
 
-void fftconv(double *xr, octave_idx_type nx, double *yr, octave_idx_type ny, double *zr,
+void fftconv(FFT &fft,
+             double *xr, octave_idx_type nx, double *yr, octave_idx_type ny, double *zr,
              double      *a,  double *b, double *c,
              std::complex<double> *af, std::complex<double> *bf, std::complex<double> *cf)
 {
@@ -295,10 +232,14 @@ void fftconv(double *xr, octave_idx_type nx, double *yr, octave_idx_type ny, dou
     b[n] = 0.0; // Zero-pad.
 
   // Fourier transform xr.
-  fftw_execute_dft_r2c(p_forward,a,reinterpret_cast<fftw_complex*>(af));
+  FFTVec a_v(fft_len, a);
+  FFTCVec af_v(fft_len, af);
+  fft.fft(a_v, af_v);
 
   // Fourier transform yr.
-  fftw_execute_dft_r2c(p_forward,b,reinterpret_cast<fftw_complex*>(bf));
+  FFTVec b_v(fft_len, b);
+  FFTCVec bf_v(fft_len, bf);
+  fft.fft(b_v, bf_v);
 
   // Do the filtering.
   for (n = 0; n < fft_len; n++) {
@@ -309,7 +250,9 @@ void fftconv(double *xr, octave_idx_type nx, double *yr, octave_idx_type ny, dou
   // Compute the inverse DFT of the filtered data.
   //
 
-  fftw_execute_dft_c2r(p_backward,reinterpret_cast<fftw_complex*>(cf),c);
+  FFTCVec cf_v(fft_len, cf);
+  FFTVec c_v(fft_len, c);
+  fft.ifft(cf_v, c_v);
 
   // Copy data to output matrix.
   if (in_place == false) {
@@ -374,11 +317,9 @@ void sig_keyint_handler(int signum) {
   //printf("Caught signal SIGINT.\n");
 }
 
-
-
 /***
  *
- * Octave (oct) gateway function for FFTCONV.
+ * Octave (oct) gateway function for FFTCONV_P.
  *
  ***/
 
@@ -441,12 +382,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   std::thread     *threads;
   octave_idx_type  thread_n, nthreads;
   DATA   *D;
-  // Input vectors (only used for creating fftw plans).
-  double *a  = NULL, *b  = NULL;
-  double *c  = NULL;
-  // Fourier Coefficients (only used for creating fftw plans).
-  //fftw_complex *af  = NULL, *bf  = NULL, *cf  = NULL;
-  std::complex<double> *af  = NULL, *bf  = NULL, *cf  = NULL;
+  int plan_method = 4; // Default to FFTW_ESTIMATE
   octave_idx_type fft_len, return_wisdom = false, load_wisdom = false;
   char *the_str = NULL;
   int buflen, is_set = false;
@@ -456,10 +392,8 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
 
   int nrhs = args.length ();
 
-  //
   // Set the method which fftw computes plans
   //
-
   // If we want to save a plan (in the second output arg)
   // then use the more time-consuming MEAUSURE method.
   if (nlhs == 2) {
@@ -467,7 +401,9 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
     //plan_method = 4; // 4 = ESTIMATE.
   }
 
+  //
   // Check for proper inputs arguments.
+  //
 
   switch (nrhs) {
 
@@ -490,12 +426,9 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   case 3:
     if ( args(2).is_string() ) { // 3rd arg is a fftw wisdom string.
       std::string strin = args(2).string_value();
-
       buflen = strin.length();
 
-      //buflen = mxGetM(prhs[3])*mxGetN(prhs[3]);
-      the_str = (char*) fftw_malloc(buflen * sizeof(char));
-      //mxGetString(prhs[3], the_str, buflen); // Obsolete in Matlab 7.x
+      the_str = (char*) malloc(buflen * sizeof(char));
       for ( n=0; n<buflen; n++ ) {
         the_str[n] = strin[n];
       }
@@ -525,7 +458,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
 
       std::string strin = args(3).string_value();
       buflen = strin.length();
-      the_str = (char*) fftw_malloc(buflen * sizeof(char));
+      the_str = (char*) malloc(buflen * sizeof(char));
       for ( n=0; n<buflen; n++ ) {
         the_str[n] = strin[n];
       }
@@ -574,7 +507,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
       // Read the wisdom string.
       std::string strin = args(4).string_value();
       buflen = strin.length();
-      the_str = (char*) fftw_malloc(buflen * sizeof(char));
+      the_str = (char*) malloc(buflen * sizeof(char));
       for ( n=0; n<buflen; n++ ) {
         the_str[n] = strin[n];
       }
@@ -664,18 +597,21 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
     printf("Couldn't register signal handler.\n");
   }
 
-  // Allocate space for (temp) input/output vectors (only used for creating plans).
-
   fft_len = A_M+B_M-1;
 
-  a = (double*) fftw_malloc(sizeof(double)*fft_len);
-  af = (std::complex<double>*) fftw_malloc(sizeof(fftw_complex)*fft_len);
+  FFTVec a_v(fft_len);
+  FFTVec b_v(fft_len);
+  FFTVec c_v(fft_len);
+  double *a = a_v.get(), *b = b_v.get(), *c  = c_v.get();
 
-  b = (double*) fftw_malloc(sizeof(double)*fft_len);
-  bf = (std::complex<double>*) fftw_malloc(sizeof(fftw_complex)*fft_len);
+  FFTCVec af_v(fft_len);
+  FFTCVec bf_v(fft_len);
+  FFTCVec cf_v(fft_len);
+  std::complex<double> *af  = af_v.get(), *bf  = bf_v.get(), *cf  = cf_v.get();
 
-  c = (double*) fftw_malloc(sizeof(double)*fft_len);
-  cf = (std::complex<double>*) fftw_malloc(sizeof(fftw_complex)*fft_len);
+  //std::mutex fft_mutex;
+  //FFT fft(fft_len, &fft_mutex, plan_method);
+  FFT fft(fft_len, nullptr, plan_method);
 
   //
   // Init the FFTW plans.
@@ -687,31 +623,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
       error("Failed to load fftw wisdom!");
       return oct_retval;
     } else
-      fftw_free(the_str); // Clean up.
-  }
-
-  // 1) Very slow
-  if (plan_method == 1) {
-    p_forward = fftw_plan_dft_r2c_1d(fft_len, a, reinterpret_cast<fftw_complex*>(af), FFTW_EXHAUSTIVE);
-    p_backward = fftw_plan_dft_c2r_1d(fft_len, reinterpret_cast<fftw_complex*>(cf), c, FFTW_EXHAUSTIVE);
-  }
-
-  // 2) Slow
-  if (plan_method == 2) {
-    p_forward = fftw_plan_dft_r2c_1d(fft_len, a, reinterpret_cast<fftw_complex*>(af), FFTW_PATIENT);
-    p_backward = fftw_plan_dft_c2r_1d(fft_len, reinterpret_cast<fftw_complex*>(cf), c, FFTW_PATIENT);
-  }
-
-  // 3) Too slow on long FFTs.
-  if (plan_method == 3) {
-    p_forward = fftw_plan_dft_r2c_1d(fft_len, a, reinterpret_cast<fftw_complex*>(af), FFTW_MEASURE);
-    p_backward = fftw_plan_dft_c2r_1d(fft_len, reinterpret_cast<fftw_complex*>(cf), c, FFTW_MEASURE);
-  }
-
-  // 4)
-  if (plan_method == 4) {
-    p_forward = fftw_plan_dft_r2c_1d(fft_len, a, reinterpret_cast<fftw_complex*>(af),  FFTW_ESTIMATE);
-    p_backward = fftw_plan_dft_c2r_1d(fft_len, reinterpret_cast<fftw_complex*>(cf), c,  FFTW_ESTIMATE);
+      free(the_str); // Clean up.
   }
 
   if (nrhs == 2 || (nrhs == 3 && load_wisdom)) { // Normal mode.
@@ -762,6 +674,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
         D[thread_n].B_M = B_M;
         D[thread_n].B_N = B_N;
         D[thread_n].Y = Y;
+        D[thread_n].fft = &fft;
 
         /*
         {
@@ -795,7 +708,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
 
         for (n=0; n<A_N; n++) {
 
-          fftconv( &A[0+n*A_M], A_M, &B[0+n*B_M], B_M, &Y[0+n*(A_M+B_M-1)],
+          fftconv(fft, &A[0+n*A_M], A_M, &B[0+n*B_M], B_M, &Y[0+n*(A_M+B_M-1)],
                    a,b,c,af,bf,cf);
 
           if (running==false) {
@@ -808,7 +721,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
 
         for (n=0; n<A_N; n++) {
 
-          fftconv( &A[0+n*A_M], A_M, B, B_M, &Y[0+n*(A_M+B_M-1)],
+          fftconv(fft, &A[0+n*A_M], A_M, B, B_M, &Y[0+n*(A_M+B_M-1)],
                    a,b,c,af,bf,cf);
 
           if (running==false) {
@@ -856,26 +769,8 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
       // Add to output args.
       oct_retval.append( cmout);
 
-      fftw_free(the_str);
+      free(the_str);
     }
-
-    // Clear temp vectors used for the FFTW plans.
-
-    fftw_free(a);
-    fftw_free(af);
-
-    fftw_free(b);
-    fftw_free(bf);
-
-    fftw_free(c);
-    fftw_free(cf);
-
-    // Cleanup the plans.
-    fftw_destroy_plan(p_forward);
-    fftw_destroy_plan(p_backward);
-
-    // Clean up FFTW
-    //fftw_cleanup(); This seems to put Octave in an unstable state. Calling fftconv will crash Octave.
 
     return oct_retval;
   }
@@ -941,6 +836,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
         D[thread_n].B_M = B_M;
         D[thread_n].B_N = B_N;
         D[thread_n].Y = Y;
+        D[thread_n].fft = &fft;
 
         // Start the threads.
         threads[thread_n] = std::thread(smp_dream_fftconv, &D[thread_n]);
@@ -962,8 +858,8 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
 
         for (n=0; n<A_N; n++) {
 
-          fftconv( &A[0+n*A_M], A_M, &B[0+n*B_M], B_M, &Y[0+n*(A_M+B_M-1)],
-                   a,b,c,af,bf,cf);
+          fftconv(fft, &A[0+n*A_M], A_M, &B[0+n*B_M], B_M, &Y[0+n*(A_M+B_M-1)],
+                  a,b,c,af,bf,cf);
 
           if (running==false) {
             printf("fftconv_p: bailing out!\n");
@@ -975,7 +871,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
 
         for (n=0; n<A_N; n++) {
 
-          fftconv( &A[0+n*A_M], A_M, B, B_M, &Y[0+n*(A_M+B_M-1)],
+          fftconv(fft, &A[0+n*A_M], A_M, B, B_M, &Y[0+n*(A_M+B_M-1)],
                    a,b,c,af,bf,cf);
 
           if (running==false) {
@@ -1020,27 +916,8 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
       // Add to output args.
       oct_retval.append( cmout);
 
-      fftw_free(the_str);
+      free(the_str);
     }
-
-    // Clear temp vectors used for the FFTW plans.
-
-    fftw_free(a);
-    fftw_free(af);
-
-    fftw_free(b);
-    fftw_free(bf);
-
-    fftw_free(c);
-    fftw_free(cf);
-
-    // Cleanup the plans.
-    fftw_destroy_plan(p_forward);
-    fftw_destroy_plan(p_backward);
-
-    // Clean up FFTW
-    //fftw_cleanup(); This seems to put Octave in an unstable state. Calling fftconv will crash Octave.
-
 
     return oct_retval;
   }

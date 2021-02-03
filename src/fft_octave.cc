@@ -28,7 +28,7 @@
 #include <octave/oct.h>
 #include "fft.h"
 
-#ifdef HAVE_FFTW
+#if defined DREAM_OCTAVE || defined HAVE_FFTW
 
 #include <fftw3.h>
 
@@ -58,7 +58,7 @@ void fft_close()
  *
  ***/
 
-#ifdef HAVE_FFTW
+#if defined DREAM_OCTAVE || defined HAVE_FFTW
 void cr_ifft(fftw_complex *xc, double *y, dream_idx_type n)
 #else
 void cr_ifft(double *xir, double *xii, double *y, dream_idx_type n)
@@ -66,7 +66,7 @@ void cr_ifft(double *xir, double *xii, double *y, dream_idx_type n)
 {
   dream_idx_type k;
 
-#ifdef HAVE_FFTW
+#if defined DREAM_OCTAVE || defined HAVE_FFTW
 
   fftw_execute_dft_c2r(p_backward,xc,y);
 
@@ -104,14 +104,14 @@ void cr_ifft(double *xir, double *xii, double *y, dream_idx_type n)
  ***/
 
 
-#ifdef HAVE_FFTW
+#if defined DREAM_OCTAVE || defined HAVE_FFTW
 void cc_ifft(fftw_complex *xc, fftw_complex *yc, dream_idx_type n)
 #else
 void cc_ifft(double *xir, double *xii, double *yor, double *yoi, dream_idx_type n)
 #endif
 {
 
-#ifdef HAVE_FFTW
+#if defined DREAM_OCTAVE || defined HAVE_FFTW
   ; // Nothing here yet.
 #else
   dream_idx_type k;

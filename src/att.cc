@@ -27,8 +27,6 @@
 #include <stdlib.h>
 
 #include <complex>
-#include "fft.h"
-typedef std::complex<double> Complex;
 #include "att.h"
 
 // This file is just a C++ version of att.c for Octave. It's for
@@ -36,12 +34,11 @@ typedef std::complex<double> Complex;
 // so one cannot use <complex.h> and one therefore needs to use the
 // <complex> C++ class instead).
 
-#ifdef HAVE_FFTW
+#if defined DREAM_OCTAVE || defined HAVE_FFTW
 
 #include <thread>
 #include <mutex>
 #include <signal.h>
-
 
 /***
  *
@@ -74,6 +71,154 @@ std::complex<double> **XC = NULL;
 double       **BUF = NULL;
 dream_idx_type nthreads = 1;
 std::mutex **buffer_locks = NULL;
+
+#endif
+
+void Attenuation::att(FFTCVec &xc_vec, FFTVec &x_vec, double r, dream_idx_type it, double *h, double ai)
+{
+  double a0,a1,b;
+  dream_idx_type i, k;
+  double b1, b2, x1;
+  double dw;
+  double w_n, t;
+  double w;
+  double Fs;
+
+  double pi2 = M_PI*M_PI;
+
+  std::complex<double> *xc = xc_vec.get();
+  double *x = x_vec.get();
+
+  //
+  // Calculate frequency-domain Green's function.
+  //
+
+  // Absorbtion : alpha [dB/m Hz]
+  // dB per cm MHz to Neper per m Hz conversion? (8.686 = 20/log(10)).
+  double alpha = m_alpha / (8.686*10000.0);
+
+  double dt =  m_dt*1.0e-6;	// Sampling period [s].
+  Fs  = 1/dt;			// Sampling frequecy [Hz].
+  dw  = 2.0 * M_PI / double(m_len); // Angular freq. sampling step [rad].
+  t   = double(it) * dt;
+  r *= 1.0e-3; // [m]
+  a0  = alpha;
+
+  // The 0.95 constant controls the phase only (causality). See:
+  // K. Aki and P. G. Richards, "Quantative Seismology: Theory and Methods",
+  // San Francisco, CA, Freeman, 1980.
+  a1  = dt * 0.95 / M_PI;
+
+  xc[0] = std::complex<double>(1.0, 0.0); // w = 0 (f = 0 Hz).
+
+  for (k=1; k<(m_len/2+1); k++) { // Loop over all freqs.
+
+    w_n = double(k) * dw;	// Normalized angular freq.
+    w   = w_n*Fs;		// Angular freq.
+    x1  = exp(-r*a0 * w/(2.0*M_PI)); // Amplitude of the Green's function.
+    b   = log (1.0/(a1 * w));
+
+    // (Roughly) Eq.(A6) in M_PIwakowski and Sbai, IEEE UFFC, vol 46,
+    // No 2, March 1999, p. 422--440.
+    b1 = cos( -w*r*a0/(pi2)*b - t*w ); // Real part.
+    b2 = sin( -w*r*a0/(pi2)*b - t*w ); // Imag part.
+
+    xc[k]       = std::complex<double>(x1*b1, x1*b2);
+    xc[m_len-k] = std::complex<double>(x1*b1,-x1*b2);
+
+    // Slower than above.
+    //xc[k] = cexp(-I*(w*r*a0/pi2*b - t*w));
+    //xc[nt-k] = conj(xc[k]);
+  }
+
+  // Do inverse Fourier transform to get time-domain Green's function.
+  m_fft->ifft(xc_vec, x_vec);
+
+  for (i=0; i<m_len; i++) {
+    h[i] += ai * x[i];
+  }
+
+  return;
+}
+
+/***
+ *
+ * Impulse response for absorption - annular array.
+ *
+ ***/
+
+void Attenuation::att_annu(FFTCVec &xc_vec, FFTVec &x_vec, double r, dream_idx_type it, double *h,  double ai, int num_elements)
+{
+  double pi;
+  double a,b;
+  dream_idx_type i, k;
+  double a1;
+  double b1, b2, b3, b4, x1;
+  double dw;
+  double w_n, tq, t;
+  double w;
+
+  std::complex<double> *xc = xc_vec.get();
+  double *x = x_vec.get();
+
+  //
+  // Calculate frequency-domain Green's function.
+  //
+
+  // dB per cm MHz to Neper per m Hz conversion? (8.686 = 20/log(10)).
+  double alpha = m_alpha /(8.686*10000.0);
+
+  double dt = m_dt*1.0e-6;      // Sampling period [s].
+
+  // The 0.95 constant controls the phase only (causality). See:
+  // K. Aki and P. G. Richards, "Quantative Seismology: Theory and Methods",
+  // San Francisco, CA, Freeman, 1980.
+  a1  = dt * (double) 0.95 / M_PI;
+
+  dw  = (double) 2.0 * M_PI / (double) m_len; // Freq. sampling step.
+  t = double(it) * dt;
+
+  r *= 1.0e-3;                  // [m]
+  a = -(r * alpha) / ( (double) 2.0 * M_PI);
+  tq = r * alpha * m_cp / (M_PI*M_PI);
+
+  xc[0] = std::complex<double>(1.0, 0.0);	// w = 0 (f = 0 Hz).
+
+  for (k=1; k<(m_len/2+1); k++) {
+
+    w_n = (double) k * dw;
+    w = w_n / dt;
+    x1 = exp(a * w);
+    b = log(1.0 / (a1 * w));
+
+    // t temp arrive en sec, ftb1 retard de focal/baleyage en sec
+    b4 = -t * w_n / dt;
+    b3 = -(b * tq) * w_n / (dt * m_cp);
+
+    b = b4 + b3;
+    b1 = cos(b);
+    b2 = sin(b);
+
+    xc[k]    = std::complex<double>(x1*b1, x1*b2);
+    xc[m_len-k] = std::complex<double>(x1*b1,-x1*b2);
+  }
+
+  // Should these be set to zero ?
+  //xr[m_len/2] = 0.0;
+  //xi[m_len/2] = 0.0;
+  xc[m_len/2] = std::complex<double>(0.0, 0-0);
+
+  // Do inverse Fourier transform to get time-domain Green's function.
+  m_fft->ifft(xc_vec, x_vec);
+
+  for (i=0; i<m_len; i++) {
+    h[i + num_elements*m_len] += ai * x[i];
+  }
+
+  return;
+}
+
+#if defined DREAM_OCTAVE || defined HAVE_FFTW
 
 /***
  *
@@ -144,18 +289,18 @@ void att_close()
   return;
 }
 
-#endif
-
 /***
  *
  * Impulse response for absorption.
  *
  ***/
 
-void att(double alpha, double rj, dream_idx_type it, double dt, double cp, double *h, dream_idx_type nt, double ai)
+#endif
+
+void att(double alpha, double r, dream_idx_type it, double dt, double cp, double *h, dream_idx_type nt, double ai)
 {
   const double mille = 1000.0;
-  double pi,pi2;
+  double pi2;
   double a0,a1,b;
   dream_idx_type i, k;
   double b1, b2, x1;
@@ -164,10 +309,9 @@ void att(double alpha, double rj, dream_idx_type it, double dt, double cp, doubl
   double w;
   double Fs;
 
-  pi = 4.0 * atan(1.0);
-  pi2 = pi*pi;
+  pi2 = M_PI*M_PI;
 
-#ifdef HAVE_FFTW
+#if defined DREAM_OCTAVE || defined HAVE_FFTW
 
   //fftw_complex *xc = NULL;
   std::complex<double> *xc = NULL;
@@ -228,20 +372,20 @@ void att(double alpha, double rj, dream_idx_type it, double dt, double cp, doubl
   /*    dt s, a1 s, */
   dt /= (mille * mille);	// Sampling period [s].
   Fs  = 1/dt;			// Sampling frequecy [Hz].
-  dw  = (double) 2.0 * pi / (double) nt; // Angular freq. sampling step [rad].
+  dw  = (double) 2.0 * M_PI / (double) nt; // Angular freq. sampling step [rad].
   t   = it * dt;
 
-  /* Change  units rj [m] */
-  rj /= mille;
+  /* Change  units r [m] */
+  r /= mille;
   a0  = alpha;
   // The 0.95 constant controls the phase only (causality). See:
   // K. Aki and P. G. Richards, "Quantative Seismology: Theory and Methods",
   // San Francisco, CA, Freeman, 1980.
-  a1  = dt * (double) 0.95 / pi;
-  //a1  = dt / pi;
+  a1  = dt * (double) 0.95 / M_PI;
+  //a1  = dt / M_PI;
 
-#ifdef HAVE_FFTW
-  xc[0] = Complex(1.0,0.0);	// w = 0 (f = 0 Hz).
+#if defined DREAM_OCTAVE || defined HAVE_FFTW
+  xc[0] = std::complex<double>(1.0, 0.0); // w = 0 (f = 0 Hz).
 #else
   xr[0] = (double) 1.0;		// w = 0 (f = 0 Hz).
   xi[0] = (double) 0.0;		// w = 0 (f = 0 Hz).
@@ -251,21 +395,21 @@ void att(double alpha, double rj, dream_idx_type it, double dt, double cp, doubl
 
     w_n = ((double) k) * dw;	// Normalized angular freq.
     w   = w_n*Fs;		// Angular freq.
-    x1  = exp(-rj*a0 * w/(2*pi)); // Amplitude of the Green's function.
+    x1  = exp(-r*a0 * w/(2*M_PI)); // Amplitude of the Green's function.
     b   = log ( ((double) 1.0) / (a1 * w));
 
-    // (Roughly) Eq.(A6) in Piwakowski and Sbai, IEEE UFFC, vol 46,
+    // (Roughly) Eq.(A6) in M_PIwakowski and Sbai, IEEE UFFC, vol 46,
     // No 2, March 1999, p. 422--440.
-    b1 = cos( -w*rj*a0/(pi2)*b - t*w ); // Real part.
-    b2 = sin( -w*rj*a0/(pi2)*b - t*w ); // Imag part.
+    b1 = cos( -w*r*a0/(pi2)*b - t*w ); // Real part.
+    b2 = sin( -w*r*a0/(pi2)*b - t*w ); // Imag part.
 
-#ifdef HAVE_FFTW
-    xc[k]    = Complex(x1*b1,x1*b2);
-    xc[nt-k] = Complex(x1*b1,-x1*b2);
+#if defined DREAM_OCTAVE || defined HAVE_FFTW
+    xc[k]    = std::complex<double>(x1*b1, x1*b2);
+    xc[nt-k] = std::complex<double>(x1*b1,-x1*b2);
     //xc[nt-k] = conj(xc[k]);
 
     // Slower than above.
-    //xc[k] = cexp(-I*(w*rj*a0/pi2*b - t*w));
+    //xc[k] = cexp(-I*(w*r*a0/pi2*b - t*w));
     //xc[nt-k] = conj(xc[k]);
 
 #else
@@ -284,7 +428,7 @@ void att(double alpha, double rj, dream_idx_type it, double dt, double cp, doubl
   // Do inverse Fourier transform to get time-domain Green's function.
   //
 
-#ifdef HAVE_FFTW
+#if defined DREAM_OCTAVE || defined HAVE_FFTW
   cr_ifft(reinterpret_cast<fftw_complex*>(xc),buf,nt); // Complex input, real output.
 #else
   cr_ifft(xr,xi,buf,nt); // Complex input, real output.
@@ -292,9 +436,12 @@ void att(double alpha, double rj, dream_idx_type it, double dt, double cp, doubl
 
   for (i=0; i<nt; i++) {
     h[i] += ai * buf[i];
+    std::cout << buf[i] << " ";
   }
+  std::cout << std::endl;
 
-#ifdef HAVE_FFTW
+
+#if defined DREAM_OCTAVE || defined HAVE_FFTW
 
   // We are done. Unlock the buffers
   if (nthreads > 1) {
@@ -318,7 +465,7 @@ void att(double alpha, double rj, dream_idx_type it, double dt, double cp, doubl
  *
  ***/
 
-void att_annu(double alpha, double rj, dream_idx_type it, double  dt, double cp, double *h, dream_idx_type nt, double ai, int ns, int num_elements)
+void att_annu(double alpha, double r, dream_idx_type it, double  dt, double cp, double *h, dream_idx_type nt, double ai, int ns, int num_elements)
 {
   /* Initialized data */
   const double mille = 1000.0;
@@ -331,10 +478,7 @@ void att_annu(double alpha, double rj, dream_idx_type it, double  dt, double cp,
   double w_n, tq, t;
   double w;
 
-  pi = 4.0 * atan(1.0);
-
-
-#ifdef HAVE_FFTW
+#if defined DREAM_OCTAVE || defined HAVE_FFTW
 
   //fftw_complex *xc = NULL;
   std::complex<double> *xc = NULL;
@@ -389,19 +533,19 @@ void att_annu(double alpha, double rj, dream_idx_type it, double  dt, double cp,
   // The 0.95 constant controls the phase only (causality). See:
   // K. Aki and P. G. Richards, "Quantative Seismology: Theory and Methods",
   // San Francisco, CA, Freeman, 1980.
-  a1  = dt * (double) 0.95 / pi;
-  //a1  = dt / pi;
-  dw  = (double) 2.0 * pi / (double) nt; // Freq. sampling step.
+  a1  = dt * (double) 0.95 / M_PI;
+  //a1  = dt / M_PI;
+  dw  = (double) 2.0 * M_PI / (double) nt; // Freq. sampling step.
 
   t = it * dt;
 
-  /* Change  units rj [m] */
-  rj /= mille;
-  a = -(rj * alpha) / ( (double) 2.0 * pi);
-  tq = rj * alpha * cp / (pi * pi);
+  /* Change  units r [m] */
+  r /= mille;
+  a = -(r * alpha) / ( (double) 2.0 * M_PI);
+  tq = r * alpha * cp / (M_PI * M_PI);
 
-#ifdef HAVE_FFTW
-  xc[0] = Complex(1.0,0.0);	// w = 0 (f = 0 Hz).
+#if defined DREAM_OCTAVE || defined HAVE_FFTW
+  xc[0] = std::complex<double>(1.0, 0.0);	// w = 0 (f = 0 Hz).
 #else
   xr[0] = (double) 1.0;		// w = 0 (f = 0 Hz).
   xi[0] = (double) 0.0;		// w = 0 (f = 0 Hz).
@@ -421,9 +565,9 @@ void att_annu(double alpha, double rj, dream_idx_type it, double  dt, double cp,
     b1 = cos(b);
     b2 = sin(b);
 
-#ifdef HAVE_FFTW
-    xc[k]    = Complex(x1*b1,x1*b2);
-    xc[nt-k] = Complex(x1*b1, -x1*b2);
+#if defined DREAM_OCTAVE || defined HAVE_FFTW
+    xc[k]    = std::complex<double>(x1*b1, x1*b2);
+    xc[nt-k] = std::complex<double>(x1*b1,-x1*b2);
 #else
     // Real part.
     xr[k]    = x1 * b1;
@@ -443,7 +587,7 @@ void att_annu(double alpha, double rj, dream_idx_type it, double  dt, double cp,
   // Do inverse Fourier transform to get time-domain Green's function.
   //
 
-#ifdef HAVE_FFTW
+#if defined DREAM_OCTAVE || defined HAVE_FFTW
   cr_ifft(reinterpret_cast<fftw_complex*>(xc),buf,nt); // Complex input, real output.
 #else
   cr_ifft(xr,xi,buf,nt); // Complex input, real output.
@@ -452,8 +596,8 @@ void att_annu(double alpha, double rj, dream_idx_type it, double  dt, double cp,
   for (i=0; i<nt; i++) {
     h[i + ns*nt] += ai * buf[i];
   }
-#ifdef HAVE_FFTW
 
+#if defined DREAM_OCTAVE || defined HAVE_FFTW
   // We are done. Unlock the buffers
   if (nthreads > 1) {
     buffer_locks[this_buffer]->unlock();

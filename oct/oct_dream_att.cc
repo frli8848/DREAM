@@ -83,11 +83,9 @@ Start point of SIR:\n\
 Scalar delay for all observation points or a vector with individual delays for each observation point [us].\n\
 @end table\n\
 \n\
-Material parameters: m_par = [v cp alpha];\n\
+Material parameters: m_par = [cp alpha];\n\
 \n\
 @table @code\n\
-@item v\n\
-Normal velocity [m/s].\n\
 @item cp\n\
 Sound velocity [m/s].\n\
 @item alpha\n\
@@ -180,18 +178,18 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   // Create an output matrix for the impulse response.
   //
 
-  // Create an output matrix for the impulse response
+  // Create an output matrix for the impulse response(s)
   Matrix h_mat(nt, no);
   h = h_mat.fortran_vec();
 
-#ifdef USE_FFTW
-  if (alpha != (double) 0.0)
-    att_init(nt,1);
-#endif
+  Attenuation att(nt, dt, cp, alpha);
+  FFTCVec xc(nt);
+  FFTVec x(nt);
 
   //
   // Call the attenuation subroutine.
   //
+
   if (mxGetM((2)) * mxGetN(2) == 1) {
     for (n=0; n<no; n++) {
       xo = ro[n];
@@ -199,8 +197,8 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
       zo = ro[n+2*no];
 
       r = sqrt(xo*xo + yo*yo + zo*zo);
-      it = (int) ( (r * 1000/cp - delay[0])/dt + 1);
-      att(alpha,r,it,dt,cp,&h[n*nt],nt,1.0);
+      it = (int) ( (r * 1.0e3/cp - delay[0])/dt + 1);
+      att.att(xc, x, r, it, &h[n*nt], 1.0);
     }
   } else {
     for (n=0; n<no; n++) {
@@ -209,15 +207,10 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
       zo = ro[n+2*no];
 
       r = sqrt(xo*xo + yo*yo + zo*zo);
-      it = (int) ( (r * 1000/cp - delay[n])/dt + 1);
-      att(alpha,r,it,dt,cp,&h[n*nt],nt,1.0);
+      it = (int) ( (r * 1.0e3/cp - delay[n])/dt + 1);
+      att.att(xc, x, r, it, &h[n*nt], 1.0);
     }
   }
-
-#ifdef USE_FFTW
-  if (alpha != (double) 0.0)
-    att_close();
-#endif
 
   oct_retval.append(h_mat);
   return oct_retval;

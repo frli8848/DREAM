@@ -2,7 +2,7 @@
 %
 % Run all transducer functions.
 %
-% Copyright (C) 2005,2006,2008,2009,2019 Fredrik Lingvall
+% Copyright (C) 2005,2006,2008,2009,2019,2021 Fredrik Lingvall
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -628,20 +628,51 @@ end
 title('Annular array');
 fprintf('dream_arr_annu\n');
 
+% ------------- Attenuation response --------------------------
+
+alpha = 3.0;
+s_par = [dt nt];
+m_par = [cp alpha];
+[H] = dream_att(Ro,s_par,delay,m_par);
+
+subplot(3,2,3);
+if size(H,2)>1
+  mesh(xo,t,H);
+  axis('tight');
+  view(135,32);
+else
+  plot(t,H);
+  ax = axis;
+  axis([0 50 ax(3) ax(4)]);
+  %xlabel('t [\mus]')
+  grid('on');
+end
+title('Attenuation Response')
+fprintf('dream_att\n');
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % Misc functions
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-L1 = 500;
-L2 = 500;
-N=100;
+L1 = 4000;
+L2 = 4000;
+N=1000;
 X = randn(L1,N);
 Y = randn(L2,N);
 
+Z0 = zeros(L1+L2-1,N);
 eval('tic')
-Z = conv_p(X,Y);
+for n=1:N
+  Z0(:,n) = conv( X(:,n), Y(:,n));
+end
+t0= toc;
+fprintf('conv\n');
+
+eval('tic')
+Z1 = conv_p(X,Y);
 t1= toc;
 fprintf('conv_p\n');
 
@@ -650,4 +681,5 @@ Z2 = fftconv_p(X,Y);
 t2= toc;
 fprintf('fftconv_p\n\n');
 
-fprintf('Elapsed time conv_p: %f, fftconv_p: %f\n\n',t1,t2);
+fprintf('Elapsed time conv: %f, conv_p: %f, fftconv_p: %f\n\n',t0,t1,t2);
+fprintf('Error: ||conv-conv_p||= %e, ||conv-fftconv_p||= %e\n\n',norm(Z0-Z1), norm(Z0-Z2));

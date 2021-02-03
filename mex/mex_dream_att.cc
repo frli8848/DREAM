@@ -107,9 +107,9 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Call the attenuation subroutine.
   //
 
-#ifdef HAVE_FFTW
-  att_init(nt,1);
-#endif
+  Attenuation att(nt, dt, cp, alpha);
+  FFTCVec xc(nt);
+  FFTVec x(nt);
 
   if (mxGetM(prhs[2]) * mxGetN(prhs[2]) == 1) {
     for (n=0; n<no; n++) {
@@ -118,9 +118,8 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       zo = ro[n+2*no];
 
       r = sqrt(xo*xo + yo*yo + zo*zo);
-      it = (int) ( (r * 1000/cp - delay[0])/dt + 1);
-      att(alpha,r,it,dt,cp,&h[n*nt],nt,1.0);
-
+      it = (int) ( (r * 1.0e3/cp - delay[0])/dt + 1);
+      att.att(xc, x, r, it, &h[n*nt], 1.0);
     }
   } else {
     for (n=0; n<no; n++) {
@@ -129,14 +128,10 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       zo = ro[n+2*no];
 
       r = sqrt(xo*xo + yo*yo + zo*zo);
-      it = (int) ( (r * 1000/cp - delay[n])/dt + 1);
-      att(alpha,r,it,dt,cp,&h[n*nt],nt,1.0);
+      it = (int) ( (r * 1.0e3/cp - delay[n])/dt + 1);
+      att.att(xc, x, r, it, &h[n*nt], 1.0);
     }
   }
-
-#ifdef HAVE_FFTW
-  att_close();
-#endif
 
   return;
 }

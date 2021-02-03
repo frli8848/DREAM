@@ -146,7 +146,7 @@ if (OCTAVE_FOUND)
     )
 
   set_target_properties (oct_dreamline PROPERTIES
-    CXX_STANDARD 11
+    CXX_STANDARD 14
     COMPILE_FLAGS "${OCT_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_OCT_INCLUDE_DIRS}"
     LINK_FLAGS ${OCT_LD_FLAGS}
@@ -177,7 +177,7 @@ if (Matlab_FOUND)
     )
 
   set_target_properties (mex_dreamline PROPERTIES
-    CXX_STANDARD 11
+    CXX_STANDARD 14
     COMPILE_FLAGS "${DREAM_FFT_MEX_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
 
@@ -216,7 +216,7 @@ if (OCTAVE_FOUND)
     )
 
   set_target_properties (oct_dreamrect PROPERTIES
-    CXX_STANDARD 11
+    CXX_STANDARD 14
     COMPILE_FLAGS "${OCT_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_OCT_INCLUDE_DIRS}"
     LINK_FLAGS ${OCT_LD_FLAGS}
@@ -245,7 +245,7 @@ if (Matlab_FOUND)
     )
 
   set_target_properties (mex_dreamrect PROPERTIES
-    CXX_STANDARD 11
+    CXX_STANDARD 14
     COMPILE_FLAGS "${DREAM_FFT_MEX_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
     LINK_FLAGS ${MEX_LD_FLAGS}
@@ -278,7 +278,7 @@ if (OCTAVE_FOUND)
     )
 
   set_target_properties (oct_dreamrect_f PROPERTIES
-    CXX_STANDARD 11
+    CXX_STANDARD 14
     COMPILE_FLAGS "${OCT_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_OCT_INCLUDE_DIRS}"
     LINK_FLAGS ${OCT_LD_FLAGS}
@@ -307,7 +307,7 @@ if (Matlab_FOUND)
     )
 
   set_target_properties (mex_dreamrect_f PROPERTIES
-    CXX_STANDARD 11
+    CXX_STANDARD 14
     COMPILE_FLAGS "${DREAM_FFT_MEX_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
 
@@ -347,7 +347,7 @@ if (OCTAVE_FOUND)
     )
 
   set_target_properties (oct_dreamcirc PROPERTIES
-    CXX_STANDARD 11
+    CXX_STANDARD 14
     COMPILE_FLAGS "${OCT_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_OCT_INCLUDE_DIRS}"
     LINK_FLAGS ${OCT_LD_FLAGS}
@@ -376,7 +376,7 @@ if (Matlab_FOUND)
     )
 
   set_target_properties (mex_dreamcirc PROPERTIES
-    CXX_STANDARD 11
+    CXX_STANDARD 14
     COMPILE_FLAGS "${DREAM_FFT_MEX_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
 
@@ -410,7 +410,7 @@ if (OCTAVE_FOUND)
     )
 
   set_target_properties (oct_dreamcirc_f PROPERTIES
-    CXX_STANDARD 11
+    CXX_STANDARD 14
     COMPILE_FLAGS "${OCT_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_OCT_INCLUDE_DIRS}"
     LINK_FLAGS ${OCT_LD_FLAGS}
@@ -439,7 +439,7 @@ if (Matlab_FOUND)
     )
 
   set_target_properties (mex_dreamcirc_f PROPERTIES
-    CXX_STANDARD 11
+    CXX_STANDARD 14
     COMPILE_FLAGS "${DREAM_FFT_MEX_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
 
@@ -473,7 +473,7 @@ if (OCTAVE_FOUND)
     )
 
   set_target_properties (oct_dreamsphere_f PROPERTIES
-    CXX_STANDARD 11
+    CXX_STANDARD 14
     COMPILE_FLAGS "${OCT_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_OCT_INCLUDE_DIRS}"
     LINK_FLAGS ${OCT_LD_FLAGS}
@@ -502,7 +502,7 @@ if (Matlab_FOUND)
     )
 
   set_target_properties (mex_dreamsphere_f PROPERTIES
-    CXX_STANDARD 11
+    CXX_STANDARD 14
     COMPILE_FLAGS "${DREAM_FFT_MEX_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
 
@@ -537,7 +537,7 @@ if (OCTAVE_FOUND)
     )
 
   set_target_properties (oct_dreamsphere_d PROPERTIES
-    CXX_STANDARD 11
+    CXX_STANDARD 14
     COMPILE_FLAGS "${OCT_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_OCT_INCLUDE_DIRS}"
     LINK_FLAGS ${OCT_LD_FLAGS}
@@ -566,7 +566,7 @@ if (Matlab_FOUND)
     )
 
   set_target_properties (mex_dreamsphere_d PROPERTIES
-    CXX_STANDARD 11
+    CXX_STANDARD 14
     COMPILE_FLAGS "${DREAM_FFT_MEX_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
 
@@ -600,7 +600,7 @@ if (OCTAVE_FOUND)
     )
 
   set_target_properties (oct_dreamcylind_f PROPERTIES
-    CXX_STANDARD 11
+    CXX_STANDARD 14
     COMPILE_FLAGS "${OCT_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_OCT_INCLUDE_DIRS}"
     LINK_FLAGS ${OCT_LD_FLAGS}
@@ -629,7 +629,7 @@ if (Matlab_FOUND)
     )
 
   set_target_properties (mex_dreamcylind_f PROPERTIES
-    CXX_STANDARD 11
+    CXX_STANDARD 14
     COMPILE_FLAGS "${DREAM_FFT_MEX_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
 
@@ -663,7 +663,7 @@ if (OCTAVE_FOUND)
     )
 
   set_target_properties (oct_dreamcylind_d PROPERTIES
-    CXX_STANDARD 11
+    CXX_STANDARD 14
     COMPILE_FLAGS "${OCT_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_OCT_INCLUDE_DIRS}"
     LINK_FLAGS ${OCT_LD_FLAGS}
@@ -692,7 +692,7 @@ if (Matlab_FOUND)
     )
 
   set_target_properties (mex_dreamcylind_d PROPERTIES
-    CXX_STANDARD 11
+    CXX_STANDARD 14
     COMPILE_FLAGS "${DREAM_FFT_MEX_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
 
@@ -728,7 +728,7 @@ if (OCTAVE_FOUND)
     )
 
   set_target_properties (oct_dream_arr_rect PROPERTIES
-    CXX_STANDARD 11
+    CXX_STANDARD 14
     COMPILE_FLAGS "${OCT_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_OCT_INCLUDE_DIRS}"
     LINK_FLAGS ${OCT_LD_FLAGS}
@@ -758,7 +758,7 @@ if (Matlab_FOUND)
     )
 
   set_target_properties (mex_dream_arr_circ PROPERTIES
-    CXX_STANDARD 11
+    CXX_STANDARD 14
     COMPILE_FLAGS "${DREAM_FFT_MEX_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
 
@@ -793,7 +793,7 @@ if (OCTAVE_FOUND)
     )
 
   set_target_properties (oct_dream_arr_circ PROPERTIES
-    CXX_STANDARD 11
+    CXX_STANDARD 14
     COMPILE_FLAGS "${OCT_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_OCT_INCLUDE_DIRS}"
     LINK_FLAGS ${OCT_LD_FLAGS}
@@ -823,7 +823,7 @@ if (Matlab_FOUND)
     )
 
   set_target_properties (mex_dream_arr_rect PROPERTIES
-    CXX_STANDARD 11
+    CXX_STANDARD 14
     COMPILE_FLAGS "${DREAM_FFT_MEX_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
 
@@ -858,7 +858,7 @@ if (OCTAVE_FOUND)
     )
 
   set_target_properties (oct_dream_arr_cylind_f PROPERTIES
-    CXX_STANDARD 11
+    CXX_STANDARD 14
     COMPILE_FLAGS "${OCT_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_OCT_INCLUDE_DIRS}"
     LINK_FLAGS ${OCT_LD_FLAGS}
@@ -888,7 +888,7 @@ if (Matlab_FOUND)
     )
 
   set_target_properties (mex_dream_arr_cylind_f PROPERTIES
-    CXX_STANDARD 11
+    CXX_STANDARD 14
     COMPILE_FLAGS "${DREAM_FFT_MEX_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
 
@@ -923,7 +923,7 @@ if (OCTAVE_FOUND)
     )
 
   set_target_properties (oct_dream_arr_cylind_d PROPERTIES
-    CXX_STANDARD 11
+    CXX_STANDARD 14
     COMPILE_FLAGS "${OCT_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_OCT_INCLUDE_DIRS}"
     LINK_FLAGS ${OCT_LD_FLAGS}
@@ -953,7 +953,7 @@ if (Matlab_FOUND)
     )
 
   set_target_properties (mex_dream_arr_cylind_d PROPERTIES
-    CXX_STANDARD 11
+    CXX_STANDARD 14
     COMPILE_FLAGS "${DREAM_FFT_MEX_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
 
@@ -988,7 +988,7 @@ if (OCTAVE_FOUND)
     )
 
   set_target_properties (oct_dream_arr_annu PROPERTIES
-    CXX_STANDARD 11
+    CXX_STANDARD 14
     COMPILE_FLAGS "${OCT_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_OCT_INCLUDE_DIRS}"
     LINK_FLAGS ${OCT_LD_FLAGS}
@@ -1018,7 +1018,7 @@ if (Matlab_FOUND)
     )
 
   set_target_properties (mex_dream_arr_annu PROPERTIES
-    CXX_STANDARD 11
+    CXX_STANDARD 14
     COMPILE_FLAGS "${DREAM_FFT_MEX_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
 
@@ -1054,7 +1054,7 @@ if (OCTAVE_FOUND)
     )
 
   set_target_properties (oct_dream_apodwin PROPERTIES
-    CXX_STANDARD 11
+    CXX_STANDARD 14
     COMPILE_FLAGS "${OCT_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_OCT_INCLUDE_DIRS}"
     LINK_FLAGS ${OCT_LD_FLAGS}
@@ -1080,7 +1080,7 @@ if (Matlab_FOUND)
     )
 
   set_target_properties (mex_dream_apodwin PROPERTIES
-    CXX_STANDARD 11
+    CXX_STANDARD 14
     COMPILE_FLAGS "${DREAM_FFT_MEX_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
 
@@ -1114,7 +1114,7 @@ if (OCTAVE_FOUND)
     )
 
   set_target_properties (oct_dream_att PROPERTIES
-    CXX_STANDARD 11
+    CXX_STANDARD 14
     COMPILE_FLAGS "${OCT_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_OCT_INCLUDE_DIRS}"
     LINK_FLAGS ${OCT_LD_FLAGS}
@@ -1142,7 +1142,7 @@ if (Matlab_FOUND)
     )
 
   set_target_properties (mex_dream_att PROPERTIES
-    CXX_STANDARD 11
+    CXX_STANDARD 14
     COMPILE_FLAGS "${DREAM_FFT_MEX_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
     LINK_FLAGS ${MEX_LD_FLAGS}
@@ -1175,7 +1175,7 @@ if (OCTAVE_FOUND)
     )
 
   set_target_properties (oct_circ_sir PROPERTIES
-    CXX_STANDARD 11
+    CXX_STANDARD 14
     COMPILE_FLAGS "${OCT_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_OCT_INCLUDE_DIRS}"
     LINK_FLAGS ${OCT_LD_FLAGS}
@@ -1201,7 +1201,7 @@ if (Matlab_FOUND)
     )
 
   set_target_properties (mex_circ_sir PROPERTIES
-    CXX_STANDARD 11
+    CXX_STANDARD 14
     COMPILE_FLAGS "${DREAM_FFT_MEX_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
 
@@ -1229,7 +1229,7 @@ if (OCTAVE_FOUND)
     )
 
   set_target_properties (oct_scirc_sir PROPERTIES
-    CXX_STANDARD 11
+    CXX_STANDARD 14
     COMPILE_FLAGS "${OCT_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_OCT_INCLUDE_DIRS}"
     LINK_FLAGS ${OCT_LD_FLAGS}
@@ -1254,7 +1254,7 @@ if (Matlab_FOUND)
     )
 
   set_target_properties (mex_scirc_sir PROPERTIES
-    CXX_STANDARD 11
+    CXX_STANDARD 14
     COMPILE_FLAGS "${DREAM_FFT_MEX_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
 
@@ -1288,7 +1288,7 @@ if (OCTAVE_FOUND)
     )
 
   set_target_properties (oct_rect_sir PROPERTIES
-    CXX_STANDARD 11
+    CXX_STANDARD 14
     COMPILE_FLAGS "${OCT_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_OCT_INCLUDE_DIRS}"
     LINK_FLAGS ${OCT_LD_FLAGS}
@@ -1314,7 +1314,7 @@ if (Matlab_FOUND)
     )
 
   set_target_properties (mex_rect_sir PROPERTIES
-    CXX_STANDARD 11
+    CXX_STANDARD 14
     COMPILE_FLAGS "${DREAM_FFT_MEX_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
 
@@ -1346,7 +1346,7 @@ if (OCTAVE_FOUND)
     )
 
   set_target_properties (oct_das PROPERTIES
-    CXX_STANDARD 11
+    CXX_STANDARD 14
     COMPILE_FLAGS "${OCT_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_OCT_INCLUDE_DIRS}"
     LINK_FLAGS ${OCT_LD_FLAGS}
@@ -1372,7 +1372,7 @@ if (Matlab_FOUND)
     )
 
   set_target_properties (mex_das PROPERTIES
-    CXX_STANDARD 11
+    CXX_STANDARD 14
     COMPILE_FLAGS "${DREAM_FFT_MEX_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
 
@@ -1401,7 +1401,7 @@ if (OCTAVE_FOUND)
     )
 
   set_target_properties (oct_das_arr PROPERTIES
-    CXX_STANDARD 11
+    CXX_STANDARD 14
     COMPILE_FLAGS "${OCT_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_OCT_INCLUDE_DIRS}"
     LINK_FLAGS ${OCT_LD_FLAGS}
@@ -1428,7 +1428,7 @@ if (Matlab_FOUND)
     )
 
   set_target_properties (mex_das_arr PROPERTIES
-    CXX_STANDARD 11
+    CXX_STANDARD 14
     COMPILE_FLAGS "${DREAM_FFT_MEX_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
 
@@ -1458,7 +1458,7 @@ if (OCTAVE_FOUND)
     )
 
   set_target_properties (oct_saft PROPERTIES
-    CXX_STANDARD 11
+    CXX_STANDARD 14
     COMPILE_FLAGS "${OCT_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_OCT_INCLUDE_DIRS}"
     LINK_FLAGS ${OCT_LD_FLAGS}
@@ -1482,7 +1482,7 @@ if (Matlab_FOUND)
     )
 
   set_target_properties (mex_saft PROPERTIES
-    CXX_STANDARD 11
+    CXX_STANDARD 14
     COMPILE_FLAGS "${DREAM_FFT_MEX_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
 
@@ -1516,7 +1516,7 @@ if (OCTAVE_FOUND)
     )
 
   set_target_properties (oct_conv_p PROPERTIES
-    CXX_STANDARD 11
+    CXX_STANDARD 14
     COMPILE_FLAGS "${OCT_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_OCT_INCLUDE_DIRS}"
     LINK_FLAGS ${OCT_LD_FLAGS}
@@ -1542,7 +1542,7 @@ if (Matlab_FOUND)
     )
 
   set_target_properties (mex_conv_p PROPERTIES
-    CXX_STANDARD 11
+    CXX_STANDARD 14
     COMPILE_FLAGS "${DREAM_FFT_MEX_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
 
@@ -1571,7 +1571,7 @@ if (OCTAVE_FOUND)
     )
 
   set_target_properties (oct_fftconv_p PROPERTIES
-    CXX_STANDARD 11
+    CXX_STANDARD 14
     COMPILE_FLAGS "${OCT_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_OCT_INCLUDE_DIRS}"
     LINK_FLAGS ${OCT_LD_FLAGS}
@@ -1597,7 +1597,7 @@ if (Matlab_FOUND)
     )
 
   set_target_properties (mex_fftconv_p PROPERTIES
-    CXX_STANDARD 11
+    CXX_STANDARD 14
     COMPILE_FLAGS "${DREAM_FFT_MEX_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
 
@@ -1627,7 +1627,7 @@ if (OCTAVE_FOUND)
     )
 
   set_target_properties (oct_sum_fftconv PROPERTIES
-    CXX_STANDARD 11
+    CXX_STANDARD 14
     COMPILE_FLAGS "${OCT_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_OCT_INCLUDE_DIRS}"
     LINK_FLAGS ${OCT_LD_FLAGS}
@@ -1653,7 +1653,7 @@ if (Matlab_FOUND)
     )
 
   set_target_properties (mex_sum_fftconv PROPERTIES
-    CXX_STANDARD 11
+    CXX_STANDARD 14
     COMPILE_FLAGS "${DREAM_FFT_MEX_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
 
@@ -1684,7 +1684,7 @@ if (OCTAVE_FOUND)
     )
 
   set_target_properties (oct_fftconv_ola PROPERTIES
-    CXX_STANDARD 11
+    CXX_STANDARD 14
     COMPILE_FLAGS "${OCT_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_OCT_INCLUDE_DIRS}"
     LINK_FLAGS ${OCT_LD_FLAGS}
@@ -1719,7 +1719,7 @@ if (OCTAVE_FOUND)
     )
 
   set_target_properties (oct_copy_p PROPERTIES
-    CXX_STANDARD 11
+    CXX_STANDARD 14
     COMPILE_FLAGS "${OCT_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_OCT_INCLUDE_DIRS}"
     LINK_FLAGS ${OCT_LD_FLAGS}
@@ -1743,7 +1743,7 @@ if (Matlab_FOUND)
     )
 
   set_target_properties (mex_copy_p PROPERTIES
-    CXX_STANDARD 11
+    CXX_STANDARD 14
     COMPILE_FLAGS "${DREAM_FFT_MEX_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
     LINK_FLAGS ${MEX_LD_FLAGS}

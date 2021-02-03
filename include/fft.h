@@ -192,39 +192,42 @@ class FFT
 
     dream_idx_type k, len=x.len();
 
+
+    // FIXME: Matlab thread safe.
+    //
     // Here we try to lock the mexCallMATLAB code
     // with a mutex but it does not seem to be enough
     // to avoid segfaults when using mutilple threads!?
 
-    if (m_fft_mutex) {
-      const std::lock_guard<std::mutex> lock(m_fft_mutex[0]);
+    //if (m_fft_mutex) {
+    //  const std::lock_guard<std::mutex> lock(m_fft_mutex[0]);
 
-      X = mxCreateDoubleMatrix(len,1,mxREAL);
+    X = mxCreateDoubleMatrix(len,1,mxREAL);
 
-      //X = mxCreateDoubleMatrix(5,1,mxREAL);
-      mxDouble *xp = mxGetDoubles(X);
+    //X = mxCreateDoubleMatrix(5,1,mxREAL);
+    mxDouble *xp = mxGetDoubles(X);
 
-      // Copy input vector to a Matlab Matrix.
-      std::memcpy(xp, x.get(), len*sizeof(double));
+    // Copy input vector to a Matlab Matrix.
+    std::memcpy(xp, x.get(), len*sizeof(double));
 
-      // Let Matlab do the job!
-      mexCallMATLAB(1, &Y, 1, &X, "fft");
+    // Let Matlab do the job!
+    mexCallMATLAB(1, &Y, 1, &X, "fft");
 
-      // Copy Matlab Matrix to output  vector
+    // Copy Matlab Matrix to output  vector
 
 #if MX_HAS_INTERLEAVED_COMPLEX
-      mxComplexDouble *yp = mxGetComplexDoubles(Y);
-      std::memcpy(yc.get(), yp, len*sizeof(std::complex<double>));
+    mxComplexDouble *yp = mxGetComplexDoubles(Y);
+    std::memcpy(yc.get(), yp, len*sizeof(std::complex<double>));
 #else
-      double *yr= mxGetPr(Y), *yi= mxGetPr(Y);
-      std::complex<double>* yc_p = yc.get();
-      for (dream_idx_typyn=0; n<fft_len; n++) {
-        yc_p[n] = std::complex<double>(yr[n], yi[n]);
-      }
-#endif
-      mxDestroyArray(Y);
-      mxDestroyArray(X);
+    double *yr= mxGetPr(Y), *yi= mxGetPr(Y);
+    std::complex<double>* yc_p = yc.get();
+    for (dream_idx_typyn=0; n<fft_len; n++) {
+      yc_p[n] = std::complex<double>(yr[n], yi[n]);
     }
+#endif
+    mxDestroyArray(Y);
+    mxDestroyArray(X);
+    //} // mutex
 #endif
   }
 
@@ -238,39 +241,61 @@ class FFT
     mxArray *X, *Y;
     dream_idx_type k, len=xc.len();
 
-    if (m_fft_mutex) {
-      const std::lock_guard<std::mutex> lock(m_fft_mutex[0]);
+    // FIXME: Matlab thread safe (see fft above).
+    //if (m_fft_mutex) {
+    //  const std::lock_guard<std::mutex> lock(m_fft_mutex[0]);
 
-      X = mxCreateDoubleMatrix(len,1,mxCOMPLEX);
+    X = mxCreateDoubleMatrix(len,1,mxCOMPLEX);
 
-      // Copy input vector to a Matlab Matrix.
+    // Copy input vector to a Matlab Matrix.
 
 #if MX_HAS_INTERLEAVED_COMPLEX
-      mxComplexDouble *xp = mxGetComplexDoubles(X);
-      std::memcpy(xp, xc.get(), len*sizeof(std::complex<double>));
+    mxComplexDouble *xp = mxGetComplexDoubles(X);
+    std::memcpy(xp, xc.get(), len*sizeof(std::complex<double>));
 #else
-      double *xr= mxGetPr(X), *xi= mxGetPr(X);
-      std::complex<double>* xc_p = xc.get();
-      for (dream_idx_typyn=0; n<fft_len; n++) {
-        xr[n] = real(xc_p[n]);
+    double *xr= mxGetPr(X), *xi= mxGetPr(X);
+    std::complex<double>* xc_p = xc.get();
+    for (dream_idx_typyn=0; n<fft_len; n++) {
+      xr[n] = real(xc_p[n]);
       xi[n] = imag(xc_p[n]);
-      }
+    }
 #endif
 
-      // Let Matlab do the job!
-      mexCallMATLAB(1, &Y, 1, &X, "ifft");
+    // Let Matlab do the job!
+    mexCallMATLAB(1, &Y, 1, &X, "ifft");
 
-      // Use the real part only.
-      double *y_out = y.get();
+    // Use the real part only.
+    double *y_out = y.get();
+
+    // We need to check if the result of the FFT is complex
+    // otherwise it will crash when calling mxGetComplexDoubles
+    // and mxGetPr cannot be used when Y is complex if we have
+    // MX_HAS_INTERLEAVED_COMPLEX defined (i.e., for R2018a and above).
+
+    if (mxIsComplex(Y)) {
+
+#if MX_HAS_INTERLEAVED_COMPLEX
+      std::complex<double> *yp = reinterpret_cast<std::complex<double>*>(mxGetComplexDoubles(Y));
+      for (k=0; k<len; k++) {
+        y_out[k] = std::real(yp[k]);
+      }
+#else
+      double *yr= mxGetPr(Y);
+      for (k=0; k<len; k++) {
+        y_out[k] = yr[k];
+      }
+#endif
+    } else {
 
       double *yr= mxGetPr(Y);
       for (k=0; k<len; k++) {
         y_out[k] = yr[k];
       }
-
-      mxDestroyArray(Y);
-      mxDestroyArray(X);
     }
+
+    mxDestroyArray(Y);
+    mxDestroyArray(X);
+    //} // mutex
 #endif
   }
 
@@ -288,12 +313,12 @@ class FFT
 
   };
 
-#ifdef HAVE_FFTW
+#if defined DREAM_OCTAVE || defined HAVE_FFTW
 void fft_init(dream_idx_type n, fftw_complex *xc, double *y);
 void fft_close();
 #endif
 
-#ifdef HAVE_FFTW
+#if defined DREAM_OCTAVE || defined HAVE_FFTW
 void cr_ifft(fftw_complex *xc, double *y, dream_idx_type n);
 void cc_ifft(fftw_complex *xc, fftw_complex *yc, dream_idx_type n);
 #else

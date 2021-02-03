@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2006,2008,2009,2010,2012,2015,2016 Fredrik Lingvall
+* Copyright (C) 2006,2008,2009,2010,2012,2015,2016,2021 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -495,7 +495,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   std::complex<double> *af  = af_v.get(), *bf  = bf_v.get(), *cf  = cf_v.get();
 
   //
-  // Init the FFTW plans - currently disabled.
+  // Init the FFTW plans - currently disabled due to FFTW/Matlab issues.
   //
 
   /*
@@ -561,10 +561,11 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
   running = true;
 
-  std::mutex fft_mutex;
-  FFT fft(fft_len, &fft_mutex);
+  //std::mutex fft_mutex;
+  //FFT fft(fft_len, &fft_mutex);
+  FFT fft(fft_len);
 
-  // This is a hack to avoid segfaults in Matlab since  mexCallMatlab
+  // This is a hack to avoid segfaults in Matlab since mexCallMatlab
   // is not thread safe,
 #if defined DREAM_MATLAB && not defined HAVE_FFTW
   nthreads = 1;

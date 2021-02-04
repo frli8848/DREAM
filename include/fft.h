@@ -192,7 +192,6 @@ class FFT
 
     dream_idx_type k, len=x.len();
 
-
     // FIXME: Matlab thread safe.
     //
     // Here we try to lock the mexCallMATLAB code
@@ -234,8 +233,15 @@ class FFT
   void ifft(FFTCVec &xc, FFTVec &y) {
 
 #if defined DREAM_OCTAVE || defined HAVE_FFTW
+
     fftw_execute_dft_c2r(m_p_backward, reinterpret_cast<fftw_complex*>(xc.get()), y.get());
+
+    // FFTW's FFT's are not normalized so normalize it:
+    for (dream_idx_type k=0; k<m_fft_len; k++) {
+      y.get()[k] /= double(m_fft_len);
+    }
 #endif
+
 #if defined DREAM_MATLAB && not defined HAVE_FFTW
 
     mxArray *X, *Y;

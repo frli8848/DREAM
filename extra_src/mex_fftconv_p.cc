@@ -193,17 +193,9 @@ void fftconv(FFT &fft,
   fft.fft(b_v, bf_v);
 
   // Do the filtering.
-#if defined DREAM_OCTAVE || defined HAVE_FFTW
   for (n = 0; n < fft_len; n++) {
-    cf[n] = (af[n] * bf[n]) / ( double(fft_len) ); // FFT's are not normalized in FFTW.
+    cf[n] = (af[n] * bf[n]);
   }
-#endif
-
-#if defined DREAM_MATLAB && not defined HAVE_FFTW
-  for (n = 0; n < fft_len; n++) {
-    cf[n] = (af[n] * bf[n]); // Matlab's build in FFT is normalized.
-  }
-#endif
 
   //
   // Compute the inverse DFT of the filtered data.

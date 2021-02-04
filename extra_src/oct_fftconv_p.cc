@@ -243,7 +243,7 @@ void fftconv(FFT &fft,
 
   // Do the filtering.
   for (n = 0; n < fft_len; n++) {
-    cf[n] = (af[n] * bf[n])  / ((double) (fft_len));
+    cf[n] = (af[n] * bf[n]);
   }
 
   //

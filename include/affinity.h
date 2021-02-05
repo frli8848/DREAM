@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2010,2015 Fredrik Lingvall
+* Copyright (C) 2010,2015,2021 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -21,6 +21,7 @@
 *
 ***/
 
+#pragma once
 
 #include "dream.h"
 

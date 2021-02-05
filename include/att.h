@@ -39,13 +39,13 @@ void att_close();
 #endif
 
 void att(double alpha, double r, dream_idx_type it, double dt, double cp, double *h, dream_idx_type nt, double ai);
-void att_annu(double alpha, double r, dream_idx_type it, double  dt, double cp, double *h, dream_idx_type nt, double ai, int ns, int num_elements);
+void att_annu(double alpha, double r, dream_idx_type it, double  dt, double cp, double *h, dream_idx_type nt, double ai, int element);
 
 class Attenuation
 {
  public:
 
-  Attenuation(dream_idx_type len, double dt, double cp, double alpha, size_t n_threads=1) {
+  Attenuation(dream_idx_type len, double dt, double cp, double alpha) {
     m_fft = std::make_unique<FFT>(len);
     m_len = len;
     m_dt = dt;
@@ -55,8 +55,13 @@ class Attenuation
   ~Attenuation() = default;
 
   void att(FFTCVec &xc_vec, FFTVec &x_vec, double r, dream_idx_type it, double *h, double ai);
-  void att_annu(FFTCVec &xc_vec, FFTVec &x_vec, double r, dream_idx_type it, double *h, double ai, int num_elements);
-
+  void att_annu(FFTCVec &xc_vec, FFTVec &x_vec, double r, dream_idx_type it, double *h, double ai, int element);
+  void print_parameters() {
+    std::cout << "len: " << m_len << std::endl;
+    std::cout << "dt: " << m_dt << std::endl;
+    std::cout << "cp: " << m_cp << std::endl;
+    std::cout << "alpha: " << m_alpha << std::endl;
+  }
  private:
 
   std::unique_ptr<FFT> m_fft;

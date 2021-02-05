@@ -25,7 +25,6 @@
 #include <math.h>
 #include <stdio.h>
 #include "dreamline.h"
-#include "att.h"
 #include "dream_error.h"
 
 /***
@@ -36,12 +35,12 @@
 
 int dreamline(double xo, double yo, double zo, double a,
               double dx, double dy, double dt, dream_idx_type nt, double delay, double v,
-              double cp, double alpha, double *h, int err_level)
+              double cp, double *h, int err_level)
 {
   dream_idx_type i, it;
   double t;
   double ai;
-  double ds, pi, ri;
+  double ds, pi, r;
   int    err=NONE;
   double x;
   double xsmax = a/2.0;
@@ -59,28 +58,79 @@ int dreamline(double xo, double yo, double zo, double a,
 
   while (x <= xsmax) {
 
-    //distance(xo, yo, zo, x, ys, zs, &ri);
-    ri = sqrt((xo-x)*(xo-x) + yo*yo + zo*zo);
+    //distance(xo, yo, zo, x, ys, zs, &r);
+    r = sqrt((xo-x)*(xo-x) + yo*yo + zo*zo);
 
-    ai = v * ds / (2*pi * ri);
+    ai = v * ds / (2*pi * r);
     ai /= dt;
     ai *= 1000.0;     // Convert to SI units.
 
     // Propagation delay in micro seconds.
-    t = ri * 1000.0/cp;
+    t = r * 1000.0/cp;
     it = (dream_idx_type) rint((t - delay)/dt);
 
     // Check if index is out of bounds.
     if ((it < nt) && (it >= 0)) {
-      // Check if absorbtion is present.
-      if (alpha == (double) 0.0) {
-        h[it] += ai;
-      }
-      else {
-        att(alpha,ri,it,dt,cp,h,nt,ai);
-      }
+      h[it] += ai;
+    } else  {
+      if  (it >= 0)
+        err = dream_out_of_bounds_err("SIR out of bounds",it-nt+1,err_level);
+      else
+        err = dream_out_of_bounds_err("SIR out of bounds",it,err_level);
+
+      if ( (err_level == PARALLEL_STOP) || (err_level == STOP) )
+        return err; // Bail out.
     }
-    else  {
+    x += dx;
+  }
+
+  return err;
+}
+
+
+int dreamline(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
+              double xo, double yo, double zo, double a,
+              double dx, double dy, double dt, dream_idx_type nt, double delay, double v,
+              double cp, double *h, int err_level)
+{
+  dream_idx_type i, it;
+  double t;
+  double ai;
+  double ds, pi, r;
+  int    err=NONE;
+  double x;
+  double xsmax = a/2.0;
+  double xsmin = -a/2.0;
+
+  pi = 4.0 * atan(1.0);
+  // dy = width;
+  ds = dx * dy;
+
+  for (i = 0; i < nt; i++) {
+    h[i] = (double) 0.0 ;
+  }
+
+  x = xsmin + dx / 2.0;
+
+  while (x <= xsmax) {
+
+    //distance(xo, yo, zo, x, ys, zs, &r);
+    r = sqrt((xo-x)*(xo-x) + yo*yo + zo*zo);
+
+    ai = v * ds / (2*pi * r);
+    ai /= dt;
+    ai *= 1000.0;     // Convert to SI units.
+
+    // Propagation delay in micro seconds.
+    t = r * 1000.0/cp;
+    it = (dream_idx_type) rint((t - delay)/dt);
+
+    // Check if index is out of bounds.
+    if ((it < nt) && (it >= 0)) {
+
+      att.att(xc_vec, x_vec, r, it, h, ai);
+
+    } else  {
       if  (it >= 0)
         err = dream_out_of_bounds_err("SIR out of bounds",it-nt+1,err_level);
       else

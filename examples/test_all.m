@@ -68,7 +68,7 @@ t = 0:Ts:Ts*(nt-1);
 
 % Material parameters.
 v     = 1.0;                            % Normal velocity.
-cp    = 1000;                   % Sound speed.
+cp    = 1000;                           % Sound speed.
 alfa  = 0;                              % Absorbtion (dB/cm Hz).
 m_par = [v cp alfa];
 
@@ -682,4 +682,4 @@ t2= toc;
 fprintf('fftconv_p\n\n');
 
 fprintf('Elapsed time conv: %f, conv_p: %f, fftconv_p: %f\n\n',t0,t1,t2);
-fprintf('Error: ||conv-conv_p||= %e, ||conv-fftconv_p||= %e\n\n',norm(Z0-Z1), norm(Z0-Z2));
+fprintf('Numerical error: ||conv-conv_p||= %e, ||conv-fftconv_p||= %e\n\n',norm(Z0-Z1), norm(Z0-Z2));

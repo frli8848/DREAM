@@ -21,8 +21,10 @@
 *
 ***/
 
+#pragma once
 
 #include "dream.h"
+#include "att.h"
 
 /***
  *
@@ -31,5 +33,10 @@
  ***/
 
 int dreamline(double xo, double yo, double zo, double a,
-              double dx, double dy, double dt, dream_idx_type n, double delay, double v,
-              double cp, double alpha, double *h, int err_level);
+              double dx, double dy, double dt, dream_idx_type nt, double delay, double v,
+              double cp, double *h, int err_level);
+
+int dreamline(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
+              double xo, double yo, double zo, double a,
+              double dx, double dy, double dt, dream_idx_type nt, double delay, double v,
+              double cp, double *h, int err_level);

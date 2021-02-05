@@ -182,33 +182,41 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   Matrix h_mat(nt, no);
   h = h_mat.fortran_vec();
 
-  Attenuation att(nt, dt, cp, alpha);
-  FFTCVec xc(nt);
-  FFTVec x(nt);
+  // Clear data (it looks like h_mat do not get out of
+  // scope between calls!?).
+  for (n=0; n<nt*no; n++)  {
+    h[n] =  0.0;
+  }
 
-  //
-  // Call the attenuation subroutine.
-  //
+  {
+    Attenuation att(nt, dt, cp, alpha);
+    FFTCVec xc(nt);
+    FFTVec x(nt);
 
-  if (mxGetM((2)) * mxGetN(2) == 1) {
-    for (n=0; n<no; n++) {
-      xo = ro[n];
-      yo = ro[n+1*no];
-      zo = ro[n+2*no];
+    //
+    // Call the attenuation subroutine.
+    //
 
-      r = sqrt(xo*xo + yo*yo + zo*zo);
-      it = (int) ( (r * 1.0e3/cp - delay[0])/dt + 1);
-      att.att(xc, x, r, it, &h[n*nt], 1.0);
-    }
-  } else {
-    for (n=0; n<no; n++) {
-      xo = ro[n];
-      yo = ro[n+1*no];
-      zo = ro[n+2*no];
+    if (mxGetM((2)) * mxGetN(2) == 1) {
+      for (n=0; n<no; n++) {
+        xo = ro[n];
+        yo = ro[n+1*no];
+        zo = ro[n+2*no];
 
-      r = sqrt(xo*xo + yo*yo + zo*zo);
-      it = (int) ( (r * 1.0e3/cp - delay[n])/dt + 1);
-      att.att(xc, x, r, it, &h[n*nt], 1.0);
+        r = sqrt(xo*xo + yo*yo + zo*zo);
+        it = (int) ( (r * 1.0e3/cp - delay[0])/dt + 1);
+        att.att(xc, x, r, it, &h[n*nt], 1.0);
+      }
+    } else {
+      for (n=0; n<no; n++) {
+        xo = ro[n];
+        yo = ro[n+1*no];
+        zo = ro[n+2*no];
+
+        r = sqrt(xo*xo + yo*yo + zo*zo);
+        it = (int) ( (r*1.0e3/cp - delay[n])/dt + 1);
+        att.att(xc, x, r, it, &h[n*nt], 1.0);
+      }
     }
   }
 

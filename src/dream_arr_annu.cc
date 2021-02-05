@@ -355,7 +355,7 @@ int circ_annular(double xo, double  yo, double  zo, double  r, double dx, double
           h[it + k*nt] += ai;
         }
         else {
-          att_annu(alpha, ri, it, dt, cp, h, nt, ai, k, num_elements);
+          att_annu(alpha, ri, it, dt, cp, h, nt, ai, k);
         }
       else  {
         if  (it >= 0)

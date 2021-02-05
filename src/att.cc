@@ -84,8 +84,6 @@ void Attenuation::att(FFTCVec &xc_vec, FFTVec &x_vec, double r, dream_idx_type i
   double w;
   double Fs;
 
-  double pi2 = M_PI*M_PI;
-
   std::complex<double> *xc = xc_vec.get();
   double *x = x_vec.get();
 
@@ -97,12 +95,11 @@ void Attenuation::att(FFTCVec &xc_vec, FFTVec &x_vec, double r, dream_idx_type i
   // dB per cm MHz to Neper per m Hz conversion? (8.686 = 20/log(10)).
   double alpha = m_alpha / (8.686*10000.0);
 
-  double dt =  m_dt*1.0e-6;	// Sampling period [s].
-  Fs  = 1/dt;			// Sampling frequecy [Hz].
+  double dt = m_dt*1.0e-6;          // Sampling period [s].
+  Fs  = 1/dt;                       // Sampling frequecy [Hz].
   dw  = 2.0 * M_PI / double(m_len); // Angular freq. sampling step [rad].
-  t   = double(it) * dt;
-  r *= 1.0e-3; // [m]
-  a0  = alpha;
+  t   = double(it) * dt;            // [s]
+  r *= 1.0e-3;                      // [m]
 
   // The 0.95 constant controls the phase only (causality). See:
   // K. Aki and P. G. Richards, "Quantative Seismology: Theory and Methods",
@@ -115,19 +112,19 @@ void Attenuation::att(FFTCVec &xc_vec, FFTVec &x_vec, double r, dream_idx_type i
 
     w_n = double(k) * dw;	// Normalized angular freq.
     w   = w_n*Fs;		// Angular freq.
-    x1  = exp(-r*a0 * w/(2.0*M_PI)); // Amplitude of the Green's function.
+    x1  = exp(-r*alpha * w/(2.0*M_PI)); // Amplitude of the Green's function.
     b   = log (1.0/(a1 * w));
 
-    // (Roughly) Eq.(A6) in M_PIwakowski and Sbai, IEEE UFFC, vol 46,
+    // (Roughly) Eq.(A6) in M_Piwakowski and Sbai, IEEE UFFC, vol 46,
     // No 2, March 1999, p. 422--440.
-    b1 = cos( -w*r*a0/(pi2)*b - t*w ); // Real part.
-    b2 = sin( -w*r*a0/(pi2)*b - t*w ); // Imag part.
+    b1 = cos( -w*r*alpha/(M_PI*M_PI)*b - t*w ); // Real part.
+    b2 = sin( -w*r*alpha/(M_PI*M_PI)*b - t*w ); // Imag part.
 
     xc[k]       = std::complex<double>(x1*b1, x1*b2);
     xc[m_len-k] = std::complex<double>(x1*b1,-x1*b2);
 
     // Slower than above.
-    //xc[k] = cexp(-I*(w*r*a0/pi2*b - t*w));
+    //xc[k] = cexp(-I*(w*r*a0*b/(M_PI*M_PI) - t*w));
     //xc[nt-k] = conj(xc[k]);
   }
 
@@ -147,7 +144,7 @@ void Attenuation::att(FFTCVec &xc_vec, FFTVec &x_vec, double r, dream_idx_type i
  *
  ***/
 
-void Attenuation::att_annu(FFTCVec &xc_vec, FFTVec &x_vec, double r, dream_idx_type it, double *h,  double ai, int num_elements)
+void Attenuation::att_annu(FFTCVec &xc_vec, FFTVec &x_vec, double r, dream_idx_type it, double *h,  double ai, int element)
 {
   double pi;
   double a,b;
@@ -192,27 +189,31 @@ void Attenuation::att_annu(FFTCVec &xc_vec, FFTVec &x_vec, double r, dream_idx_t
     b = log(1.0 / (a1 * w));
 
     // t temp arrive en sec, ftb1 retard de focal/baleyage en sec
-    b4 = -t * w_n / dt;
-    b3 = -(b * tq) * w_n / (dt * m_cp);
+    b4 = -t*w;
+    //b3 = -(b * tq) * w_n / (dt * m_cp);
+    //b3 = -(b * tq) * w/m_cp;
+    //b3 = -(b*r*alpha *m_cp/(M_PI*M_PI)) * w/m_cp;
+    //b3 = -(b*r*alpha /(M_PI*M_PI)) * w;
+    b3 = -w*r*alpha*b / (M_PI*M_PI);
 
-    b = b4 + b3;
+    b = b3 + b3;
     b1 = cos(b);
     b2 = sin(b);
 
-    xc[k]    = std::complex<double>(x1*b1, x1*b2);
+    xc[k]       = std::complex<double>(x1*b1, x1*b2);
     xc[m_len-k] = std::complex<double>(x1*b1,-x1*b2);
   }
 
   // Should these be set to zero ?
   //xr[m_len/2] = 0.0;
   //xi[m_len/2] = 0.0;
-  xc[m_len/2] = std::complex<double>(0.0, 0-0);
+  //xc[m_len/2] = std::complex<double>(0.0, 0.0);
 
   // Do inverse Fourier transform to get time-domain Green's function.
   m_fft->ifft(xc_vec, x_vec);
 
   for (i=0; i<m_len; i++) {
-    h[i + num_elements*m_len] += ai * x[i];
+    h[i + element*m_len] += ai * x[i];
   }
 
   return;
@@ -465,7 +466,7 @@ void att(double alpha, double r, dream_idx_type it, double dt, double cp, double
  *
  ***/
 
-void att_annu(double alpha, double r, dream_idx_type it, double  dt, double cp, double *h, dream_idx_type nt, double ai, int ns, int num_elements)
+void att_annu(double alpha, double r, dream_idx_type it, double  dt, double cp, double *h, dream_idx_type nt, double ai, int element)
 {
   /* Initialized data */
   const double mille = 1000.0;
@@ -552,7 +553,7 @@ void att_annu(double alpha, double r, dream_idx_type it, double  dt, double cp, 
 #endif
   for (k=1; k<(nt/2+1); k++) {
 
-    w_n = (double) k * dw;
+    w_n = double(k) * dw;
     w = w_n / dt;
     x1 = exp(a * w);
     b = log(1.0 / (a1 * w));
@@ -594,7 +595,7 @@ void att_annu(double alpha, double r, dream_idx_type it, double  dt, double cp, 
 #endif
 
   for (i=0; i<nt; i++) {
-    h[i + ns*nt] += ai * buf[i];
+    h[i + element*nt] += ai * buf[i];
   }
 
 #if defined DREAM_OCTAVE || defined HAVE_FFTW

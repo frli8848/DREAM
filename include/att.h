@@ -54,8 +54,7 @@ class Attenuation
   };
   ~Attenuation() = default;
 
-  void att(FFTCVec &xc_vec, FFTVec &x_vec, double r, dream_idx_type it, double *h, double ai);
-  void att_annu(FFTCVec &xc_vec, FFTVec &x_vec, double r, dream_idx_type it, double *h, double ai, int element);
+  void att(FFTCVec &xc_vec, FFTVec &x_vec, double r, dream_idx_type it, double *h, double ai, dream_idx_type element=0);
   void print_parameters() {
     std::cout << "len: " << m_len << std::endl;
     std::cout << "dt: " << m_dt << std::endl;

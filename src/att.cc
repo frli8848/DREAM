@@ -74,7 +74,7 @@ std::mutex **buffer_locks = NULL;
 
 #endif
 
-void Attenuation::att(FFTCVec &xc_vec, FFTVec &x_vec, double r, dream_idx_type it, double *h, double ai)
+void Attenuation::att(FFTCVec &xc_vec, FFTVec &x_vec, double r, dream_idx_type it, double *h, double ai, dream_idx_type element)
 {
   double a0,a1,b;
   dream_idx_type i, k;
@@ -131,89 +131,14 @@ void Attenuation::att(FFTCVec &xc_vec, FFTVec &x_vec, double r, dream_idx_type i
   // Do inverse Fourier transform to get time-domain Green's function.
   m_fft->ifft(xc_vec, x_vec);
 
-  for (i=0; i<m_len; i++) {
-    h[i] += ai * x[i];
-  }
-
-  return;
-}
-
-/***
- *
- * Impulse response for absorption - annular array.
- *
- ***/
-
-void Attenuation::att_annu(FFTCVec &xc_vec, FFTVec &x_vec, double r, dream_idx_type it, double *h,  double ai, int element)
-{
-  double pi;
-  double a,b;
-  dream_idx_type i, k;
-  double a1;
-  double b1, b2, b3, b4, x1;
-  double dw;
-  double w_n, tq, t;
-  double w;
-
-  std::complex<double> *xc = xc_vec.get();
-  double *x = x_vec.get();
-
-  //
-  // Calculate frequency-domain Green's function.
-  //
-
-  // dB per cm MHz to Neper per m Hz conversion? (8.686 = 20/log(10)).
-  double alpha = m_alpha /(8.686*10000.0);
-
-  double dt = m_dt*1.0e-6;      // Sampling period [s].
-
-  // The 0.95 constant controls the phase only (causality). See:
-  // K. Aki and P. G. Richards, "Quantative Seismology: Theory and Methods",
-  // San Francisco, CA, Freeman, 1980.
-  a1  = dt * (double) 0.95 / M_PI;
-
-  dw  = (double) 2.0 * M_PI / (double) m_len; // Freq. sampling step.
-  t = double(it) * dt;
-
-  r *= 1.0e-3;                  // [m]
-  a = -(r * alpha) / ( (double) 2.0 * M_PI);
-  tq = r * alpha * m_cp / (M_PI*M_PI);
-
-  xc[0] = std::complex<double>(1.0, 0.0);	// w = 0 (f = 0 Hz).
-
-  for (k=1; k<(m_len/2+1); k++) {
-
-    w_n = (double) k * dw;
-    w = w_n / dt;
-    x1 = exp(a * w);
-    b = log(1.0 / (a1 * w));
-
-    // t temp arrive en sec, ftb1 retard de focal/baleyage en sec
-    b4 = -t*w;
-    //b3 = -(b * tq) * w_n / (dt * m_cp);
-    //b3 = -(b * tq) * w/m_cp;
-    //b3 = -(b*r*alpha *m_cp/(M_PI*M_PI)) * w/m_cp;
-    //b3 = -(b*r*alpha /(M_PI*M_PI)) * w;
-    b3 = -w*r*alpha*b / (M_PI*M_PI);
-
-    b = b3 + b3;
-    b1 = cos(b);
-    b2 = sin(b);
-
-    xc[k]       = std::complex<double>(x1*b1, x1*b2);
-    xc[m_len-k] = std::complex<double>(x1*b1,-x1*b2);
-  }
-
-  // Should these be set to zero ?
-  //xr[m_len/2] = 0.0;
-  //xi[m_len/2] = 0.0;
-  //xc[m_len/2] = std::complex<double>(0.0, 0.0);
-
-  // Do inverse Fourier transform to get time-domain Green's function.
-  m_fft->ifft(xc_vec, x_vec);
-
-  for (i=0; i<m_len; i++) {
-    h[i + element*m_len] += ai * x[i];
+  if (element>0) {
+    for (i=0; i<m_len; i++) {
+      h[i+element*m_len] += ai * x[i];
+    }
+  } else {
+    for (i=0; i<m_len; i++) {
+      h[i] += ai * x[i];
+    }
   }
 
   return;

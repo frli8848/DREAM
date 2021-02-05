@@ -138,16 +138,16 @@ void* smp_dream_line(void *arg)
                       cp, &h[n*nt],tmp_lev);
     }
 
-      if (err != NONE || out_err ==  PARALLEL_STOP) {
-        tmp_err = err;
-        if (err == PARALLEL_STOP || out_err ==  PARALLEL_STOP)
-          break; // Jump out when a STOP error occurs.
-      }
+    if (err != NONE || out_err ==  PARALLEL_STOP) {
+      tmp_err = err;
+      if (err == PARALLEL_STOP || out_err ==  PARALLEL_STOP)
+        break; // Jump out when a STOP error occurs.
+    }
 
-      if (!running) {
-        std::cout << "Thread for observation points " << start+1 << " -> " << stop << " bailing out!\n";
-        return(NULL);
-      }
+    if (!running) {
+      std::cout << "Thread for observation points " << start+1 << " -> " << stop << " bailing out!\n";
+      return(NULL);
+    }
   }
 
   // Lock out_err for update, update it, and unlock.
@@ -365,7 +365,6 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   running=true;
 
   // Do we have attenuation?
-
   Attenuation att(nt, dt, alpha);
   Attenuation *att_ptr = nullptr;
   if (alpha > std::numeric_limits<double>::epsilon() ) {
@@ -459,6 +458,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   //
   // Return error.
   //
+
   if (nlhs == 2) {
     plhs[1] = mxCreateDoubleMatrix(1,1,mxREAL);
     err_p =  mxGetPr(plhs[1]);

@@ -22,6 +22,8 @@
 *
 ***/
 
+#pragma once
+
 #include <memory>
 
 #include "dream.h"

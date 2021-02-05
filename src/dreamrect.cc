@@ -22,7 +22,6 @@
 ***/
 
 #include <math.h>
-#include <stdio.h>
 #include "dreamrect.h"
 #include "att.h"
 #include "dream_error.h"
@@ -33,26 +32,19 @@
  *
  ***/
 
-int dreamrect(double xo,
-               double yo,
-               double zo,
-               double a,
-               double b,
-               double dx,
-               double dy,
-               double dt,
-               dream_idx_type nt,
-               double delay,
-               double v,
-               double cp,
-               double alpha,
-               double *h,
-               int err_level)
+int dreamrect(double xo, double yo, double zo,
+              double a, double b,
+              double dx, double dy, double dt,
+              dream_idx_type nt,
+              double delay,
+              double v, double cp,
+              double *h,
+              int err_level)
 {
   dream_idx_type i, it;
   double t;
-  double ai, ds, pi;
-  double ri, x, y;
+  double ai, ds;
+  double r, x, y;
   double xsmin, xsmax, ysmin, ysmax;
   int err = NONE;
   double rx,ry,rz;
@@ -62,89 +54,115 @@ int dreamrect(double xo,
   ysmin = -b/2.0;
   ysmax =  b/2.0;
 
-  pi = atan( (double) 1.0) * 4.0;
   ds = dx * dy;
 
-  for (i = 0; i < nt; i++)
+  for (i = 0; i < nt; i++) {
     h[i] = (double) 0.0;
+  }
 
-  // Check if absorbtion is present.
-  if (alpha == (double) 0.0) {
+  rz = zo;
+  y = ysmin + dy / 2.0;
 
-    rz = zo;
-    y = ysmin + dy / 2.0;
+  while (y <= ysmax) {
+    ry = yo - y;
+    x = xsmin + dx / 2.0;
 
-    while (y <= ysmax) {
-      ry = yo - y;
-      x = xsmin + dx / 2.0;
+    while (x <= xsmax) {
 
-      while (x <= xsmax) {
+      rx = xo - x;
+      r = sqrt(rx*rx + ry*ry + rz*rz);
 
-        rx = xo - x;
-        ri = sqrt(rx*rx + ry*ry + rz*rz);
+      ai = v * ds / (2*M_PI * r);
+      ai /= dt;
+      ai *= 1000.0;		// Convert to SI units.
 
-        ai = v * ds / (2*pi * ri);
-        ai /= dt;
-        ai *= 1000.0;		// Convert to SI units.
+      t = r * 1000.0/cp;	// Propagation delay in micro seconds.
+      it = (dream_idx_type) rint((t - delay)/dt); // Sample index.
 
-        t = ri * 1000.0/cp;	// Propagation delay in micro seconds.
-        it = (dream_idx_type) rint((t - delay)/dt); // Sample index.
-
-        // Check if index is out of bounds.
-        if ( (it < nt) && (it >= 0) ) {
-          h[it] += ai;
-        }
-        else {
-          if  (it >= 0)
-            err = dream_out_of_bounds_err("SIR out of bounds",it-nt+1,err_level);
-          else
-            err = dream_out_of_bounds_err("SIR out of bounds",it,err_level);
-
-          if ( (err_level == PARALLEL_STOP) || (err_level == STOP) )
-            return err; // Bail out.
-        }
-        x += dx;
+      // Check if index is out of bounds.
+      if ( (it < nt) && (it >= 0) ) {
+        h[it] += ai;
       }
-      y += dy;
-    }
+      else {
+        if  (it >= 0)
+          err = dream_out_of_bounds_err("SIR out of bounds",it-nt+1,err_level);
+        else
+          err = dream_out_of_bounds_err("SIR out of bounds",it,err_level);
 
-  } else { // Absorbtion.
-
-    rz = zo;
-    y = ysmin + dy / 2.0;
-    while (y <= ysmax) {
-      ry = yo - y;
-      x = xsmin + dx / 2.0;
-      while (x <= xsmax) {
-
-        rx = xo - x;
-        ri = sqrt(rx*rx + ry*ry + rz*rz);
-
-        ai = v * ds / (2*pi * ri);
-        ai /= dt;
-        ai *= 1000.0;		// Convert to SI units.
-
-        t = ri * 1000.0/cp;	// Propagation delay in micro seconds.
-        it = (dream_idx_type) rint((t - delay)/dt); // Sample index.
-
-        // Check if index is out of bounds.
-        if ( (it < nt) && (it >= 0) ) {
-          att(alpha,ri,it,dt,cp,h,nt,ai);
-        }
-        else {
-          if  (it >= 0)
-            err = dream_out_of_bounds_err("SIR out of bounds",it-nt+1,err_level);
-          else
-            err = dream_out_of_bounds_err("SIR out of bounds",it,err_level);
-
-          if ( (err_level == PARALLEL_STOP) || (err_level == STOP) )
-            return err; // Bail out.
-        }
-        x += dx;
+        if ( (err_level == PARALLEL_STOP) || (err_level == STOP) )
+          return err; // Bail out.
       }
-      y += dy;
+      x += dx;
     }
+    y += dy;
+  }
 
+  return err;
+}
+
+int dreamrect(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
+              double xo, double yo, double zo,
+              double a, double b,
+              double dx, double dy, double dt,
+              dream_idx_type nt,
+              double delay,
+              double v, double cp,
+              double *h,
+              int err_level)
+{
+  dream_idx_type i, it;
+  double t;
+  double ai, ds;
+  double r, x, y;
+  double xsmin, xsmax, ysmin, ysmax;
+  int err = NONE;
+  double rx,ry,rz;
+
+  xsmin = -a/2.0;
+  xsmax =  a/2.0;
+  ysmin = -b/2.0;
+  ysmax =  b/2.0;
+
+  ds = dx * dy;
+
+  for (i = 0; i < nt; i++) {
+    h[i] = (double) 0.0;
+  }
+
+  rz = zo;
+  y = ysmin + dy / 2.0;
+
+  while (y <= ysmax) {
+    ry = yo - y;
+    x = xsmin + dx / 2.0;
+
+    while (x <= xsmax) {
+
+      rx = xo - x;
+      r = sqrt(rx*rx + ry*ry + rz*rz);
+
+      ai = v * ds / (2*M_PI * r);
+      ai /= dt;
+      ai *= 1000.0;		// Convert to SI units.
+
+      t = r * 1000.0/cp;	// Propagation delay in micro seconds.
+      it = (dream_idx_type) rint((t - delay)/dt); // Sample index.
+
+      // Check if index is out of bounds.
+      if ( (it < nt) && (it >= 0) ) {
+        att.att(xc_vec, x_vec, r, it, h, ai);
+      }  else {
+        if  (it >= 0)
+          err = dream_out_of_bounds_err("SIR out of bounds",it-nt+1,err_level);
+        else
+          err = dream_out_of_bounds_err("SIR out of bounds",it,err_level);
+
+        if ( (err_level == PARALLEL_STOP) || (err_level == STOP) )
+          return err; // Bail out.
+      }
+      x += dx;
+    }
+    y += dy;
   }
 
   return err;

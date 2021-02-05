@@ -42,7 +42,7 @@ int set_dream_thread_affinity(dream_idx_type thread_n, dream_idx_type nthreads, 
 {
   int err = 0;
 
-#ifdef HAVE_PTHREAD
+#ifdef HAVE_PTHREADS
 
   cpu_set_t cpuset;
 

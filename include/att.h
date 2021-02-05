@@ -45,11 +45,10 @@ class Attenuation
 {
  public:
 
-  Attenuation(dream_idx_type len, double dt, double cp, double alpha) {
+  Attenuation(dream_idx_type len, double dt, double alpha) {
     m_fft = std::make_unique<FFT>(len);
     m_len = len;
     m_dt = dt;
-    m_cp = cp;
     m_alpha = alpha;
   };
   ~Attenuation() = default;
@@ -58,7 +57,6 @@ class Attenuation
   void print_parameters() {
     std::cout << "len: " << m_len << std::endl;
     std::cout << "dt: " << m_dt << std::endl;
-    std::cout << "cp: " << m_cp << std::endl;
     std::cout << "alpha: " << m_alpha << std::endl;
   }
  private:

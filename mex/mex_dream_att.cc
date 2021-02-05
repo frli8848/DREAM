@@ -107,7 +107,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Call the attenuation subroutine.
   //
 
-  Attenuation att(nt, dt, cp, alpha);
+  Attenuation att(nt, dt, alpha);
   FFTCVec xc(nt);
   FFTVec x(nt);
 

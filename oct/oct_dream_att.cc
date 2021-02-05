@@ -189,7 +189,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   }
 
   {
-    Attenuation att(nt, dt, cp, alpha);
+    Attenuation att(nt, dt, alpha);
     FFTCVec xc(nt);
     FFTVec x(nt);
 

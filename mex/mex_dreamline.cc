@@ -366,7 +366,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
   // Do we have attenuation?
 
-  Attenuation att(nt, dt, cp, alpha);
+  Attenuation att(nt, dt, alpha);
   Attenuation *att_ptr = nullptr;
   if (alpha > std::numeric_limits<double>::epsilon() ) {
     att_ptr = &att;

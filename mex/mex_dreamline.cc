@@ -102,17 +102,12 @@ void* smp_dream_line(void *arg)
   dream_idx_type start=D.start, stop=D.stop;
 
   // Buffers for the FFTs in the Attenuation
-
-  /* This makes R2020b crash
   std::unique_ptr<FFTCVec> xc_vec;
   std::unique_ptr<FFTVec> x_vec;
   if (att) {
     xc_vec = std::make_unique<FFTCVec>(nt);
     x_vec = std::make_unique<FFTVec>(nt);
   }
-  */
-  FFTCVec xc_vec(nt);
-  FFTVec x_vec(nt);
 
   // Let the thread finish and then catch the error.
   if (err_level == STOP)
@@ -137,7 +132,7 @@ void* smp_dream_line(void *arg)
                       dx,dy,dt,nt,dlay,v,
                       cp, &h[n*nt], tmp_lev);
     } else {
-      err = dreamline(*att, xc_vec, x_vec,
+      err = dreamline(*att, *xc_vec, *x_vec,
                       xo, yo, zo, a,
                       dx, dy, dt, nt, dlay, v,
                       cp, &h[n*nt],tmp_lev);

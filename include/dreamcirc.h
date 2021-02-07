@@ -23,6 +23,7 @@
 
 
 #include "dream.h"
+#include "att.h"
 
 /***
  *
@@ -30,31 +31,31 @@
  *
  ***/
 
-int dreamcirc(double xo,
-              double yo,
-              double zo,
-              double r,
-              double dx,
-              double dy,
-              double dt,
+int dreamcirc(double xo, double yo, double zo,
+              double R,
+              double dx, double dy, double dt,
               dream_idx_type    nt,
               double delay,
-              double v,
-              double cp,
-              double alpha,
+              double v, double cp,
+              double *h,
+              int err_level);
+
+int dreamcirc(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
+              double xo, double yo, double zo,
+              double R,
+              double dx, double dy, double dt,
+              dream_idx_type    nt,
+              double delay,
+              double v, double cp,
               double *h,
               int err_level);
 
 #ifdef USE_OPENCL
-int cl_dreamcirc(const double *Ro,
-                 int No,
-                 double r,
-                 double dx,
-                 double dy,
-                 double dt,
+int cl_dreamcirc(const double *Ro, int No,
+                 double R,
+                 double dx, double dy, double dt,
                  int nt,
                  double delay,
-                 double v,
-                 double cp,
+                 double v, double cp,
                  double *H);
 #endif

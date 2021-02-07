@@ -63,34 +63,27 @@ void xlimit_circ(double yi,
  *
  ***/
 
-int dreamcirc(double xo,
-               double yo,
-               double zo,
-               double r,
-               double dx,
-               double dy,
-               double dt,
+int dreamcirc(double xo, double yo, double zo,
+               double R,
+               double dx, double dy, double dt,
                dream_idx_type nt,
                double delay,
-               double v,
-               double cp,
-               double alpha,
+               double v, double cp,
                double *h,
                int err_level)
 {
   dream_idx_type i, it;
   double t, ai;
-  double xsmin, ysmin, xsmax, ysmax, ds, pi, ri;
+  double xsmin, ysmin, xsmax, ysmax, ds, r;
   double x, y, rx, ry;
   double xs = 0.0;
   double ys = 0.0;
   double rs = 0.0;
   int    err = NONE;
 
-  pi = 4.0*atan(1.0);
   ds = dx * dy;
-  ysmin = -r + ys;
-  ysmax =  r + ys;
+  ysmin = -R + ys;
+  ysmax =  R + ys;
 
   for (i = 0; i < nt; i++) {
     h[i] = (double) 0.0 ;
@@ -100,7 +93,7 @@ int dreamcirc(double xo,
   while (y <= ysmax) {
 
     //xlimit_circ(y, r, xs, ys, &xsmin, &xsmax);
-    rs = sqrt(r*r - (ys-y)*(ys-y));
+    rs = sqrt(R*R - (ys-y)*(ys-y));
     xsmin = -rs + xs;
     xsmax = rs + xs;
 
@@ -109,30 +102,101 @@ int dreamcirc(double xo,
     x = xsmin + dx / 2.0;
     while (x <= xsmax) {
 
-      //distance(xo, yo, zo, x, y, &ri);
+      //distance(xo, yo, zo, x, y, &r);
       rx = xo - x;
       //ry = yo - y; // Moved outside this loop.
       //rz = zo;
-      ri = sqrt(rx*rx + ry*ry + zo*zo);
+      r = sqrt(rx*rx + ry*ry + zo*zo);
 
-      ai = v * ds / (2*pi * ri);
+      ai = v * ds / (2*M_PI * r);
       ai /= dt;
-      ai *= 1000; // Convert to SI units.
+      ai *= 1.0e3; // Convert to SI units.
 
       // Propagation delay in micro seconds.
-      t = ri * 1000/cp;
+      t = r * 1.0e3/cp;
       it = (dream_idx_type) rint((t - delay)/dt);
 
       // Check if index is out of bounds.
       if ((it < nt) && (it >= 0)) {
+        h[it] += ai;
+      } else {
 
-        // Check if absorbtion is present.
-        if (alpha == (double) 0.0) {
-          h[it] += ai;
-        } else {
-          att(alpha,ri,it,dt,cp,h,nt,ai);
-        }
+        if  (it >= 0)
+          err = dream_out_of_bounds_err("SIR out of bounds",it-nt+1,err_level);
+        else
+          err = dream_out_of_bounds_err("SIR out of bounds",it,err_level);
 
+        if ( (err_level == PARALLEL_STOP) || (err_level == STOP) )
+          return err; // Bail out.
+      }
+
+      x += dx;
+    }
+
+    y += dy;
+  }
+
+  return err;
+}
+
+
+int dreamcirc(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
+              double xo, double yo, double zo,
+               double R,
+               double dx, double dy, double dt,
+               dream_idx_type nt,
+               double delay,
+               double v, double cp,
+               double *h,
+               int err_level)
+{
+  dream_idx_type i, it;
+  double t, ai;
+  double xsmin, ysmin, xsmax, ysmax, ds, r;
+  double x, y, rx, ry;
+  double xs = 0.0;
+  double ys = 0.0;
+  double rs = 0.0;
+  int    err = NONE;
+
+  ds = dx * dy;
+  ysmin = -R + ys;
+  ysmax =  R + ys;
+
+  for (i = 0; i < nt; i++) {
+    h[i] = (double) 0.0 ;
+  }
+
+  y = ysmin + dy/2;
+  while (y <= ysmax) {
+
+    //xlimit_circ(y, r, xs, ys, &xsmin, &xsmax);
+    rs = sqrt(R*R - (ys-y)*(ys-y));
+    xsmin = -rs + xs;
+    xsmax = rs + xs;
+
+    ry = yo - y;
+
+    x = xsmin + dx / 2.0;
+    while (x <= xsmax) {
+
+      //distance(xo, yo, zo, x, y, &r);
+      rx = xo - x;
+      //ry = yo - y; // Moved outside this loop.
+      //rz = zo;
+      r = sqrt(rx*rx + ry*ry + zo*zo);
+
+      ai = v * ds / (2*M_PI * r);
+      ai /= dt;
+      ai *= 1000; // Convert to SI units.
+
+      // Propagation delay in micro seconds.
+      t = r * 1.0e3/cp;
+      it = (dream_idx_type) rint((t - delay)/dt);
+
+      // Check if index is out of bounds.
+      if ((it < nt) && (it >= 0)) {
+        att.att(xc_vec, x_vec, r, it, h, ai);
       } else {
 
         if  (it >= 0)

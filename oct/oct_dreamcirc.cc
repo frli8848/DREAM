@@ -24,19 +24,17 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <signal.h>
+
 #include <thread>
 #include <mutex>
-#include <signal.h>
+
 #include "dreamcirc.h"
 #include "affinity.h"
 #include "dream_error.h"
 
 #define SINGLE 0
 #define MULTIPLE 1
-
-#ifdef USE_FFTW
-#include "att.h"
-#endif
 
 //
 // Octave headers.
@@ -70,7 +68,7 @@ typedef struct
   octave_idx_type start;
   octave_idx_type stop;
   double *ro;
-  double r;
+  double R;
   double dx;
   double dy;
   double dt;
@@ -79,7 +77,7 @@ typedef struct
   double *delay;
   double v;
   double cp;
-  double alpha;
+  Attenuation *att;
   double *h;
   int err_level;
 } DATA;
@@ -106,11 +104,20 @@ void* smp_dream_circ(void *arg)
   DATA D = *(DATA *)arg;
   double xo, yo, zo;
   double *h = D.h;
-  double r=D.r, dx=D.dx, dy=D.dy, dt=D.dt;
+  double R=D.R, dx=D.dx, dy=D.dy, dt=D.dt;
   octave_idx_type n, no=D.no, nt=D.nt;
   int    tmp_lev, err_level=D.err_level;
-  double *delay=D.delay, *ro=D.ro, v=D.v, cp=D.cp, alpha=D.alpha;
+  double *delay=D.delay, *ro=D.ro, v=D.v, cp=D.cp;
+  Attenuation *att = D.att;
   octave_idx_type start=D.start, stop=D.stop;
+
+  // Buffers for the FFTs in the Attenuation
+  std::unique_ptr<FFTCVec> xc_vec;
+  std::unique_ptr<FFTVec> x_vec;
+  if (att) {
+    xc_vec = std::make_unique<FFTCVec>(nt);
+    x_vec = std::make_unique<FFTVec>(nt);
+  }
 
   // Let the thread finish and then catch the error.
   if (err_level == STOP)
@@ -118,46 +125,44 @@ void* smp_dream_circ(void *arg)
   else
     tmp_lev = err_level;
 
-  if (D.delay_method == SINGLE) {
-    for (n=start; n<stop; n++) {
-      xo = ro[n];
-      yo = ro[n+1*no];
-      zo = ro[n+2*no];
-      err = dreamcirc(xo,yo,zo,r,dx,dy,dt,nt,delay[0],v,cp,alpha,
-                      &h[n*nt],tmp_lev);
+  for (n=start; n<stop; n++) {
+    xo = ro[n];
+    yo = ro[n+1*no];
+    zo = ro[n+2*no];
 
-      if (err != NONE || out_err ==  PARALLEL_STOP) {
-        tmp_err = err;
-        if (err == PARALLEL_STOP || out_err ==  PARALLEL_STOP)
-          break; // Jump out when a STOP error occurs.
-      }
-
-      if (!running) {
-        octave_stdout << "Thread for observation points " << start+1 << " -> " << stop << " bailing out!\n";
-        return(NULL);
-      }
-
+    double dlay = 0.0;
+    if (D.delay_method == SINGLE) {
+      dlay = delay[0];
+    } else { // MULTIPLE delays.
+      dlay = delay[n];
     }
-  } else { // MULTIPLE delays.
-    for (n=start; n<stop; n++) {
-      xo = ro[n];
-      yo = ro[n+1*no];
-      zo = ro[n+2*no];
-      err = dreamcirc(xo,yo,zo,r,dx,dy,dt,nt,delay[n],v,cp,alpha,
-                      &h[n*nt],tmp_lev);
 
-      if (err != NONE || out_err ==  PARALLEL_STOP) {
-        tmp_err = err;
-        if (err == PARALLEL_STOP || out_err ==  PARALLEL_STOP)
-          break; // Jump out when a STOP error occurs.
-      }
-
-      if (!running) {
-        octave_stdout << "Thread for observation points " << start+1 << " -> " << stop << " bailing out!\n";
-        return(NULL);
-      }
-
+    if (att == nullptr) {
+      err = dreamcirc(xo, yo, zo,
+                      R,
+                      dx, dy, dt,
+                      nt, delay[0], v, cp,
+                      &h[n*nt], tmp_lev);
+    } else {
+      err = dreamcirc(*att, *xc_vec.get(),*x_vec.get(),
+                      xo, yo, zo,
+                      R,
+                      dx, dy, dt,
+                      nt, delay[0], v, cp,
+                      &h[n*nt], tmp_lev);
     }
+
+    if (err != NONE || out_err ==  PARALLEL_STOP) {
+      tmp_err = err;
+      if (err == PARALLEL_STOP || out_err ==  PARALLEL_STOP)
+        break; // Jump out when a STOP error occurs.
+    }
+
+    if (!running) {
+      octave_stdout << "Thread for observation points " << start+1 << " -> " << stop << " bailing out!\n";
+      return(NULL);
+    }
+
   }
 
   // Lock out_err for update, update it, and unlock.
@@ -215,7 +220,7 @@ An N x 3 matrix, Ro = [xo1 yo1 zo2; xo2 yo2 zo2; ... xoN yoN zoN]; where N is th
 Geometrical parameters: geom_par = [r];\n\
 \n\
 @table @code\n\
-@item r\n\
+@item R\n\
 Radius of the transducer elements [mm].\n\
 @end table\n\
 \n\
@@ -272,7 +277,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
 @end deftypefn")
 {
   double *ro,*geom_par,*s_par,*m_par;
-  double r,dx,dy,dt;
+  double R,dx,dy,dt;
   octave_idx_type nt, no;
   double *delay,v,cp,alpha, *h, *err_p;
   int    err_level=STOP, is_set = false;
@@ -324,7 +329,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   }
   const Matrix tmp1 = args(1).matrix_value();
   geom_par = (double*) tmp1.fortran_vec();
-  r = geom_par[0];		// Radius of the transducer.
+  R = geom_par[0];		// Radius of the transducer.
 
   //
   // Temporal and spatial sampling parameters.
@@ -479,15 +484,17 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
 #ifdef USE_OPENCL
   if (device == "gpu") {
 
-    cl_dreamcirc(ro, no, r,  dx, dy, dt, nt,  delay[0], v, cp, h);
+    cl_dreamcirc(ro, no, R,  dx, dy, dt, nt,  delay[0], v, cp, h);
 
   } else { // Otherwise use the cpu
 #endif
 
-#ifdef USE_FFTW
-    if (alpha != (double) 0.0)
-      att_init(nt,nthreads);
-#endif
+    // Check if we have attenuation
+    Attenuation att(nt, dt, alpha);
+    Attenuation *att_ptr = nullptr;
+    if (alpha > std::numeric_limits<double>::epsilon() ) {
+      att_ptr = &att;
+    }
 
     // Allocate local data.
     D = (DATA*) malloc(nthreads*sizeof(DATA));
@@ -505,7 +512,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
       D[thread_n].stop = stop; // Local stop index;
       D[thread_n].no = no;
       D[thread_n].ro = ro;
-      D[thread_n].r = r;
+      D[thread_n].R = R;
       D[thread_n].dx = dx;
       D[thread_n].dy = dy;
       D[thread_n].dt = dt;
@@ -519,7 +526,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
       D[thread_n].delay = delay;
       D[thread_n].v = v;
       D[thread_n].cp = cp;
-      D[thread_n].alpha = alpha;
+      D[thread_n].att = att_ptr;
       D[thread_n].h = h;
       D[thread_n].err_level = err_level;
 
@@ -554,11 +561,6 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   if (signal(SIGINT, old_handler_keyint) == SIG_ERR) {
     printf("Couldn't register old SIGINT signal handler.\n");
   }
-
-#ifdef USE_FFTW
-  if (alpha != (double) 0.0)
-    att_close();
-#endif
 
   if (!running) {
     dream_err_msg("CTRL-C pressed!\n"); // Bail out.

@@ -24,6 +24,7 @@
 
 
 #include "dream.h"
+#include "att.h"
 
 /***
  *
@@ -31,19 +32,21 @@
  *
  ***/
 
-int dreamrect_f(double xo,
-                double yo,
-                double zo,
-                double a,
-                double b,
-                double dx,
-                double dy,
-                double dt,
+int dreamrect_f(double xo, double yo, double zo,
+                double a, double b, int foc_type, double focal,
+                double dx, double dy, double dt,
                 dream_idx_type nt,
                 double delay,
-                double v,
-                double cp,
-                double alpha,
-                int foc_type, double focal,
+                double v, double cp,
+                double *h,
+                int err_level);
+
+int dreamrect_f(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
+                double xo, double yo, double zo,
+                double a, double b, int foc_type, double focal,
+                double dx, double dy, double dt,
+                dream_idx_type nt,
+                double delay,
+                double v, double cp,
                 double *h,
                 int err_level);

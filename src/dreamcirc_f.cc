@@ -23,7 +23,6 @@
 
 #include <string.h>
 #include <math.h>
-#include <stdio.h>
 
 #include "dreamcirc_f.h"
 #include "dream_error.h"
@@ -73,7 +72,7 @@ int dreamcirc_f(double xo, double yo, double zo,
     xsmin = -rs + xs;
     xsmax = rs + xs;
 
-    double ry = ry = yo - y;
+    double ry = yo - y;
 
     x = xsmin + dx/2;
     while (x <= xsmax) {

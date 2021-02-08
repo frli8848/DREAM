@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2006,2007,2008,2009,2012,2014,2015,2016,2019 Fredrik Lingvall
+* Copyright (C) 2006,2007,2008,2009,2012,2014,2015,2016,2019,2021 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -23,19 +23,17 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <signal.h>
+
 #include <thread>
 #include <mutex>
-#include <signal.h>
+
 #include "dreamrect_f.h"
 #include "affinity.h"
 #include "dream_error.h"
 
 #define SINGLE 0
 #define MULTIPLE 1
-
-#ifdef USE_FFTW
-#include "att.h"
-#endif
 
 //
 // Octave headers.
@@ -71,6 +69,8 @@ typedef struct
   double *ro;
   double a;
   double b;
+  int ifoc;
+  double focal;
   double dx;
   double dy;
   double dt;
@@ -79,9 +79,7 @@ typedef struct
   double *delay;
   double v;
   double cp;
-  double alpha;
-  int ifoc;
-  double focal;
+  Attenuation *att;
   double *h;
   int err_level;
 } DATA;
@@ -112,9 +110,18 @@ void* smp_dream_rect_f(void *arg)
   double a=D.a, b=D.b, dx=D.dx, dy=D.dy, dt=D.dt;
   octave_idx_type n, no=D.no, nt=D.nt;
   int    tmp_lev, err_level=D.err_level;
-  double *delay=D.delay, *ro=D.ro, v=D.v, cp=D.cp, alpha=D.alpha, focal=D.focal;
+  double *delay=D.delay, *ro=D.ro, v=D.v, cp=D.cp, focal=D.focal;
+  Attenuation *att = D.att;
   octave_idx_type start=D.start, stop=D.stop;
-  int    ifoc = D.ifoc;
+  int ifoc = D.ifoc;
+
+  // Buffers for the FFTs in the Attenuation
+  std::unique_ptr<FFTCVec> xc_vec;
+  std::unique_ptr<FFTVec> x_vec;
+  if (att) {
+    xc_vec = std::make_unique<FFTCVec>(nt);
+    x_vec = std::make_unique<FFTVec>(nt);
+  }
 
   // Let the thread finish and then catch the error.
   if (err_level == STOP)
@@ -122,59 +129,58 @@ void* smp_dream_rect_f(void *arg)
   else
     tmp_lev = err_level;
 
-  if (D.delay_method == SINGLE) {
-    for (n=start; n<stop; n++) {
-      xo = ro[n];
-      yo = ro[n+1*no];
-      zo = ro[n+2*no];
-      err = dreamrect_f(xo,yo,zo,a,b,dx,dy,dt,nt,delay[0],v,cp,alpha,
-                      ifoc,focal,&h[n*nt],tmp_lev);
+  for (n=start; n<stop; n++) {
+    xo = ro[n];
+    yo = ro[n+1*no];
+    zo = ro[n+2*no];
 
-      if (err != NONE || out_err ==  PARALLEL_STOP) {
-        tmp_err = err;
-        if (err == PARALLEL_STOP || out_err ==  PARALLEL_STOP)
-          break; // Jump out when a STOP error occurs.
-      }
-
-      if (!running) {
-        octave_stdout << "Thread for observation points " << start+1 << " -> " << stop << " bailing out!\n";
-        return(NULL);
-      }
-
+    double dlay = 0.0;
+    if (D.delay_method == SINGLE) {
+      dlay = delay[0];
+    } else { // MULTIPLE delays.
+      dlay = delay[n];
     }
-  } else { // MULTIPLE delays.
-    for (n=start; n<stop; n++) {
-      xo = ro[n];
-      yo = ro[n+1*no];
-      zo = ro[n+2*no];
-      err = dreamrect_f(xo,yo,zo,a,b,dx,dy,dt,nt,delay[n],v,cp,alpha,
-                      ifoc,focal,&h[n*nt],tmp_lev);
 
-      if (err != NONE || out_err ==  PARALLEL_STOP) {
-        tmp_err = err;
-        if (err == PARALLEL_STOP || out_err ==  PARALLEL_STOP)
-          break; // Jump out when a STOP error occurs.
-      }
-
-      if (!running) {
-        octave_stdout << "Thread for observation points " << start+1 << " -> " << stop << " bailing out!\n";
-        return(NULL);
-      }
-
+    if (att == nullptr) {
+      err = dreamrect_f(xo, yo, zo,
+                        a, b, ifoc, focal,
+                        dx, dy, dt,
+                        nt, dlay, v, cp,
+                        &h[n*nt], tmp_lev);
+    } else {
+      err = dreamrect_f(*att, *xc_vec.get(),*x_vec.get(),
+                        xo, yo, zo,
+                        a, b, ifoc, focal,
+                        dx, dy, dt,
+                        nt, dlay, v, cp,
+                        &h[n*nt], tmp_lev);
     }
+
+    if (err != NONE || out_err ==  PARALLEL_STOP) {
+      tmp_err = err;
+      if (err == PARALLEL_STOP || out_err ==  PARALLEL_STOP) {
+        break; // Jump out when a STOP error occurs.
+      }
+    }
+
+    if (!running) {
+      octave_stdout << "Thread for observation points " << start+1 << " -> " << stop << " bailing out!\n";
+      return(NULL);
+    }
+
   }
 
   // Lock out_err for update, update it, and unlock.
   err_lock.lock();
 
-  if ((tmp_err != NONE) && (out_err == NONE))
+  if ((tmp_err != NONE) && (out_err == NONE)) {
     out_err = tmp_err;
+  }
 
   err_lock.unlock();
 
   return(NULL);
 }
-
 
 /***
  *
@@ -194,7 +200,6 @@ void sig_abrt_handler(int signum) {
 void sig_keyint_handler(int signum) {
   //printf("Caught signal SIGINT.\n");
 }
-
 
 /***
  *
@@ -288,7 +293,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   double *ro,*geom_par,*s_par,*m_par;
   octave_idx_type nt, no;
   int    ifoc=0;
-  char   foc_met[50];
+  char   foc_met_str[50];
   int    buflen;
   double a, b, dx, dy, dt;
   double *delay,v,cp,alpha,focal=0;
@@ -407,33 +412,33 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
     std::string strin = args(5).string_value();
     buflen = strin.length();
     for (int n=0; n<=buflen; n++ ) {
-      foc_met[n] = strin[n];
+      foc_met_str[n] = strin[n];
     }
-    foc_met[buflen] = '\0';
+    foc_met_str[buflen] = '\0';
 
     is_set = false;
 
-    if (!strcmp(foc_met,"off")) {
+    if (!strcmp(foc_met_str,"off")) {
       ifoc = 1;
       is_set = true;
     }
 
-    if (!strcmp(foc_met,"x")) {
+    if (!strcmp(foc_met_str,"x")) {
       ifoc = 2;
       is_set = true;
     }
 
-    if (!strcmp(foc_met,"y")) {
+    if (!strcmp(foc_met_str,"y")) {
       ifoc = 3;
       is_set = true;
     }
 
-    if (!strcmp(foc_met,"xy")) {
+    if (!strcmp(foc_met_str,"xy")) {
       ifoc = 4;
       is_set = true;
     }
 
-    if (!strcmp(foc_met,"x+y")) {
+    if (!strcmp(foc_met_str,"x+y")) {
       ifoc = 5;
       is_set = true;
     }
@@ -546,10 +551,12 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   out_err = NONE;
   running = true;
 
-#ifdef USE_FFTW
-  if (alpha != (double) 0.0)
-    att_init(nt,nthreads);
-#endif
+  // Check if we have attenuation
+  Attenuation att(nt, dt, alpha);
+  Attenuation *att_ptr = nullptr;
+  if (alpha > std::numeric_limits<double>::epsilon() ) {
+    att_ptr = &att;
+  }
 
   // Allocate local data.
   D = (DATA*) malloc(nthreads*sizeof(DATA));
@@ -569,6 +576,8 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
     D[thread_n].ro = ro;
     D[thread_n].a = a;
     D[thread_n].b = b;
+    D[thread_n].ifoc = ifoc;
+    D[thread_n].focal = focal;
     D[thread_n].dx = dx;
     D[thread_n].dy = dy;
     D[thread_n].dt = dt;
@@ -582,9 +591,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
     D[thread_n].delay = delay;
     D[thread_n].v = v;
     D[thread_n].cp = cp;
-    D[thread_n].alpha = alpha;
-    D[thread_n].ifoc = ifoc;
-    D[thread_n].focal = focal;
+    D[thread_n].att = att_ptr;
     D[thread_n].h = h;
     D[thread_n].err_level = err_level;
 
@@ -594,8 +601,9 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   }
 
   // Wait for all threads to finish.
-  for (thread_n = 0; thread_n < nthreads; thread_n++)
+  for (thread_n = 0; thread_n < nthreads; thread_n++) {
     threads[thread_n].join();
+  }
 
   // Free memory.
   free((void*) D);
@@ -615,11 +623,6 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   if (signal(SIGINT, old_handler_keyint) == SIG_ERR) {
     printf("Couldn't register old SIGINT signal handler.\n");
   }
-
-#ifdef USE_FFTW
-  if (alpha != (double) 0.0)
-    att_close();
-#endif
 
   if (!running) {
     error("CTRL-C pressed!\n"); // Bail out.

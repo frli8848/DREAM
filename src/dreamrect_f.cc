@@ -22,26 +22,18 @@
 ***/
 
 #include <math.h>
-#include <stdio.h>
+
 #include "dreamrect_f.h"
-#include "att.h"
 #include "dream_error.h"
 
 //
 //  Function prototypes.
 //
 
-void distance(double xo,
-           double yo,
-           double zo,
-           double x,
-           double y,
-           double *ri);
-
-void focusing(int foc_type, double focal,
-              double xs, double ys,
-              double xamax, double yamax, double ramax,
-              double cp, double *retfoc);
+double focusing(int foc_type, double focal,
+                double xs, double ys,
+                double xamax, double yamax, double ramax,
+                double cp);
 
 /***
  *
@@ -49,34 +41,25 @@ void focusing(int foc_type, double focal,
  *
  ***/
 
-int dreamrect_f(double xo,
-                double yo,
-                double zo,
-                double a,
-                double b,
-                double dx,
-                double dy,
-                double dt,
+int dreamrect_f(double xo, double yo, double zo,
+                double a, double b, int foc_type, double focal,
+                double dx, double dy, double dt,
                 dream_idx_type nt,
                 double delay,
-                double v,
-                double cp,
-                double alpha,
-                int foc_type, double focal,
+                double v, double cp,
                 double *h,
                 int err_level)
 {
   dream_idx_type i, it;
   double t;
-  double ai, ds, pi, c, retfoc;
-  double ri, x, y;
+  double ai, ds, c;
+  double r, x, y;
   double xsmin = -a/2;
   double xsmax = a/2;
   double ysmin = -b/2;
   double ysmax = b/2;
   int err = NONE;
 
-  pi = 4.0 * atan(1.0);
   ds = dx * dy;
   c = sqrt(a*a + b*b);
 
@@ -85,6 +68,7 @@ int dreamrect_f(double xo,
   }
 
   y = ysmin + dy / 2.0;
+  double ry = yo - y;
 
   while (y <= ysmax) {
 
@@ -92,35 +76,32 @@ int dreamrect_f(double xo,
 
     while (x <= xsmax) {
 
-      distance(xo, yo, zo, x, y,  &ri);
-      focusing(foc_type, focal, x, y, a, b, c, cp, &retfoc);
+      //distance(xo, yo, zo, x, y,  &r);
+      double rx = xo - x;
+      r = sqrt(rx*rx + ry*ry + zo*zo);
 
-      ai = v * ds / (2*pi * ri);
+      double foc_delay = focusing(foc_type, focal, x, y, a, b, c, cp);
+
+      ai = v * ds / (2*M_PI * r);
       ai /= dt;
-      ai *= 1000; // Convert to SI units.
+      ai *= 1.0e3; // Convert to SI units.
 
       // Propagation delay in micro seconds.
-      t = ri * 1000/cp;
-      it = (dream_idx_type) rint((t - delay + retfoc)/dt);
+      t = r * 1.0e3/cp;
+      it = (dream_idx_type) rint((t - delay + foc_delay)/dt);
 
       // Check if index is out of bounds.
       if ((it < nt) && (it >= 0)) {
-
-        // Check if absorbtion is present.
-        if (alpha == (double) 0.0) {
-          h[it] += ai;
-        } else {
-          att(alpha,ri,it,dt,cp,h,nt,ai);
-        }
-      }
-      else  {
+        h[it] += ai;
+      } else  {
         if  (it >= 0)
           err = dream_out_of_bounds_err("SIR out of bounds",it-nt+1,err_level);
         else
           err = dream_out_of_bounds_err("SIR out of bounds",it,err_level);
 
-        if ( (err_level == PARALLEL_STOP) || (err_level == STOP) )
+        if ( (err_level == PARALLEL_STOP) || (err_level == STOP) ) {
           return err; // Bail out.
+        }
       }
       x += dx;
     }
@@ -130,62 +111,114 @@ int dreamrect_f(double xo,
   return err;
 }
 
-
-/* ****************************************************** */
-
-void distance(double xo,
-           double yo,
-           double zo,
-           double x,
-           double y,
-           double *ri)
+int dreamrect_f(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
+                double xo, double yo, double zo,
+                double a, double b, int foc_type, double focal,
+                double dx, double dy, double dt,
+                dream_idx_type nt,
+                double delay,
+                double v, double cp,
+                double *h,
+                int err_level)
 {
-  double rx, ry, rz;
+  dream_idx_type i, it;
+  double t;
+  double ai, ds, c;
+  double r, x, y;
+  double xsmin = -a/2;
+  double xsmax = a/2;
+  double ysmin = -b/2;
+  double ysmax = b/2;
+  int err = NONE;
 
-  ry = yo - y;
-  rx = xo - x;
-  rz = zo;
-  *ri = sqrt(rx*rx + ry*ry + rz*rz);
+  ds = dx * dy;
+  c = sqrt(a*a + b*b);
 
-  return;
-} /* distance */
+  for (i = 0; i < nt; i++) {
+    h[i] = (double) 0.0 ;
+  }
 
+  y = ysmin + dy / 2.0;
+  double ry = yo - y;
+
+  while (y <= ysmax) {
+
+    x = xsmin + dx / 2.0;
+
+    while (x <= xsmax) {
+
+      //distance(xo, yo, zo, x, y,  &r);
+      double rx = xo - x;
+      r = sqrt(rx*rx + ry*ry + zo*zo);
+
+      double foc_delay = focusing(foc_type, focal, x, y, a, b, c, cp);
+
+      ai = v * ds / (2*M_PI * r);
+      ai /= dt;
+      ai *= 1.0e3; // Convert to SI units.
+
+      // Propagation delay in micro seconds.
+      t = r * 1.0e3/cp;
+      it = (dream_idx_type) rint((t - delay + foc_delay)/dt);
+
+      // Check if index is out of bounds.
+      if ((it < nt) && (it >= 0)) {
+        att.att(xc_vec, x_vec, r, it, h, ai);
+      } else  {
+        if  (it >= 0) {
+          err = dream_out_of_bounds_err("SIR out of bounds",it-nt+1,err_level);
+        } else {
+          err = dream_out_of_bounds_err("SIR out of bounds",it,err_level);
+        }
+
+        if ( (err_level == PARALLEL_STOP) || (err_level == STOP) ) {
+          return err; // Bail out.
+        }
+      }
+      x += dx;
+    }
+    y += dy;
+  }
+
+  return err;
+}
 
 /***
  *
- * subroutine focussing gives le retard retfoc du au focussing.
+ *  Computes the focus delay
  *
  ***/
 
-void focusing(int foc_type, double focal,
-             double xs, double ys,
-             double xamax, double yamax, double ramax,
-             double cp, double *retfoc)
+double focusing(int foc_type, double focal,
+                double xs, double ys,
+                double xamax, double yamax, double ramax,
+                double cp)
 {
   double diff, rmax, retx, rety;
+  double foc_delay = 0.0;
 
-  /* foc_type =1 - no foc, 2 foc x ,3 foc y, 4 foc xy 5 foc x+y */
+  // foc_type: 1 no foc, 2 foc x, 3 foc y, 4 foc xy, 5 foc x+y
   switch (foc_type) {
 
   case 1:
-    return;
+    break;
 
   case 2:
     rmax = sqrt(xamax*xamax + focal*focal);
     diff = rmax - sqrt(xs*xs + focal*focal);
-    *retfoc = diff * 1000 / cp;
+    foc_delay = diff * 1.0e3 / cp;
     break;
 
   case 3:
     rmax = sqrt(yamax*yamax + focal*focal);
     diff = rmax - sqrt(ys*ys + focal*focal);
-    *retfoc = diff * 1000 / cp;
+    foc_delay = diff * 1.0e3 / cp;
     break;
 
   case 4:
     rmax = sqrt(ramax*ramax + focal*focal);
     diff = rmax - sqrt(xs*xs + ys*ys + focal*focal);
-    *retfoc = diff * 1000 / cp;
+    foc_delay = diff * 1.0e3 / cp;
     break;
 
   case 5:
@@ -193,12 +226,12 @@ void focusing(int foc_type, double focal,
     retx = sqrt(xs*xs + focal*focal);
     rety = sqrt(ys*ys + focal*focal);
     diff = rmax - (retx + rety);
-    *retfoc = diff * 1000 / cp;
+    foc_delay = diff * 1.0e3 / cp;
 
   default:
     break;
 
   } // switch
 
-  return;
-} /* focusing */
+  return foc_delay;
+}

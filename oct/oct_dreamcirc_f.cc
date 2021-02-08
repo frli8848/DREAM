@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2006,2007,2008,2009,2012,2014,2016,2019 Fredrik Lingvall
+* Copyright (C) 2006,2007,2008,2009,2012,2014,2016,2019,2021 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -68,6 +68,8 @@ typedef struct
   octave_idx_type stop;
   double *ro;
   double R;
+  int ifoc;
+  double focal;
   double dx;
   double dy;
   double dt;
@@ -77,8 +79,6 @@ typedef struct
   double v;
   double cp;
   Attenuation *att;
-  int ifoc;
-  double focal;
   double *h;
   int err_level;
 } DATA;
@@ -140,7 +140,6 @@ void* smp_dream_circ_f(void *arg)
       dlay = delay[n];
     }
 
-
     if (att == nullptr) {
       err = dreamcirc_f(xo, yo, zo,
                         R, ifoc, focal,
@@ -158,8 +157,9 @@ void* smp_dream_circ_f(void *arg)
 
     if (err != NONE || out_err ==  PARALLEL_STOP) {
       tmp_err = err;
-      if (err == PARALLEL_STOP || out_err ==  PARALLEL_STOP)
+      if (err == PARALLEL_STOP || out_err ==  PARALLEL_STOP) {
         break; // Jump out when a STOP error occurs.
+      }
     }
 
     if (!running) {

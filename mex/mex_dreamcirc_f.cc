@@ -58,6 +58,8 @@ typedef struct
   dream_idx_type stop;
   double *ro;
   double R;
+  int foc_met;
+  double focal;
   double dx;
   double dy;
   double dt;
@@ -67,8 +69,6 @@ typedef struct
   double v;
   double cp;
   Attenuation *att;
-  int ifoc;
-  double focal;
   double *h;
   int err_level;
 } DATA;
@@ -102,7 +102,7 @@ void* smp_dream_circ_f(void *arg)
   double *delay=D.delay, *ro=D.ro, v=D.v, cp=D.cp, focal=D.focal;
   Attenuation *att = D.att;
   size_t  start=D.start, stop=D.stop;
-  int ifoc = D.ifoc;
+  int foc_met = D.foc_met;
 
   // Buffers for the FFTs in the Attenuation
   std::unique_ptr<FFTCVec> xc_vec;
@@ -132,14 +132,14 @@ void* smp_dream_circ_f(void *arg)
 
     if (att == nullptr) {
       err = dreamcirc_f(xo, yo, zo,
-                        R, ifoc, focal,
+                        R, foc_met, focal,
                         dx, dy, dt,
                         nt,dlay, v, cp,
                         &h[n*nt], tmp_lev);
     } else {
       err = dreamcirc_f(*att, *xc_vec, *x_vec,
                         xo, yo, zo,
-                        R, ifoc, focal,
+                        R, foc_met, focal,
                         dx, dy, dt,
                         nt, dlay, v, cp,
                         &h[n*nt], tmp_lev);
@@ -200,8 +200,8 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
   double *ro, *geom_par, *s_par, *m_par;
   size_t nt, no;
-  int    ifoc=0;
-  char   foc_met[50];
+  int    foc_met=0;
+  char   foc_met_str[50];
   int    buflen;
   double R, dx, dy, dt;
   double *delay, v, cp, alpha, focal=0.0;
@@ -287,7 +287,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Focusing parameters.
   //
 
-  //  ifoc = 1 - no foc, 2 foc x ,3 foc y, 4 foc xy (del=fsqrt(x*x+y*y)), 5 focx+focy.
+  //  foc_met = 1 - no foc, 2 foc x ,3 foc y, 4 foc xy (del=fsqrt(x*x+y*y)), 5 focx+focy.
 
   if (nrhs >= 6) {
 
@@ -295,32 +295,32 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       dream_err_msg("Argument 6 must be a string");
 
     buflen = (mxGetM(prhs[5]) * mxGetN(prhs[5]) * sizeof(mxChar)) + 1;
-    mxGetString(prhs[5],foc_met,buflen);
+    mxGetString(prhs[5],foc_met_str,buflen);
 
     set = false;
 
-    if (!strcmp(foc_met,"off")) {
-      ifoc = 1;
+    if (!strcmp(foc_met_str,"off")) {
+      foc_met = 1;
       set = true;
     }
 
-    if (!strcmp(foc_met,"x")) {
-      ifoc = 2;
+    if (!strcmp(foc_met_str,"x")) {
+      foc_met = 2;
       set = true;
     }
 
-    if (!strcmp(foc_met,"y")) {
-      ifoc = 3;
+    if (!strcmp(foc_met_str,"y")) {
+      foc_met = 3;
       set = true;
     }
 
-    if (!strcmp(foc_met,"xy")) {
-      ifoc = 4;
+    if (!strcmp(foc_met_str,"xy")) {
+      foc_met = 4;
       set = true;
     }
 
-    if (!strcmp(foc_met,"x+y")) {
-      ifoc = 5;
+    if (!strcmp(foc_met_str,"x+y")) {
+      foc_met = 5;
       set = true;
     }
 
@@ -335,7 +335,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     focal = mxGetScalar(prhs[6]);
 
   } else {
-    ifoc = 1;
+    foc_met = 1;
   }
 
   //
@@ -449,7 +449,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     D[thread_n].no = no;
     D[thread_n].ro = ro;
     D[thread_n].R = R;
-    D[thread_n].ifoc = ifoc;
+    D[thread_n].foc_met = foc_met;
     D[thread_n].focal = focal;
     D[thread_n].dx = dx;
     D[thread_n].dy = dy;
@@ -517,8 +517,9 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Check for Error.
   //
 
-  if ( (err_level == STOP) && (out_err != NONE))
+  if ( (err_level == STOP) && (out_err != NONE)) {
     dream_err_msg(""); // Bail out if error.
+  }
 
   //
   // Return error.

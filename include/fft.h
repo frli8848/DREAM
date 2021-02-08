@@ -42,8 +42,9 @@ class FFTVec
 {
  public:
 
-  FFTVec(dream_idx_type len) {
-
+  FFTVec(dream_idx_type len) :
+    m_is_allocated(false)
+  {
     m_len = len;
 
 #if defined DREAM_OCTAVE || defined HAVE_FFTW
@@ -53,13 +54,13 @@ class FFTVec
 #endif
 
     m_is_allocated = true;
-
   };
 
-  FFTVec(dream_idx_type len, double *v) {
+  FFTVec(dream_idx_type len, double *v) :
+    m_is_allocated(false)
+  {
     m_len = len;
     m_v = v;
-    m_is_allocated = false;
   };
 
   ~FFTVec() {
@@ -86,8 +87,9 @@ class FFTCVec
 {
  public:
 
-  FFTCVec(dream_idx_type len) {
-
+  FFTCVec(dream_idx_type len) :
+    m_is_allocated(false)
+  {
     m_len = len;
 
 #if defined DREAM_OCTAVE || defined HAVE_FFTW
@@ -97,10 +99,11 @@ class FFTCVec
 #endif
   };
 
-  FFTCVec(dream_idx_type len, std::complex<double> *vc) {
+  FFTCVec(dream_idx_type len, std::complex<double> *vc) :
+    m_is_allocated(false)
+  {
     m_len = len;
     m_vc = vc;
-    m_is_allocated = false;
   }
 
   ~FFTCVec() {
@@ -189,14 +192,14 @@ class FFT
 #if defined DREAM_MATLAB && not defined HAVE_FFTW
 
     mxArray *X, *Y;
-
-    dream_idx_type k, len=x.len();
+    dream_idx_type len=x.len();
 
     // FIXME: Matlab thread safe.
     //
     // Here we try to lock the mexCallMATLAB code
     // with a mutex but it does not seem to be enough
     // to avoid segfaults when using mutilple threads!?
+    // The FFT must run in the main Matlab thread only!?
 
     //if (m_fft_mutex) {
     //  const std::lock_guard<std::mutex> lock(m_fft_mutex[0]);
@@ -216,7 +219,7 @@ class FFT
 
 #if MX_HAS_INTERLEAVED_COMPLEX
     mxComplexDouble *yp = mxGetComplexDoubles(Y);
-    std::memcpy(yc.get(), yp, len*sizeof(std::complex<double>));
+    std::memcpy(yc.get(), reinterpret_cast< std::complex<double>*>(yp), len*sizeof(std::complex<double>));
 #else
     double *yr= mxGetPr(Y), *yi= mxGetPr(Y);
     std::complex<double>* yc_p = yc.get();

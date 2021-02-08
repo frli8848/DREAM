@@ -87,6 +87,7 @@ typedef void (*sighandler_t)(int);
 //
 // Function prototypes.
 //
+
 void* smp_dream_circ(void *arg);
 void sighandler(int signum);
 void sig_abrt_handler(int signum);
@@ -536,8 +537,9 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
     }
 
     // Wait for all threads to finish.
-    for (thread_n = 0; thread_n < nthreads; thread_n++)
+    for (thread_n = 0; thread_n < nthreads; thread_n++) {
       threads[thread_n].join();
+    }
 
     // Free memory.
     free((void*) D);

@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2006,2007,2008,2009,2010,2012,2014,2016,2019 Fredrik Lingvall
+* Copyright (C) 2006,2007,2008,2009,2010,2012,2014,2016,2019,2021 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -117,8 +117,8 @@ void fftconv(FFT &fft,
 
 void* smp_dream_fftconv(void *arg)
 {
-  DATA D = *(DATA *)arg;
-  octave_idx_type    col_start=D.col_start, col_stop=D.col_stop, n;
+  DATA D = *(DATA*) arg;
+  octave_idx_type col_start=D.col_start, col_stop=D.col_stop, n;
   double *A = D.A, *B = D.B, *Y = D.Y;
   octave_idx_type A_M = D.A_M, B_M = D.B_M, B_N = D.B_N;
   FFT fft = *D.fft;
@@ -712,7 +712,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
                    a,b,c,af,bf,cf);
 
           if (running==false) {
-            printf("fftconv_p: bailing out!\n");
+            octave_stdout << "fftconv_p: bailing out!\n";
             break;
           }
 
@@ -725,7 +725,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
                    a,b,c,af,bf,cf);
 
           if (running==false) {
-            printf("fftconv_p: bailing out!\n");
+            octave_stdout << "fftconv_p: bailing out!\n";
             break;
           }
 

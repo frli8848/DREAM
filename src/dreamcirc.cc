@@ -104,8 +104,6 @@ int dreamcirc(double xo, double yo, double zo,
 
       //distance(xo, yo, zo, x, y, &r);
       rx = xo - x;
-      //ry = yo - y; // Moved outside this loop.
-      //rz = zo;
       r = sqrt(rx*rx + ry*ry + zo*zo);
 
       ai = v * ds / (2*M_PI * r);

@@ -23,10 +23,14 @@
 
 
 #include <string.h>
-#include <stdlib.h>
-#include <thread>
+//#include <stdlib.h>
+//#include <uchar.h>
 #include <signal.h>
-#include <uchar.h>
+
+#include <thread>
+
+
+
 #include "mex.h"
 
 #define EQU 0

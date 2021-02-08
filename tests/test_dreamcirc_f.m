@@ -1,10 +1,8 @@
 %%
-%% test dreamcirc_f
+%% ------------- Focused Circular Transducer --------------------------
 %%
 
 setup_dream_parameters
-
-% ------------- Focused Circular Transducer --------------------------
 
 % Geometrical parameters.
 R  = 10;				% Radius of the transdecer.

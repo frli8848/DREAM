@@ -22,8 +22,10 @@
 *
 ***/
 
+#pragma once
 
 #include "dream.h"
+#include "att.h"
 
 /***
  *
@@ -31,6 +33,15 @@
  *
  ***/
 
-int dreamsphere_f(double xo, double yo, double zo, double r, double R, double dx,
-                  double dy, double dt, dream_idx_type nt,
-                  double  delay, double v, double cp, double alpha ,double  *h, int err_level);
+int dreamsphere(double xo, double yo, double zo,
+                double R, double Rcurv,
+                double dx, double dy, double dt,
+                dream_idx_type nt, double delay, double v, double cp,
+                double  *h, int err_level);
+
+int dreamsphere(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
+                double xo, double yo, double zo,
+                double R, double Rcurv,
+                double dx, double dy, double dt,
+                dream_idx_type nt, double delay, double v, double cp,
+                double  *h, int err_level);

@@ -172,8 +172,9 @@ void* smp_dream_circ_f(void *arg)
   // Lock out_err for update, update it, and unlock.
   err_lock.lock();
 
-  if ((tmp_err != NONE) && (out_err == NONE))
+  if ((tmp_err != NONE) && (out_err == NONE)) {
     out_err = tmp_err;
+  }
 
   err_lock.unlock();
 
@@ -378,7 +379,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   // Material parameters
   //
 
-  // Check that arg 5 is a 3 element vectora
+  // Check that arg 5 is a 3 element vector.
   if (!((mxGetM(4)==3 && mxGetN(4)==1) || (mxGetM(4)==1 && mxGetN(4)==3))) {
     error("Argument 5 must be a vector of length 3!");
     return oct_retval;
@@ -615,11 +616,6 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   if (signal(SIGINT, old_handler_keyint) == SIG_ERR) {
     printf("Couldn't register old SIGINT signal handler.\n");
   }
-
-#ifdef USE_FFTW
-  if (alpha != (double) 0.0)
-    att_close();
-#endif
 
   if (!running) {
     error("CTRL-C pressed!\n"); // Bail out.

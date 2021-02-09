@@ -49,16 +49,15 @@ int dreamcirc_f(double xo, double yo, double zo,
                 int err_level)
 {
   dream_idx_type i, it;
-  double t, ai;
-  double xsmin, ysmin, xsmax, ysmax, ds, r;
+  double t, ai, ds, r;
+  double xsmin, ysmin, xsmax, ysmax;
   double x, y, foc_delay;
-  double xs = 0.0;
-  double ys = 0.0;
   int err = NONE;
 
   ds = dx * dy;
-  ysmin = -R + ys;
-  ysmax =  R + ys;
+
+  ysmin = -R;
+  ysmax =  R;
 
   for (i = 0; i < nt; i++) {
     h[i] = 0.0 ;
@@ -68,9 +67,9 @@ int dreamcirc_f(double xo, double yo, double zo,
   while (y <= ysmax) {
 
     //xlimit_circ_f(y, R, xs, ys, &xsmin, &xsmax);
-    double rs = sqrt(R*R - (ys-y)*(ys-y));
-    xsmin = -rs + xs;
-    xsmax = rs + xs;
+    double rs = sqrt(R*R - y*y);
+    xsmin = -rs;
+    xsmax = rs;
 
     double ry = yo - y;
 
@@ -131,13 +130,11 @@ int dreamcirc_f(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
   double t, ai;
   double xsmin, ysmin, xsmax, ysmax, ds, r;
   double x, y, foc_delay;
-  double xs = 0.0;
-  double ys = 0.0;
   int err = NONE;
 
   ds = dx * dy;
-  ysmin = -R + ys;
-  ysmax =  R + ys;
+  ysmin = -R;
+  ysmax =  R;
 
   for (i = 0; i < nt; i++) {
     h[i] = 0.0 ;
@@ -148,9 +145,9 @@ int dreamcirc_f(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
 
     // Compute the x-axis integration limits.
     //xlimit_circ_f(y, R, xs, ys, &xsmin, &xsmax);
-    double rs = sqrt(R*R - (ys-y)*(ys-y));
-    xsmin = -rs + xs;
-    xsmax = rs + xs;
+    double rs = sqrt(R*R - y*y);
+    xsmin = -rs;
+    xsmax = rs;
 
     double ry = yo - y;
 
@@ -159,7 +156,6 @@ int dreamcirc_f(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
 
       // Compute the distance (length) from an observation point (xo,yo,zo)
       // to a point (x,y) on the transducer surface.
-      //distance_circ_f(xo, yo, zo, x, y, &r);
       double rx = xo - x;
       r = sqrt(rx*rx + ry*ry + zo*zo);
 

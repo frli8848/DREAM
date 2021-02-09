@@ -206,7 +206,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   double R, dx, dy, dt;
   double *delay, v, cp, alpha, focal=0.0;
   double *h, *err_p;
-  int    err_level=STOP, set = false;
+  int    err_level=STOP, is_set = false;
   char   err_str[50];
   DATA   *D;
   size_t start, stop;
@@ -265,16 +265,16 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   //
 
   // Check that arg 4 is a scalar or vector
-  if ( (mxGetM(prhs[3]) * mxGetN(prhs[3]) !=1) && ((mxGetM(prhs[3]) * mxGetN(prhs[3])) != no))
+  if ( (mxGetM(prhs[3]) * mxGetN(prhs[3]) !=1) && ((mxGetM(prhs[3]) * mxGetN(prhs[3])) != no)) {
     dream_err_msg("Argument 4 must be a scalar or a vector with a length equal to the number of observation points!");
-
+  }
   delay = mxGetPr(prhs[3]);
 
   //
   // Material parameters
   //
 
-  // Check that arg 5 is a 3 element vectora
+  // Check that arg 5 is a 3 element vector.
   if (!((mxGetM(prhs[4])==3 && mxGetN(prhs[4])==1) || (mxGetM(prhs[4])==1 && mxGetN(prhs[4])==3)))
     dream_err_msg("Argument 5 must be a vector of length 3!");
 
@@ -297,34 +297,34 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     buflen = (mxGetM(prhs[5]) * mxGetN(prhs[5]) * sizeof(mxChar)) + 1;
     mxGetString(prhs[5],foc_met_str,buflen);
 
-    set = false;
+    is_set = false;
 
     if (!strcmp(foc_met_str,"off")) {
       foc_met = 1;
-      set = true;
+      is_set = true;
     }
 
     if (!strcmp(foc_met_str,"x")) {
       foc_met = 2;
-      set = true;
+      is_set = true;
     }
 
     if (!strcmp(foc_met_str,"y")) {
       foc_met = 3;
-      set = true;
+      is_set = true;
     }
 
     if (!strcmp(foc_met_str,"xy")) {
       foc_met = 4;
-      set = true;
+      is_set = true;
     }
 
     if (!strcmp(foc_met_str,"x+y")) {
       foc_met = 5;
-      set = true;
+      is_set = true;
     }
 
-   if (set == false)
+   if (is_set == false)
       dream_err_msg("Unknown focusing method!");
 
     // Check that arg 7 is a scalar.
@@ -370,24 +370,24 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     buflen = (mxGetM(prhs[7]) * mxGetN(prhs[7]) * sizeof(mxChar)) + 1;
     mxGetString(prhs[7],err_str,buflen);
 
-    set = false;
+    is_set = false;
 
     if (!strcmp(err_str,"ignore")) {
       err_level = IGNORE;
-      set = true;
+      is_set = true;
     }
 
     if (!strcmp(err_str,"warn")) {
       err_level = WARN;
-      set = true;
+      is_set = true;
     }
 
     if (!strcmp(err_str,"stop")) {
       err_level = STOP;
-      set = true;
+      is_set = true;
     }
 
-    if (set == false)
+    if (is_set == false)
       dream_err_msg("Unknown error level!");
 
   }
@@ -503,11 +503,6 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   if (signal(SIGINT, old_handler_keyint) == SIG_ERR) {
     printf("Couldn't register old  SIGINT signal handler.\n");
   }
-
-#ifdef USE_FFTW
-  if (alpha != (double) 0.0)
-    att_close();
-#endif
 
   if (!running) {
     dream_err_msg("CTRL-C pressed!\n"); // Bail out.

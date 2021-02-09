@@ -24,23 +24,22 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <signal.h>
+
 #include <iostream>
 #include <thread>
 #include <mutex>
-#include <signal.h>
-#include "mex.h"
+
 #include "affinity.h"
-#include "dreamsphere_f.h"
+#include "dreamsphere.h"
 #include "dream_error.h"
+
+#include "mex.h"
 
 #define SINGLE 0
 #define MULTIPLE 1
 
-#ifdef USE_FFTW
-#include "att.h"
-#endif
-
-// Parallel implementation using Linux threads.
+// Parallel implementation.
 
 //
 // Globals
@@ -59,8 +58,8 @@ typedef struct
   dream_idx_type start;
   dream_idx_type stop;
   double *ro;
-  double r;
   double R;
+  double Rcurv;
   double dx;
   double dy;
   double dt;
@@ -69,7 +68,7 @@ typedef struct
   double *delay;
   double v;
   double cp;
-  double alpha;
+  Attenuation *att;
   double *h;
   int err_level;
 } DATA;
@@ -80,7 +79,7 @@ typedef void (*sighandler_t)(int);
 // Function prototypes.
 //
 
-void* smp_dream_sphere_f(void *arg);
+void* smp_dream_sphere(void *arg);
 void sighandler(int signum);
 void sig_abrt_handler(int signum);
 void sig_keyint_handler(int signum);
@@ -91,17 +90,26 @@ void sig_keyint_handler(int signum);
  *
  ***/
 
-void* smp_dream_sphere_f(void *arg)
+void* smp_dream_sphere(void *arg)
 {
   int tmp_err = NONE, err = NONE;
   DATA D = *(DATA *)arg;
   double xo, yo, zo;
   double *h = D.h;
-  double r=D.r, R=D.R, dx=D.dx, dy=D.dy, dt=D.dt;
+  double R=D.R, Rcurv=D.Rcurv, dx=D.dx, dy=D.dy, dt=D.dt;
   size_t n, no=D.no, nt=D.nt;
   int    tmp_lev, err_level=D.err_level;
-  double *delay=D.delay, *ro=D.ro, v=D.v, cp=D.cp, alpha=D.alpha;
+  double *delay=D.delay, *ro=D.ro, v=D.v, cp=D.cp;
+  Attenuation *att = D.att;
   size_t start=D.start, stop=D.stop;
+
+  // Buffers for the FFTs in the Attenuation
+  std::unique_ptr<FFTCVec> xc_vec;
+  std::unique_ptr<FFTVec> x_vec;
+  if (att) {
+    xc_vec = std::make_unique<FFTCVec>(nt);
+    x_vec = std::make_unique<FFTVec>(nt);
+  }
 
   // Let the thread finish and then catch the error.
   if (err_level == STOP)
@@ -109,53 +117,53 @@ void* smp_dream_sphere_f(void *arg)
   else
     tmp_lev = err_level;
 
-  if (D.delay_method == SINGLE) {
-    for (n=start; n<stop; n++) {
-      xo = ro[n];
-      yo = ro[n+1*no];
-      zo = ro[n+2*no];
-      err = dreamsphere_f(xo,yo,zo,r,R,dx,dy,dt,nt,delay[0],v,cp,alpha,
-                      &h[n*nt],tmp_lev);
+  for (n=start; n<stop; n++) {
+    xo = ro[n];
+    yo = ro[n+1*no];
+    zo = ro[n+2*no];
 
-      if (err != NONE || out_err ==  PARALLEL_STOP) {
-        tmp_err = err;
-        if (err == PARALLEL_STOP || out_err ==  PARALLEL_STOP)
-          break; // Jump out when a STOP error occurs.
-      }
-
-      if (!running) {
-        std::cout << "Thread for observation points " << start+1 << " -> " << stop << " bailing out!" << std::endl;
-        return(NULL);
-      }
-
+    double dlay = 0.0;
+    if (D.delay_method == SINGLE) {
+      dlay = delay[0];
+    } else { // MULTIPLE delays.
+      dlay = delay[n];
     }
-  } else { // MULTIPLE delays.
-    for (n=start; n<stop; n++) {
-      xo = ro[n];
-      yo = ro[n+1*no];
-      zo = ro[n+2*no];
-      err = dreamsphere_f(xo,yo,zo,r,R,dx,dy,dt,nt,delay[n],v,cp,alpha,
-                      &h[n*nt],tmp_lev);
 
-      if (err != NONE || out_err ==  PARALLEL_STOP) {
-        tmp_err = err;
-        if (err == PARALLEL_STOP || out_err ==  PARALLEL_STOP)
-          break; // Jump out when a STOP error occurs.
-      }
-
-      if (!running) {
-        std::cout << "Thread for observation points " << start+1 << " -> " << stop << " bailing out!" << std::endl;
-        return(NULL);
-      }
-
+    if (att == nullptr) {
+      err = dreamsphere(xo, yo, zo,
+                        R, Rcurv,
+                        dx, dy, dt,
+                        nt, dlay, v, cp,
+                        &h[n*nt], tmp_lev);
+    } else {
+      err = dreamsphere(*att, *xc_vec, *x_vec,
+                        xo, yo, zo,
+                        R, Rcurv,
+                        dx, dy, dt,
+                        nt, dlay, v, cp,
+                        &h[n*nt], tmp_lev);
     }
+
+    if (err != NONE || out_err ==  PARALLEL_STOP) {
+      tmp_err = err;
+      if (err == PARALLEL_STOP || out_err ==  PARALLEL_STOP) {
+        break; // Jump out when a STOP error occurs.
+      }
+    }
+
+    if (!running) {
+      std::cout << "Thread for observation points " << start+1 << " -> " << stop << " bailing out!" << std::endl;
+      return(NULL);
+    }
+
   }
 
   // Lock out_err for update, update it, and unlock.
   err_lock.lock();
 
-  if ((tmp_err != NONE) && (out_err == NONE))
+  if ((tmp_err != NONE) && (out_err == NONE)) {
     out_err = tmp_err;
+  }
 
   err_lock.unlock();
 
@@ -183,7 +191,7 @@ void sig_keyint_handler(int signum) {
 
 /***
  *
- * Matlab (MEX) gateway function for parallel dreamsphere_f.
+ * Matlab (MEX) gateway function for parallel dreamsphere.
  *
  ***/
 
@@ -192,10 +200,10 @@ extern void _main();
 void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
   double *ro, *geom_par, *s_par, *m_par;
-  double  r,R,dx,dy,dt;
+  double  R, Rcurv, dx, dy, dt;
   size_t  nt, no;
   double *delay, v, cp, alpha, *h, *err_p;
-  int    err_level=STOP, set = false;
+  int    err_level=STOP, is_set = false;
   char   err_str[50];
   int    buflen;
   DATA  *D;
@@ -207,11 +215,11 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Check for proper number of arguments
 
   if (!((nrhs == 5) || (nrhs == 6))) {
-    dream_err_msg("dreamsphere_f requires 5 or 6 input arguments!");
+    dream_err_msg("dreamsphere requires 5 or 6 input arguments!");
   }
   else
     if (nlhs > 2) {
-      dream_err_msg("Too many output arguments for dreamsphere_f!");
+      dream_err_msg("Too many output arguments for dreamsphere!");
     }
 
   //
@@ -225,9 +233,6 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   no = mxGetM(prhs[0]); // Number of observation points.
   ro = mxGetPr(prhs[0]);
 
-  //if (no<2)
-  //  dream_err_msg("At least 2 observation points i needed for this function!\n Use the serial version for a single observation point.");
-
   //
   // Transducer geometry
   //
@@ -237,8 +242,8 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     dream_err_msg("Argument 2 must be a vector of length 2!");
 
   geom_par = mxGetPr(prhs[1]);
-  r = geom_par[0];		// Radius of the transducer.
-  R = geom_par[1];		// Curvature radius of the transducer.
+  R     = geom_par[0];		// Radius of the transducer.
+  Rcurv = geom_par[1];		// Curvature radius of the transducer.
 
   //
   // Temporal and spatial sampling parameters.
@@ -258,10 +263,10 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Start point of impulse response vector ([us]).
   //
 
-  // Check that arg 4 is a scalar.
-  if ( (mxGetM(prhs[3]) * mxGetN(prhs[3]) !=1) && ((mxGetM(prhs[3]) * mxGetN(prhs[3])) != no))
+  // Check that arg 4 is a scalar or vector
+  if ( (mxGetM(prhs[3]) * mxGetN(prhs[3]) !=1) && ((mxGetM(prhs[3]) * mxGetN(prhs[3])) != no)) {
     dream_err_msg("Argument 4 must be a scalar or a vector with a length equal to the number of observation points!");
-
+  }
   delay = mxGetPr(prhs[3]);
 
   //
@@ -311,21 +316,21 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
     if (!strcmp(err_str,"ignore")) {
       err_level = IGNORE;
-      set = true;
+      is_set = true;
     }
 
     if (!strcmp(err_str,"warn")) {
       err_level = WARN;
-      set = true;
+      is_set = true;
     }
 
     if (!strcmp(err_str,"stop")) {
       err_level = STOP;
-      set = true;
+      is_set = true;
     }
 
-    if (set == false)
-      dream_err_msg("dreamsphere_f: Unknown error level!");
+    if (is_set == false)
+      dream_err_msg("dreamsphere: Unknown error level!");
   }
   else
     err_level = STOP; // Default.
@@ -357,10 +362,16 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   out_err = NONE;
   running=true;
 
-#ifdef USE_FFTW
-  if (alpha != (double) 0.0)
-    att_init(nt,nthreads);
-#endif
+  // Do we have attenuation?
+  Attenuation att(nt, dt, alpha);
+  Attenuation *att_ptr = nullptr;
+  if (alpha > std::numeric_limits<double>::epsilon() ) {
+    att_ptr = &att;
+
+    // FIXME: Force to tun in the main thread when we have nonzero attenuation
+    // due to Matlab FFT threading issues.
+    nthreads = 1;
+  }
 
   // Allocate local data.
   D = (DATA*) malloc(nthreads*sizeof(DATA));
@@ -378,8 +389,8 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     D[thread_n].stop = stop; // Local stop index;
     D[thread_n].no = no;
     D[thread_n].ro = ro;
-    D[thread_n].r = r;
     D[thread_n].R = R;
+    D[thread_n].Rcurv = Rcurv;
     D[thread_n].dx = dx;
     D[thread_n].dy = dy;
     D[thread_n].dt = dt;
@@ -393,18 +404,26 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     D[thread_n].delay = delay;
     D[thread_n].v = v;
     D[thread_n].cp = cp;
-    D[thread_n].alpha = alpha;
+    D[thread_n].att = att_ptr;
     D[thread_n].h = h;
     D[thread_n].err_level = err_level;
 
-    // Starts the threads.
-    threads[thread_n] = std::thread(smp_dream_sphere_f, &D[thread_n]); // Start the threads.
-    set_dream_thread_affinity(thread_n, nthreads, threads);
+    if (nthreads > 1) {
+      // Starts the threads.
+      threads[thread_n] = std::thread(smp_dream_sphere, &D[thread_n]); // Start the threads.
+      set_dream_thread_affinity(thread_n, nthreads, threads);
+    } else {
+      smp_dream_sphere(&D[0]);
+    }
+
   }
 
   // Wait for all threads to finish.
-  for (thread_n = 0; thread_n < nthreads; thread_n++)
-    threads[thread_n].join();
+  if (nthreads > 1) {
+    for (thread_n = 0; thread_n < nthreads; thread_n++) {
+      threads[thread_n].join();
+    }
+  }
 
   // Free memory.
   free((void*) D);
@@ -425,11 +444,6 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     printf("Couldn't register old SIGINT signal handler.\n");
   }
 
-#ifdef USE_FFTW
-  if (alpha != (double) 0.0)
-    att_close();
-#endif
-
   if (!running) {
     dream_err_msg("CTRL-C pressed!\n"); // Bail out.
   }
@@ -438,8 +452,9 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Check for Error.
   //
 
-  if ( (err_level == STOP) && (out_err != NONE))
+  if ( (err_level == STOP) && (out_err != NONE)) {
     dream_err_msg(""); // Bail out if error.
+  }
 
   //
   // Return error.

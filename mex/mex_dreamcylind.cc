@@ -24,25 +24,25 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <signal.h>
+
 #include <iostream>
 #include <thread>
 #include <mutex>
-#include <signal.h>
-#include "mex.h"
+
 #include "affinity.h"
-#include "dreamcylind_f.h"
+#include "dreamcylind.h"
 #include "dream_error.h"
+
+#include "mex.h"
 
 #define SINGLE 0
 #define MULTIPLE 1
 
-#ifdef USE_FFTW
-#include "att.h"
-#endif
-
 //
 // Globals
 //
+
 volatile int out_err = NONE;
 std::mutex err_lock;
 int running;
@@ -59,7 +59,7 @@ typedef struct
   double *ro;
   double a;
   double b;
-  double R;
+  double Rcurv;
   double dx;
   double dy;
   double dt;
@@ -68,7 +68,7 @@ typedef struct
   double *delay;
   double v;
   double cp;
-  double alpha;
+  Attenuation *att;
   double *h;
   int err_level;
 } DATA;
@@ -79,7 +79,7 @@ typedef void (*sighandler_t)(int);
 // Function prototypes.
 //
 
-void* smp_dream_cylind_f(void *arg);
+void* smp_dream_cylind(void *arg);
 void sighandler(int signum);
 void sig_abrt_handler(int signum);
 void sig_keyint_handler(int signum);
@@ -90,17 +90,26 @@ void sig_keyint_handler(int signum);
  *
  ***/
 
-void* smp_dream_cylind_f(void *arg)
+void* smp_dream_cylind(void *arg)
 {
   int tmp_err = NONE, err = NONE;
   DATA D = *(DATA *)arg;
   double xo, yo, zo;
   double *h = D.h;
-  double a=D.a, b=D.b, R=D.R, dx=D.dx, dy=D.dy, dt=D.dt;
+  double a=D.a, b=D.b, Rcurv=D.Rcurv, dx=D.dx, dy=D.dy, dt=D.dt;
   size_t n, no=D.no, nt=D.nt;
   int    tmp_lev, err_level=D.err_level;
-  double *delay=D.delay, *ro=D.ro, v=D.v, cp=D.cp, alpha=D.alpha;
+  double *delay=D.delay, *ro=D.ro, v=D.v, cp=D.cp;
+  Attenuation *att = D.att;
   size_t start=D.start, stop=D.stop;
+
+  // Buffers for the FFTs in the Attenuation
+  std::unique_ptr<FFTCVec> xc_vec;
+  std::unique_ptr<FFTVec> x_vec;
+  if (att) {
+    xc_vec = std::make_unique<FFTCVec>(nt);
+    x_vec = std::make_unique<FFTVec>(nt);
+  }
 
   // Let the thread finish and then catch the error.
   if (err_level == STOP)
@@ -108,46 +117,44 @@ void* smp_dream_cylind_f(void *arg)
   else
     tmp_lev = err_level;
 
-  if (D.delay_method == SINGLE) {
-    for (n=start; n<stop; n++) {
-      xo = ro[n];
-      yo = ro[n+1*no];
-      zo = ro[n+2*no];
-      err = dreamcylind_f(xo,yo,zo,a,b,R,dx,dy,dt,nt,delay[0],v,cp,alpha,
-                      &h[n*nt],tmp_lev);
+  for (n=start; n<stop; n++) {
+    xo = ro[n];
+    yo = ro[n+1*no];
+    zo = ro[n+2*no];
 
-      if (err != NONE || out_err ==  PARALLEL_STOP) {
-        tmp_err = err;
-        if (err == PARALLEL_STOP || out_err ==  PARALLEL_STOP)
-          break; // Jump out when a STOP error occurs.
-      }
-
-      if (!running) {
-        std::cout << "Thread for observation points " << start+1 << " -> " << stop << " bailing out!" << std::endl;
-        return(NULL);
-      }
-
+    double dlay = 0.0;
+    if (D.delay_method == SINGLE) {
+      dlay = delay[0];
+    } else { // MULTIPLE delays.
+      dlay = delay[n];
     }
-  } else { // MULTIPLE delays.
-    for (n=start; n<stop; n++) {
-      xo = ro[n];
-      yo = ro[n+1*no];
-      zo = ro[n+2*no];
-      err = dreamcylind_f(xo,yo,zo,a,b,R,dx,dy,dt,nt,delay[n],v,cp,alpha,
-                      &h[n*nt],tmp_lev);
 
-      if (err != NONE || out_err ==  PARALLEL_STOP) {
-        tmp_err = err;
-        if (err == PARALLEL_STOP || out_err ==  PARALLEL_STOP)
-          break; // Jump out when a STOP error occurs.
-      }
-
-      if (!running) {
-        std::cout << "Thread for observation points " << start+1 << " -> " << stop << " bailing out!" << std::endl;
-        return(NULL);
-      }
-
+    if (att == nullptr) {
+      err = dreamcylind(xo, yo, zo,
+                          a, b, Rcurv,
+                          dx, dy, dt,
+                          nt, dlay, v, cp,
+                          &h[n*nt],tmp_lev);
+    } else {
+      err = dreamcylind(*att, *xc_vec, *x_vec,
+                          xo, yo, zo,
+                          a, b, Rcurv,
+                          dx, dy, dt,
+                          nt, dlay, v, cp,
+                          &h[n*nt],tmp_lev);
     }
+
+    if (err != NONE || out_err ==  PARALLEL_STOP) {
+      tmp_err = err;
+      if (err == PARALLEL_STOP || out_err ==  PARALLEL_STOP)
+        break; // Jump out when a STOP error occurs.
+    }
+
+    if (!running) {
+      std::cout << "Thread for observation points " << start+1 << " -> " << stop << " bailing out!" << std::endl;
+      return(NULL);
+    }
+
   }
 
   // Lock out_err for update, update it, and unlock.
@@ -182,7 +189,7 @@ void sig_keyint_handler(int signum) {
 
 /***
  *
- * Matlab (MEX) gateway function for parallel dreamcylind_f.
+ * Matlab (MEX) gateway function for parallel dreamcylind.
  *
  ***/
 
@@ -191,7 +198,7 @@ extern void _main();
 void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
   double *ro, *geom_par, *s_par, *m_par;
-  double  a,b,R,dx,dy,dt;
+  double  a,b,Rcurv,dx,dy,dt;
   size_t  nt, no;
   double *delay, v, cp, alpha, *h, *err_p;
   int    err_level=STOP, set = false;
@@ -206,11 +213,11 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Check for proper number of arguments
 
   if (!((nrhs == 5) || (nrhs == 6))) {
-    dream_err_msg("dreamcylind_f requires 5 or 6 input arguments!");
+    dream_err_msg("dreamcylind requires 5 or 6 input arguments!");
   }
   else
     if (nlhs > 2) {
-      dream_err_msg("Too many output arguments for dreamcylind_f!");
+      dream_err_msg("Too many output arguments for dreamcylind!");
     }
 
   //
@@ -237,8 +244,8 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
   geom_par = mxGetPr(prhs[1]);
   a = geom_par[0];		// x-width of the transducer.
-  b  = geom_par[1];		// y-width of the transducer.
-  R = geom_par[2];		// Radius of the curvature.
+  b = geom_par[1];		// y-width of the transducer.
+  Rcurv = geom_par[2];		// Radius of the curvature.
 
   //
   // Temporal and spatial sampling parameters.
@@ -359,10 +366,16 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   out_err = NONE;
   running = true;
 
-#ifdef USE_FFTW
-  if (alpha != (double) 0.0)
-    att_init(nt,nthreads);
-#endif
+  // Do we have attenuation?
+  Attenuation att(nt, dt, alpha);
+  Attenuation *att_ptr = nullptr;
+  if (alpha > std::numeric_limits<double>::epsilon() ) {
+    att_ptr = &att;
+
+    // FIXME: Force to tun in the main thread when we have nonzero attenuation
+    // due to Matlab FFT threading issues.
+    nthreads = 1;
+  }
 
   // Allocate local data.
   D = (DATA*) malloc(nthreads*sizeof(DATA));
@@ -382,7 +395,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     D[thread_n].ro = ro;
     D[thread_n].a = a;
     D[thread_n].b = b;
-    D[thread_n].R = R;
+    D[thread_n].Rcurv = Rcurv;
     D[thread_n].dx = dx;
     D[thread_n].dy = dy;
     D[thread_n].dt = dt;
@@ -396,18 +409,26 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     D[thread_n].delay = delay;
     D[thread_n].v = v;
     D[thread_n].cp = cp;
-    D[thread_n].alpha = alpha;
+    D[thread_n].att = att_ptr;
     D[thread_n].h = h;
     D[thread_n].err_level = err_level;
 
-    // Starts the threads.
-    threads[thread_n] = std::thread(smp_dream_cylind_f, &D[thread_n]); // Start the threads.
-    set_dream_thread_affinity(thread_n, nthreads, threads);
+    if (nthreads > 1) {
+      // Starts the threads.
+      threads[thread_n] = std::thread(smp_dream_cylind, &D[thread_n]); // Start the threads.
+      set_dream_thread_affinity(thread_n, nthreads, threads);
+    } else {
+      smp_dream_cylind(&D[0]);
+    }
+
   }
 
   // Wait for all threads to finish.
-  for (thread_n = 0; thread_n < nthreads; thread_n++)
-    threads[thread_n].join();
+  if (nthreads > 1) {
+    for (thread_n = 0; thread_n < nthreads; thread_n++) {
+      threads[thread_n].join();
+    }
+  }
 
   // Free memory.
   free((void*) D);
@@ -427,11 +448,6 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   if (signal(SIGINT, old_handler_keyint) == SIG_ERR) {
     printf("Couldn't register old SIGINT signal handler.\n");
   }
-
-#ifdef USE_FFTW
-  if (alpha != (double) 0.0)
-    att_close();
-#endif
 
   if (!running) {
     dream_err_msg("CTRL-C pressed!\n"); // Bail out.

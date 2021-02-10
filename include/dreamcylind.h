@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2002,2003,2006,2007,2008,2009,2021 Fredrik Lingvall
+* Copyright (C) 2002,2003,2005,2006,2007,2008,2009,2021 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -24,26 +24,19 @@
 
 
 #include "dream.h"
+#include "att.h"
 
-/***
- *
- * dreamcylind_d
- *
- ***/
+int dreamcylind(double xo, double yo, double zo,
+                double a, double b, double R,
+                double dx, double dy, double dt,
+                dream_idx_type nt, double delay, double v, double cp,
+                double *h,
+                int err_level);
 
-int dreamcylind_d(double xo,
-                  double yo,
-                  double zo,
-                  double a,
-                  double b,
-                  double R,
-                  double dx,
-                  double dy,
-                  double dt,
-                  dream_idx_type nt,
-                  double delay,
-                  double v,
-                  double cp,
-                  double alpha,
-                  double *h,
-                  int err_level);
+int dreamcylind(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
+                double xo, double yo, double zo,
+                double a, double b, double R,
+                double dx, double dy, double dt,
+                dream_idx_type nt, double delay, double v, double cp,
+                double *h,
+                int err_level);

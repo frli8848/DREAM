@@ -1,20 +1,22 @@
 %%
-%% ------------- Sperical Transducer --------------------------
+%% ------------- Focused Circular Transducer --------------------------
 %%
 
 setup_dream_parameters
 
-%% Focused/concave
+
+% ------------- Focused Cylindrical Transducer --------------------------
 
 % Geometrical parameters.
-R = 10;                                 % Radius of the transducer.
-Rcurv = 25;				% Radius of the curvature.
-geom_par = [R Rcurv];
+a = 10;				% x-size of the transducer.
+b = 20;				% y-size of the transducer.
+Rcurv = 100;                    % Radius of the curvature.
+geom_par = [a b Rcurv];
 
-[Hf,err] = dreamsphere(Ro,geom_par,s_par,delay,m_par,'stop');
+[Hf,err] = dreamcylind(Ro,geom_par,s_par,delay,m_par,'stop');
 
 alpha  = 5.0;                   % Absorbtion (dB/cm Hz).
-[Hf_att,err] = dreamsphere(Ro,geom_par,s_par,delay,[v cp alpha],'stop');
+[Hf_att,err] = dreamcylind(Ro,geom_par,s_par,delay,[v cp alpha],'stop');
 
 figure(1);
 clf;
@@ -36,19 +38,21 @@ else
   legend('Attenuation {\alpha} = 0 [dB/cm MHz]',...
          'Attenuation {\alpha} = 5 [dB/cm MHz]');
 end
-title_str = sprintf('Focused spherical transducer at Rcurv=%1.1f [mm]',Rcurv);
+title_str = sprintf('Focused cylindrical transducer at Rcurv=%1.1f [mm]',Rcurv);
 title(title_str)
 
 %% Defocused/convex
 
-R = 10;                                 % Radius of the transducer.
-Rcurv = -25;				% Radius of the curvature (negative).
-geom_par = [R Rcurv];
+% Geometrical parameters.
+a = 10;				% x-size of the transducer.
+b = 20;				% y-size of the transducer.
+Rcurv = -100;                   % Radius of the curvature (negative)..
+geom_par = [a b Rcurv];
 
-[Hd,err] = dreamsphere(Ro,geom_par,s_par,delay,m_par,'stop');
+[Hd,err] = dreamcylind(Ro,geom_par,s_par,delay,m_par,'stop');
 
 alpha  = 5.0;                   % Absorbtion (dB/cm Hz).
-[Hd_att,err] = dreamsphere(Ro,geom_par,s_par,delay,[v cp alpha],'stop');
+[Hd_att,err] = dreamcylind(Ro,geom_par,s_par,delay,[v cp alpha],'stop');
 
 if size(Hd,2)>1
   figure(2)
@@ -69,5 +73,5 @@ else
   legend('Attenuation {\alpha} = 0 [dB/cm MHz]',...
          'Attenuation {\alpha} = 5 [dB/cm MHz]');
 end
-title_str = sprintf('Defocused spherical transducer at Rcurv=%1.1f [mm]',Rcurv);
+title_str = sprintf('Defocused cylindrical transducer at Rcurv=%1.1f [mm]',Rcurv);
 title(title_str)

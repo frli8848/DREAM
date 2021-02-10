@@ -511,129 +511,65 @@ if (Matlab_FOUND)
 endif (Matlab_FOUND)
 
 #
-# dreamcylind_f
+# dreamcylind
 #
 
 if (OCTAVE_FOUND)
 
-  set (oct_dreamcylind_f_SOURCE_FILES
-    oct/oct_dreamcylind_f.cc
+  set (oct_dreamcylind_SOURCE_FILES
+    oct/oct_dreamcylind.cc
     src/att.cc
     src/affinity.cc
-    src/dreamcylind_f.cc
+    src/dreamcylind.cc
     src/fft_octave.cc
     src/dream_error.cc
     )
 
-  add_library (oct_dreamcylind_f MODULE
-    ${oct_dreamcylind_f_SOURCE_FILES}
+  add_library (oct_dreamcylind MODULE
+    ${oct_dreamcylind_SOURCE_FILES}
     )
 
-  target_link_libraries (oct_dreamcylind_f
+  target_link_libraries (oct_dreamcylind
     ${OCTAVE_LIBRARIES}
     ${FFTW_LIBRARIES}
     )
 
-  set_target_properties (oct_dreamcylind_f PROPERTIES
+  set_target_properties (oct_dreamcylind PROPERTIES
     CXX_STANDARD 14
     COMPILE_FLAGS "${OCT_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_OCT_INCLUDE_DIRS}"
     LINK_FLAGS ${OCT_LD_FLAGS}
-    SUFFIX ".oct" PREFIX "" OUTPUT_NAME "dreamcylind_f")
+    SUFFIX ".oct" PREFIX "" OUTPUT_NAME "dreamcylind")
 
 endif (OCTAVE_FOUND)
 
 if (Matlab_FOUND)
 
-  set (mex_dreamcylind_f_SOURCE_FILES
-    mex/mex_dreamcylind_f.cc
+  set (mex_dreamcylind_SOURCE_FILES
+    mex/mex_dreamcylind.cc
     src/att.cc
     src/affinity.cc
-    src/dreamcylind_f.cc
+    src/dreamcylind.cc
     src/fft_matlab.cc
     src/dream_error.cc
     )
 
-  add_library (mex_dreamcylind_f MODULE
-    ${mex_dreamcylind_f_SOURCE_FILES}
+  add_library (mex_dreamcylind MODULE
+    ${mex_dreamcylind_SOURCE_FILES}
     )
 
-  target_link_libraries (mex_dreamcylind_f
+  target_link_libraries (mex_dreamcylind
     ${MATLAB_LIBRARIES}
     ${FFTW_LIBRARIES}
     )
 
-  set_target_properties (mex_dreamcylind_f PROPERTIES
+  set_target_properties (mex_dreamcylind PROPERTIES
     CXX_STANDARD 14
     COMPILE_FLAGS "${DREAM_FFT_MEX_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
 
     LINK_FLAGS ${MEX_LD_FLAGS}
-    SUFFIX ".${Matlab_MEX_EXTENSION}" PREFIX "" OUTPUT_NAME "dreamcylind_f")
-
-endif (Matlab_FOUND)
-
-#
-# dreamcylind_d
-#
-
-if (OCTAVE_FOUND)
-
-  set (oct_dreamcylind_d_SOURCE_FILES
-    oct/oct_dreamcylind_d.cc
-    src/att.cc
-    src/affinity.cc
-    src/dreamcylind_d.cc
-    src/fft_octave.cc
-    src/dream_error.cc
-    )
-
-  add_library (oct_dreamcylind_d MODULE
-    ${oct_dreamcylind_d_SOURCE_FILES}
-    )
-
-  target_link_libraries (oct_dreamcylind_d
-    ${OCTAVE_LIBRARIES}
-    ${FFTW_LIBRARIES}
-    )
-
-  set_target_properties (oct_dreamcylind_d PROPERTIES
-    CXX_STANDARD 14
-    COMPILE_FLAGS "${OCT_FLAGS}"
-    INCLUDE_DIRECTORIES "${DREAM_OCT_INCLUDE_DIRS}"
-    LINK_FLAGS ${OCT_LD_FLAGS}
-    SUFFIX ".oct" PREFIX "" OUTPUT_NAME "dreamcylind_d")
-
-endif (OCTAVE_FOUND)
-
-if (Matlab_FOUND)
-
-  set (mex_dreamcylind_d_SOURCE_FILES
-    mex/mex_dreamcylind_d.cc
-    src/att.cc
-    src/affinity.cc
-    src/dreamcylind_d.cc
-    src/fft_matlab.cc
-    src/dream_error.cc
-    )
-
-  add_library (mex_dreamcylind_d MODULE
-    ${mex_dreamcylind_d_SOURCE_FILES}
-    )
-
-  target_link_libraries (mex_dreamcylind_d
-    ${MATLAB_LIBRARIES}
-    ${FFTW_LIBRARIES}
-    )
-
-  set_target_properties (mex_dreamcylind_d PROPERTIES
-    CXX_STANDARD 14
-    COMPILE_FLAGS "${DREAM_FFT_MEX_FLAGS}"
-    INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
-
-    LINK_FLAGS ${MEX_LD_FLAGS}
-    SUFFIX ".${Matlab_MEX_EXTENSION}" PREFIX "" OUTPUT_NAME "dreamcylind_d")
-
+    SUFFIX ".${Matlab_MEX_EXTENSION}" PREFIX "" OUTPUT_NAME "dreamcylind")
 
 endif (Matlab_FOUND)
 

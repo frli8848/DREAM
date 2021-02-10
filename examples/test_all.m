@@ -232,15 +232,15 @@ end
 title('Focused Circular transducer')
 fprintf('dreamcirc_f\n');
 
-% ------------- Focused Cylindrical Transducer --------------------------
+% ------------- Cylindrical Transducer --------------------------
 
 % Geometrical parameters.
-a = 10;				% x-size of the transducer.
-b = 20;				% y-size of the transducer.
-R = 100;				% Radius of the curvature.
-geom_par = [a b R];
+a = 10;				% x-dim size of the transducer.
+b = 20;				% y-dim size of the transducer.
+Rcurv = 100;                    % Radius of the curvature.
+geom_par = [a b Rcurv];
 
-[H,err] = dreamcylind_f(Ro,geom_par,s_par,delay,m_par,'stop');
+[H,err] = dreamcylind(Ro,geom_par,s_par,delay,m_par,'stop');
 
 subplot(3,2,6);
 if size(H,2)>1
@@ -254,38 +254,11 @@ else
   xlabel('t [\mus]')
   grid('on');
 end
-title('Focused cylindrical transducer')
+title('Cylindrical transducer')
 fprintf('dreamcylind_f\n');
 
 figure(2);
 clf;
-
-% ------------- Defocused Cylindrical Transducer --------------------------
-
-% Geometrical parameters.
-a = 10;				% x-size of the transducer.
-b = 20;				% y-size of the transducer.
-R = 100;				% Radius of the curvature.
-geom_par = [a b R];
-
-[H,err] = dreamcylind_d(Ro,geom_par,s_par,delay,m_par,'stop');
-
-subplot(2,2,1); % Needed for due to bug in Octave.
-subplot(3,2,1);
-
-if size(H,2)>1
-  mesh(xo,t,H);
-  axis('tight');
-  view(135,32);
-else
-  plot(t,H);
-  ax = axis;
-  %axis([0 50 ax(3) ax(4)])
-  %xlabel('t [\mus]')
-  grid('on');
-end
-title('Defocused cylindrical transducer')
-fprintf('dreamcylind_d\n');
 
 % ------------- Focused Spherical Transducer --------------------------
 

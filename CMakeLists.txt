@@ -609,32 +609,31 @@ endif (OCTAVE_FOUND)
 
 if (Matlab_FOUND)
 
-  set (mex_dream_arr_circ_SOURCE_FILES
-    mex/mex_dream_arr_circ.cc
+  set (mex_dream_arr_rect_SOURCE_FILES
+    mex/mex_dream_arr_rect.cc
     src/att.cc
     src/affinity.cc
     src/arr_functions.cc
-    src/dream_arr_circ.cc
+    src/dream_arr_rect.cc
     src/fft_matlab.cc
     src/dream_error.cc
     )
 
-  add_library (mex_dream_arr_circ MODULE
-    ${mex_dream_arr_circ_SOURCE_FILES}
+  add_library (mex_dream_arr_rect MODULE
+    ${mex_dream_arr_rect_SOURCE_FILES}
     )
 
-  target_link_libraries (mex_dream_arr_circ
+  target_link_libraries (mex_dream_arr_rect
     ${MATLAB_LIBRARIES}
     ${FFTW_LIBRARIES}
     )
 
-  set_target_properties (mex_dream_arr_circ PROPERTIES
+  set_target_properties (mex_dream_arr_rect PROPERTIES
     CXX_STANDARD 14
     COMPILE_FLAGS "${DREAM_FFT_MEX_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
-
     LINK_FLAGS ${MEX_LD_FLAGS}
-    SUFFIX ".${Matlab_MEX_EXTENSION}" PREFIX "" OUTPUT_NAME "dream_arr_circ")
+    SUFFIX ".${Matlab_MEX_EXTENSION}" PREFIX "" OUTPUT_NAME "dream_arr_rect")
 
 endif (Matlab_FOUND)
 
@@ -674,32 +673,32 @@ endif (OCTAVE_FOUND)
 
 if (Matlab_FOUND)
 
-  set (mex_dream_arr_rect_SOURCE_FILES
-    mex/mex_dream_arr_rect.cc
+  set (mex_dream_arr_circ_SOURCE_FILES
+    mex/mex_dream_arr_circ.cc
     src/att.cc
     src/affinity.cc
     src/arr_functions.cc
-    src/dream_arr_rect.cc
+    src/dream_arr_circ.cc
     src/fft_matlab.cc
     src/dream_error.cc
     )
 
-  add_library (mex_dream_arr_rect MODULE
-    ${mex_dream_arr_rect_SOURCE_FILES}
+  add_library (mex_dream_arr_circ MODULE
+    ${mex_dream_arr_circ_SOURCE_FILES}
     )
 
-  target_link_libraries (mex_dream_arr_rect
+  target_link_libraries (mex_dream_arr_circ
     ${MATLAB_LIBRARIES}
     ${FFTW_LIBRARIES}
     )
 
-  set_target_properties (mex_dream_arr_rect PROPERTIES
+  set_target_properties (mex_dream_arr_circ PROPERTIES
     CXX_STANDARD 14
     COMPILE_FLAGS "${DREAM_FFT_MEX_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
 
     LINK_FLAGS ${MEX_LD_FLAGS}
-    SUFFIX ".${Matlab_MEX_EXTENSION}" PREFIX "" OUTPUT_NAME "dream_arr_rect")
+    SUFFIX ".${Matlab_MEX_EXTENSION}" PREFIX "" OUTPUT_NAME "dream_arr_circ")
 
 endif (Matlab_FOUND)
 

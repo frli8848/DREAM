@@ -22,6 +22,8 @@
 *
 ***/
 
+#pragma once
+
 #include "dream.h"
 
 #define NO_FOCUS 1
@@ -37,8 +39,8 @@
 #define STEER_XY 4
 
 #define APOD_UD 0               // User defined
-#define APOD_TRIANGLE  1
-#define APOD_GAUSS  2
+#define APOD_TRIANGLE 1
+#define APOD_GAUSS 2
 #define APOD_RISED_COSINE 3
 #define APOD_SIMPLY_SUPPORTED 4
 #define APOD_CLAMPED 5
@@ -53,7 +55,7 @@ void center_pos(double *xs, double *ys, double *zs, int i, double *gx, double *g
 void max_dim_arr(double *xamax, double *y_max, double *r_max, double *gx, double *gy, double *gz, int num_elements);
 void focusing(int foc_type, double focal, double xs, double ys,
               double x_max, double y_max, double r_max, double cp, double *retfoc);
-void beamsteering(int ister, double theta, double phi, double xs, double ys,
+void beamsteering(int steer_type, double theta, double phi, double xs, double ys,
                   double x_max, double y_max, double r_max, double cp, double *retsteer);
 void apodization(int apod_type, int i, double  *apod_vec, double *weight,
                  double xs, double ys, double r_max, double param);

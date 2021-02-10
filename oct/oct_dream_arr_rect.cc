@@ -24,19 +24,18 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <signal.h>
+
 #include <thread>
 #include <mutex>
-#include <signal.h>
+
 #include "dream_arr_rect.h"
 #include "affinity.h"
 #include "dream_error.h"
+#include "arr_functions.h"
 
 #define SINGLE 0
 #define MULTIPLE 1
-
-#ifdef USE_FFTW
-#include "att.h"
-#endif
 
 //
 // Octave headers.
@@ -80,19 +79,18 @@ typedef struct
   double *delay;
   double v;
   double cp;
-  double alpha;
+  Attenuation *att;
   int num_elements;
   double *G;
-  int ifoc;
-  int ister;
+  int focus_met;
+  int steer_met;
   bool do_apod;
-  int apod_type;
-  double focal;
+  int apod_met;
+  double *focal;
   double *apod;
   double theta;
-  double fi;
+  double phi;
   double param;
-  double  *ud_focal;
   double *h;
   int err_level;
 } DATA;
@@ -123,17 +121,24 @@ void* smp_dream_arr_rect(void *arg)
   double a=D.a, b=D.b, dx=D.dx, dy=D.dy, dt=D.dt;
   octave_idx_type no=D.no, nt=D.nt;
   int    tmp_lev, err_level=D.err_level;
-  double *delay=D.delay, *ro=D.ro, v=D.v, cp=D.cp, alpha=D.alpha;
+  double *delay=D.delay, *ro=D.ro, v=D.v, cp=D.cp;
+  Attenuation *att = D.att;
   octave_idx_type start=D.start, stop=D.stop;
-  int    ifoc=D.ifoc, ister=D.ister, do_apod = D.do_apod,apod_type=D.apod_type;
-  double focal=D.focal, *apod=D.apod, theta=D.theta,fi=D.fi,param=D.param;
+  int    focus_met=D.focus_met, steer_met=D.steer_met, do_apod = D.do_apod,apod_met=D.apod_met;
+  double *focal=D.focal, *apod=D.apod, theta=D.theta,phi=D.phi,param=D.param;
   int    num_elements = D.num_elements;
-  double *gx,*gy,*gz;
-  double *ud_focal=D.ud_focal;
 
-  gx    = D.G;			// First column in the matrix.
-  gy    = gx + num_elements;		// Second column in the matrix.
-  gz    = gy + num_elements;		// Third column in the matrix.
+  double *gx = D.G;               // First column in the matrix.
+  double *gy = gx + num_elements; // Second column in the matrix.
+  double *gz = gy + num_elements; // Third column in the matrix.
+
+  // Buffers for the FFTs in the Attenuation
+  std::unique_ptr<FFTCVec> xc_vec;
+  std::unique_ptr<FFTVec> x_vec;
+  if (att) {
+    xc_vec = std::make_unique<FFTCVec>(nt);
+    x_vec = std::make_unique<FFTVec>(nt);
+  }
 
   // Let the thread finish and then catch the error.
   if (err_level == STOP)
@@ -141,97 +146,49 @@ void* smp_dream_arr_rect(void *arg)
   else
     tmp_lev = err_level;
 
-  if (ifoc != 6) {
+  for (n=start; n<stop; n++) {
+    xo = ro[n];
+    yo = ro[n+1*no];
+    zo = ro[n+2*no];
 
+    double dlay = 0.0;
     if (D.delay_method == SINGLE) {
-      for (n=start; n<stop; n++) {
-        xo = ro[n];
-        yo = ro[n+1*no];
-        zo = ro[n+2*no];
-
-        err = dream_arr_rect(xo,yo,zo,a,b,dx,dy,dt,nt,delay[0],v,cp,alpha,num_elements,gx,gy,gz,
-                             ifoc,focal,ister,theta,fi,apod,do_apod,apod_type,param,&h[n*nt],tmp_lev);
-
-        if (err != NONE || out_err ==  PARALLEL_STOP) {
-          tmp_err = err;
-          if (err == PARALLEL_STOP || out_err ==  PARALLEL_STOP)
-            break; // Jump out when a STOP error occurs.
-        }
-
-        if (!running) {
-          octave_stdout << "Thread for observation points " << start+1 << " -> " << stop << " bailing out!\n";
-          return(NULL);
-        }
-
-      }
+      dlay = delay[0];
     } else { // MULTIPLE delays.
-      for (n=start; n<stop; n++) {
-        xo = ro[n];
-        yo = ro[n+1*no];
-        zo = ro[n+2*no];
-
-        err = dream_arr_rect(xo,yo,zo,a,b,dx,dy,dt,nt,delay[n],v,cp,alpha,num_elements,gx,gy,gz,
-                             ifoc,focal,ister,theta,fi,apod,do_apod,apod_type,param,&h[n*nt],tmp_lev);
-
-        if (err != NONE || out_err ==  PARALLEL_STOP) {
-          tmp_err = err;
-          if (err == PARALLEL_STOP || out_err ==  PARALLEL_STOP)
-            break; // Jump out when a STOP error occurs.
-        }
-
-        if (!running) {
-          octave_stdout << "Thread for observation points " << start+1 << " -> " << stop << " bailing out!\n";
-          return(NULL);
-        }
-
-      }
+      dlay = delay[n];
     }
-  }
-  else { // User defined focusing.
 
-    if (D.delay_method == SINGLE) {
-      for (n=start; n<stop; n++) {
-        xo = ro[n];
-        yo = ro[n+1*no];
-        zo = ro[n+2*no];
+    if (att == nullptr) {
+      err = dream_arr_rect(xo, yo, zo,
+                           a, b,
+                           dx, dy, dt, nt,
+                           dlay, v, cp,
+                           num_elements, gx, gy, gz,
+                           focus_met, focal, steer_met, theta, phi, apod, do_apod, apod_met, param,
+                           &h[n*nt],tmp_lev);
 
-        err = dream_arr_rect_ud(xo,yo,zo,a,b,dx,dy,dt,nt,delay[0],v,cp,alpha,num_elements,gx,gy,gz,
-                                ifoc,ud_focal,ister,theta,fi,apod,do_apod,apod_type,param,&h[n*nt],tmp_lev);
-
-        if (err != NONE || out_err ==  PARALLEL_STOP) {
-          tmp_err = err;
-          if (err == PARALLEL_STOP || out_err ==  PARALLEL_STOP)
-            break; // Jump out when a STOP error occurs.
-        }
-
-        if (!running) {
-          octave_stdout << "Thread for observation points " << start+1 << " -> " << stop << " bailing out!\n";
-          return(NULL);
-        }
-
-      }
-    } else { // MULTIPLE delays.
-      for (n=start; n<stop; n++) {
-        xo = ro[n];
-        yo = ro[n+1*no];
-        zo = ro[n+2*no];
-
-        err = dream_arr_rect_ud(xo,yo,zo,a,b,dx,dy,dt,nt,delay[n],v,cp,alpha,num_elements,gx,gy,gz,
-                                ifoc,ud_focal,ister,theta,fi,apod,do_apod,apod_type,param,&h[n*nt],tmp_lev);
-
-        if (err != NONE || out_err ==  PARALLEL_STOP) {
-          tmp_err = err;
-          if (err == PARALLEL_STOP || out_err ==  PARALLEL_STOP)
-            break; // Jump out when a STOP error occurs.
-        }
-
-        if (!running) {
-          octave_stdout << "Thread for observation points " << start+1 << " -> " << stop << " bailing out!\n";
-          return(NULL);
-        }
-
-      }
+    } else {
+      err = dream_arr_rect(*att, *xc_vec, *x_vec,
+                           xo, yo, zo,
+                           a, b,
+                           dx, dy, dt, nt,
+                           dlay, v, cp,
+                           num_elements, gx, gy, gz,
+                           focus_met, focal, steer_met, theta, phi, apod, do_apod, apod_met, param,
+                           &h[n*nt],tmp_lev);
     }
+
+    if (err != NONE || out_err ==  PARALLEL_STOP) {
+      tmp_err = err;
+      if (err == PARALLEL_STOP || out_err ==  PARALLEL_STOP)
+        break; // Jump out when a STOP error occurs.
+    }
+
+    if (!running) {
+      octave_stdout << "Thread for observation points " << start+1 << " -> " << stop << " bailing out!\n";
+      return(NULL);
+    }
+
   }
 
   // Lock out_err for update, update it, and unlock.
@@ -407,19 +364,19 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
 {
   double *ro,*geom_par,*s_par,*m_par;
   double *steer_par;
-  char   apod_met[50],foc_met[50],steer_met[50];
+  char   apod_str[50], foc_str[50], steer_str[50];
   int    buflen;
   double a,b,dx,dy,dt;
   octave_idx_type nt,no,n;
   double param=0,*delay,v,cp,alpha;
   int    num_elements;
   double *G;
-  int    ifoc=0;
-  double focal=0, *ud_focal=nullptr;
-  int    ister=0;
-  double theta=0.0, fi=0.0, *apod=nullptr;
+  int    focus_met=0;
+  double *focal=nullptr;
+  int    steer_met=0;
+  double theta=0.0, phi=0.0, *apod=nullptr;
   bool   do_apod=false;
-  int    apod_type=0;
+  int    apod_met=0;
   double *h, *err_p;
   int    err_level=STOP, is_set = false;
   char   err_str[50];
@@ -533,8 +490,6 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   // Focusing parameters.
   //
 
-  //  ifoc = 1 - no foc, 2 foc x ,3 foc y, 4 foc xy (del=fsqrt(x*x+y*y)), 5 focx+focy.
-
   if (nrhs >= 7) {
 
     if (!mxIsChar(6)) {
@@ -544,39 +499,39 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
     std::string strin = args(6).string_value();
     buflen = strin.length();
     for (n=0; n<=buflen; n++ ) {
-      foc_met[n] = strin[n];
+      foc_str[n] = strin[n];
     }
-    foc_met[buflen] = '\0';
+    foc_str[buflen] = '\0';
 
     is_set = false;
 
-    if (!strcmp(foc_met,"off")) {
-      ifoc = 1;
+    if (!strcmp(foc_str,"off")) {
+      focus_met =  NO_FOCUS;
       is_set = true;
     }
 
-    if (!strcmp(foc_met,"x")) {
-      ifoc = 2;
+    if (!strcmp(foc_str,"x")) {
+      focus_met = FOCUS_X;
       is_set = true;
     }
 
-    if (!strcmp(foc_met,"y")) {
-      ifoc = 3;
+    if (!strcmp(foc_str,"y")) {
+      focus_met = FOCUS_Y;
       is_set = true;
     }
 
-    if (!strcmp(foc_met,"xy")) {
-      ifoc = 4;
+    if (!strcmp(foc_str,"xy")) {
+      focus_met = FOCUS_XY;
       is_set = true;
     }
 
-    if (!strcmp(foc_met,"x+y")) {
-      ifoc = 5;
+    if (!strcmp(foc_str,"x+y")) {
+      focus_met = FOCUS_X_Y;
       is_set = true;
     }
 
-    if (!strcmp(foc_met,"ud")) {
-      ifoc = 6;
+    if (!strcmp(foc_str,"ud")) {
+      focus_met = FOCUS_UD;
       is_set = true;
 
       if (mxGetM(7) * mxGetN(7) != num_elements ) {
@@ -585,7 +540,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
         return oct_retval;
       }
       const Matrix tmp4 = args(7).matrix_value();
-      ud_focal = (double*) tmp4.fortran_vec();
+      focal = (double*) tmp4.fortran_vec();
     }
     else {
 
@@ -596,7 +551,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
       }
       // Focal point (in mm).
       const Matrix tmp4 = args(7).matrix_value();
-      focal = (double) tmp4.fortran_vec()[0];
+      focal = (double*) tmp4.fortran_vec();
     }
 
     if (is_set == false) {
@@ -604,14 +559,13 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
       return oct_retval;
     }
 
-  } else
-    ifoc = 1;
+  } else {
+    focus_met = NO_FOCUS;
+  }
 
   //
   // Beam steering.
   //
-
-  // Beam steering: ister = 1 - no steering, 2 steer ph=ax ,3 steer y ph=by, 4 steer xy ph=ax+by.
 
   if (nrhs >= 9) {
 
@@ -622,30 +576,30 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
     std::string strin = args(8).string_value();
     buflen = strin.length();
     for ( n=0; n<=buflen; n++ ) {
-      steer_met[n] = strin[n];
+      steer_str[n] = strin[n];
     }
-    steer_met[buflen] = '\0';
+    steer_str[buflen] = '\0';
 
-    ister = 1;			// Default no steering
+    steer_met = NO_STEER;      // Default no steering
     is_set = false;
 
-    if (!strcmp(steer_met,"off")) {
-      ister = 1;
+    if (!strcmp(steer_str,"off")) {
+      steer_met = NO_STEER;
       is_set = true;
     }
 
-    if (!strcmp(steer_met,"x")) {
-      ister = 2;
+    if (!strcmp(steer_str,"x")) {
+      steer_met = STEER_X;
       is_set = true;
     }
 
-    if (!strcmp(steer_met,"y")) {
-      ister = 3;
+    if (!strcmp(steer_str,"y")) {
+      steer_met = STEER_Y;
       is_set = true;
     }
 
-    if (!strcmp(steer_met,"xy")) {
-      ister = 4;
+    if (!strcmp(steer_str,"xy")) {
+      steer_met = STEER_XY;
       is_set = true;
     }
 
@@ -662,17 +616,15 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
     const Matrix tmp5 = args(9).matrix_value();
     steer_par = (double*) tmp5.fortran_vec();
     theta  = steer_par[0];		// Angle in x-direction.
-    fi    = steer_par[1];		// Angle in y-direction.
+    phi    = steer_par[1];		// Angle in y-direction.
 
-  } else
-    ister = 1;
+  } else {
+    steer_met = NO_STEER;
+  }
 
   //
   // Apodization.
   //
-
-  // do_apod = false - no apodization, 2  apodization.
-  // apod_type = 0 - user defined, 1 traingle, 2 Gauss, 3 raised cosine, 4 simply supported, 5 clamped.
 
   if (nrhs >= 11) {
 
@@ -683,21 +635,21 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
     std::string strin = args(10).string_value();
     buflen = strin.length();
     for ( n=0; n<=buflen; n++ ) {
-      apod_met[n] = strin[n];
+      apod_str[n] = strin[n];
     }
-    apod_met[buflen] = '\0';
+    apod_str[buflen] = '\0';
 
     do_apod = false;			// default off.
     is_set = false;
 
-    if (!strcmp(apod_met,"off")) {
+    if (!strcmp(apod_str,"off")) {
       do_apod = false;
       is_set = true;
     }
 
-    if (!strcmp(apod_met,"ud")) {
+    if (!strcmp(apod_str,"ud")) {
       do_apod = true;
-      apod_type = 0;
+      apod_met = APOD_UD;
       is_set = true;
 
       // Vector of apodization weights.
@@ -709,33 +661,33 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
       apod = (double*) tmp6.fortran_vec();
     }
 
-    if (!strcmp(apod_met,"triangle")) {
+    if (!strcmp(apod_str,"triangle")) {
       do_apod = true;
-      apod_type = 1;
+      apod_met = APOD_TRIANGLE;
       is_set = true;
     }
 
-    if (!strcmp(apod_met,"gauss")) {
+    if (!strcmp(apod_str,"gauss")) {
       do_apod = true;
-      apod_type = 2;
+      apod_met = APOD_GAUSS;
       is_set = true;
     }
 
-    if (!strcmp(apod_met,"raised")) {
+    if (!strcmp(apod_str,"raised")) {
       do_apod = true;
-      apod_type = 3;
+      apod_met = APOD_RISED_COSINE;
       is_set = true;
     }
 
-    if (!strcmp(apod_met,"simply")) {
+    if (!strcmp(apod_str,"simply")) {
       do_apod = true;
-      apod_type = 4;
+      apod_met = APOD_SIMPLY_SUPPORTED;
       is_set = true;
     }
 
-    if (!strcmp(apod_met,"clamped")) {
+    if (!strcmp(apod_str,"clamped")) {
       do_apod = true;
-      apod_type = 5;
+      apod_met = APOD_CLAMPED;
       is_set = true;
     }
 
@@ -749,11 +701,13 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
       error("Argument 13 must be a scalar");
       return oct_retval;
     }
+
     const Matrix tmp7 = args(12).matrix_value();
     param = (double) tmp7.fortran_vec()[0];
-  }
-  else
+
+  } else {
     do_apod = false;
+  }
 
   //
   // Number of threads.
@@ -845,10 +799,12 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   out_err = NONE;
   running = true;
 
-#ifdef USE_FFTW
-  if (alpha != (double) 0.0)
-    att_init(nt,nthreads);
-#endif
+  // Check if we have attenuation
+  Attenuation att(nt, dt, alpha);
+  Attenuation *att_ptr = nullptr;
+  if (alpha > std::numeric_limits<double>::epsilon() ) {
+    att_ptr = &att;
+  }
 
   // Allocate local data.
   D = (DATA*) malloc(nthreads*sizeof(DATA));
@@ -881,19 +837,18 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
     D[thread_n].delay = delay;
     D[thread_n].v = v;
     D[thread_n].cp = cp;
-    D[thread_n].alpha = alpha;
+    D[thread_n].att = att_ptr;
     D[thread_n].num_elements = num_elements;
     D[thread_n].G = G;
-    D[thread_n].ifoc = ifoc;
-    D[thread_n].ister = ister;
+    D[thread_n].focus_met = focus_met;
+    D[thread_n].steer_met = steer_met;
     D[thread_n].do_apod = do_apod;
-    D[thread_n].apod_type = apod_type;
+    D[thread_n].apod_met = apod_met;
     D[thread_n].focal = focal;
     D[thread_n].apod = apod;
     D[thread_n].theta = theta;
-    D[thread_n].fi = fi;
+    D[thread_n].phi = phi;
     D[thread_n].param = param;
-    D[thread_n].ud_focal = ud_focal;
     D[thread_n].h = h;
     D[thread_n].err_level = err_level;
 
@@ -924,11 +879,6 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   if (signal(SIGINT, old_handler_keyint) == SIG_ERR) {
     printf("Couldn't register old SIGINT signal handler.\n");
   }
-
-#ifdef USE_FFTW
-  if (alpha != (double) 0.0)
-    att_close();
-#endif
 
   if (!running) {
     error("CTRL-C pressed!\n"); // Bail out.

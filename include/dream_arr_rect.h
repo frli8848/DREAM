@@ -24,21 +24,25 @@
 
 
 #include "dream.h"
+#include "att.h"
 
-/***
- *
- * Subroutine dream_arr_rec
- *
- ***/
+int dream_arr_rect(double xo, double yo, double zo,
+                   double a, double b,
+                   double dx, double dy, double dt,
+                   dream_idx_type nt, double delay, double v, double cp,
+                   int num_elements, double *gx, double *gy, double *gz,
+                   int foc_type, double *focal,
+                   int ister, double theta, double phi,
+                   double *apod, bool do_apod, int apod_type, double param,
+                   double *h, int err_level);
 
-int dream_arr_rect(double xo, double yo, double zo, double a, double b, double dx, double dy, double dt,
-                   dream_idx_type nt, double delay, double v, double cp, double alpha, int num_elements,
-                   double *gx, double *gy, double *gz, int foc_type, double focal, int ister,
-                   double theta, double phi, double *apod, bool do_apod, int apod_type, double param, double *ha,
-                   int err_level);
-
-int dream_arr_rect_ud(double xo, double yo, double zo, double a, double b, double dx, double dy, double dt,
-                      dream_idx_type nt, double delay, double v, double cp, double alpha, int num_elements,
-                      double *gx, double *gy, double *gz, int foc_type, double *focal, int ister,
-                      double theta, double phi, double *apod, bool do_apod, int apod_type, double param, double *ha,
-                      int err_level);
+int dream_arr_rect(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
+                   double xo, double yo, double zo,
+                   double a, double b,
+                   double dx, double dy, double dt,
+                   dream_idx_type nt, double delay, double v, double cp,
+                   int num_elements, double *gx, double *gy, double *gz,
+                   int foc_type, double *focal,
+                   int ister, double theta, double phi,
+                   double *apod, bool do_apod, int apod_type, double param,
+                   double *h, int err_level);

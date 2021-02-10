@@ -91,13 +91,13 @@ void max_dim_arr(double *x_max, double *y_max, double *ramax,
  *
  * focusing
  *
- * Computes the focusing delay, retfoc, for point (xs,ys) on the
+ * Computes the focusing delay, foc_delay, for point (xs,ys) on the
  * transducer surface (?).
  *
  ***/
 
 void focusing(int foc_type, double focal, double xs, double ys,
-              double x_max, double y_max, double ramax, double cp, double *retfoc)
+              double x_max, double y_max, double ramax, double cp, double *foc_delay)
 {
   double diff, rmax, retx, rety;
 
@@ -113,19 +113,19 @@ void focusing(int foc_type, double focal, double xs, double ys,
   case FOCUS_X:
     rmax = sqrt(x_max*x_max + focal*focal);
     diff = rmax - sqrt(xs*xs + focal*focal);
-    *retfoc = diff*1000/cp;
+    *foc_delay = diff*1000/cp;
     break;
 
   case FOCUS_Y:
     rmax = sqrt(y_max*y_max + focal*focal);
     diff  = rmax - sqrt(ys*ys + focal*focal);
-    *retfoc = diff*1000/cp;
+    *foc_delay = diff*1000/cp;
     break;
 
   case FOCUS_XY:
     rmax = sqrt(ramax*ramax + focal*focal);
     diff = rmax - sqrt(xs*xs + ys*ys + focal*focal);
-    *retfoc = diff*1000/cp;
+    *foc_delay = diff*1000/cp;
     break;
 
   case FOCUS_X_Y:
@@ -133,11 +133,11 @@ void focusing(int foc_type, double focal, double xs, double ys,
     retx = sqrt(xs*xs + focal*focal);
     rety = sqrt(ys*ys + focal*focal);
     diff = rmax - (retx + rety);
-    *retfoc = diff*1000/cp;
+    *foc_delay = diff*1000/cp;
     break;
 
   case FOCUS_UD:
-    *retfoc = focal; // Here focal is the user defined time delay in [us] (not the focal depth).
+    *foc_delay = focal; // Here focal is the user defined time delay in [us] (not the focal depth).
     break;
 
   default:
@@ -156,19 +156,17 @@ void focusing(int foc_type, double focal, double xs, double ys,
  *
  ***/
 
-void beamsteering(int ister, double theta, double phi, double xs, double ys,
+void beamsteering(int steer_type, double theta, double phi, double xs, double ys,
                   double x_max, double y_max, double ramax, double cp, double *retsteer)
 {
   double diff, rmax, sinx, siny, retsteerx, retsteery;
-
-  double pi = 4.0 * atan(1.0);
-  double pii = pi / (double) 180.0;
+  double pii = M_PI / (double) 180.0;
 
   //
-  // ister = 1 No steering, 2 Steer x ,3 Steer y, 4 Steer xy.
+  // steer_type = 1 No steering, 2 Steer x ,3 Steer y, 4 Steer xy.
   //
 
-  switch(ister) {
+  switch(steer_type) {
 
   case 0:
   case NO_STEER:
@@ -225,7 +223,6 @@ void beamsteering(int ister, double theta, double phi, double xs, double ys,
 void apodization(int apod_type, int i, double *apod_vec, double *weight,
                  double xs, double ys, double ramax, double param)
 {
-  double pi = 4.0 * atan(1.0);
   double r = sqrt(xs*xs + ys*ys);
 
   switch(apod_type) {
@@ -243,7 +240,7 @@ void apodization(int apod_type, int i, double *apod_vec, double *weight,
     break;
 
   case APOD_RISED_COSINE:
-    *weight = param + cos(r*pi/ramax);
+    *weight = param + cos(r*M_PI/ramax);
     break;
 
   case APOD_SIMPLY_SUPPORTED:

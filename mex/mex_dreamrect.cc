@@ -286,11 +286,11 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Get number of CPU cores (including hypethreading, C++11)
   nthreads = std::thread::hardware_concurrency();
 
-  // Read OMP_NUM_THREADS env var
-  if(const char* env_p = std::getenv("OMP_NUM_THREADS")) {
-    unsigned int omp_threads = std::stoul(env_p);
-    if (omp_threads < nthreads) {
-      nthreads = omp_threads;
+  // Read DREAM_NUM_THREADS env var
+  if(const char* env_p = std::getenv("DREAM_NUM_THREADS")) {
+    unsigned int dream_threads = std::stoul(env_p);
+    if (dream_threads < nthreads) {
+      nthreads = dream_threads;
     }
   }
 

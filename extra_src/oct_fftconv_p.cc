@@ -558,10 +558,10 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   // Get number of CPU cores (including hypethreading, C++11)
   nthreads = std::thread::hardware_concurrency();
 
-  if(const char* env_p = std::getenv("OMP_NUM_THREADS")) {
-    int omp_threads = std::stoul(env_p);
-    if (omp_threads < nthreads) {
-      nthreads = omp_threads;
+  if (const char* env_p = std::getenv("DREAM_NUM_THREADS")) {
+    int dream_threads = std::stoul(env_p);
+    if (dream_threads < nthreads) {
+      nthreads = dream_threads;
     }
   }
 
@@ -694,8 +694,9 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
       // Wait for all threads to finish.
       //
 
-      for (thread_n = 0; thread_n < nthreads; thread_n++)
+      for (thread_n = 0; thread_n < nthreads; thread_n++) {
         threads[thread_n].join();
+      }
 
       // Free memory.
       if (D) {

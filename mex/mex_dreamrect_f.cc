@@ -433,7 +433,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   if (alpha > std::numeric_limits<double>::epsilon() ) {
     att_ptr = &att;
 
-    // FIXME: Force to tun in the main thread when we have nonzero attenuation
+    // FIXME: Force to run in the main thread when we have nonzero attenuation
     // due to Matlab FFT threading issues.
     nthreads = 1;
   }

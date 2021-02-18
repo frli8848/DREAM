@@ -638,7 +638,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   //
 
   if (nlhs == 2) {
-    Matrix err_mat(nt, no);
+    Matrix err_mat(1, 1);
     err_p = err_mat.fortran_vec();
     err_p[0] = (double) out_err;
     oct_retval.append(err_mat);

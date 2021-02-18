@@ -559,7 +559,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       dream_err_msg("Argument 14 must be a string");
     }
 
-    buflen = (mxGetM(prhs[13]) * mxGetN(prhs[143) * sizeof(mxChar)) + 1;
+    buflen = (mxGetM(prhs[13]) * mxGetN(prhs[13]) * sizeof(mxChar)) + 1;
     mxGetString(prhs[13],err_str,buflen);
 
     set = false;

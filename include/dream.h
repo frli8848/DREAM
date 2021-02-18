@@ -34,6 +34,11 @@
 #include <octave-config.h>
 typedef octave_idx_type dream_idx_type;
 
+// Macros
+#define mxGetM(N)   args(N).matrix_value().rows()
+#define mxGetN(N)   args(N).matrix_value().cols()
+#define mxIsChar(N) args(N).is_string()
+
 #else
 
 #include <stdlib.h>

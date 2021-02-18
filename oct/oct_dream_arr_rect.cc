@@ -43,15 +43,7 @@
 
 #include <octave/oct.h>
 
-//
-// Macros
-//
 
-#define mxGetM(N)   args(N).matrix_value().rows()
-#define mxGetN(N)   args(N).matrix_value().cols()
-#define mxIsChar(N) args(N).is_string()
-
-//
 // Globals
 //
 
@@ -65,22 +57,22 @@ int running;
 
 typedef struct
 {
-  octave_idx_type no;
-  octave_idx_type start;
-  octave_idx_type stop;
+  dream_idx_type no;
+  dream_idx_type start;
+  dream_idx_type stop;
   double *ro;
   double a;
   double b;
   double dx;
   double dy;
   double dt;
-  octave_idx_type nt;
+  dream_idx_type nt;
   int delay_method;
   double *delay;
   double v;
   double cp;
   Attenuation *att;
-  int num_elements;
+  dream_idx_type num_elements;
   double *G;
   int focus_met;
   int steer_met;
@@ -95,12 +87,12 @@ typedef struct
   int err_level;
 } DATA;
 
-
 typedef void (*sighandler_t)(int);
 
 //
 // Function prototypes.
 //
+
 void* smp_dream_arr_rect(void *arg);
 void sighandler(int signum);
 void sig_abrt_handler(int signum);
@@ -114,19 +106,19 @@ void sig_keyint_handler(int signum);
 
 void* smp_dream_arr_rect(void *arg)
 {
-  int tmp_err = NONE, err = NONE, n;
+  int tmp_err = NONE, err = NONE;
   DATA D = *(DATA *)arg;
   double xo, yo, zo;
   double *h = D.h;
   double a=D.a, b=D.b, dx=D.dx, dy=D.dy, dt=D.dt;
-  octave_idx_type no=D.no, nt=D.nt;
+  dream_idx_type n, no=D.no, nt=D.nt;
   int    tmp_lev, err_level=D.err_level;
   double *delay=D.delay, *ro=D.ro, v=D.v, cp=D.cp;
   Attenuation *att = D.att;
-  octave_idx_type start=D.start, stop=D.stop;
+  dream_idx_type start=D.start, stop=D.stop;
   int    focus_met=D.focus_met, steer_met=D.steer_met, do_apod = D.do_apod,apod_met=D.apod_met;
   double *focal=D.focal, *apod=D.apod, theta=D.theta,phi=D.phi,param=D.param;
-  int    num_elements = D.num_elements;
+  dream_idx_type num_elements = D.num_elements;
 
   double *gx = D.G;               // First column in the matrix.
   double *gy = gx + num_elements; // Second column in the matrix.
@@ -165,7 +157,7 @@ void* smp_dream_arr_rect(void *arg)
                            dlay, v, cp,
                            num_elements, gx, gy, gz,
                            focus_met, focal, steer_met, theta, phi, apod, do_apod, apod_met, param,
-                           &h[n*nt],tmp_lev);
+                           &h[n*nt], tmp_lev);
 
     } else {
       err = dream_arr_rect(*att, *xc_vec, *x_vec,
@@ -175,7 +167,7 @@ void* smp_dream_arr_rect(void *arg)
                            dlay, v, cp,
                            num_elements, gx, gy, gz,
                            focus_met, focal, steer_met, theta, phi, apod, do_apod, apod_met, param,
-                           &h[n*nt],tmp_lev);
+                           &h[n*nt], tmp_lev);
     }
 
     if (err != NONE || out_err ==  PARALLEL_STOP) {
@@ -358,18 +350,16 @@ An error message is printed and the program is stopped.\n\
 dream_arr_rect is an oct-function that is a part of the DREAM Toolbox available at\n\
 @url{http://www.signal.uu.se/Toolbox/dream/}.\n\
 \n\
-Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
+Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
 @seealso {dreamrect}\n\
 @end deftypefn")
 {
-  double *ro,*geom_par,*s_par,*m_par;
+  double *ro,*geom_par, *s_par, *m_par;
   double *steer_par;
-  char   apod_str[50], foc_str[50], steer_str[50];
-  int    buflen;
-  double a,b,dx,dy,dt;
-  octave_idx_type nt,no,n;
-  double param=0,*delay,v,cp,alpha;
-  int    num_elements;
+  double a, b, dx, dy, dt;
+  dream_idx_type nt, no;
+  double param=0.0, *delay, v, cp, alpha;
+  dream_idx_type num_elements;
   double *G;
   int    focus_met=0;
   double *focal=nullptr;
@@ -379,9 +369,8 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   int    apod_met=0;
   double *h, *err_p;
   int    err_level=STOP, is_set = false;
-  char   err_str[50];
   DATA   *D;
-  octave_idx_type start, stop;
+  dream_idx_type start, stop;
   std::thread *threads;
   unsigned int thread_n, nthreads;
   sighandler_t old_handler, old_handler_abrt, old_handler_keyint;
@@ -426,8 +415,8 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   }
   const Matrix tmp1 = args(1).matrix_value();
   geom_par = (double*) tmp1.fortran_vec();
-  a = geom_par[0];		// x-width of the transducer.
-  b  = geom_par[1];		// y-width of the transducer.
+  a = geom_par[0];		// x-width of the array element.
+  b = geom_par[1];		// y-width of the aray element.
 
   //
   // Grid function (position vectors of the elements).
@@ -438,6 +427,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
     error("Argument 3  must a (number of array elements) x 3 matrix!");
     return oct_retval;
   }
+
   const Matrix tmp2 = args(2).matrix_value();
   G = (double*) tmp2.fortran_vec(); // First column in the matrix.
   //gy    = gx + num_elements;		// Second column in the matrix.
@@ -457,7 +447,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   dx    = s_par[0];		// Spatial x discretization size.
   dy    = s_par[1];		// Spatial dy iscretization size.
   dt    = s_par[2];		// Temporal discretization size (= 1/sampling freq).
-  nt    = (octave_idx_type) s_par[3];	// Length of SIR.
+  nt    = (dream_idx_type) s_par[3];	// Length of SIR.
 
   //
   // Start point of impulse response vector ([us]).
@@ -468,6 +458,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
     error("Argument 5 must be a scalar or a vector with a length equal to the number of observation points!");
     return oct_retval;
   }
+
   const Matrix tmp4 = args(4).matrix_value();
   delay = (double*) tmp4.fortran_vec();
 
@@ -475,11 +466,12 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   // Material parameters
   //
 
- // Check that arg 6 is a 3 element vectora
+  // Check that arg 6 is a 3 element vector
   if (!((mxGetM(5)==3 && mxGetN(5)==1) || (mxGetM(5)==1 && mxGetN(5)==3))) {
     error("Argument 6 must be a vector of length 3!");
     return oct_retval;
   }
+
   const Matrix tmp5 = args(5).matrix_value();
   m_par = (double*) tmp5.fortran_vec();
   v     = m_par[0]; // Normal velocity of transducer surface.
@@ -496,41 +488,37 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
       error("Argument 7 must be a string");
       return oct_retval;
     }
-    std::string strin = args(6).string_value();
-    buflen = strin.length();
-    for (n=0; n<=buflen; n++ ) {
-      foc_str[n] = strin[n];
-    }
-    foc_str[buflen] = '\0';
+
+    std::string foc_str = args(6).string_value();
 
     is_set = false;
 
-    if (!strcmp(foc_str,"off")) {
-      focus_met =  NO_FOCUS;
+    if (foc_str == "off") {
+      focus_met = NO_FOCUS;
       is_set = true;
     }
 
-    if (!strcmp(foc_str,"x")) {
+    if (foc_str == "x") {
       focus_met = FOCUS_X;
       is_set = true;
     }
 
-    if (!strcmp(foc_str,"y")) {
+    if (foc_str == "y") {
       focus_met = FOCUS_Y;
       is_set = true;
     }
 
-    if (!strcmp(foc_str,"xy")) {
+    if (foc_str == "xy") {
       focus_met = FOCUS_XY;
       is_set = true;
     }
 
-    if (!strcmp(foc_str,"x+y")) {
+    if (foc_str == "x+y") {
       focus_met = FOCUS_X_Y;
       is_set = true;
     }
 
-    if (!strcmp(foc_str,"ud")) {
+    if (foc_str == "ud") {
       focus_met = FOCUS_UD;
       is_set = true;
 
@@ -539,19 +527,13 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
         error("delays must have the same length as the number of array elements.!");
         return oct_retval;
       }
-      const Matrix tmp4 = args(7).matrix_value();
-      focal = (double*) tmp4.fortran_vec();
-    }
-    else {
 
+    } else {
       // Check that arg 8 is a scalar.
       if (mxGetM(7) * mxGetN(7) !=1 ) {
-        error("Argument 8  must be a scalar!");
+        error("Argument 8 must be a scalar!");
         return oct_retval;
       }
-      // Focal point (in mm).
-      const Matrix tmp4 = args(7).matrix_value();
-      focal = (double*) tmp4.fortran_vec();
     }
 
     if (is_set == false) {
@@ -563,6 +545,9 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
     focus_met = NO_FOCUS;
   }
 
+  const Matrix tmp7 = args(7).matrix_value();
+  focal = (double*) tmp7.fortran_vec();
+
   //
   // Beam steering.
   //
@@ -573,32 +558,28 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
       error("Argument 9 must be a string");
       return oct_retval;
     }
-    std::string strin = args(8).string_value();
-    buflen = strin.length();
-    for ( n=0; n<=buflen; n++ ) {
-      steer_str[n] = strin[n];
-    }
-    steer_str[buflen] = '\0';
+
+    std::string steer_str = args(8).string_value();
 
     steer_met = NO_STEER;      // Default no steering
     is_set = false;
 
-    if (!strcmp(steer_str,"off")) {
+    if (steer_str == "off") {
       steer_met = NO_STEER;
       is_set = true;
     }
 
-    if (!strcmp(steer_str,"x")) {
+    if (steer_str == "x") {
       steer_met = STEER_X;
       is_set = true;
     }
 
-    if (!strcmp(steer_str,"y")) {
+    if (steer_str == "y") {
       steer_met = STEER_Y;
       is_set = true;
     }
 
-    if (!strcmp(steer_str,"xy")) {
+    if (steer_str == "xy") {
       steer_met = STEER_XY;
       is_set = true;
     }
@@ -613,8 +594,8 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
       dream_err_msg("Argument 10 must be a vector of length 2!");
       return oct_retval;
     }
-    const Matrix tmp5 = args(9).matrix_value();
-    steer_par = (double*) tmp5.fortran_vec();
+    const Matrix tmp9 = args(9).matrix_value();
+    steer_par = (double*) tmp9.fortran_vec();
     theta  = steer_par[0];		// Angle in x-direction.
     phi    = steer_par[1];		// Angle in y-direction.
 
@@ -632,22 +613,18 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
       error("Argument 11 must be a string");
       return oct_retval;
     }
-    std::string strin = args(10).string_value();
-    buflen = strin.length();
-    for ( n=0; n<=buflen; n++ ) {
-      apod_str[n] = strin[n];
-    }
-    apod_str[buflen] = '\0';
+
+    std::string apod_str = args(10).string_value();
 
     do_apod = false;			// default off.
     is_set = false;
 
-    if (!strcmp(apod_str,"off")) {
+    if (apod_str == "off") {
       do_apod = false;
       is_set = true;
     }
 
-    if (!strcmp(apod_str,"ud")) {
+    if (apod_str == "ud") {
       do_apod = true;
       apod_met = APOD_UD;
       is_set = true;
@@ -657,35 +634,35 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
         error("The length of argument 12 (apodization vector) must be the same as the number of array elements!");
         return oct_retval;
       }
-      const Matrix tmp6 = args(11).matrix_value();
-      apod = (double*) tmp6.fortran_vec();
+      const Matrix tmp11 = args(11).matrix_value();
+      apod = (double*) tmp11.fortran_vec(); // FIXME this goes out of scope!
     }
 
-    if (!strcmp(apod_str,"triangle")) {
+    if (apod_str == "triangle") {
       do_apod = true;
       apod_met = APOD_TRIANGLE;
       is_set = true;
     }
 
-    if (!strcmp(apod_str,"gauss")) {
+    if (apod_str == "gauss") {
       do_apod = true;
       apod_met = APOD_GAUSS;
       is_set = true;
     }
 
-    if (!strcmp(apod_str,"raised")) {
+    if (apod_str == "raised") {
       do_apod = true;
       apod_met = APOD_RISED_COSINE;
       is_set = true;
     }
 
-    if (!strcmp(apod_str,"simply")) {
+    if (apod_str == "simply") {
       do_apod = true;
       apod_met = APOD_SIMPLY_SUPPORTED;
       is_set = true;
     }
 
-    if (!strcmp(apod_str,"clamped")) {
+    if (apod_str == "clamped") {
       do_apod = true;
       apod_met = APOD_CLAMPED;
       is_set = true;
@@ -702,8 +679,8 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
       return oct_retval;
     }
 
-    const Matrix tmp7 = args(12).matrix_value();
-    param = (double) tmp7.fortran_vec()[0];
+    const Matrix tmp12 = args(12).matrix_value();
+    param = (double) tmp12.fortran_vec()[0]; // FIXME this goes out of scope!
 
   } else {
     do_apod = false;
@@ -740,25 +717,19 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
       return oct_retval;
     }
 
-    std::string strin = args(13).string_value();
-    buflen = strin.length();
-    for (int n=0; n<=buflen; n++ ) {
-      err_str[n] = strin[n];
-    }
-    err_str[buflen] = '\0';
+    std::string err_str = args(13).string_value();
 
-
-    if (!strcmp(err_str,"ignore")) {
+    if (err_str == "ignore") {
       err_level = IGNORE;
       is_set = true;
     }
 
-    if (!strcmp(err_str,"warn")) {
+    if (err_str == "warn") {
       err_level = WARN;
       is_set = true;
     }
 
-    if (!strcmp(err_str,"stop")) {
+    if (err_str == "stop") {
       err_level = STOP;
       is_set = true;
     }
@@ -767,10 +738,10 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
       error("Unknown error level!");
       return oct_retval;
     }
-  }
-  else
-    err_level = STOP; // Default.
 
+  } else {
+    err_level = STOP; // Default.
+  }
 
   // Create an output matrix for the impulse response
   Matrix h_mat(nt, no);
@@ -852,14 +823,22 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
     D[thread_n].h = h;
     D[thread_n].err_level = err_level;
 
-    // Start the threads.
-    threads[thread_n] = std::thread(smp_dream_arr_rect, &D[thread_n]); // Start the threads.
-    set_dream_thread_affinity(thread_n, nthreads, threads);
+    if (nthreads > 1) {
+      // Start the threads.
+      threads[thread_n] = std::thread(smp_dream_arr_rect, &D[thread_n]); // Start the threads.
+      set_dream_thread_affinity(thread_n, nthreads, threads);
+    } else {
+      smp_dream_arr_rect(&D[0]);
+    }
+
   }
 
   // Wait for all threads to finish.
-  for (thread_n = 0; thread_n < nthreads; thread_n++)
-    threads[thread_n].join();
+  if (nthreads > 1) {
+    for (thread_n = 0; thread_n < nthreads; thread_n++) {
+      threads[thread_n].join();
+    }
+  }
 
   // Free memory.
   free((void*) D);

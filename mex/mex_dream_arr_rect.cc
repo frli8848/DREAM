@@ -553,13 +553,14 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Error reporting.
   //
 
-  if (nrhs == 15) {
+  if (nrhs == 14) {
 
-    if (!mxIsChar(prhs[14]))
-      dream_err_msg("Argument 15 must be a string");
+    if (!mxIsChar(prhs[13])) {
+      dream_err_msg("Argument 14 must be a string");
+    }
 
-    buflen = (mxGetM(prhs[14]) * mxGetN(prhs[14]) * sizeof(mxChar)) + 1;
-    mxGetString(prhs[14],err_str,buflen);
+    buflen = (mxGetM(prhs[13]) * mxGetN(prhs[143) * sizeof(mxChar)) + 1;
+    mxGetString(prhs[13],err_str,buflen);
 
     set = false;
 

@@ -24,21 +24,27 @@
 
 
 #include "dream.h"
+#include "att.h"
 
-/***
- *
- * Header file for array with circular elements.
- *
- ***/
+int dream_arr_circ(double xo, double yo, double zo,
+                   double R,
+                   double dx, double dy, double dt,
+                   dream_idx_type nt, double delay,
+                   double v, double cp,
+                   int  num_elements, double *gx, double *gy, double *gz,
+                   int foc_type, double *focal,
+                   int steer_type, double theta, double phi,
+                   double *apod, bool do_apod, int apod_type, double param,
+                   double *ha,int err_level);
 
-int dream_arr_circ(double xo, double yo, double zo, double r, double dx, double dy, double dt, dream_idx_type nt,
-                   double delay, double v, double cp, double alpha, int  num_elements,
-                   double *gx, double *gy, double *gz, int foc_type, double focal,
-                   int ister, double theta, double phi, double *apod, bool do_apod,
-                   int apod_type, double param, double *ha,int err_level);
-
-int dream_arr_circ_ud(double xo, double yo, double zo, double r, double dx, double dy, double dt, dream_idx_type nt,
-                      double delay, double v, double cp, double alpha, int  num_elements,
-                      double *gx, double *gy, double *gz, int foc_type, double *focal,
-                      int ister, double theta, double phi, double *apod, bool do_ipod,
-                      int apod_type, double param, double *ha,int err_level);
+int dream_arr_circ(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
+                   double xo, double yo, double zo,
+                   double R,
+                   double dx, double dy, double dt,
+                   dream_idx_type nt, double delay,
+                   double v, double cp,
+                   int  num_elements, double *gx, double *gy, double *gz,
+                   int foc_type, double *focal,
+                   int steer_type, double theta, double phi,
+                   double *apod, bool do_apod, int apod_type, double param,
+                   double *ha,int err_level);

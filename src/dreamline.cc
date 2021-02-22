@@ -40,28 +40,25 @@ int dreamline(double xo, double yo, double zo, double a,
   dream_idx_type i, it;
   double t;
   double ai;
-  double ds, pi, r;
+  double r;
   int    err=NONE;
-  double x;
   double xsmax = a/2.0;
   double xsmin = -a/2.0;
 
-  pi = 4.0 * atan(1.0);
   // dy = width;
-  ds = dx * dy;
+  double ds = dx * dy;
 
   for (i = 0; i < nt; i++) {
     h[i] = (double) 0.0 ;
   }
 
-  x = xsmin + dx / 2.0;
+  double xs = xsmin + dx / 2.0;
 
-  while (x <= xsmax) {
+  while (xs <= xsmax) {
 
-    //distance(xo, yo, zo, x, ys, zs, &r);
-    r = sqrt((xo-x)*(xo-x) + yo*yo + zo*zo);
+    r = sqrt((xo-xs)*(xo-xs) + yo*yo + zo*zo);
 
-    ai = v * ds / (2*pi * r);
+    ai = v * ds / (2*M_PI * r);
     ai /= dt;
     ai *= 1000.0;     // Convert to SI units.
 
@@ -81,7 +78,7 @@ int dreamline(double xo, double yo, double zo, double a,
       if ( (err_level == PARALLEL_STOP) || (err_level == STOP) )
         return err; // Bail out.
     }
-    x += dx;
+    xs += dx;
   }
 
   return err;
@@ -96,28 +93,25 @@ int dreamline(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
   dream_idx_type i, it;
   double t;
   double ai;
-  double ds, pi, r;
+  double r;
   int    err=NONE;
-  double x;
   double xsmax = a/2.0;
   double xsmin = -a/2.0;
 
-  pi = 4.0 * atan(1.0);
   // dy = width;
-  ds = dx * dy;
+  double ds = dx * dy;
 
   for (i = 0; i < nt; i++) {
     h[i] = (double) 0.0 ;
   }
 
-  x = xsmin + dx / 2.0;
+  double xs = xsmin + dx / 2.0;
 
-  while (x <= xsmax) {
+  while (xs <= xsmax) {
 
-    //distance(xo, yo, zo, x, ys, zs, &r);
-    r = sqrt((xo-x)*(xo-x) + yo*yo + zo*zo);
+    r = sqrt((xo-xs)*(xo-xs) + yo*yo + zo*zo);
 
-    ai = v * ds / (2*pi * r);
+    ai = v * ds / (2*M_PI * r);
     ai /= dt;
     ai *= 1000.0;     // Convert to SI units.
 
@@ -139,7 +133,7 @@ int dreamline(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
       if ( (err_level == PARALLEL_STOP) || (err_level == STOP) )
         return err; // Bail out.
     }
-    x += dx;
+    xs += dx;
   }
 
   return err;

@@ -49,12 +49,12 @@ int dreamcirc_f(double xo, double yo, double zo,
                 int err_level)
 {
   dream_idx_type i, it;
-  double t, ai, ds, r;
+  double t, ai, r;
   double xsmin, ysmin, xsmax, ysmax;
-  double x, y, foc_delay;
+  double foc_delay;
   int err = NONE;
 
-  ds = dx * dy;
+  double ds = dx * dy;
 
   ysmin = -R;
   ysmax =  R;
@@ -63,27 +63,25 @@ int dreamcirc_f(double xo, double yo, double zo,
     h[i] = 0.0 ;
   }
 
-  y = ysmin + dy/2;
-  while (y <= ysmax) {
+  double ys = ysmin + dy/2;
+  while (ys <= ysmax) {
 
-    //xlimit_circ_f(y, R, xs, ys, &xsmin, &xsmax);
-    double rs = sqrt(R*R - y*y);
+    double rs = sqrt(R*R - ys*ys);
     xsmin = -rs;
     xsmax = rs;
 
-    double ry = yo - y;
+    double ry = yo - ys;
 
-    x = xsmin + dx/2;
-    while (x <= xsmax) {
+    double xs = xsmin + dx/2;
+    while (xs <= xsmax) {
 
       // Compute the distance (length) from an observation point (xo,yo,zo)
       // to a point (x,y) on the transducer surface.
-      //distance_circ_f(xo, yo, zo, x, y, &r);
-      double rx = xo - x;
+      double rx = xo - xs;
       r = sqrt(rx*rx + ry*ry + zo*zo);
 
       foc_delay = focusing_circ_f(foc_type, focal,
-                                  x, y,
+                                  xs, ys,
                                   r,
                                   cp);
 
@@ -110,9 +108,9 @@ int dreamcirc_f(double xo, double yo, double zo,
         }
       }
 
-      x += dx;
+      xs += dx;
     }
-    y += dy;
+    ys += dy;
   }
 
   return err;
@@ -128,11 +126,11 @@ int dreamcirc_f(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
 {
   dream_idx_type i, it;
   double t, ai;
-  double xsmin, ysmin, xsmax, ysmax, ds, r;
-  double x, y, foc_delay;
+  double xsmin, ysmin, xsmax, ysmax, r;
+  double foc_delay;
   int err = NONE;
 
-  ds = dx * dy;
+  double ds = dx * dy;
   ysmin = -R;
   ysmax =  R;
 
@@ -140,27 +138,26 @@ int dreamcirc_f(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
     h[i] = 0.0 ;
   }
 
-  y = ysmin + dy/2;
-  while (y <= ysmax) {
+  double ys = ysmin + dy/2;
+  while (ys <= ysmax) {
 
     // Compute the x-axis integration limits.
-    //xlimit_circ_f(y, R, xs, ys, &xsmin, &xsmax);
-    double rs = sqrt(R*R - y*y);
+    double rs = sqrt(R*R - ys*ys);
     xsmin = -rs;
     xsmax = rs;
 
-    double ry = yo - y;
+    double ry = yo - ys;
 
-    x = xsmin + dx/2;
-    while (x <= xsmax) {
+    double xs = xsmin + dx/2;
+    while (xs <= xsmax) {
 
       // Compute the distance (length) from an observation point (xo,yo,zo)
-      // to a point (x,y) on the transducer surface.
-      double rx = xo - x;
+      // to a point (xs,ys) on the transducer surface.
+      double rx = xo - xs;
       r = sqrt(rx*rx + ry*ry + zo*zo);
 
       foc_delay = focusing_circ_f(foc_type, focal,
-                                  x, y,
+                                  xs, ys,
                                   r,
                                   cp);
 
@@ -186,9 +183,9 @@ int dreamcirc_f(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
         }
       }
 
-      x += dx;
+      xs += dx;
     }
-    y += dy;
+    ys += dy;
   }
 
   return err;

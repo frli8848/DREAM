@@ -30,33 +30,6 @@
 
 /***
  *
- *  xlimit_circ
- *
- *
- *  Computes the x-axis integration limits
- ***/
-
-/*
-//inline MSVC don't like this?!
-void xlimit_circ(double yi,
-            double r,
-            double x,
-            double y,
-            double *xsmin,
-            double *xsmax)
-{
-  double rs;
-
-  rs = sqrt(r*r - (y-yi)*(y-yi));
-  *xsmin = -rs + x;
-  *xsmax = rs + x;
-
-  return;
-};
-*/
-
-/***
- *
  *  dreamcirc
  *
  * Computes the spatial impulse response of a circular aperture.
@@ -74,36 +47,31 @@ int dreamcirc(double xo, double yo, double zo,
 {
   dream_idx_type i, it;
   double t, ai;
-  double xsmin, ysmin, xsmax, ysmax, ds, r;
-  double x, y, rx, ry;
-  double xs = 0.0;
-  double ys = 0.0;
-  double rs = 0.0;
+  double xsmin, ysmin, xsmax, ysmax, r;
+  double rx, ry;
   int    err = NONE;
 
-  ds = dx * dy;
-  ysmin = -R + ys;
-  ysmax =  R + ys;
+  double ds = dx * dy;
+  ysmin = -R;
+  ysmax =  R;
 
   for (i = 0; i < nt; i++) {
     h[i] = (double) 0.0 ;
   }
 
-  y = ysmin + dy/2;
-  while (y <= ysmax) {
+  double ys = ysmin + dy/2;
+  while (ys <= ysmax) {
 
-    //xlimit_circ(y, r, xs, ys, &xsmin, &xsmax);
-    rs = sqrt(R*R - (ys-y)*(ys-y));
-    xsmin = -rs + xs;
-    xsmax = rs + xs;
+    double rs = sqrt(R*R - ys*ys);
+    xsmin = -rs;
+    xsmax = rs;
 
-    ry = yo - y;
+    ry = yo - ys;
 
-    x = xsmin + dx / 2.0;
-    while (x <= xsmax) {
+    double xs = xsmin + dx / 2.0;
+    while (xs <= xsmax) {
 
-      //distance(xo, yo, zo, x, y, &r);
-      rx = xo - x;
+      rx = xo - xs;
       r = sqrt(rx*rx + ry*ry + zo*zo);
 
       ai = v * ds / (2*M_PI * r);
@@ -128,10 +96,10 @@ int dreamcirc(double xo, double yo, double zo,
           return err; // Bail out.
       }
 
-      x += dx;
+      xs += dx;
     }
 
-    y += dy;
+    ys += dy;
   }
 
   return err;
@@ -150,38 +118,31 @@ int dreamcirc(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
 {
   dream_idx_type i, it;
   double t, ai;
-  double xsmin, ysmin, xsmax, ysmax, ds, r;
-  double x, y, rx, ry;
-  double xs = 0.0;
-  double ys = 0.0;
-  double rs = 0.0;
+  double xsmin, ysmin, xsmax, ysmax, r;
+  double rx, ry;
   int    err = NONE;
 
-  ds = dx * dy;
-  ysmin = -R + ys;
-  ysmax =  R + ys;
+  double ds = dx * dy;
+  ysmin = -R;
+  ysmax =  R;
 
   for (i = 0; i < nt; i++) {
     h[i] = (double) 0.0 ;
   }
 
-  y = ysmin + dy/2;
-  while (y <= ysmax) {
+  double ys = ysmin + dy/2;
+  while (ys <= ysmax) {
 
-    //xlimit_circ(y, r, xs, ys, &xsmin, &xsmax);
-    rs = sqrt(R*R - (ys-y)*(ys-y));
-    xsmin = -rs + xs;
-    xsmax = rs + xs;
+    double rs = sqrt(R*R - ys*ys);
+    xsmin = -rs;
+    xsmax = rs;
 
-    ry = yo - y;
+    ry = yo - ys;
 
-    x = xsmin + dx / 2.0;
-    while (x <= xsmax) {
+    double xs = xsmin + dx / 2.0;
+    while (xs <= xsmax) {
 
-      //distance(xo, yo, zo, x, y, &r);
-      rx = xo - x;
-      //ry = yo - y; // Moved outside this loop.
-      //rz = zo;
+      rx = xo - xs;
       r = sqrt(rx*rx + ry*ry + zo*zo);
 
       ai = v * ds / (2*M_PI * r);
@@ -206,10 +167,10 @@ int dreamcirc(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
           return err; // Bail out.
       }
 
-      x += dx;
+      xs += dx;
     }
 
-    y += dy;
+    ys += dy;
   }
 
   return err;

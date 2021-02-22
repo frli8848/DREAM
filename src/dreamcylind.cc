@@ -57,8 +57,8 @@ int dreamcylind(double xo, double yo, double zo,
                 int err_level)
 {
   dream_idx_type i, it;
-  double t, x, y, xsmin, xsmax, ai, ds, du, r;
-  double phi, phi_min, phi_max, dphi;
+  double t, xsmin, xsmax, ai, du, r;
+  double phi, phi_min, phi_max;
   int err = NONE;
 
   if (b > 2*fabs(Rcurv)) {
@@ -76,9 +76,9 @@ int dreamcylind(double xo, double yo, double zo,
   phi_max = phi/2;
 
   // dphi in y-dim [rad].
-  dphi = asin(dy/fabs(Rcurv));
+  double dphi = asin(dy/fabs(Rcurv));
   //dphi = dy/r;
-  ds = fabs(Rcurv) * dx * dphi;
+  double ds = fabs(Rcurv) * dx * dphi;
   //ds = dx * dy; // Approx the same as  ds = Rcurv * dx * dphi.
 
   for (i = 0; i < nt; i++) {
@@ -86,17 +86,17 @@ int dreamcylind(double xo, double yo, double zo,
   }
 
   phi = phi_min + dphi/2.0;
-  y = fabs(Rcurv) * sin(phi);
+  double ys = fabs(Rcurv) * sin(phi);
   while (phi <= phi_max) {
 
-    x = xsmin + dx/2.0;
-    while (x <= xsmax) {
+    double xs = xsmin + dx/2.0;
+    while (xs <= xsmax) {
 
       // Compute r and ds.
       if (Rcurv >= 0.0) {       // Focused
-        cylind_f(x, y, Rcurv, z_Rcurv, xo, yo, zo, r, du);
+        cylind_f(xs, ys, Rcurv, z_Rcurv, xo, yo, zo, r, du);
       } else {                  // Defocused
-        cylind_d(x, y, fabs(Rcurv), z_Rcurv, xo, yo, zo, r, du);
+        cylind_d(xs, ys, fabs(Rcurv), z_Rcurv, xo, yo, zo, r, du);
       }
 
       ai = v * ds * du/(2.0*M_PI * r);
@@ -122,11 +122,11 @@ int dreamcylind(double xo, double yo, double zo,
         }
       }
 
-      x += dx;
+      xs += dx;
     }
 
     phi += dphi;
-    y = fabs(Rcurv) * sin(phi);
+    ys = fabs(Rcurv) * sin(phi);
   }
 
   return err;
@@ -141,8 +141,8 @@ int dreamcylind(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
                 int err_level)
 {
   dream_idx_type i, it;
-  double t, x, y, xsmin, xsmax, ai, ds, du, r;
-  double phi, phi_min, phi_max, dphi;
+  double t, xsmin, xsmax, ai, du, r;
+  double phi, phi_min, phi_max;
   int err = NONE;
 
   if (b > 2*fabs(Rcurv)) {
@@ -160,9 +160,9 @@ int dreamcylind(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
   phi_max = phi/2;
 
   // dphi in y-dim [rad].
-  dphi = asin(dy/fabs(Rcurv));
+  double dphi = asin(dy/fabs(Rcurv));
   //dphi = dy/r;
-  ds = fabs(Rcurv) * dx * dphi;
+  double ds = fabs(Rcurv) * dx * dphi;
   //ds = dx * dy; // Approx the same as  ds = Rcurv * dx * dphi.
 
   for (i = 0; i < nt; i++) {
@@ -170,17 +170,17 @@ int dreamcylind(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
   }
 
   phi = phi_min + dphi/2.0;
-  y = fabs(Rcurv) * sin(phi);
+  double ys = fabs(Rcurv) * sin(phi);
   while (phi <= phi_max) {
 
-    x = xsmin + dx/2.0;
-    while (x <= xsmax) {
+    double xs = xsmin + dx/2.0;
+    while (xs <= xsmax) {
 
       // Compute r and ds.
       if (Rcurv >= 0.0) {           // Focused
-        cylind_f(x, y, Rcurv, z_Rcurv, xo, yo, zo, r, du);
+        cylind_f(xs, ys, Rcurv, z_Rcurv, xo, yo, zo, r, du);
       } else {                  // Defocused
-        cylind_d(x, y, fabs(Rcurv), z_Rcurv, xo, yo, zo, r, du);
+        cylind_d(xs, ys, fabs(Rcurv), z_Rcurv, xo, yo, zo, r, du);
       }
 
       ai = v * ds * du/(2.0*M_PI * r);
@@ -205,11 +205,11 @@ int dreamcylind(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
         }
       }
 
-      x += dx;
+      xs += dx;
     }
 
     phi += dphi;
-    y = fabs(Rcurv) * sin(phi);
+    ys = fabs(Rcurv) * sin(phi);
   }
 
   return err;

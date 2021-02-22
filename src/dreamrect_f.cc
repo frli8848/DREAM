@@ -52,35 +52,35 @@ int dreamrect_f(double xo, double yo, double zo,
 {
   dream_idx_type i, it;
   double t;
-  double ai, ds, c;
-  double r, x, y;
+  double ai;
+  double r;
   double xsmin = -a/2;
   double xsmax = a/2;
   double ysmin = -b/2;
   double ysmax = b/2;
   int err = NONE;
 
-  ds = dx * dy;
-  c = sqrt(a*a + b*b);
+  double ds = dx * dy;
+  double c = sqrt(a*a + b*b);
 
   for (i = 0; i < nt; i++) {
     h[i] = (double) 0.0 ;
   }
 
-  y = ysmin + dy / 2.0;
-  double ry = yo - y;
+  double ys = ysmin + dy / 2.0;
 
-  while (y <= ysmax) {
+  while (ys <= ysmax) {
 
-    x = xsmin + dx / 2.0;
+    double ry = yo - ys;
 
-    while (x <= xsmax) {
+    double xs = xsmin + dx / 2.0;
 
-      //distance(xo, yo, zo, x, y,  &r);
-      double rx = xo - x;
+    while (xs <= xsmax) {
+
+      double rx = xo - xs;
       r = sqrt(rx*rx + ry*ry + zo*zo);
 
-      double foc_delay = focusing(foc_type, focal, x, y, a, b, c, cp);
+      double foc_delay = focusing(foc_type, focal, xs, ys, a, b, c, cp);
 
       ai = v * ds / (2*M_PI * r);
       ai /= dt;
@@ -103,9 +103,9 @@ int dreamrect_f(double xo, double yo, double zo,
           return err; // Bail out.
         }
       }
-      x += dx;
+      xs += dx;
     }
-    y += dy;
+    ys += dy;
   }
 
   return err;
@@ -123,35 +123,35 @@ int dreamrect_f(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
 {
   dream_idx_type i, it;
   double t;
-  double ai, ds, c;
-  double r, x, y;
+  double ai;
+  double r;
   double xsmin = -a/2;
   double xsmax = a/2;
   double ysmin = -b/2;
   double ysmax = b/2;
   int err = NONE;
 
-  ds = dx * dy;
-  c = sqrt(a*a + b*b);
+  double ds = dx * dy;
+  double c = sqrt(a*a + b*b);
 
   for (i = 0; i < nt; i++) {
     h[i] = (double) 0.0 ;
   }
 
-  y = ysmin + dy / 2.0;
-  double ry = yo - y;
+  double ys = ysmin + dy / 2.0;
 
-  while (y <= ysmax) {
+  while (ys <= ysmax) {
 
-    x = xsmin + dx / 2.0;
+    double ry = yo - ys;
 
-    while (x <= xsmax) {
+    double xs = xsmin + dx / 2.0;
 
-      //distance(xo, yo, zo, x, y,  &r);
-      double rx = xo - x;
+    while (xs <= xsmax) {
+
+      double rx = xo - xs;
       r = sqrt(rx*rx + ry*ry + zo*zo);
 
-      double foc_delay = focusing(foc_type, focal, x, y, a, b, c, cp);
+      double foc_delay = focusing(foc_type, focal, xs, ys, a, b, c, cp);
 
       ai = v * ds / (2*M_PI * r);
       ai /= dt;
@@ -175,9 +175,9 @@ int dreamrect_f(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
           return err; // Bail out.
         }
       }
-      x += dx;
+      xs += dx;
     }
-    y += dy;
+    ys += dy;
   }
 
   return err;

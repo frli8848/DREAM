@@ -35,7 +35,7 @@
 //
 
 int rect_ab(double xo, double yo, double zo,
-            double xs, double ys, double zs,
+            double x, double y, double z,
             double a, double b,
             double dx, double dy, double dt,
             dream_idx_type nt,
@@ -45,7 +45,7 @@ int rect_ab(double xo, double yo, double zo,
 
 int rect_ab(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
             double xo, double yo, double zo,
-            double xs, double ys, double zs,
+            double x, double y, double z,
             double a, double b,
             double dx, double dy, double dt,
             dream_idx_type nt,
@@ -69,10 +69,9 @@ int dream_arr_rect(double xo, double yo, double zo,
                    double *apod, bool do_apod, int apod_type, double param,
                    double *h, int err_level)
 {
-  double steer_delay;
   dream_idx_type i;
   double ramax, xamax, yamax;
-  double foc_delay, weight;
+  double foc_delay, steer_delay, weight;
   int err = NONE, out_err = NONE;
 
   for (i=0; i<nt; i++) {
@@ -88,9 +87,9 @@ int dream_arr_rect(double xo, double yo, double zo,
   for (i=0; i<num_elements; i++) {
 
     if (foc_type != FOCUS_UD) {
-      focusing(foc_type, focal[0], gx[i], gx[i], xamax, yamax, ramax, cp, &foc_delay);
+      focusing(foc_type, focal[0], gx[i], gy[i], xamax, yamax, ramax, cp, &foc_delay);
     } else {
-      focusing(foc_type, focal[i], gx[i], gx[i], xamax, yamax, ramax, cp, &foc_delay);
+      focusing(foc_type, focal[i], gx[i], gy[i], xamax, yamax, ramax, cp, &foc_delay);
     }
 
     beamsteering(steer_type, theta, phi, gx[i], gy[i], xamax, yamax, ramax, cp, &steer_delay);
@@ -141,9 +140,9 @@ int dream_arr_rect(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
   for (i=0; i<num_elements; i++) {
 
     if (foc_type != FOCUS_UD) {
-      focusing(foc_type, focal[0], gx[i], gx[i], xamax, yamax, ramax, cp, &foc_delay);
+      focusing(foc_type, focal[0], gx[i], gy[i], xamax, yamax, ramax, cp, &foc_delay);
     } else {
-      focusing(foc_type, focal[i], gx[i], gx[i], xamax, yamax, ramax, cp, &foc_delay);
+      focusing(foc_type, focal[i], gx[i], gy[i], xamax, yamax, ramax, cp, &foc_delay);
     }
 
     beamsteering(steer_type, theta, phi, gx[i], gy[i], xamax, yamax, ramax, cp, &steer_delay);
@@ -176,7 +175,7 @@ int dream_arr_rect(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
  ***/
 
 int rect_ab(double xo, double yo, double zo,
-            double xs, double ys, double zs,
+            double x, double y, double z, // Element center position
             double a, double b,
             double dx, double dy, double dt,
             dream_idx_type nt,
@@ -187,24 +186,27 @@ int rect_ab(double xo, double yo, double zo,
   double t;
   double xsmin, ysmin, xsmax, ysmax, ds, r;
   dream_idx_type it;
-  double x, y;
   int err = NONE;
 
   ds = dx * dy;
 
-  xsmin = xs - a/2;
-  xsmax = xs + a/2;
+  xsmin = x - a/2;
+  xsmax = x + a/2;
 
-  ysmin = ys - b/2;
-  ysmax = ys + b/2;
+  ysmin = y - b/2;
+  ysmax = y + b/2;
 
-  y = ysmin + dy/2.0;
-  while (y <= ysmax) {
+  double zs = 0.0;
 
-    x = xsmin + dx/2.0;
-    while (x <= xsmax) {
+  // Loop over all surface elements (xs, ys)
 
-      distance(xo, yo, zo, x, y, zs, &r);
+  double ys = ysmin + dy/2.0;
+  while (ys <= ysmax) {
+
+    double xs = xsmin + dx/2.0;
+    while (xs <= xsmax) {
+
+      distance(xo, yo, zo, xs, ys, zs, &r);
       t = r * 1.0e3/cp; // Propagation delay in micro seconds.
       it = (dream_idx_type) rint((t - delay + foc_delay + steer_delay)/dt);
 
@@ -226,9 +228,9 @@ int rect_ab(double xo, double yo, double zo,
           return err; // Bail out.
       }
 
-      x += dx;
+      xs += dx;
     }
-    y += dy;
+    ys += dy;
   }
 
   return err;
@@ -237,7 +239,7 @@ int rect_ab(double xo, double yo, double zo,
 
 int rect_ab(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
             double xo, double yo, double zo,
-            double xs, double ys, double zs,
+            double x, double y, double z,
             double a, double b,
             double dx, double dy, double dt,
             dream_idx_type nt,
@@ -246,26 +248,28 @@ int rect_ab(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
             double *h, int err_level)
 {
   double t;
-  double xsmin, ysmin, xsmax, ysmax, ds, r;
+  double xsmin, ysmin, xsmax, ysmax;
   dream_idx_type it;
-  double x, y;
   int err = NONE;
 
-  ds = dx * dy;
+  double ds = dx * dy;
 
-  xsmin = xs - a/2;
-  xsmax = xs + a/2;
+  xsmin = x - a/2;
+  xsmax = x + a/2;
 
-  ysmin = ys - b/2;
-  ysmax = ys + b/2;
+  ysmin = y - b/2;
+  ysmax = y + b/2;
 
-  y = ysmin + dy/2.0;
-  while (y <= ysmax) {
+  double zs = 0.0;
 
-    x = xsmin + dx/2.0;
-    while (x <= xsmax) {
+  double ys = ysmin + dy/2.0;
+  while (ys <= ysmax) {
 
-      distance(xo, yo, zo, x, y, zs, &r);
+    double xs = xsmin + dx/2.0;
+    while (xs <= xsmax) {
+
+      double r;
+      distance(xo, yo, zo, xs, ys, zs, &r);
       t = r * 1.0e3/cp; // Propagation delay in micro seconds.
       it = (dream_idx_type) rint((t - delay + foc_delay + steer_delay)/dt);
 
@@ -288,9 +292,9 @@ int rect_ab(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
           return err; // Bail out.
       }
 
-      x += dx;
+      xs += dx;
     }
-    y += dy;
+    ys += dy;
   }
 
   return err;

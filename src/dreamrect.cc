@@ -43,33 +43,36 @@ int dreamrect(double xo, double yo, double zo,
 {
   dream_idx_type i, it;
   double t;
-  double ai, ds;
-  double r, x, y;
+  double ai;
+  double r;
   double xsmin, xsmax, ysmin, ysmax;
   int err = NONE;
-  double rx,ry,rz;
+  double rx, ry, rz;
 
   xsmin = -a/2.0;
   xsmax =  a/2.0;
   ysmin = -b/2.0;
   ysmax =  b/2.0;
 
-  ds = dx * dy;
+  double ds = dx * dy;
 
   for (i = 0; i < nt; i++) {
     h[i] = (double) 0.0;
   }
 
   rz = zo;
-  y = ysmin + dy / 2.0;
 
-  while (y <= ysmax) {
-    ry = yo - y;
-    x = xsmin + dx / 2.0;
+  double ys = ysmin + dy / 2.0;
 
-    while (x <= xsmax) {
+  while (ys <= ysmax) {
 
-      rx = xo - x;
+    ry = yo - ys;
+
+    double xs = xsmin + dx / 2.0;
+
+    while (xs <= xsmax) {
+
+      rx = xo - xs;
       r = sqrt(rx*rx + ry*ry + rz*rz);
 
       ai = v * ds / (2*M_PI * r);
@@ -81,9 +84,11 @@ int dreamrect(double xo, double yo, double zo,
 
       // Check if index is out of bounds.
       if ( (it < nt) && (it >= 0) ) {
+
         h[it] += ai;
-      }
-      else {
+
+      } else {
+
         if  (it >= 0)
           err = dream_out_of_bounds_err("SIR out of bounds",it-nt+1,err_level);
         else
@@ -92,9 +97,9 @@ int dreamrect(double xo, double yo, double zo,
         if ( (err_level == PARALLEL_STOP) || (err_level == STOP) )
           return err; // Bail out.
       }
-      x += dx;
+      xs += dx;
     }
-    y += dy;
+    ys += dy;
   }
 
   return err;
@@ -112,8 +117,8 @@ int dreamrect(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
 {
   dream_idx_type i, it;
   double t;
-  double ai, ds;
-  double r, x, y;
+  double ai;
+  double r;
   double xsmin, xsmax, ysmin, ysmax;
   int err = NONE;
   double rx,ry,rz;
@@ -123,22 +128,24 @@ int dreamrect(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
   ysmin = -b/2.0;
   ysmax =  b/2.0;
 
-  ds = dx * dy;
+  double ds = dx * dy;
 
   for (i = 0; i < nt; i++) {
     h[i] = (double) 0.0;
   }
 
   rz = zo;
-  y = ysmin + dy / 2.0;
+  double ys = ysmin + dy / 2.0;
 
-  while (y <= ysmax) {
-    ry = yo - y;
-    x = xsmin + dx / 2.0;
+  while (ys <= ysmax) {
 
-    while (x <= xsmax) {
+    ry = yo - ys;
 
-      rx = xo - x;
+    double xs = xsmin + dx / 2.0;
+
+    while (xs <= xsmax) {
+
+      rx = xo - xs;
       r = sqrt(rx*rx + ry*ry + rz*rz);
 
       ai = v * ds / (2*M_PI * r);
@@ -160,9 +167,9 @@ int dreamrect(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
         if ( (err_level == PARALLEL_STOP) || (err_level == STOP) )
           return err; // Bail out.
       }
-      x += dx;
+      xs += dx;
     }
-    y += dy;
+    ys += dy;
   }
 
   return err;

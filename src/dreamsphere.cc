@@ -54,12 +54,11 @@ int dreamsphere(double xo, double yo, double zo,
                 double *h, int err_level)
 {
   dream_idx_type i, it;
-  double t, ai, ds, r;
+  double t, ai, r;
   double xsmin, ysmin, xsmax, ysmax;
-  double x, y;
   int err = NONE;
 
-  ds = dx * dy;
+  double ds = dx * dy;
 
   ysmin = -R;
   ysmax =  R;
@@ -68,23 +67,23 @@ int dreamsphere(double xo, double yo, double zo,
     h[i] = (double) 0.0 ;
   }
 
-  y = ysmin + dy / 2.0;
-  while (y <= ysmax) {
+  double ys = ysmin + dy / 2.0;
+  while (ys <= ysmax) {
 
     // Compute the x-axis integration limits.
-    double rs = sqrt(R*R - y*y);
+    double rs = sqrt(R*R - ys*ys);
     xsmin = -rs;
     xsmax =  rs;
 
-    x = xsmin + dx / 2.0;
-    while (x <= xsmax) {
+    double xs = xsmin + dx / 2.0;
+    while (xs <= xsmax) {
 
       if (Rcurv >= 0.0) {        // Concave/focused
-        r = sphere_f(x, y,
+        r = sphere_f(xs, ys,
                      Rcurv,
                      xo, yo, zo);
       } else {                  // Convex/de-focused
-        r = sphere_d(x, y,
+        r = sphere_d(xs, ys,
                      -Rcurv,
                      xo, yo, zo);
       }
@@ -111,9 +110,9 @@ int dreamsphere(double xo, double yo, double zo,
           return err; // Bail out.
         }
       }
-      x += dx;
+      xs += dx;
     }
-    y += dy;
+    ys += dy;
   }
 
   return err;
@@ -127,12 +126,11 @@ int dreamsphere(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
                 double *h, int err_level)
 {
   dream_idx_type i, it;
-  double t, ai, ds, r;
+  double t, ai, r;
   double xsmin, ysmin, xsmax, ysmax;
-  double x, y;
   int err = NONE;
 
-  ds = dx * dy;
+  double ds = dx * dy;
 
   ysmin = -R;
   ysmax =  R;
@@ -141,22 +139,22 @@ int dreamsphere(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
     h[i] = (double) 0.0 ;
   }
 
-  y = ysmin + dy / 2.0;
-  while (y <= ysmax) {
+  double ys = ysmin + dy / 2.0;
+  while (ys <= ysmax) {
 
-    double rs = sqrt(R*R - y*y);
+    double rs = sqrt(R*R - ys*ys);
     xsmin = -rs;
     xsmax =  rs;
 
-    x = xsmin + dx / 2.0;
-    while (x <= xsmax) {
+    double xs = xsmin + dx / 2.0;
+    while (xs <= xsmax) {
 
       if (Rcurv >= 0.0) {        // Concave/focused
-        r = sphere_f(x, y,
+        r = sphere_f(xs, ys,
                      Rcurv,
                      xo, yo, zo);
       } else {                  // Convex/de-focused
-        r = sphere_d(x, y,
+        r = sphere_d(xs, ys,
                      -Rcurv,
                      xo, yo, zo);
       }
@@ -183,9 +181,9 @@ int dreamsphere(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
           return err; // Bail out.
         }
       }
-      x += dx;
+      xs += dx;
     }
-    y += dy;
+    ys += dy;
   }
 
   return err;

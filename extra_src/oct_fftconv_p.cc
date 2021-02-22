@@ -54,8 +54,10 @@
 // We pobably need fftw >= 3.2.x to handle 64-bit array indexing.
 // ToDO If we have fftw 3.2.x we can use fftw_plan_dft_r2c_1d_64 etc.
 
-//#include <mutex>
-//std::mutex print_mutex;         // Debug print mutex (C++11)
+#ifdef DEBUG
+#include <mutex>
+std::mutex print_mutex;         // Debug print mutex (C++11)
+#endif
 
 #include "dream.h"
 #include "affinity.h"
@@ -187,7 +189,7 @@ void* smp_dream_fftconv(void *arg)
     } // end-for
   } // end-if
 
-  /*
+#ifdef DEBUG
   {
     std::lock_guard<std::mutex> lk(print_mutex);
     octave_stdout << "col_start: " << col_start
@@ -196,7 +198,7 @@ void* smp_dream_fftconv(void *arg)
                   << std::endl;
 
   }
-  */
+#endif
 
   return(NULL);
 }
@@ -570,16 +572,15 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
     nthreads = A_N;
   }
 
-  /*
+#ifdef DEBUG
   {
-    std::lock_guard<std::mutex> lk(print_mutex);
     octave_stdout << "A_M: " <<  A_M
                   << " A_N: " <<  A_N
                   << " B_M: " <<  B_M
                   << " A_N: " <<  A_N
                   << " nthreads: "  << nthreads <<std::endl;
   }
-  */
+#endif
 
   //
   // Register signal handlers.
@@ -611,6 +612,9 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
 
   //std::mutex fft_mutex;
   //FFT fft(fft_len, &fft_mutex, plan_method);
+  //
+  // NB We call the FFTW planners only from the main thread once
+  // so no need to lock it with a mutex
   FFT fft(fft_len, nullptr, plan_method);
 
   //
@@ -643,96 +647,65 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
 
     running = true;
 
-    if (nthreads>1) { // Use threads
+    // Allocate local data.
+    D = (DATA*) malloc(nthreads*sizeof(DATA));
+    if (!D) {
+      error("Failed to allocate memory for thread data!");
+      return oct_retval;
+    }
 
-      // Allocate local data.
-      D = (DATA*) malloc(nthreads*sizeof(DATA));
-      if (!D) {
-        error("Failed to allocate memory for thread data!");
-        return oct_retval;
+    // Allocate mem for the threads.
+    threads = new std::thread[nthreads]; // Init thread data.
+    if (!threads) {
+      error("Failed to allocate memory for threads!");
+      return oct_retval;
+    }
+
+    for (thread_n = 0; thread_n < nthreads; thread_n++) {
+
+      col_start = thread_n * A_N/nthreads;
+      col_stop =  (thread_n+1) * A_N/nthreads;
+
+      // Init local data.
+      D[thread_n].col_start = col_start; // Local start index;
+      D[thread_n].col_stop = col_stop; // Local stop index;
+      D[thread_n].A = A;
+      D[thread_n].A_M = A_M;
+      D[thread_n].A_N = A_N;
+      D[thread_n].B = B;
+      D[thread_n].B_M = B_M;
+      D[thread_n].B_N = B_N;
+      D[thread_n].Y = Y;
+      D[thread_n].fft = &fft;
+
+#ifdef DEBUG
+      {
+        octave_stdout << "Init thread_n: "  << thread_n
+                      << " col_start: " << col_start
+                      << " col_stop: " << col_stop
+                      << " nthreads: " << nthreads
+                      << std::endl;
       }
-
-      // Allocate mem for the threads.
-      threads = new std::thread[nthreads]; // Init thread data.
-      if (!threads) {
-        error("Failed to allocate memory for threads!");
-        return oct_retval;
-      }
-
-      for (thread_n = 0; thread_n < nthreads; thread_n++) {
-
-        col_start = thread_n * A_N/nthreads;
-        col_stop =  (thread_n+1) * A_N/nthreads;
-
-        // Init local data.
-        D[thread_n].col_start = col_start; // Local start index;
-        D[thread_n].col_stop = col_stop; // Local stop index;
-        D[thread_n].A = A;
-        D[thread_n].A_M = A_M;
-        D[thread_n].A_N = A_N;
-        D[thread_n].B = B;
-        D[thread_n].B_M = B_M;
-        D[thread_n].B_N = B_N;
-        D[thread_n].Y = Y;
-        D[thread_n].fft = &fft;
-
-        /*
-        {
-          std::lock_guard<std::mutex> lk(print_mutex);
-          octave_stdout << "col_start: " << col_start
-                        << " col_stop: " << col_stop
-                        << " thread_n: "  << thread_n <<std::endl;
-        }
-        */
-
+#endif
+      if (nthreads > 1) {
         // Start the threads.
         threads[thread_n] = std::thread(smp_dream_fftconv, &D[thread_n]);
         set_dream_thread_affinity(thread_n, nthreads, threads);
+      } else {
+        smp_dream_fftconv(&D[0]);
       }
+    }
 
-      //
+    if (nthreads > 1) {
       // Wait for all threads to finish.
-      //
-
       for (thread_n = 0; thread_n < nthreads; thread_n++) {
         threads[thread_n].join();
       }
+    }
 
-      // Free memory.
-      if (D) {
-        free((void*) D);
-      }
-
-    } else { // Do not use threads.
-
-      if (B_N > 1) {// B is a matrix.
-
-        for (n=0; n<A_N; n++) {
-
-          fftconv(fft, &A[0+n*A_M], A_M, &B[0+n*B_M], B_M, &Y[0+n*(A_M+B_M-1)],
-                   a,b,c,af,bf,cf);
-
-          if (running==false) {
-            octave_stdout << "fftconv_p: bailing out!\n";
-            break;
-          }
-
-        } // end-for
-      } else { // B is a vector.
-
-        for (n=0; n<A_N; n++) {
-
-          fftconv(fft, &A[0+n*A_M], A_M, B, B_M, &Y[0+n*(A_M+B_M-1)],
-                   a,b,c,af,bf,cf);
-
-          if (running==false) {
-            octave_stdout << "fftconv_p: bailing out!\n";
-            break;
-          }
-
-        } // end-for
-      } // end-if
-
+    // Free memory.
+    if (D) {
+      free((void*) D);
     }
 
     //
@@ -775,7 +748,6 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
 
     return oct_retval;
   }
-
 
   if ( (nrhs == 3 && !load_wisdom) || nrhs == 4 || nrhs == 5) { // In-place mode.
 

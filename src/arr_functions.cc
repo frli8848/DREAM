@@ -43,12 +43,12 @@
 *
 ***/
 
-void center_pos(double *xs, double *ys, double *zs, int i,
+void center_pos(double *x, double *y, double *z, dream_idx_type i,
                 double *gx, double *gy, double *gz)
 {
-  *xs = gx[i];
-  *ys = gy[i];
-  *zs = gz[i];
+  *x = gx[i];
+  *y = gy[i];
+  *z = gz[i];
 
   return;
 }
@@ -62,9 +62,9 @@ void center_pos(double *xs, double *ys, double *zs, int i,
  ***/
 
 void max_dim_arr(double *x_max, double *y_max, double *ramax,
-                 double *gx, double *gy, double *gz, int num_elements)
+                 double *gx, double *gy, double *gz, dream_idx_type num_elements)
 {
-  int i;
+  dream_idx_type i;
   double ret;
 
   *x_max = fabs(gx[0]);
@@ -91,49 +91,45 @@ void max_dim_arr(double *x_max, double *y_max, double *ramax,
  *
  * focusing
  *
- * Computes the focusing delay, foc_delay, for point (xs,ys) on the
- * transducer surface (?).
+ * Computes the focusing delay, foc_delay, for array element at (gx,gy).
  *
  ***/
 
-void focusing(int foc_type, double focal, double xs, double ys,
+void focusing(int foc_type, double focal, double gx, double gy,
               double x_max, double y_max, double ramax, double cp, double *foc_delay)
 {
   double diff, rmax, retx, rety;
 
-  //
-  // foc_type = 1 No foc, 2 Foc x ,3 Foc y, 4 Foc xy 5 Foc x+y, 6 ud (user defined) */
-  //
-
   switch(foc_type) {
 
   case NO_FOCUS:
+    *foc_delay = 0.0;
     return;
 
   case FOCUS_X:
     rmax = sqrt(x_max*x_max + focal*focal);
-    diff = rmax - sqrt(xs*xs + focal*focal);
-    *foc_delay = diff*1000/cp;
+    diff = rmax - sqrt(gx*gx + focal*focal);
+    *foc_delay = diff*1.0e3/cp; // [us]
     break;
 
   case FOCUS_Y:
     rmax = sqrt(y_max*y_max + focal*focal);
-    diff  = rmax - sqrt(ys*ys + focal*focal);
-    *foc_delay = diff*1000/cp;
+    diff  = rmax - sqrt(gy*gy + focal*focal);
+    *foc_delay = diff*1.0e3/cp; // [us]
     break;
 
   case FOCUS_XY:
     rmax = sqrt(ramax*ramax + focal*focal);
-    diff = rmax - sqrt(xs*xs + ys*ys + focal*focal);
-    *foc_delay = diff*1000/cp;
+    diff = rmax - sqrt(gx*gx + gy*gy + focal*focal);
+    *foc_delay = diff*1.0e3/cp; // [us]
     break;
 
   case FOCUS_X_Y:
     rmax = sqrt(ramax*ramax + focal*focal);
-    retx = sqrt(xs*xs + focal*focal);
-    rety = sqrt(ys*ys + focal*focal);
+    retx = sqrt(gx*gx + focal*focal);
+    rety = sqrt(gy*gy + focal*focal);
     diff = rmax - (retx + rety);
-    *foc_delay = diff*1000/cp;
+    *foc_delay = diff*1.0e3/cp; // [us]
     break;
 
   case FOCUS_UD:
@@ -156,7 +152,7 @@ void focusing(int foc_type, double focal, double xs, double ys,
  *
  ***/
 
-void beamsteering(int steer_type, double theta, double phi, double xs, double ys,
+void beamsteering(int steer_type, double theta, double phi, double gx, double gy,
                   double x_max, double y_max, double ramax, double cp, double *retsteer)
 {
   double diff, rmax, sinx, siny, retsteerx, retsteery;
@@ -170,31 +166,32 @@ void beamsteering(int steer_type, double theta, double phi, double xs, double ys
 
   case 0:
   case NO_STEER:
+    *retsteer = 0.0;
     break;
 
   case STEER_X:
     sinx = sin(theta * pii);
     rmax = x_max * sinx;
-    diff =  rmax + xs*sinx;
-    *retsteer = diff*1000/cp;
+    diff =  rmax + gx*sinx;
+    *retsteer = diff*1.0e3/cp;
     break;
 
   case STEER_Y:
     siny = sin(phi * pii);
     rmax = y_max * siny;
-    diff = rmax + ys * siny;
-    *retsteer = diff*1000/cp;
+    diff = rmax + gy * siny;
+    *retsteer = diff*1.0e3/cp;
     break;
 
   case STEER_XY:
     sinx = sin(theta * pii);
     rmax = x_max * sinx;
-    diff = rmax + xs*sinx;
-    retsteerx = diff*1000/cp;
+    diff = rmax + gx*sinx;
+    retsteerx = diff*1.0e3/cp;
     siny = sin(phi * pii);
     rmax = y_max * siny;
-    diff = rmax + ys * siny;
-    retsteery = diff*1000/cp;
+    diff = rmax + gy * siny;
+    retsteery = diff*1.0e3/cp;
     *retsteer = retsteerx + retsteery;
     break;
 
@@ -220,10 +217,10 @@ void beamsteering(int steer_type, double theta, double phi, double xs, double ys
  *
  ***/
 
-void apodization(int apod_type, int i, double *apod_vec, double *weight,
-                 double xs, double ys, double ramax, double param)
+void apodization(int apod_type, dream_idx_type i, double *apod_vec, double *weight,
+                 double gx, double gy, double ramax, double param)
 {
-  double r = sqrt(xs*xs + ys*ys);
+  double r = sqrt(gx*gx + gy*gy);
 
   switch(apod_type) {
 
@@ -267,7 +264,9 @@ void apodization(int apod_type, int i, double *apod_vec, double *weight,
  *
  ***/
 
-void distance(double xo, double yo, double zo,double xs,double ys, double zs, double *ri)
+void distance(double xo, double yo, double zo,
+              double xs, double ys, double zs,
+              double *ri)
 {
   double rx, ry, rz;
 

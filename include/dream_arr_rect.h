@@ -32,7 +32,7 @@ int dream_arr_rect(double xo, double yo, double zo,
                    dream_idx_type nt, double delay, double v, double cp,
                    dream_idx_type num_elements, double *gx, double *gy, double *gz,
                    int foc_type, double *focal,
-                   int ister, double theta, double phi,
+                   int steer_type, double theta, double phi,
                    double *apod, bool do_apod, int apod_type, double param,
                    double *h, int err_level);
 

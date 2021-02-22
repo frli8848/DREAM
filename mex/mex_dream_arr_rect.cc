@@ -40,8 +40,6 @@
 #define SINGLE 0
 #define MULTIPLE 1
 
-// Parallel implementation.
-
 //
 // Globals
 //
@@ -56,24 +54,24 @@ int running;
 
 typedef struct
 {
-  size_t no;
-  size_t start;
-  size_t stop;
+  dream_idx_type no;
+  dream_idx_type start;
+  dream_idx_type stop;
   double *ro;
   double a;
   double b;
   double dx;
   double dy;
   double dt;
-  size_t nt;
+  dream_idx_type nt;
   int delay_method;
   double *delay;
   double v;
   double cp;
   Attenuation *att;
-  size_t num_elements;
+  dream_idx_type num_elements;
   double *G;
-  int focus_met;
+  int foc_met;
   int steer_met;
   bool do_apod;
   int apod_met;
@@ -110,18 +108,18 @@ void* smp_dream_arr_rect(void *arg)
   double xo, yo, zo;
   double *h = D.h;
   double a=D.a, b=D.b, dx=D.dx, dy=D.dy, dt=D.dt;
-  size_t  n, no=D.no, nt=D.nt;
+  dream_idx_type n, no=D.no, nt=D.nt;
   int    tmp_lev, err_level=D.err_level;
   double *delay=D.delay, *ro=D.ro, v=D.v, cp=D.cp;
   Attenuation *att = D.att;
-  size_t start=D.start, stop=D.stop;
-  int    focus_met=D.focus_met, steer_met=D.steer_met, do_apod = D.do_apod,apod_met=D.apod_met;
-  double *focal=D.focal, *apod=D.apod, theta=D.theta,phi=D.phi,param=D.param;
-  size_t num_elements = D.num_elements;
+  dream_idx_type start=D.start, stop=D.stop;
+  int    foc_met=D.foc_met, steer_met=D.steer_met, do_apod = D.do_apod, apod_met=D.apod_met;
+  double *focal=D.focal, *apod=D.apod, theta=D.theta, phi=D.phi, param=D.param;
+  dream_idx_type num_elements = D.num_elements;
 
-  double *gx    = D.G;			// First column in the matrix.
-  double *gy    = gx + num_elements;    // Second column in the matrix.
-  double *gz    = gy + num_elements;    // Third column in the matrix.
+  double *gx = D.G;               // First column in the matrix.
+  double *gy = gx + num_elements; // Second column in the matrix.
+  double *gz = gy + num_elements; // Third column in the matrix.
 
   // Buffers for the FFTs in the Attenuation
   std::unique_ptr<FFTCVec> xc_vec;
@@ -155,9 +153,10 @@ void* smp_dream_arr_rect(void *arg)
                            dx, dy, dt, nt,
                            dlay, v, cp,
                            num_elements, gx, gy, gz,
-                           focus_met, focal, steer_met, theta, phi, apod, do_apod, apod_met, param,
-                           &h[n*nt],tmp_lev);
-
+                           foc_met, focal,
+                           steer_met, theta, phi,
+                           apod, do_apod, apod_met, param,
+                           &h[n*nt], tmp_lev);
     } else {
       err = dream_arr_rect(*att, *xc_vec, *x_vec,
                            xo, yo, zo,
@@ -165,8 +164,10 @@ void* smp_dream_arr_rect(void *arg)
                            dx, dy, dt, nt,
                            dlay, v, cp,
                            num_elements, gx, gy, gz,
-                           focus_met, focal, steer_met, theta, phi, apod, do_apod, apod_met, param,
-                           &h[n*nt],tmp_lev);
+                           foc_met, focal,
+                           steer_met, theta, phi,
+                           apod, do_apod, apod_met, param,
+                           &h[n*nt], tmp_lev);
     }
 
     if (err != NONE || out_err ==  PARALLEL_STOP) {
@@ -185,14 +186,14 @@ void* smp_dream_arr_rect(void *arg)
   // Lock out_err for update, update it, and unlock.
   err_lock.lock();
 
-  if ((tmp_err != NONE) && (out_err == NONE))
+  if ((tmp_err != NONE) && (out_err == NONE)) {
     out_err = tmp_err;
+  }
 
   err_lock.unlock();
 
   return(NULL);
 }
-
 
 /***
  *
@@ -225,24 +226,24 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
   double *ro,*geom_par, *s_par, *m_par;
   double *steer_par;
-  char   apod_str[50],foc_str[50],steer_str[50];
-  int    buflen;
-  double a,b,dx,dy,dt;
-  size_t nt, no;
-  double param=0,*delay, v, cp, alpha;
-  size_t num_elements;
+  char   apod_str[50], foc_str[50], steer_str[50];
+  dream_idx_type buflen;
+  double a, b, dx, dy, dt;
+  dream_idx_type nt, no;
+  double param=0.0, *delay, v, cp, alpha;
+  dream_idx_type num_elements=0;
   double *G;
-  int    focus_met=0;
+  int    foc_met=0;
   double *focal=nullptr;
   int    steer_met=0;
-  double theta=0, phi=0, *apod=nullptr;
+  double theta=0.0, phi=0.0, *apod=nullptr;
   bool   do_apod=false;
   int    apod_met=0;
   double *h, *err_p;
-  int    err_level=STOP, set = false;
+  int    err_level=STOP, is_set = false;
   char   err_str[50];
-  DATA   *D ;
-  size_t start, stop;
+  DATA   *D;
+  dream_idx_type start, stop;
   std::thread *threads;
   unsigned int thread_n, nthreads;
   sighandler_t old_handler, old_handler_abrt, old_handler_keyint;
@@ -251,11 +252,11 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
   if (!((nrhs == 13) || (nrhs == 14))) {
     dream_err_msg("dream_arr_rect requires 13 or 14 input arguments!");
-  }
-  else
+  } else {
     if (nlhs > 2) {
       dream_err_msg("Too many output arguments for dream_arr_rect!");
     }
+  }
 
   //
   // Observation point.
@@ -277,16 +278,17 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     dream_err_msg("Argument 2 must be a vector of length 2!");
 
   geom_par = mxGetPr(prhs[1]);
-  a = geom_par[0];		// min x-pos.
-  b = geom_par[1];		// max x-pos.
+  a = geom_par[0];              // x-width of the array element.
+  b = geom_par[1];              // y-width of the array element.
 
   //
   // Grid function (position vectors of the elements).
   //
 
   num_elements = (int) mxGetM(prhs[2]); // Number of elementents in the array.
-  if (mxGetN(prhs[2]) !=3 )
+  if (mxGetN(prhs[2]) !=3 ) {
     dream_err_msg("Argument 3  must a (number of array elements) x 3 matrix!");
+  }
 
   G = mxGetPr(prhs[2]);		// First column in the matrix.
   //gy    = gx + num_elements;		// Second column in the matrix.
@@ -296,7 +298,6 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Temporal and spatial sampling parameters.
   //
 
-
   // Check that arg 4 is a 4 element vector
   if (!((mxGetM(prhs[3])==4 && mxGetN(prhs[3])==1) || (mxGetM(prhs[3])==1 && mxGetN(prhs[3])==4)))
     dream_err_msg("Argument 4 must be a vector of length 4!");
@@ -305,15 +306,16 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   dx    = s_par[0];		// Spatial x discretization size.
   dy    = s_par[1];		// Spatial dy iscretization size.
   dt    = s_par[2];		// Temporal discretization size (= 1/sampling freq).
-  nt    = (size_t) s_par[3];	// Length of SIR.
+  nt    = (dream_idx_type) s_par[3];	// Length of SIR.
 
   //
   // Start point of impulse response vector ([us]).
   //
 
   // Check that arg 5 is a scalar or a vector.
-  if ( (mxGetM(prhs[4]) * mxGetN(prhs[4]) !=1) && ((mxGetM(prhs[4]) * mxGetN(prhs[4])) != no))
+  if ( (mxGetM(prhs[4]) * mxGetN(prhs[4]) !=1) && ((mxGetM(prhs[4]) * mxGetN(prhs[4])) != no)) {
     dream_err_msg("Argument 5 must be a scalar or a vector with a length equal to the number of observation points!");
+  }
 
   delay = mxGetPr(prhs[4]);
 
@@ -322,8 +324,9 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   //
 
   // Check that arg 6 is a 3 element vector.
-  if (!((mxGetM(prhs[5])==3 && mxGetN(prhs[5])==1) || (mxGetM(prhs[5])==1 && mxGetN(prhs[5])==3)))
+  if (!((mxGetM(prhs[5])==3 && mxGetN(prhs[5])==1) || (mxGetM(prhs[5])==1 && mxGetN(prhs[5])==3))) {
     dream_err_msg("Argument 6 must be a vector of length 3!");
+  }
 
   m_par = mxGetPr(prhs[5]);
   v     = m_par[0]; // Normal velocity of transducer surface.
@@ -336,47 +339,49 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
   if (nrhs >= 7) {
 
-    if (!mxIsChar(prhs[6]))
+    if (!mxIsChar(prhs[6])) {
       dream_err_msg("Argument 7 must be a string");
+    }
 
     buflen = (mxGetM(prhs[6]) * mxGetN(prhs[6]) * sizeof(mxChar)) + 1;
     mxGetString(prhs[6],foc_str,buflen);
 
-    set = false;
+    is_set = false;
 
     if (!strcmp(foc_str,"off")) {
-      focus_met = NO_FOCUS;
-      set = true;
+      foc_met = NO_FOCUS;
+      is_set = true;
     }
 
     if (!strcmp(foc_str,"x")) {
-      focus_met = FOCUS_X;
-      set = true;
+      foc_met = FOCUS_X;
+      is_set = true;
     }
 
     if (!strcmp(foc_str,"y")) {
-      focus_met = FOCUS_Y;
-      set = true;
+      foc_met = FOCUS_Y;
+      is_set = true;
     }
 
     if (!strcmp(foc_str,"xy")) {
-      focus_met = FOCUS_XY;
-      set = true;
+      foc_met = FOCUS_XY;
+      is_set = true;
     }
 
     if (!strcmp(foc_str,"x+y")) {
-      focus_met = FOCUS_X_Y;
-      set = true;
+      foc_met = FOCUS_X_Y;
+      is_set = true;
     }
 
     if (!strcmp(foc_str,"ud")) {
-      focus_met = FOCUS_UD;
-      set = true;
+      foc_met = FOCUS_UD;
+      is_set = true;
 
       if (mxGetM(prhs[7]) * mxGetN(prhs[7]) != num_elements ) {
         mexPrintf("The time delay vector (argument 8) for user defined ('ud') focusing\n") ;
         dream_err_msg("delays must have the same length as the number of array elements.!");
       }
+
       focal = mxGetPr(prhs[7]);
 
     } else {
@@ -389,12 +394,12 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       focal = mxGetPr(prhs[7]);
     }
 
-    if (set == false) {
+    if (is_set == false) {
       dream_err_msg("Unknown focusing method!");
     }
 
   } else {
-    focus_met = NO_FOCUS;
+    foc_met = NO_FOCUS;
   }
 
   //
@@ -411,29 +416,29 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     mxGetString(prhs[8],steer_str,buflen);
 
     steer_met = NO_STEER;       // Default no steering
-    set = false;
+    is_set = false;
 
     if (!strcmp(steer_str,"off")) {
       steer_met = NO_STEER;
-      set = true;
+      is_set = true;
     }
 
     if (!strcmp(steer_str,"x")) {
       steer_met = STEER_X;
-      set = true;
+      is_set = true;
     }
 
     if (!strcmp(steer_str,"y")) {
       steer_met = STEER_Y;
-      set = true;
+      is_set = true;
     }
 
     if (!strcmp(steer_str,"xy")) {
       steer_met = STEER_XY;
-      set = true;
+      is_set = true;
     }
 
-    if (set == false) {
+    if (is_set == false) {
       dream_err_msg("Unknown beamsteering method!");
     }
 
@@ -464,17 +469,17 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     mxGetString(prhs[10],apod_str,buflen);
 
     do_apod = false;			// default off.
-    set = false;
+    is_set = false;
 
     if (!strcmp(apod_str,"off")) {
       do_apod = false;
-      set = true;
+      is_set = true;
     }
 
     if (!strcmp(apod_str,"ud")) {
       do_apod = true;
       apod_met = APOD_UD;
-      set = true;
+      is_set = true;
 
       // Vector of apodization weights.
       if (mxGetM(prhs[11]) * mxGetN(prhs[11]) != num_elements) {
@@ -487,34 +492,34 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     if (!strcmp(apod_str,"triangle")) {
       do_apod = true;
       apod_met = APOD_TRIANGLE;
-      set = true;
+      is_set = true;
     }
 
     if (!strcmp(apod_str,"gauss")) {
       do_apod = true;
       apod_met = APOD_GAUSS;
-      set = true;
+      is_set = true;
     }
 
     if (!strcmp(apod_str,"raised")) {
       do_apod = true;
       apod_met = APOD_RISED_COSINE;
-      set = true;
+      is_set = true;
     }
 
     if (!strcmp(apod_str,"simply")) {
       do_apod = true;
       apod_met = APOD_SIMPLY_SUPPORTED;
-      set = true;
+      is_set = true;
     }
 
     if (!strcmp(apod_str,"clamped")) {
       do_apod = true;
       apod_met = APOD_CLAMPED;
-      set = true;
+      is_set = true;
     }
 
-    if (set == false) {
+    if (is_set == false) {
       dream_err_msg("Unknown apodization!");
     }
 
@@ -562,28 +567,30 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     buflen = (mxGetM(prhs[13]) * mxGetN(prhs[13]) * sizeof(mxChar)) + 1;
     mxGetString(prhs[13],err_str,buflen);
 
-    set = false;
+    is_set = false;
 
     if (!strcmp(err_str,"ignore")) {
       err_level = IGNORE;
-      set = true;
+      is_set = true;
     }
 
     if (!strcmp(err_str,"warn")) {
       err_level = WARN;
-      set = true;
+      is_set = true;
     }
 
-      if (!strcmp(err_str,"stop")) {
+    if (!strcmp(err_str,"stop")) {
       err_level = STOP;
-      set = true;
+      is_set = true;
     }
 
-    if (set == false)
+    if (is_set == false) {
       dream_err_msg("Unknown error level!");
-  }
-  else
+    }
+
+  } else {
     err_level = STOP; // Default.
+  }
 
   // Create an output matrix for the impulse response
   plhs[0] = mxCreateDoubleMatrix(nt,no,mxREAL);
@@ -657,7 +664,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     D[thread_n].att = att_ptr;
     D[thread_n].num_elements = num_elements;
     D[thread_n].G = G;
-    D[thread_n].focus_met = focus_met;
+    D[thread_n].foc_met = foc_met;
     D[thread_n].steer_met = steer_met;
     D[thread_n].do_apod = do_apod;
     D[thread_n].apod_met = apod_met;

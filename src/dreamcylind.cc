@@ -54,7 +54,8 @@ int dreamcylind(double xo, double yo, double zo,
                 double dx, double dy, double dt,
                 dream_idx_type nt, double delay, double v, double cp,
                 double *h,
-                int err_level)
+                int err_level,
+                double weight)
 {
   dream_idx_type i, it;
   double t, xsmin, xsmax, ai, du, r;
@@ -99,7 +100,7 @@ int dreamcylind(double xo, double yo, double zo,
         cylind_d(xs, ys, fabs(Rcurv), z_Rcurv, xo, yo, zo, r, du);
       }
 
-      ai = v * ds * du/(2.0*M_PI * r);
+      ai = weight * v * ds * du/(2.0*M_PI * r);
       ai /= dt;
       // Convert to SI units.
       ai *= 1.0e3;
@@ -138,7 +139,8 @@ int dreamcylind(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
                 double dx, double dy, double dt,
                 dream_idx_type nt, double delay, double v, double cp,
                 double *h,
-                int err_level)
+                int err_level,
+                double weight)
 {
   dream_idx_type i, it;
   double t, xsmin, xsmax, ai, du, r;
@@ -183,7 +185,7 @@ int dreamcylind(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
         cylind_d(xs, ys, fabs(Rcurv), z_Rcurv, xo, yo, zo, r, du);
       }
 
-      ai = v * ds * du/(2.0*M_PI * r);
+      ai = weight * v * ds * du/(2.0*M_PI * r);
       ai /= dt;
       // Convert to SI units.
       ai *= 1.0e3;
@@ -247,16 +249,16 @@ void cylind_f(double xs, double ys,
 
   if (zo <= z_Rcurv) {
 
-    double dis1 = sqrt(xo*xo + yo*yo); // Horizontal distance from origo.
-    double dis2 = sqrt(zo * (2.0*Rcurv - zo));
+    double d1 = sqrt(xo*xo + yo*yo); // Horizontal distance from origo.
+    double d2 = sqrt(zo * (2.0*Rcurv - zo));
 
-    if ( (cos_theta <  0.0) || (dis1 > dis2)) {
+    if ( (cos_theta <  0.0) || (d1 > d2)) {
       du = (double) 0.0;
     }
 
   } else {
 
-    if (cos_theta < (double) 0.0) {
+    if (cos_theta < 0.0) {
       du = 0.0;
     }
 

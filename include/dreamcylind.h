@@ -27,16 +27,18 @@
 #include "att.h"
 
 int dreamcylind(double xo, double yo, double zo,
-                double a, double b, double R,
+                double a, double b, double Rcurv,
                 double dx, double dy, double dt,
                 dream_idx_type nt, double delay, double v, double cp,
                 double *h,
-                int err_level);
+                int err_level,
+                double weight=1.0);
 
 int dreamcylind(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
                 double xo, double yo, double zo,
-                double a, double b, double R,
+                double a, double b, double Rcurv,
                 double dx, double dy, double dt,
                 dream_idx_type nt, double delay, double v, double cp,
                 double *h,
-                int err_level);
+                int err_level,
+                double weight=1.0);

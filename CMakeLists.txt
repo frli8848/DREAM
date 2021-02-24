@@ -703,132 +703,69 @@ if (Matlab_FOUND)
 endif (Matlab_FOUND)
 
 #
-# dream_arr_cylind_f
+# dream_arr_cylind
 #
 
 if (OCTAVE_FOUND)
 
-  set (oct_dream_arr_cylind_f_SOURCE_FILES
-    oct/oct_dream_arr_cylind_f.cc
+  set (oct_dream_arr_cylind_SOURCE_FILES
+    oct/oct_dream_arr_cylind.cc
     src/att.cc
     src/affinity.cc
     src/arr_functions.cc
-    src/dream_arr_cylind_f.cc
+    src/dream_arr_cylind.cc
+    src/dreamcylind.cc
     src/fft_octave.cc
     src/dream_error.cc
     )
 
-  add_library (oct_dream_arr_cylind_f MODULE
-    ${oct_dream_arr_cylind_f_SOURCE_FILES}
+  add_library (oct_dream_arr_cylind MODULE
+    ${oct_dream_arr_cylind_SOURCE_FILES}
     )
 
-  target_link_libraries (oct_dream_arr_cylind_f
+  target_link_libraries (oct_dream_arr_cylind
     ${OCTAVE_LIBRARIES}
     ${FFTW_LIBRARIES}
     )
 
-  set_target_properties (oct_dream_arr_cylind_f PROPERTIES
+  set_target_properties (oct_dream_arr_cylind PROPERTIES
     CXX_STANDARD 14
     COMPILE_FLAGS "${OCT_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_OCT_INCLUDE_DIRS}"
     LINK_FLAGS ${OCT_LD_FLAGS}
-    SUFFIX ".oct" PREFIX "" OUTPUT_NAME "dream_arr_cylind_f")
+    SUFFIX ".oct" PREFIX "" OUTPUT_NAME "dream_arr_cylind")
 
 endif (OCTAVE_FOUND)
 
 if (Matlab_FOUND)
 
-  set (mex_dream_arr_cylind_f_SOURCE_FILES
-    mex/mex_dream_arr_cylind_f.cc
+  set (mex_dream_arr_cylind_SOURCE_FILES
+    mex/mex_dream_arr_cylind.cc
     src/att.cc
     src/affinity.cc
     src/arr_functions.cc
-    src/dream_arr_cylind_f.cc
+    src/dream_arr_cylind.cc
+    src/dreamcylind.cc
     src/fft_matlab.cc
     src/dream_error.cc
     )
 
-  add_library (mex_dream_arr_cylind_f MODULE
-    ${mex_dream_arr_cylind_f_SOURCE_FILES}
+  add_library (mex_dream_arr_cylind MODULE
+    ${mex_dream_arr_cylind_SOURCE_FILES}
     )
 
-  target_link_libraries (mex_dream_arr_cylind_f
+  target_link_libraries (mex_dream_arr_cylind
     ${MATLAB_LIBRARIES}
     ${FFTW_LIBRARIES}
     )
 
-  set_target_properties (mex_dream_arr_cylind_f PROPERTIES
+  set_target_properties (mex_dream_arr_cylind PROPERTIES
     CXX_STANDARD 14
     COMPILE_FLAGS "${DREAM_FFT_MEX_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
 
     LINK_FLAGS ${MEX_LD_FLAGS}
-    SUFFIX ".${Matlab_MEX_EXTENSION}" PREFIX "" OUTPUT_NAME "dream_arr_cylind_f")
-
-endif (Matlab_FOUND)
-
-#
-# dream_arr_cylind_d
-#
-
-if (OCTAVE_FOUND)
-
-  set (oct_dream_arr_cylind_d_SOURCE_FILES
-    oct/oct_dream_arr_cylind_d.cc
-    src/att.cc
-    src/affinity.cc
-    src/arr_functions.cc
-    src/dream_arr_cylind_d.cc
-    src/fft_octave.cc
-    src/dream_error.cc
-    )
-
-  add_library (oct_dream_arr_cylind_d MODULE
-    ${oct_dream_arr_cylind_d_SOURCE_FILES}
-    )
-
-  target_link_libraries (oct_dream_arr_cylind_d
-    ${OCTAVE_LIBRARIES}
-    ${FFTW_LIBRARIES}
-    )
-
-  set_target_properties (oct_dream_arr_cylind_d PROPERTIES
-    CXX_STANDARD 14
-    COMPILE_FLAGS "${OCT_FLAGS}"
-    INCLUDE_DIRECTORIES "${DREAM_OCT_INCLUDE_DIRS}"
-    LINK_FLAGS ${OCT_LD_FLAGS}
-    SUFFIX ".oct" PREFIX "" OUTPUT_NAME "dream_arr_cylind_d")
-
-endif (OCTAVE_FOUND)
-
-if (Matlab_FOUND)
-
-  set (mex_dream_arr_cylind_d_SOURCE_FILES
-    mex/mex_dream_arr_cylind_d.cc
-    src/att.cc
-    src/affinity.cc
-    src/arr_functions.cc
-    src/dream_arr_cylind_d.cc
-    src/fft_matlab.cc
-    src/dream_error.cc
-    )
-
-  add_library (mex_dream_arr_cylind_d MODULE
-    ${mex_dream_arr_cylind_d_SOURCE_FILES}
-    )
-
-  target_link_libraries (mex_dream_arr_cylind_d
-    ${MATLAB_LIBRARIES}
-    ${FFTW_LIBRARIES}
-    )
-
-  set_target_properties (mex_dream_arr_cylind_d PROPERTIES
-    CXX_STANDARD 14
-    COMPILE_FLAGS "${DREAM_FFT_MEX_FLAGS}"
-    INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
-
-    LINK_FLAGS ${MEX_LD_FLAGS}
-    SUFFIX ".${Matlab_MEX_EXTENSION}" PREFIX "" OUTPUT_NAME "dream_arr_cylind_d")
+    SUFFIX ".${Matlab_MEX_EXTENSION}" PREFIX "" OUTPUT_NAME "dream_arr_cylind")
 
 endif (Matlab_FOUND)
 

@@ -254,11 +254,35 @@ else
   xlabel('t [\mus]')
   grid('on');
 end
-title('Cylindrical transducer')
-fprintf('dreamcylind_f\n');
+title('Cylindrical transducer focused')
+fprintf('dreamcylind (concave)\n');
 
 figure(2);
 clf;
+
+% Geometrical parameters.
+a = 10;				% x-dim size of the transducer.
+b = 20;				% y-dim size of the transducer.
+Rcurv = -100;                   % Radius of the curvature.
+geom_par = [a b Rcurv];
+
+[H,err] = dreamcylind(Ro,geom_par,s_par,delay,m_par,'stop');
+
+subplot(3,2,1);
+if size(H,2)>1
+  mesh(H);
+  axis('tight');
+  view(135,32);
+else
+  plot(t,H);
+  ax = axis;
+  axis([0 50 ax(3) ax(4)])
+  xlabel('t [\mus]')
+  grid('on');
+end
+title('Cylindrical transducer defocused')
+fprintf('dreamcylind (convex)\n');
+
 
 % ------------- Focused Spherical Transducer --------------------------
 
@@ -282,7 +306,7 @@ else
   grid('on');
 end
 title('Focused spherical transducer')
-fprintf('dreamsphere_f\n');
+fprintf('dreamsphere (focused)\n');
 
 % ------------- Defocused Spherical Transducer --------------------------
 
@@ -306,7 +330,7 @@ else
   grid('on');
 end
 title('Defocused spherical transducer')
-fprintf('dreamsphere_d_d\n');
+fprintf('dreamsphere (defocused)\n');
 
 % ------------- Array with circular elements --------------------------
 
@@ -434,9 +458,9 @@ fprintf('dream_arr_rect\n');
 
 % Element size [mm].
 a = 1;                          % x-width.
-b = 20;                                 % y-width.
-R = 100;				% Radius.
-geom_par = [a b R];
+b = 20;                         % y-width.
+Rcurv = 100;                    % Radius.
+geom_par = [a b Rcurv];
 
 % Grid function (position vectors of the elements).
 gx = -9.5:1:9.5;
@@ -474,8 +498,8 @@ apod_met = 'off';
 apod = ones(length(gx),1);              % Apodization weights for 'ud'.
 win_par = 1;                            % Parameter for raised cos and Gaussian apodization functions.
 
-[H,err] = dream_arr_cylind_f(Ro,geom_par,G,s_par,delay,...
-                             m_par,foc_met,focal,steer_met,steer_par,apod_met,apod,win_par,'stop');
+[H,err] = dream_arr_cylind(Ro,geom_par,G,s_par,delay,...
+                           m_par,foc_met,focal,steer_met,steer_par,apod_met,apod,win_par,'stop');
 
 subplot(3,2,6);
 if size(H,2)>1
@@ -490,7 +514,7 @@ else
   grid('on');
 end
 title('Array with cylindrical concave  elements')
-fprintf('dream_arr_cylind_f\n');
+fprintf('dream_arr_cylind (concave)\n');
 
 figure(3);
 clf
@@ -499,15 +523,15 @@ clf
 
 % Element size [mm].
 a = 1;                          % x-width.
-b = 20;                                 % y-width.
-R = 100;				% Radius.
-geom_par = [a b R];
+b = 20;                         % y-width.
+Rcurv = -100;                   % Radius.
+geom_par = [a b Rcurv];
 
 % Grid function (position vectors of the elements).
 gx = -10:1:10;
 gy = zeros(length(gx),1);
 gz = zeros(length(gx),1);
-gx=gx(:);  gy=gy(:);  gz=gz(:);
+gx=gx(:); gy=gy(:); gz=gz(:);
 G = [gx gy gz];
 
 % Focusing parameters.
@@ -539,8 +563,8 @@ apod_met = 'off';
 apod = ones(length(gx),1);              % Apodization weights for 'ud'.
 win_par = 1;                            % Parameter for raised cos and Gaussian apodization functions.
 
-[H,err] = dream_arr_cylind_d(Ro,geom_par,G,s_par,delay,...
-                             m_par,foc_met,focal,steer_met,steer_par,apod_met,apod,win_par,'stop');
+[H,err] = dream_arr_cylind(Ro,geom_par,G,s_par,delay,...
+                           m_par,foc_met,focal,steer_met,steer_par,apod_met,apod,win_par,'stop');
 
 subplot(3,2,1);
 
@@ -556,7 +580,7 @@ else
   grid('on');
 end
 title('Array with cylindrical convex elements')
-fprintf('dream_arr_cylind_d\n');
+fprintf('dream_arr_cylind (convex)\n');
 
 % ------------- Annualar Array  --------------------------
 
@@ -655,4 +679,4 @@ t2= toc;
 fprintf('fftconv_p\n\n');
 
 fprintf('Elapsed time conv: %f, conv_p: %f, fftconv_p: %f\n\n',t0,t1,t2);
-fprintf('Numerical error: ||conv-conv_p||= %e, ||conv-fftconv_p||= %e\n\n',norm(Z0-Z1), norm(Z0-Z2));
+fprintf('Numerical error: ||conv-conv_p||= %e, ||conv-fftconv_p||= %e\n\n',sum(sum((Z0-Z1).^2)), sum(sum((Z0-Z2).^2)));

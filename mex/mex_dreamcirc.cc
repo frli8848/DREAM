@@ -97,11 +97,11 @@ void* smp_dream_circ(void *arg)
   double xo, yo, zo;
   double *h = D.h;
   double R=D.R, dx=D.dx, dy=D.dy, dt=D.dt;
-  size_t n, no=D.no, nt=D.nt;
+  dream_idx_type n, no=D.no, nt=D.nt;
   int    tmp_lev, err_level=D.err_level;
   double *delay=D.delay, *ro=D.ro, v=D.v, cp=D.cp;
   Attenuation *att = D.att;
-  size_t start=D.start, stop=D.stop;
+  dream_idx_type start=D.start, stop=D.stop;
 
   // Buffers for the FFTs in the Attenuation
   std::unique_ptr<FFTCVec> xc_vec;
@@ -133,14 +133,14 @@ void* smp_dream_circ(void *arg)
       err = dreamcirc(xo, yo, zo,
                       R,
                       dx, dy, dt,
-                      nt, delay[0], v, cp,
+                      nt, dlay, v, cp,
                       &h[n*nt], tmp_lev);
     } else {
       err = dreamcirc(*att, *xc_vec, *x_vec,
                       xo, yo, zo,
                       R,
                       dx, dy, dt,
-                      nt, delay[0], v, cp,
+                      nt, dlay, v, cp,
                       &h[n*nt], tmp_lev);
     }
 
@@ -198,15 +198,15 @@ extern void _main();
 void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
   double *ro, *geom_par, *s_par, *m_par;
-  size_t  nt, no;
+  dream_idx_type  nt, no;
   double  R, dx, dy, dt;
   double *delay, v, cp, alpha;
   double *h, *err_p;
   int     err_level=STOP, set = false;
   char    err_str[50];
-  size_t  buflen;
+  dream_idx_type buflen;
   DATA   *D ;
-  size_t  start, stop;
+  dream_idx_type start, stop;
   std::thread *threads;
   unsigned int thread_n, nthreads;
   sighandler_t old_handler, old_handler_abrt, old_handler_keyint;

@@ -142,14 +142,14 @@ void* smp_dream_circ(void *arg)
       err = dreamcirc(xo, yo, zo,
                       R,
                       dx, dy, dt,
-                      nt, delay[0], v, cp,
+                      nt, dlay, v, cp,
                       &h[n*nt], tmp_lev);
     } else {
       err = dreamcirc(*att, *xc_vec.get(),*x_vec.get(),
                       xo, yo, zo,
                       R,
                       dx, dy, dt,
-                      nt, delay[0], v, cp,
+                      nt, dlay, v, cp,
                       &h[n*nt], tmp_lev);
     }
 

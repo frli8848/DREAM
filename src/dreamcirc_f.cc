@@ -83,7 +83,7 @@ int dreamcirc_f(double xo, double yo, double zo,
 
       double foc_delay = focus_delay_circ(foc_type, focal,
                                           xs, ys,
-                                          r,
+                                          R,
                                           cp);
 
       double ai = v * ds / (2*M_PI * r);
@@ -158,7 +158,7 @@ int dreamcirc_f(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
 
       double foc_delay = focus_delay_circ(foc_type, focal,
                                           xs, ys,
-                                          r,
+                                          R,
                                           cp);
 
       double ai = v * ds / (2*M_PI * r);

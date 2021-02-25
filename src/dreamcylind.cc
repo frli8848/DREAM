@@ -32,16 +32,16 @@
 //  Function prototypes.
 //
 
-void cylind_f(double x, double y,
-              double Rcurv,
-              double z_Rcurv,
-              double xo, double yo, double zo,
-              double &r, double &du);
+double cylind_f(double xs, double ys,
+                double Rcurv,
+                double z_Rcurv,
+                double xo, double yo, double zo,
+                double &du);
 
-void cylind_d(double x, double y,
-              double Rcurv, double z_Rcurv,
-              double xo, double yo, double zo,
-              double &r, double &du);
+double cylind_d(double xs, double ys,
+                double Rcurv, double z_Rcurv,
+                double xo, double yo, double zo,
+                double &du);
 
 /***
  *
@@ -95,9 +95,9 @@ int dreamcylind(double xo, double yo, double zo,
 
       // Compute r and ds.
       if (Rcurv >= 0.0) {       // Focused
-        cylind_f(xs, ys, Rcurv, z_Rcurv, xo, yo, zo, r, du);
+        r = cylind_f(xs, ys, Rcurv, z_Rcurv, xo, yo, zo, du);
       } else {                  // Defocused
-        cylind_d(xs, ys, fabs(Rcurv), z_Rcurv, xo, yo, zo, r, du);
+        r = cylind_d(xs, ys, fabs(Rcurv), z_Rcurv, xo, yo, zo, du);
       }
 
       ai = weight * v * ds * du/(2.0*M_PI * r);
@@ -158,8 +158,8 @@ int dreamcylind(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
   xsmax = a/2.0;
 
   phi = 2.0 * atan(b/(fabs(Rcurv)-z_Rcurv));
-  phi_min = -phi/2;
-  phi_max = phi/2;
+  phi_min = -phi/2.0;
+  phi_max = phi/2.0;
 
   // dphi in y-dim [rad].
   double dphi = asin(dy/fabs(Rcurv));
@@ -168,7 +168,7 @@ int dreamcylind(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
   //ds = dx * dy; // Approx the same as  ds = Rcurv * dx * dphi.
 
   for (i = 0; i < nt; i++) {
-    h[i] = (double) 0.0 ;
+    h[i] = 0.0;
   }
 
   phi = phi_min + dphi/2.0;
@@ -180,9 +180,9 @@ int dreamcylind(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
 
       // Compute r and ds.
       if (Rcurv >= 0.0) {           // Focused
-        cylind_f(xs, ys, Rcurv, z_Rcurv, xo, yo, zo, r, du);
+        r = cylind_f(xs, ys, Rcurv, z_Rcurv, xo, yo, zo, du);
       } else {                  // Defocused
-        cylind_d(xs, ys, fabs(Rcurv), z_Rcurv, xo, yo, zo, r, du);
+        r = cylind_d(xs, ys, fabs(Rcurv), z_Rcurv, xo, yo, zo, du);
       }
 
       ai = weight * v * ds * du/(2.0*M_PI * r);
@@ -217,17 +217,16 @@ int dreamcylind(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
   return err;
 }
 
-
 /***
  *
  * Focused
  *
  ***/
 
-void cylind_f(double xs, double ys,
-              double Rcurv, double z_Rcurv,
-              double xo, double yo, double zo,
-              double &r, double &du)
+double cylind_f(double xs, double ys,
+                double Rcurv, double z_Rcurv,
+                double xo, double yo, double zo,
+                double &du)
 {
   du = 1.0;
 
@@ -236,7 +235,7 @@ void cylind_f(double xs, double ys,
   double rx = xo - xs;
   double ry = yo - ys;
   double rz = zo - zs;
-  r = sqrt(rx*rx + ry*ry + rz*rz);
+  double r = sqrt(rx*rx + ry*ry + rz*rz);
 
   /* (**) FIXME: The code below protects about something : if we are inside the
      transducer? or perhaps if the angle is too large so we cannot reach
@@ -265,7 +264,7 @@ void cylind_f(double xs, double ys,
   }
   */
 
-  return;
+  return r;
 }
 
 /***
@@ -274,11 +273,10 @@ void cylind_f(double xs, double ys,
  *
  ***/
 
-
-void cylind_d(double xs, double ys,
-              double Rcurv, double z_Rcurv,
-              double xo, double yo, double zo,
-              double &r, double &du)
+double cylind_d(double xs, double ys,
+                double Rcurv, double z_Rcurv,
+                double xo, double yo, double zo,
+                double &du)
 {
   du = 1.0;
 
@@ -287,7 +285,7 @@ void cylind_d(double xs, double ys,
   double rx = xo - xs;
   double ry = yo - ys;
   double rz = zo + zs;          // zs is negative here.
-  r = sqrt(rx*rx + ry*ry + rz*rz);
+  double r = sqrt(rx*rx + ry*ry + rz*rz);
 
   /* FIXME see (**) above!
   // Cos theta = -[rx ry rz]*[x y (z-r)]' / (R*r) (Scalar prod.). (focused)
@@ -299,5 +297,5 @@ void cylind_d(double xs, double ys,
   }
   */
 
-  return;
+  return r;
 }

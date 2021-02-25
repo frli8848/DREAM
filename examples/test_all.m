@@ -153,12 +153,12 @@ b = 15;				% y-size.
 geom_par = [a b];
 
 % Focusing parameters.
-foc_met = 'off';
+%foc_met = 'off';
 %foc_met = 'x';
 %foc_met = 'y';
 foc_met = 'xy';
 %foc_met = 'x+y';
-focal = 100;                            % Focus radius
+focal = 15;                     % Focus distance.
 
 [H,err] = dreamrect_f(Ro,geom_par,s_par,delay,m_par,foc_met,focal,'stop');
 
@@ -204,16 +204,16 @@ fprintf('dreamcirc\n');
 % ------------- Focused Circular Transducer --------------------------
 
 % Geometrical parameters.
-a  = 10;				% Radius of the transdecer.
+a  = 10;                        % Radius of the transdecer.
 geom_par = [a];
 
-% Focusing parameters.
-foc_met = 'off';
+%% Focusing parameters.
+%foc_met = 'off';
 %foc_met = 'x';
 %foc_met = 'y';
 foc_met = 'xy';
 %foc_met = 'x+y';
-focal = 100;                            % Focus radius
+focal = 15;                     % Focus distance.
 
 [H,err] = dreamcirc_f(Ro,geom_par,s_par,delay,m_par,foc_met,focal,'stop');
 
@@ -237,7 +237,7 @@ fprintf('dreamcirc_f\n');
 % Geometrical parameters.
 a = 10;				% x-dim size of the transducer.
 b = 20;				% y-dim size of the transducer.
-Rcurv = 100;                    % Radius of the curvature.
+Rcurv = 15;                     % Radius of the curvature.
 geom_par = [a b Rcurv];
 
 [H,err] = dreamcylind(Ro,geom_par,s_par,delay,m_par,'stop');
@@ -263,7 +263,7 @@ clf;
 % Geometrical parameters.
 a = 10;				% x-dim size of the transducer.
 b = 20;				% y-dim size of the transducer.
-Rcurv = -100;                   % Radius of the curvature.
+Rcurv = -15;                    % Radius of the curvature.
 geom_par = [a b Rcurv];
 
 [H,err] = dreamcylind(Ro,geom_par,s_par,delay,m_par,'stop');
@@ -287,8 +287,8 @@ fprintf('dreamcylind (convex)\n');
 % ------------- Focused Spherical Transducer --------------------------
 
 % Geometrical parameters.
-R = 10;                                 % Radius of the transducer.
-Rcurv = 100;				% Radius of the curvature.
+R = 10;                         % Radius of the transducer.
+Rcurv = 25;                     % Radius of the curvature.
 geom_par = [R Rcurv];
 
 [H,err] = dreamsphere(Ro,geom_par,s_par,delay,m_par,'stop');
@@ -311,8 +311,8 @@ fprintf('dreamsphere (focused)\n');
 % ------------- Defocused Spherical Transducer --------------------------
 
 % Geometrical parameters.
-R = 10;				% Radius of the transducer.
-Rcurv = -100;                   % Radius of the curvature (negative for defocused
+R = 10;              % Radius of the transducer.
+Rcurv = -25;         % Radius of the curvature (negative for defocused
 geom_par = [R Rcurv];
 
 [H,err] = dreamsphere(Ro,geom_par,s_par,delay,m_par,'stop');

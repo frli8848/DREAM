@@ -1,26 +1,25 @@
 /***
-*
-* Copyright (C) 2003,2006,2007,2008,2009,2014,2015,2019,2021 Fredrik Lingvall
-*
-* This file is part of the DREAM Toolbox.
-*
-* The DREAM Toolbox is free software; you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by the
-* Free Software Foundation; either version 2, or (at your option) any
-* later version.
-*
-* The DREAM Toolbox is distributed in the hope that it will be useful, but
-* WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-* FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
-* for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with the DREAM Toolbox; see the file COPYING.  If not, write to the
-* Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-* 02110-1301, USA.
-*
-***/
-
+ *
+ * Copyright (C) 2003,2006,2007,2008,2009,2014,2015,2019,2021 Fredrik Lingvall
+ *
+ * This file is part of the DREAM Toolbox.
+ *
+ * The DREAM Toolbox is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2, or (at your option) any
+ * later version.
+ *
+ * The DREAM Toolbox is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with the DREAM Toolbox; see the file COPYING.  If not, write to the
+ * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+ * 02110-1301, USA.
+ *
+ ***/
 
 #include <string.h>
 #include <stdlib.h>
@@ -33,7 +32,6 @@
 #include "dream_arr_rect.h"
 #include "affinity.h"
 #include "dream_error.h"
-#include "arr_functions.h"
 
 #include "mex.h"
 
@@ -224,7 +222,7 @@ extern void _main();
 
 void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
-  double *ro,*geom_par, *s_par, *m_par;
+  double *ro, *geom_par, *s_par, *m_par;
   double *steer_par;
   char   apod_str[50], foc_str[50], steer_str[50];
   dream_idx_type buflen;
@@ -233,7 +231,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   double param=0.0, *delay, v, cp, alpha;
   dream_idx_type num_elements=0;
   double *G;
-  int    foc_met=0;
+  int    foc_met=NO_FOCUS;
   double *focal=nullptr;
   int    steer_met=0;
   double theta=0.0, phi=0.0, *apod=nullptr;
@@ -448,8 +446,8 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     }
 
     steer_par = mxGetPr(prhs[9]);
-    theta  = steer_par[0];		// Angle in x-direction.
-    phi    = steer_par[1];		// Angle in y-direction.
+    theta  = steer_par[0];      // Angle in x-direction.
+    phi    = steer_par[1];      // Angle in y-direction.
 
   } else {
     steer_met = NO_STEER;
@@ -468,7 +466,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     buflen = (mxGetM(prhs[10]) * mxGetN(prhs[10]) * sizeof(mxChar)) + 1;
     mxGetString(prhs[10],apod_str,buflen);
 
-    do_apod = false;			// default off.
+    do_apod = false;            // default off.
     is_set = false;
 
     if (!strcmp(apod_str,"off")) {

@@ -32,7 +32,6 @@
 #include "dream_arr_cylind.h"
 #include "affinity.h"
 #include "dream_error.h"
-#include "arr_functions.h"
 
 #include "mex.h"
 
@@ -234,7 +233,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   double param=0.0, *delay, v, cp, alpha;
   dream_idx_type num_elements=0;
   double *G;
-  int    foc_met=0;
+  int    foc_met=NO_FOCUS;
   double *focal=nullptr;
   int    steer_met=0;
   double theta=0.0, phi=0.0, *apod=nullptr;

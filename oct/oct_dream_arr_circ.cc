@@ -32,7 +32,6 @@
 #include "dream_arr_circ.h"
 #include "affinity.h"
 #include "dream_error.h"
-#include "arr_functions.h"
 
 #define SINGLE 0
 #define MULTIPLE 1
@@ -373,7 +372,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   double param=0,*delay, v, cp, alpha;
   int    num_elements;
   double *G;
-  int    foc_met=0;
+  int    foc_met=NO_FOCUS;
   double *focal= nullptr;
   int    steer_met=0;
   double theta=0,phi=0,*apod=nullptr;
@@ -381,7 +380,6 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   int    apod_type=0;
   double *h, *err_p;
   int    err_level=STOP, is_set = false;
-  char   err_str[50];
   DATA   *D;
   octave_idx_type start, stop;
   std::thread *threads;
@@ -538,19 +536,13 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
         error("delays must have the same length as the number of array elements.!");
         return oct_retval;
       }
-      const Matrix tmp7 = args(7).matrix_value();
-      focal = (double*) tmp7.fortran_vec();
 
     } else {
-
       // Check that arg 8 is a scalar.
       if (mxGetM(7) * mxGetN(7) !=1 ) {
-        error("Argument 8  must be a scalar!");
+        error("Argument 8 must be a scalar for non-user defined focusing!");
         return oct_retval;
       }
-      // Focal point (in mm).
-      const Matrix tmp7 = args(7).matrix_value();
-      focal = (double*) tmp7.fortran_vec();
     }
 
     if (is_set == false) {
@@ -561,6 +553,9 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   } else {
     foc_met = NO_FOCUS;
   }
+
+  const Matrix tmp7 = args(7).matrix_value();
+  focal = (double*) tmp7.fortran_vec();
 
   //
   // Beam steering.
@@ -655,7 +650,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
         return oct_retval;
       }
       const Matrix tmp11 = args(11).matrix_value();
-      apod = (double*) tmp11.fortran_vec();
+      apod = (double*) tmp11.fortran_vec(); // FIXME: This goes out of scope!
     }
 
     if (apod_str == "triangle") {

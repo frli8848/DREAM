@@ -69,7 +69,7 @@ typedef struct
   double *ro;
   double a;
   double b;
-  int ifoc;
+  int foc_met;
   double focal;
   double dx;
   double dy;
@@ -113,7 +113,7 @@ void* smp_dream_rect_f(void *arg)
   double *delay=D.delay, *ro=D.ro, v=D.v, cp=D.cp, focal=D.focal;
   Attenuation *att = D.att;
   octave_idx_type start=D.start, stop=D.stop;
-  int ifoc = D.ifoc;
+  int foc_met = D.foc_met;
 
   // Buffers for the FFTs in the Attenuation
   std::unique_ptr<FFTCVec> xc_vec;
@@ -143,14 +143,16 @@ void* smp_dream_rect_f(void *arg)
 
     if (att == nullptr) {
       err = dreamrect_f(xo, yo, zo,
-                        a, b, ifoc, focal,
+                        a, b,
+                        foc_met, focal,
                         dx, dy, dt,
                         nt, dlay, v, cp,
                         &h[n*nt], tmp_lev);
     } else {
       err = dreamrect_f(*att, *xc_vec.get(),*x_vec.get(),
                         xo, yo, zo,
-                        a, b, ifoc, focal,
+                        a, b,
+                        foc_met, focal,
                         dx, dy, dt,
                         nt, dlay, v, cp,
                         &h[n*nt], tmp_lev);
@@ -244,6 +246,8 @@ Temporal discretization period (= 1/sampling freq) [us].\n\
 Length of impulse response vector.\n\
 @end table\n\
 \n\
+Start point of SIR:\n\
+\n\
 @table @code\n\
 @item  delay\n\
 Scalar delay for all observation points or a vector with individual delays for each observation point [us].\n\
@@ -292,14 +296,11 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
 {
   double *ro,*geom_par,*s_par,*m_par;
   octave_idx_type nt, no;
-  int    ifoc=0;
-  char   foc_met_str[50];
-  int    buflen;
+  int    foc_met=0;
   double a, b, dx, dy, dt;
   double *delay,v,cp,alpha,focal=0;
   double *h, *err_p;
   int    err_level=STOP, is_set = false;
-  char   err_str[50];
   DATA   *D;
   octave_idx_type start, stop;
   std::thread *threads;
@@ -314,12 +315,12 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   if (!((nrhs == 7) || (nrhs == 8))) {
     error("dreamrect_f requires 7 or 8 input arguments!");
     return oct_retval;
-  }
-  else
+  } else {
     if (nlhs > 2) {
       error("Too many output arguments for dreamrect_f !");
       return oct_retval;
     }
+  }
 
   //
   // Observation point.
@@ -334,16 +335,11 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   const Matrix tmp0 = args(0).matrix_value();
   ro = (double*) tmp0.fortran_vec();
 
-  //if (no<2) {
-  //  error("At least 2 observation points i needed for this function!\n Use the serial version for a single observation point.");
-  //  return oct_retval;
-  //}
-
   //
   // Transducer geometry
   //
 
-  // Check that arg 2 is a 2 element vector
+  // Check that arg 2 is a 2 element vector.
   if (!((mxGetM(1)==2 && mxGetN(1)==1) || (mxGetM(1)==1 && mxGetN(1)==2))) {
     error("Argument 2 must be a vector of length 2!");
     return oct_retval;
@@ -364,9 +360,9 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   }
   const Matrix tmp2 = args(2).matrix_value();
   s_par = (double*) tmp2.fortran_vec();
-  dx    = s_par[0];		// Spatial x-direction discretization size.
-  dy    = s_par[1];		// Spatial y-direction discretization size.
-  dt    = s_par[2];		// Temporal discretization size (= 1/sampling freq).
+  dx    = s_par[0];        // Spatial x-direction discretization size.
+  dy    = s_par[1];        // Spatial y-direction discretization size.
+  dt    = s_par[2]; // Temporal discretization size (= 1/sampling freq).
   nt    = (octave_idx_type) s_par[3];	// Length of SIR.
 
   //
@@ -400,8 +396,6 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   // Focusing parameters.
   //
 
-  //  ifoc = 1 - no foc, 2 foc x ,3 foc y, 4 foc xy (del=fsqrt(x*x+y*y)), 5 focx+focy.
-
   if (nrhs >= 6) {
 
     if (!mxIsChar(5)) {
@@ -409,37 +403,32 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
       return oct_retval;
     }
 
-    std::string strin = args(5).string_value();
-    buflen = strin.length();
-    for (int n=0; n<=buflen; n++ ) {
-      foc_met_str[n] = strin[n];
-    }
-    foc_met_str[buflen] = '\0';
+    std::string foc_str = args(5).string_value();
 
     is_set = false;
 
-    if (!strcmp(foc_met_str,"off")) {
-      ifoc = 1;
+    if (foc_str == "off") {
+      foc_met = NO_FOCUS;
       is_set = true;
     }
 
-    if (!strcmp(foc_met_str,"x")) {
-      ifoc = 2;
+    if (foc_str == "x") {
+      foc_met = FOCUS_X;
       is_set = true;
     }
 
-    if (!strcmp(foc_met_str,"y")) {
-      ifoc = 3;
+    if (foc_str == "y") {
+      foc_met = FOCUS_Y;
       is_set = true;
     }
 
-    if (!strcmp(foc_met_str,"xy")) {
-      ifoc = 4;
+    if (foc_str == "xy") {
+      foc_met = FOCUS_XY;
       is_set = true;
     }
 
-    if (!strcmp(foc_met_str,"x+y")) {
-      ifoc = 5;
+    if (foc_str == "x+y") {
+      foc_met = FOCUS_X_Y;
       is_set = true;
     }
 
@@ -458,8 +447,9 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
     const Matrix tmp4 = args(6).matrix_value();
     focal = (double) tmp4.fortran_vec()[0];
 
-  } else
-    ifoc = 1;
+  } else {
+    foc_met = NO_FOCUS;
+  }
 
   //
   // Number of threads.
@@ -492,24 +482,19 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
       return oct_retval;
     }
 
-    std::string strin = args(7).string_value();
-    buflen = strin.length();
-    for (int n=0; n<=buflen; n++ ) {
-      err_str[n] = strin[n];
-    }
-    err_str[buflen] = '\0';
+    std::string err_str = args(7).string_value();
 
-    if (!strcmp(err_str,"ignore")) {
+    if (err_str == "ignore") {
       err_level = IGNORE;
       is_set = true;
     }
 
-    if (!strcmp(err_str,"warn")) {
+    if (err_str == "warn") {
       err_level = WARN;
       is_set = true;
     }
 
-    if (!strcmp(err_str,"stop")) {
+    if (err_str == "stop") {
       err_level = STOP;
       is_set = true;
     }
@@ -519,10 +504,9 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
       return oct_retval;
     }
 
-  }
-  else
+  } else {
     err_level = STOP; // Default.
-
+  }
 
   // Create an output matrix for the impulse response
   Matrix h_mat(nt, no);
@@ -576,7 +560,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
     D[thread_n].ro = ro;
     D[thread_n].a = a;
     D[thread_n].b = b;
-    D[thread_n].ifoc = ifoc;
+    D[thread_n].foc_met = foc_met;
     D[thread_n].focal = focal;
     D[thread_n].dx = dx;
     D[thread_n].dy = dy;
@@ -595,14 +579,20 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
     D[thread_n].h = h;
     D[thread_n].err_level = err_level;
 
-    // Start the threads.
-    threads[thread_n] = std::thread(smp_dream_rect_f, &D[thread_n]);
-    set_dream_thread_affinity(thread_n, nthreads, threads);
+    if (nthreads>1) {
+      // Start the threads.
+      threads[thread_n] = std::thread(smp_dream_rect_f, &D[thread_n]);
+      set_dream_thread_affinity(thread_n, nthreads, threads);
+    } else {
+      smp_dream_rect_f(&D[0]);
+    }
   }
 
   // Wait for all threads to finish.
-  for (thread_n = 0; thread_n < nthreads; thread_n++) {
-    threads[thread_n].join();
+  if (nthreads>1) {
+    for (thread_n = 0; thread_n < nthreads; thread_n++) {
+      threads[thread_n].join();
+    }
   }
 
   // Free memory.

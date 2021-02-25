@@ -31,8 +31,6 @@
  *
  * Subroutines for common for array transducers.
  *
- *
- *
  ***/
 
 /***
@@ -98,8 +96,6 @@ void max_dim_arr(double *x_max, double *y_max, double *ramax,
 void focusing(int foc_type, double focal, double gx, double gy,
               double x_max, double y_max, double ramax, double cp, double *foc_delay)
 {
-  double diff, rmax, retx, rety;
-
   switch(foc_type) {
 
   case NO_FOCUS:
@@ -107,29 +103,37 @@ void focusing(int foc_type, double focal, double gx, double gy,
     return;
 
   case FOCUS_X:
-    rmax = sqrt(x_max*x_max + focal*focal);
-    diff = rmax - sqrt(gx*gx + focal*focal);
-    *foc_delay = diff*1.0e3/cp; // [us]
+    {
+      double rmax = sqrt(x_max*x_max + focal*focal);
+      double diff = rmax - sqrt(gx*gx + focal*focal);
+      *foc_delay = diff*1.0e3/cp; // [us]
+    }
     break;
 
   case FOCUS_Y:
-    rmax = sqrt(y_max*y_max + focal*focal);
-    diff  = rmax - sqrt(gy*gy + focal*focal);
-    *foc_delay = diff*1.0e3/cp; // [us]
+    {
+      double rmax = sqrt(y_max*y_max + focal*focal);
+      double diff = rmax - sqrt(gy*gy + focal*focal);
+      *foc_delay = diff*1.0e3/cp; // [us]
+    }
     break;
 
   case FOCUS_XY:
-    rmax = sqrt(ramax*ramax + focal*focal);
-    diff = rmax - sqrt(gx*gx + gy*gy + focal*focal);
-    *foc_delay = diff*1.0e3/cp; // [us]
+    {
+      double rmax = sqrt(ramax*ramax + focal*focal);
+      double diff = rmax - sqrt(gx*gx + gy*gy + focal*focal);
+      *foc_delay = diff*1.0e3/cp; // [us]
+    }
     break;
 
   case FOCUS_X_Y:
-    rmax = sqrt(ramax*ramax + focal*focal);
-    retx = sqrt(gx*gx + focal*focal);
-    rety = sqrt(gy*gy + focal*focal);
-    diff = rmax - (retx + rety);
-    *foc_delay = diff*1.0e3/cp; // [us]
+    {
+      double rmax = sqrt(ramax*ramax + focal*focal);
+      double retx = sqrt(gx*gx + focal*focal);
+      double rety = sqrt(gy*gy + focal*focal);
+      double diff = rmax - (retx + rety);
+      *foc_delay = diff*1.0e3/cp; // [us]
+    }
     break;
 
   case FOCUS_UD:
@@ -137,70 +141,71 @@ void focusing(int foc_type, double focal, double gx, double gy,
     break;
 
   default:
+    *foc_delay = 0.0;
     break;
 
   }
 
   return;
-} /* focusing */
-
-
+}
 
 /***
  *
- * Subroutine for beam steering
+ * Beam steering
  *
  ***/
 
 void beamsteering(int steer_type, double theta, double phi, double gx, double gy,
-                  double x_max, double y_max, double ramax, double cp, double *retsteer)
+                  double x_max, double y_max, double ramax, double cp, double *steer_delay)
 {
-  double diff, rmax, sinx, siny, retsteerx, retsteery;
-  double pii = M_PI / (double) 180.0;
-
-  //
-  // steer_type = 1 No steering, 2 Steer x ,3 Steer y, 4 Steer xy.
-  //
+  const double deg2rad = M_PI / (double) 180.0;
 
   switch(steer_type) {
 
   case 0:
   case NO_STEER:
-    *retsteer = 0.0;
+    *steer_delay = 0.0;
     break;
 
   case STEER_X:
-    sinx = sin(theta * pii);
-    rmax = x_max * sinx;
-    diff =  rmax + gx*sinx;
-    *retsteer = diff*1.0e3/cp;
+    {
+      double sinx = sin(theta * deg2rad);
+      double rmax = x_max * sinx;
+      double diff =  rmax + gx*sinx;
+      *steer_delay = diff*1.0e3/cp;
+    }
     break;
 
   case STEER_Y:
-    siny = sin(phi * pii);
-    rmax = y_max * siny;
-    diff = rmax + gy * siny;
-    *retsteer = diff*1.0e3/cp;
+    {
+      double siny = sin(phi * deg2rad);
+      double rmax = y_max * siny;
+      double diff = rmax + gy * siny;
+      *steer_delay = diff*1.0e3/cp;
+    }
     break;
 
   case STEER_XY:
-    sinx = sin(theta * pii);
-    rmax = x_max * sinx;
-    diff = rmax + gx*sinx;
-    retsteerx = diff*1.0e3/cp;
-    siny = sin(phi * pii);
-    rmax = y_max * siny;
-    diff = rmax + gy * siny;
-    retsteery = diff*1.0e3/cp;
-    *retsteer = retsteerx + retsteery;
+    {
+      double sinx = sin(theta * deg2rad);
+      double rmax = x_max * sinx;
+      double diff = rmax + gx*sinx;
+      double steer_x_delay = diff*1.0e3/cp;
+      double siny = sin(phi * deg2rad);
+      rmax = y_max * siny;
+      diff = rmax + gy * siny;
+      double steer_y_delay = diff*1.0e3/cp;
+      *steer_delay = steer_x_delay + steer_y_delay;
+    }
     break;
 
   default:
+    *steer_delay = 0.0;
     break;
   }
 
   return;
-} /* beamsteering */
+}
 
 /***
  *

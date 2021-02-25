@@ -228,7 +228,7 @@ double sphere_d(double xs, double ys,
 
   rx = xo - xs;
   ry = yo - ys;
-  rz = zo + zs;                 // Change the sign of zs for defocused.
+  rz = zo + zs;                // Change the sign of zs for defocused.
   double r = sqrt(rx*rx + ry*ry + rz*rz);
 
   return r;

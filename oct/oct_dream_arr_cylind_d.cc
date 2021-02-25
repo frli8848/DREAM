@@ -29,7 +29,6 @@
 #include <signal.h>
 #include "dream_arr_cylind_d.h"
 #include "affinity.h"
-#include "dream_error.h"
 
 #define SINGLE 0
 #define MULTIPLE 1

@@ -28,6 +28,25 @@
 #define DOUBLE_PRECISION 0
 #define SINGLE_PRECISION 1
 
+#define NO_FOCUS 1
+#define FOCUS_X 2
+#define FOCUS_Y 3
+#define FOCUS_XY 4
+#define FOCUS_X_Y 5             // X+Y
+#define FOCUS_UD 6              // User defined
+
+#define NO_STEER 1
+#define STEER_X 2
+#define STEER_Y 3
+#define STEER_XY 4
+
+#define APOD_UD 0               // User defined
+#define APOD_TRIANGLE 1
+#define APOD_GAUSS 2
+#define APOD_RISED_COSINE 3
+#define APOD_SIMPLY_SUPPORTED 4
+#define APOD_CLAMPED 5
+
 #ifdef DREAM_OCTAVE
 
 // Use the index type that Octave was build with.

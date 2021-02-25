@@ -21,7 +21,6 @@
 *
 ***/
 
-
 #include <string.h>
 #include <stdlib.h>
 #include <signal.h>
@@ -39,8 +38,6 @@
 #define SINGLE 0
 #define MULTIPLE 1
 
-// Parallel implementation.
-
 //
 // Globals
 //
@@ -55,9 +52,9 @@ int running;
 
 typedef struct
 {
-  size_t no;
-  size_t start;
-  size_t stop;
+  dream_idx_type no;
+  dream_idx_type start;
+  dream_idx_type stop;
   double *ro;
   double a;
   double b;
@@ -66,7 +63,7 @@ typedef struct
   double dx;
   double dy;
   double dt;
-  size_t nt;
+  dream_idx_type nt;
   int delay_method;
   double *delay;
   double v;
@@ -100,11 +97,11 @@ void* smp_dream_rect_f(void *arg)
   double xo, yo, zo;
   double *h = D.h;
   double a=D.a, b=D.b, dx=D.dx, dy=D.dy, dt=D.dt;
-  size_t n, no=D.no, nt=D.nt;
+  dream_idx_type n, no=D.no, nt=D.nt;
   int    tmp_lev, err_level=D.err_level;
   double *delay=D.delay, *ro=D.ro, v=D.v, cp=D.cp, focal=D.focal;
   Attenuation *att = D.att;
-  size_t start=D.start, stop=D.stop;
+  dream_idx_type start=D.start, stop=D.stop;
   int foc_met=D.foc_met;
 
   // Buffers for the FFTs in the Attenuation
@@ -204,18 +201,19 @@ extern void _main();
 
 void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
-  double *ro,*geom_par, *s_par, *m_par;
-  size_t nt,no;
-  int    foc_met=0;
-  char   foc_met_str[50];
-  size_t buflen;
-  double a,b, dx, dy, dt;
-  double *delay,v,cp,alpha,focal=0;
+  double *ro, *geom_par, *s_par, *m_par;
+  dream_idx_type nt, no;
+  dream_idx_type buflen;
+  double a, b, dx, dy, dt;
+  double *delay=nullptr, v, cp, alpha;
+  int    foc_met=NO_FOCUS;
+  char   foc_str[50];
+  double focal=0.0;
   double *h, *err_p;
-  int    err_level=STOP, set=false;
+  int    err_level=STOP, is_set=false;
   char   err_str[50];
   DATA   *D;
-  size_t start, stop;
+  dream_idx_type start, stop;
   std::thread *threads;
   unsigned int thread_n, nthreads;
   sighandler_t old_handler, old_handler_abrt, old_handler_keyint;
@@ -224,19 +222,20 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
   if (!((nrhs == 7) || (nrhs == 8))) {
     dream_err_msg("dreamrect_f requires 7 or 8 input arguments!");
-  }
-  else
+  } else {
     if (nlhs > 2) {
       dream_err_msg("Too many output arguments for dreamrect_f!");
     }
+  }
 
   //
   // Observation point.
   //
 
   // Check that arg (number of observation points) x 3 matrix
-  if (mxGetN(prhs[0]) != 3)
+  if (mxGetN(prhs[0]) != 3) {
     dream_err_msg("Argument 1 must be a (number of observation points) x 3 matrix!");
+  }
 
   no = mxGetM(prhs[0]); // Number of observation points.
   ro = mxGetPr(prhs[0]);
@@ -246,8 +245,9 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   //
 
   // Check that arg 2 is a 2 element vector
-  if (!((mxGetM(prhs[1])==2 && mxGetN(prhs[1])==1) || (mxGetM(prhs[1])==1 && mxGetN(prhs[1])==2)))
+  if (!((mxGetM(prhs[1])==2 && mxGetN(prhs[1])==1) || (mxGetM(prhs[1])==1 && mxGetN(prhs[1])==2))) {
     dream_err_msg("Argument 2 must be a 2 element vector!");
+  }
 
   geom_par = mxGetPr(prhs[1]);
   a = geom_par[0];		// x-size.
@@ -258,22 +258,24 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   //
 
   // Check that arg 3 is a 4 element vector
-  if (!((mxGetM(prhs[2])==4 && mxGetN(prhs[2])==1) || (mxGetM(prhs[2])==1 && mxGetN(prhs[2])==4)))
+  if (!((mxGetM(prhs[2])==4 && mxGetN(prhs[2])==1) || (mxGetM(prhs[2])==1 && mxGetN(prhs[2])==4))) {
     dream_err_msg("Argument 3 must be a vector of length 4!");
+  }
 
   s_par = mxGetPr(prhs[2]);
-  dx    = s_par[0];		// Spatial x discretization size.
-  dy    = s_par[1];		// Spatial dy iscretization size.
-  dt    = s_par[2];		// Temporal discretization size (= 1/sampling freq).
-  nt    = (size_t) s_par[3];	// Length of SIR.
+  dx = s_par[0];  // Spatial x discretization size.
+  dy = s_par[1];  // Spatial dy iscretization size.
+  dt = s_par[2];  // Temporal discretization size (= 1/sampling freq).
+  nt = (dream_idx_type) s_par[3]; // Length of SIR.
 
   //
   // Start point of impulse response vector ([us]).
   //
 
-  // Check that arg 4 is a scalar (or vector).
-  if ( (mxGetM(prhs[3]) * mxGetN(prhs[3]) !=1) && ((mxGetM(prhs[3]) * mxGetN(prhs[3])) != no))
+  // Check that arg 4 is a scalar or vector.
+  if ( (mxGetM(prhs[3]) * mxGetN(prhs[3]) !=1) && ((mxGetM(prhs[3]) * mxGetN(prhs[3])) != no)) {
     dream_err_msg("Argument 4 must be a scalar or a vector with a length equal to the number of observation points!");
+  }
 
   delay = mxGetPr(prhs[3]);
 
@@ -281,69 +283,71 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Material parameters
   //
 
-  // Check that arg 5 is a 3 element vectora
-  if (!((mxGetM(prhs[4])==3 && mxGetN(prhs[4])==1) || (mxGetM(prhs[4])==1 && mxGetN(prhs[4])==3)))
+  // Check that arg 5 is a 3 element vector.
+  if (!((mxGetM(prhs[4])==3 && mxGetN(prhs[4])==1) || (mxGetM(prhs[4])==1 && mxGetN(prhs[4])==3))) {
     dream_err_msg("Argument 5 must be a vector of length 3!");
+  }
 
   m_par = mxGetPr(prhs[4]);
   v     = m_par[0]; // Normal velocity of transducer surface.
   cp    = m_par[1]; // Sound speed.
   alpha  = m_par[2]; // Attenuation coefficient [dB/(cm MHz)].
 
-
   //
   // Focusing parameters.
   //
 
-  //  foc_met = 1 - no foc, 2 foc x ,3 foc y, 4 foc xy (del=fsqrt(x*x+y*y)), 5 focx+focy.
-
   if (nrhs >= 6) {
 
-    if (!mxIsChar(prhs[5]))
+    if (!mxIsChar(prhs[5])) {
       dream_err_msg("Argument 6 must be a string");
+    }
 
     buflen = (mxGetM(prhs[5]) * mxGetN(prhs[5]) * sizeof(mxChar)) + 1;
-    mxGetString(prhs[5],foc_met_str,buflen);
+    mxGetString(prhs[5],foc_str,buflen);
 
-    set = false;
+    is_set = false;
 
-    if (!strcmp(foc_met_str,"off")) {
-      foc_met = 1;
-      set = true;
+    if (!strcmp(foc_str,"off")) {
+      foc_met = NO_FOCUS;
+      is_set = true;
     }
 
-    if (!strcmp(foc_met_str,"x")) {
-      foc_met = 2;
-      set = true;
+    if (!strcmp(foc_str,"x")) {
+      foc_met = FOCUS_X;
+      is_set = true;
     }
 
-    if (!strcmp(foc_met_str,"y")) {
-      foc_met = 3;
-      set = true;
+    if (!strcmp(foc_str,"y")) {
+      foc_met = FOCUS_Y;
+      is_set = true;
     }
 
-    if (!strcmp(foc_met_str,"xy")) {
-      foc_met = 4;
-      set = true;
+    if (!strcmp(foc_str,"xy")) {
+      foc_met = FOCUS_XY;
+      is_set = true;
     }
 
-    if (!strcmp(foc_met_str,"x+y")) {
-      foc_met = 5;
-      set = true;
+    if (!strcmp(foc_str,"x+y")) {
+      foc_met = FOCUS_X_Y;
+      is_set = true;
     }
 
-  if (set == false)
+    if (is_set == false) {
       dream_err_msg("Unknown focusing method!");
+    }
 
     // Check that arg 7 is a scalar.
-    if (mxGetM(prhs[6]) * mxGetN(prhs[6]) !=1 )
+    if (mxGetM(prhs[6]) * mxGetN(prhs[6]) != NO_FOCUS ) {
       dream_err_msg("Argument 7 must be a scalar!");
+    }
 
     // Focal point (in mm).
     focal = mxGetScalar(prhs[6]);
 
-  } else
-    foc_met = 1;
+  } else {
+    foc_met = NO_FOCUS;
+  }
 
   //
   // Number of threads.
@@ -371,34 +375,36 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
   if (nrhs == 8) {
 
-    if (!mxIsChar(prhs[7]))
+    if (!mxIsChar(prhs[7])) {
       dream_err_msg("Argument 8 must be a string");
+    }
 
     buflen = (mxGetM(prhs[7]) * mxGetN(prhs[7]) * sizeof(mxChar)) + 1;
     mxGetString(prhs[7],err_str,buflen);
 
-    set = false;
+    is_set = false;
 
     if (!strcmp(err_str,"ignore")) {
       err_level = IGNORE;
-      set = true;
+      is_set = true;
     }
 
     if (!strcmp(err_str,"warn")) {
       err_level = WARN;
-      set = true;
+      is_set = true;
     }
 
     if (!strcmp(err_str,"stop")) {
       err_level = STOP;
-      set = true;
+      is_set = true;
     }
 
-    if (set == false)
+    if (is_set == false) {
       dream_err_msg("Unknown error level!");
-  }
-  else
+    }
+  } else {
     err_level = STOP; // Default.
+  }
 
   // Create an output matrix for the impulse response
   plhs[0] = mxCreateDoubleMatrix(nt,no,mxREAL);
@@ -412,11 +418,11 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     std::cerr << "Couldn't register SIGTERM signal handler!" << std::endl;
   }
 
-  if (( old_handler_abrt=signal(SIGABRT, &sighandler)) == SIG_ERR) {
+  if ((old_handler_abrt=signal(SIGABRT, &sighandler)) == SIG_ERR) {
     std::cerr << "Couldn't register SIGABRT signal handler!" << std::endl;
   }
 
-  if (( old_handler_keyint=signal(SIGINT, &sighandler)) == SIG_ERR) {
+  if ((old_handler_keyint=signal(SIGINT, &sighandler)) == SIG_ERR) {
     std::cerr << "Couldn't register SIGINT signal handler!" << std::endl;
   }
 
@@ -463,10 +469,11 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     D[thread_n].dt = dt;
     D[thread_n].nt = nt;
 
-    if (mxGetM(prhs[3]) * mxGetN(prhs[3]) == 1)
+    if (mxGetM(prhs[3]) * mxGetN(prhs[3]) == 1) {
       D[thread_n].delay_method = SINGLE; // delay is a scalar.
-    else
+    } else {
       D[thread_n].delay_method = MULTIPLE; // delay is a vector.
+    }
 
     D[thread_n].delay = delay;
     D[thread_n].v = v;

@@ -32,7 +32,6 @@
 #include "dream_arr_cylind.h"
 #include "affinity.h"
 #include "dream_error.h"
-#include "arr_functions.h"
 
 #define SINGLE 0
 #define MULTIPLE 1
@@ -374,7 +373,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   double param=0.0, *delay, v=0.0, cp=0.0, alpha=0.0;
   int    num_elements;
   double *G;
-  int    foc_met=0;
+  int    foc_met=NO_FOCUS;
   double *focal=nullptr;
   int    steer_met=0;
   double theta=0,phi=0,*apod=NULL;
@@ -382,7 +381,6 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   int    apod_met=0;
   double *h;
   int    err_level=STOP, is_set = false;
-  char   err_str[50];
   DATA   *D;
   dream_idx_type start, stop;
   std::thread *threads;
@@ -732,25 +730,19 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
       return oct_retval;
     }
 
-    std::string strin = args(13).string_value();
-    buflen = strin.length();
-    for (int n=0; n<=buflen; n++ ) {
-      err_str[n] = strin[n];
-    }
-    err_str[buflen] = '\0';
+    std::string err_str = args(13).string_value();
 
-
-    if (!strcmp(err_str,"ignore")) {
+    if (err_str == "ignore") {
       err_level = IGNORE;
       is_set = true;
     }
 
-    if (!strcmp(err_str,"warn")) {
+    if (err_str == "warn") {
       err_level = WARN;
       is_set = true;
     }
 
-    if (!strcmp(err_str,"stop")) {
+    if (err_str == "stop") {
       err_level = STOP;
       is_set = true;
     }
@@ -759,10 +751,9 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
       error("Unknown error level!");
       return oct_retval;
     }
-  }
-  else
+  } else {
     err_level = STOP; // Default.
-
+  }
 
   // Create an output matrix for the impulse response
   Matrix h_mat(nt, no);

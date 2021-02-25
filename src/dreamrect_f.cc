@@ -30,7 +30,7 @@
 //  Function prototypes.
 //
 
-double focusing(int foc_type, double focal,
+double focus_delay_rect(int foc_type, double focal,
                 double xs, double ys,
                 double xamax, double yamax, double ramax,
                 double cp);
@@ -42,67 +42,68 @@ double focusing(int foc_type, double focal,
  ***/
 
 int dreamrect_f(double xo, double yo, double zo,
-                double a, double b, int foc_type, double focal,
-                double dx, double dy, double dt,
-                dream_idx_type nt,
+                double a, double b,
+                int foc_type, double focal,
+                double dx, double dy, double dt, dream_idx_type nt,
                 double delay,
                 double v, double cp,
                 double *h,
                 int err_level)
 {
-  dream_idx_type i, it;
-  double t;
-  double ai;
-  double r;
+  int err = NONE;
+
+  // x-dim and y-dim integration bounds
   double xsmin = -a/2;
   double xsmax = a/2;
   double ysmin = -b/2;
   double ysmax = b/2;
-  int err = NONE;
 
   double ds = dx * dy;
   double c = sqrt(a*a + b*b);
 
-  for (i = 0; i < nt; i++) {
-    h[i] = (double) 0.0 ;
+  for (dream_idx_type i = 0; i < nt; i++) {
+    h[i] = 0.0;
   }
 
-  double ys = ysmin + dy / 2.0;
-
+  double ys = ysmin + dy/2.0;
   while (ys <= ysmax) {
 
     double ry = yo - ys;
 
-    double xs = xsmin + dx / 2.0;
-
+    double xs = xsmin + dx/2.0;
     while (xs <= xsmax) {
 
+      // Compute the distance (length) from an observation point (xo,yo,zo)
+      // to a point (xs,ys) on the transducer surface.
       double rx = xo - xs;
-      r = sqrt(rx*rx + ry*ry + zo*zo);
+      double r = sqrt(rx*rx + ry*ry + zo*zo);
 
-      double foc_delay = focusing(foc_type, focal, xs, ys, a, b, c, cp);
+      double foc_delay = focus_delay_rect(foc_type, focal, xs, ys, a, b, c, cp);
 
-      ai = v * ds / (2*M_PI * r);
+      double ai = v * ds / (2*M_PI * r);
       ai /= dt;
       ai *= 1.0e3; // Convert to SI units.
 
       // Propagation delay in micro seconds.
-      t = r * 1.0e3/cp;
-      it = (dream_idx_type) rint((t - delay + foc_delay)/dt);
+      double t = r * 1.0e3/cp;
+      dream_idx_type it = (dream_idx_type) rint((t - delay + foc_delay)/dt);
 
       // Check if index is out of bounds.
       if ((it < nt) && (it >= 0)) {
         h[it] += ai;
-      } else  {
-        if  (it >= 0)
+      } else {
+
+        if (it >= 0) {
           err = dream_out_of_bounds_err("SIR out of bounds",it-nt+1,err_level);
-        else
+        } else {
           err = dream_out_of_bounds_err("SIR out of bounds",it,err_level);
+        }
 
         if ( (err_level == PARALLEL_STOP) || (err_level == STOP) ) {
           return err; // Bail out.
         }
       }
+
       xs += dx;
     }
     ys += dy;
@@ -121,10 +122,7 @@ int dreamrect_f(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
                 double *h,
                 int err_level)
 {
-  dream_idx_type i, it;
-  double t;
-  double ai;
-  double r;
+  // x-dim and y-dim integration bounds
   double xsmin = -a/2;
   double xsmax = a/2;
   double ysmin = -b/2;
@@ -134,38 +132,41 @@ int dreamrect_f(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
   double ds = dx * dy;
   double c = sqrt(a*a + b*b);
 
-  for (i = 0; i < nt; i++) {
-    h[i] = (double) 0.0 ;
+  for (dream_idx_type i = 0; i < nt; i++) {
+    h[i] = 0.0;
   }
 
-  double ys = ysmin + dy / 2.0;
+  double ys = ysmin + dy/2.0;
 
   while (ys <= ysmax) {
 
     double ry = yo - ys;
 
-    double xs = xsmin + dx / 2.0;
+    double xs = xsmin + dx/2.0;
 
     while (xs <= xsmax) {
 
+      // Compute the distance (length) from an observation point (xo,yo,zo)
+      // to a point (xs,ys) on the transducer surface.
       double rx = xo - xs;
-      r = sqrt(rx*rx + ry*ry + zo*zo);
+      double r = sqrt(rx*rx + ry*ry + zo*zo);
 
-      double foc_delay = focusing(foc_type, focal, xs, ys, a, b, c, cp);
+      double foc_delay = focus_delay_rect(foc_type, focal, xs, ys, a, b, c, cp);
 
-      ai = v * ds / (2*M_PI * r);
+      double ai = v * ds / (2*M_PI * r);
       ai /= dt;
       ai *= 1.0e3; // Convert to SI units.
 
       // Propagation delay in micro seconds.
-      t = r * 1.0e3/cp;
-      it = (dream_idx_type) rint((t - delay + foc_delay)/dt);
+      double t = r * 1.0e3/cp;
+      dream_idx_type it = (dream_idx_type) rint((t - delay + foc_delay)/dt);
 
       // Check if index is out of bounds.
       if ((it < nt) && (it >= 0)) {
         att.att(xc_vec, x_vec, r, it, h, ai);
-      } else  {
-        if  (it >= 0) {
+      } else {
+
+        if (it >= 0) {
           err = dream_out_of_bounds_err("SIR out of bounds",it-nt+1,err_level);
         } else {
           err = dream_out_of_bounds_err("SIR out of bounds",it,err_level);
@@ -175,6 +176,7 @@ int dreamrect_f(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
           return err; // Bail out.
         }
       }
+
       xs += dx;
     }
     ys += dy;
@@ -189,49 +191,56 @@ int dreamrect_f(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
  *
  ***/
 
-double focusing(int foc_type, double focal,
-                double xs, double ys,
-                double xamax, double yamax, double ramax,
-                double cp)
+double focus_delay_rect(int foc_type, double focal,
+                        double xs, double ys,
+                        double xamax, double yamax, double ramax,
+                        double cp)
 {
-  double diff, rmax, retx, rety;
   double foc_delay = 0.0;
 
-  // foc_type: 1 no foc, 2 foc x, 3 foc y, 4 foc xy, 5 foc x+y
   switch (foc_type) {
 
-  case 1:
+  case NO_FOCUS:
     break;
 
-  case 2:
-    rmax = sqrt(xamax*xamax + focal*focal);
-    diff = rmax - sqrt(xs*xs + focal*focal);
-    foc_delay = diff * 1.0e3 / cp;
+  case FOCUS_X:
+    {
+      double rmax = sqrt(xamax*xamax + focal*focal);
+      double diff = rmax - sqrt(xs*xs + focal*focal);
+      foc_delay = diff * 1.0e3 / cp;
+    }
     break;
 
-  case 3:
-    rmax = sqrt(yamax*yamax + focal*focal);
-    diff = rmax - sqrt(ys*ys + focal*focal);
-    foc_delay = diff * 1.0e3 / cp;
+  case FOCUS_Y:
+    {
+      double rmax = sqrt(yamax*yamax + focal*focal);
+      double diff = rmax - sqrt(ys*ys + focal*focal);
+      foc_delay = diff * 1.0e3 / cp;
+    }
     break;
 
-  case 4:
-    rmax = sqrt(ramax*ramax + focal*focal);
-    diff = rmax - sqrt(xs*xs + ys*ys + focal*focal);
-    foc_delay = diff * 1.0e3 / cp;
+  case FOCUS_XY:
+    {
+      double rmax = sqrt(ramax*ramax + focal*focal);
+      double diff = rmax - sqrt(xs*xs + ys*ys + focal*focal);
+      foc_delay = diff * 1.0e3 / cp;
+    }
     break;
 
-  case 5:
-    rmax = sqrt(ramax*ramax + focal*focal);
-    retx = sqrt(xs*xs + focal*focal);
-    rety = sqrt(ys*ys + focal*focal);
-    diff = rmax - (retx + rety);
-    foc_delay = diff * 1.0e3 / cp;
+  case FOCUS_X_Y:
+    {
+      double rmax = sqrt(ramax*ramax + focal*focal);
+      double delay_x = sqrt(xs*xs + focal*focal);
+      double delay_y = sqrt(ys*ys + focal*focal);
+      double diff = rmax - (delay_x + delay_y);
+      foc_delay = diff * 1.0e3 / cp;
+    }
+    break;
 
   default:
     break;
 
-  } // switch
+  }
 
-  return foc_delay;
+  return foc_delay;             // [us]
 }

@@ -284,7 +284,7 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
   double *ro,*geom_par,*s_par,*m_par;
   double a, b, Rcurv, dx, dy, dt;
   octave_idx_type  nt, no;
-  double *delay,v,cp,alpha, *h, *err_p;
+  double *delay,v,cp,alpha, *h;
   int    err_level=STOP, is_set = false;
   char   err_str[50];
   int    buflen;
@@ -367,7 +367,6 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
 
   const Matrix tmp3 = args(3).matrix_value();
   delay = (double*) tmp3.fortran_vec();
-
 
   //
   // Material parameters
@@ -567,7 +566,7 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
 
   if (nlhs == 2) {
     Matrix err_mat(1, 1);
-    err_p = err_mat.fortran_vec();
+    double *err_p = err_mat.fortran_vec();
     err_p[0] = (double) out_err;
     oct_retval.append(err_mat);
   }

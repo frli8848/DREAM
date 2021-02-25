@@ -4,13 +4,12 @@
 
 setup_dream_parameters
 
-
-% ------------- Focused Cylindrical Transducer --------------------------
+%% Focused/concave
 
 % Geometrical parameters.
 a = 10;				% x-size of the transducer.
 b = 20;				% y-size of the transducer.
-Rcurv = 100;                    % Radius of the curvature.
+Rcurv = 10;                    % Radius of the curvature.
 geom_par = [a b Rcurv];
 
 [Hf,err] = dreamcylind(Ro,geom_par,s_par,delay,m_par,'stop');
@@ -46,7 +45,7 @@ title(title_str)
 % Geometrical parameters.
 a = 10;				% x-size of the transducer.
 b = 20;				% y-size of the transducer.
-Rcurv = -100;                   % Radius of the curvature (negative)..
+Rcurv = -10;                   % Radius of the curvature (negative)..
 geom_par = [a b Rcurv];
 
 [Hd,err] = dreamcylind(Ro,geom_par,s_par,delay,m_par,'stop');

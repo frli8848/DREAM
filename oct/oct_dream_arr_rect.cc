@@ -32,7 +32,6 @@
 #include "dream_arr_rect.h"
 #include "affinity.h"
 #include "dream_error.h"
-#include "arr_functions.h"
 
 #define SINGLE 0
 #define MULTIPLE 1
@@ -74,7 +73,7 @@ typedef struct
   Attenuation *att;
   dream_idx_type num_elements;
   double *G;
-  int focus_met;
+  int foc_met;
   int steer_met;
   bool do_apod;
   int apod_met;
@@ -116,7 +115,7 @@ void* smp_dream_arr_rect(void *arg)
   double *delay=D.delay, *ro=D.ro, v=D.v, cp=D.cp;
   Attenuation *att = D.att;
   dream_idx_type start=D.start, stop=D.stop;
-  int    focus_met=D.focus_met, steer_met=D.steer_met, do_apod = D.do_apod,apod_met=D.apod_met;
+  int    foc_met=D.foc_met, steer_met=D.steer_met, do_apod = D.do_apod,apod_met=D.apod_met;
   double *focal=D.focal, *apod=D.apod, theta=D.theta,phi=D.phi,param=D.param;
   dream_idx_type num_elements = D.num_elements;
 
@@ -156,7 +155,7 @@ void* smp_dream_arr_rect(void *arg)
                            dx, dy, dt, nt,
                            dlay, v, cp,
                            num_elements, gx, gy, gz,
-                           focus_met, focal, steer_met, theta, phi, apod, do_apod, apod_met, param,
+                           foc_met, focal, steer_met, theta, phi, apod, do_apod, apod_met, param,
                            &h[n*nt], tmp_lev);
 
     } else {
@@ -166,14 +165,15 @@ void* smp_dream_arr_rect(void *arg)
                            dx, dy, dt, nt,
                            dlay, v, cp,
                            num_elements, gx, gy, gz,
-                           focus_met, focal, steer_met, theta, phi, apod, do_apod, apod_met, param,
+                           foc_met, focal, steer_met, theta, phi, apod, do_apod, apod_met, param,
                            &h[n*nt], tmp_lev);
     }
 
     if (err != NONE || out_err ==  PARALLEL_STOP) {
       tmp_err = err;
-      if (err == PARALLEL_STOP || out_err ==  PARALLEL_STOP)
+      if (err == PARALLEL_STOP || out_err ==  PARALLEL_STOP) {
         break; // Jump out when a STOP error occurs.
+      }
     }
 
     if (!running) {
@@ -186,8 +186,9 @@ void* smp_dream_arr_rect(void *arg)
   // Lock out_err for update, update it, and unlock.
   err_lock.lock();
 
-  if ((tmp_err != NONE) && (out_err == NONE))
+  if ((tmp_err != NONE) && (out_err == NONE)) {
     out_err = tmp_err;
+  }
 
   err_lock.unlock();
 
@@ -361,7 +362,7 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
   double param=0.0, *delay, v, cp, alpha;
   dream_idx_type num_elements;
   double *G;
-  int    focus_met=0;
+  int    foc_met=NO_FOCUS;
   double *focal=nullptr;
   int    steer_met=0;
   double theta=0.0, phi=0.0, *apod=nullptr;
@@ -494,32 +495,32 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
     is_set = false;
 
     if (foc_str == "off") {
-      focus_met = NO_FOCUS;
+      foc_met = NO_FOCUS;
       is_set = true;
     }
 
     if (foc_str == "x") {
-      focus_met = FOCUS_X;
+      foc_met = FOCUS_X;
       is_set = true;
     }
 
     if (foc_str == "y") {
-      focus_met = FOCUS_Y;
+      foc_met = FOCUS_Y;
       is_set = true;
     }
 
     if (foc_str == "xy") {
-      focus_met = FOCUS_XY;
+      foc_met = FOCUS_XY;
       is_set = true;
     }
 
     if (foc_str == "x+y") {
-      focus_met = FOCUS_X_Y;
+      foc_met = FOCUS_X_Y;
       is_set = true;
     }
 
     if (foc_str == "ud") {
-      focus_met = FOCUS_UD;
+      foc_met = FOCUS_UD;
       is_set = true;
 
       if (mxGetM(7) * mxGetN(7) != num_elements ) {
@@ -531,7 +532,7 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
     } else {
       // Check that arg 8 is a scalar.
       if (mxGetM(7) * mxGetN(7) !=1 ) {
-        error("Argument 8 must be a scalar!");
+        error("Argument 8 must be a scalar for non-user defined focusing!");
         return oct_retval;
       }
     }
@@ -542,7 +543,7 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
     }
 
   } else {
-    focus_met = NO_FOCUS;
+    foc_met = NO_FOCUS;
   }
 
   const Matrix tmp7 = args(7).matrix_value();
@@ -811,7 +812,7 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
     D[thread_n].att = att_ptr;
     D[thread_n].num_elements = num_elements;
     D[thread_n].G = G;
-    D[thread_n].focus_met = focus_met;
+    D[thread_n].foc_met = foc_met;
     D[thread_n].steer_met = steer_met;
     D[thread_n].do_apod = do_apod;
     D[thread_n].apod_met = apod_met;

@@ -1,25 +1,25 @@
 /***
-*
-* Copyright (C) 2003,2006,2007,2008,2009,2014,2015,2019,2021 Fredrik Lingvall
-*
-* This file is part of the DREAM Toolbox.
-*
-* The DREAM Toolbox is free software; you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by the
-* Free Software Foundation; either version 2, or (at your option) any
-* later version.
-*
-* The DREAM Toolbox is distributed in the hope that it will be useful, but
-* WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-* FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
-* for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with the DREAM Toolbox; see the file COPYING.  If not, write to the
-* Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-* 02110-1301, USA.
-*
-***/
+ *
+ * Copyright (C) 2003,2006,2007,2008,2009,2014,2015,2019,2021 Fredrik Lingvall
+ *
+ * This file is part of the DREAM Toolbox.
+ *
+ * The DREAM Toolbox is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2, or (at your option) any
+ * later version.
+ *
+ * The DREAM Toolbox is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with the DREAM Toolbox; see the file COPYING.  If not, write to the
+ * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+ * 02110-1301, USA.
+ *
+ ***/
 
 #include <string.h>
 #include <stdlib.h>
@@ -38,11 +38,10 @@
 #define SINGLE 0
 #define MULTIPLE 1
 
-// Parallel implementation.
-
 //
 // Globals
 //
+
 volatile int out_err = NONE;
 std::mutex err_lock;
 int running;
@@ -97,12 +96,12 @@ void* smp_dream_circ_f(void *arg)
   double xo, yo, zo;
   double *h = D.h;
   double R=D.R, dx=D.dx, dy=D.dy, dt=D.dt;
-  size_t n, no=D.no, nt=D.nt;
+  dream_idx_type n, no=D.no, nt=D.nt;
   int    tmp_lev, err_level=D.err_level;
   double *delay=D.delay, *ro=D.ro, v=D.v, cp=D.cp, focal=D.focal;
   Attenuation *att = D.att;
-  size_t  start=D.start, stop=D.stop;
-  int foc_met = D.foc_met;
+  dream_idx_type start=D.start, stop=D.stop;
+  int foc_met=D.foc_met;
 
   // Buffers for the FFTs in the Attenuation
   std::unique_ptr<FFTCVec> xc_vec;
@@ -113,10 +112,11 @@ void* smp_dream_circ_f(void *arg)
   }
 
   // Let the thread finish and then catch the error.
-  if (err_level == STOP)
+  if (err_level == STOP) {
     tmp_lev = PARALLEL_STOP;
-  else
+  } else {
     tmp_lev = err_level;
+  }
 
   for (n=start; n<stop; n++) {
     xo = ro[n];
@@ -147,8 +147,9 @@ void* smp_dream_circ_f(void *arg)
 
     if (err != NONE || out_err ==  PARALLEL_STOP) {
       tmp_err = err;
-      if (err == PARALLEL_STOP || out_err ==  PARALLEL_STOP)
+      if (err == PARALLEL_STOP || out_err ==  PARALLEL_STOP) {
         break; // Jump out when a STOP error occurs.
+      }
     }
 
     if (!running) {
@@ -161,8 +162,9 @@ void* smp_dream_circ_f(void *arg)
   // Lock out_err for update, update it, and unlock.
   err_lock.lock();
 
-  if ((tmp_err != NONE) && (out_err == NONE))
+  if ((tmp_err != NONE) && (out_err == NONE)) {
     out_err = tmp_err;
+  }
 
   err_lock.unlock();
 
@@ -190,7 +192,7 @@ void sig_keyint_handler(int signum) {
 
 /***
  *
- * Matlab (MEX) gateway function for parallel dreamcirc_f.
+ * Matlab (MEX) gateway function for dreamcirc_f.
  *
  ***/
 
@@ -199,17 +201,18 @@ extern void _main();
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
   double *ro, *geom_par, *s_par, *m_par;
-  size_t nt, no;
-  int    foc_met=0;
-  char   foc_met_str[50];
-  int    buflen;
+  dream_idx_type nt, no;
+  dream_idx_type buflen;
   double R, dx, dy, dt;
-  double *delay, v, cp, alpha, focal=0.0;
+  double *delay=nullptr, v, cp, alpha;
+  int    foc_met=NO_FOCUS;
+  char   foc_str[50];
+  double focal=0.0;
   double *h, *err_p;
-  int    err_level=STOP, is_set = false;
+  int    err_level=STOP, is_set=false;
   char   err_str[50];
   DATA   *D;
-  size_t start, stop;
+  dream_idx_type start, stop;
   std::thread *threads;
   unsigned int thread_n, nthreads;
   sighandler_t old_handler, old_handler_abrt, old_handler_keyint;
@@ -218,19 +221,20 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
   if (!((nrhs == 7) || (nrhs == 8))) {
     dream_err_msg("dreamcirc_f requires 7 or 8 input arguments!");
-  }
-  else
+  } else {
     if (nlhs > 2) {
       dream_err_msg("Too many output arguments for dreamcirc_f!");
     }
+  }
 
   //
   // Observation point.
   //
 
   // Check that arg (number of observation points) x 3 matrix
-  if (mxGetN(prhs[0]) != 3)
+  if (mxGetN(prhs[0]) != 3) {
     dream_err_msg("Argument 1 must be a (number of observation points) x 3 matrix!");
+  }
 
   no = mxGetM(prhs[0]); // Number of observation points.
   ro = mxGetPr(prhs[0]);
@@ -240,25 +244,27 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   //
 
   // Check that arg 2 is a scalar.
-  if (!((mxGetM(prhs[1])==1 && mxGetN(prhs[1])==1)))
+  if (!((mxGetM(prhs[1])==1 && mxGetN(prhs[1])==1))) {
     dream_err_msg("Argument 2 must be a scalar!");
+  }
 
   geom_par = mxGetPr(prhs[1]);
-  R = geom_par[0];		// Radius of the transducer.
+  R = geom_par[0];              // Radius of the transducer.
 
   //
   // Temporal and spatial sampling parameters.
   //
 
   // Check that arg 3 is a 4 element vector
-  if (!((mxGetM(prhs[2])==4 && mxGetN(prhs[2])==1) || (mxGetM(prhs[2])==1 && mxGetN(prhs[2])==4)))
+  if (!((mxGetM(prhs[2])==4 && mxGetN(prhs[2])==1) || (mxGetM(prhs[2])==1 && mxGetN(prhs[2])==4))) {
     dream_err_msg("Argument 3 must be a vector of length 4!");
+  }
 
   s_par = mxGetPr(prhs[2]);
-  dx    = s_par[0];		// Spatial x discretization size.
-  dy    = s_par[1];		// Spatial dy iscretization size.
-  dt    = s_par[2];		// Temporal discretization size (= 1/sampling freq).
-  nt    = (dream_idx_type) s_par[3];	// Length of SIR.
+  dx = s_par[0];  // Spatial x discretization size.
+  dy = s_par[1];  // Spatial dy iscretization size.
+  dt = s_par[2];  // Temporal discretization size (= 1/sampling freq).
+  nt = (dream_idx_type) s_par[3]; // Length of SIR.
 
   //
   // Start point of impulse response vector ([us]).
@@ -268,6 +274,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   if ( (mxGetM(prhs[3]) * mxGetN(prhs[3]) !=1) && ((mxGetM(prhs[3]) * mxGetN(prhs[3])) != no)) {
     dream_err_msg("Argument 4 must be a scalar or a vector with a length equal to the number of observation points!");
   }
+
   delay = mxGetPr(prhs[3]);
 
   //
@@ -275,8 +282,9 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   //
 
   // Check that arg 5 is a 3 element vector.
-  if (!((mxGetM(prhs[4])==3 && mxGetN(prhs[4])==1) || (mxGetM(prhs[4])==1 && mxGetN(prhs[4])==3)))
+  if (!((mxGetM(prhs[4])==3 && mxGetN(prhs[4])==1) || (mxGetM(prhs[4])==1 && mxGetN(prhs[4])==3))) {
     dream_err_msg("Argument 5 must be a vector of length 3!");
+  }
 
   m_par = mxGetPr(prhs[4]);
   v     = m_par[0]; // Normal velocity of transducer surface.
@@ -287,55 +295,56 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Focusing parameters.
   //
 
-  //  foc_met = 1 - no foc, 2 foc x ,3 foc y, 4 foc xy (del=fsqrt(x*x+y*y)), 5 focx+focy.
-
   if (nrhs >= 6) {
 
-    if (!mxIsChar(prhs[5]))
+    if (!mxIsChar(prhs[5])) {
       dream_err_msg("Argument 6 must be a string");
+    }
 
     buflen = (mxGetM(prhs[5]) * mxGetN(prhs[5]) * sizeof(mxChar)) + 1;
-    mxGetString(prhs[5],foc_met_str,buflen);
+    mxGetString(prhs[5],foc_str,buflen);
 
     is_set = false;
 
-    if (!strcmp(foc_met_str,"off")) {
-      foc_met = 1;
+    if (!strcmp(foc_str,"off")) {
+      foc_met = NO_FOCUS;
       is_set = true;
     }
 
-    if (!strcmp(foc_met_str,"x")) {
-      foc_met = 2;
+    if (!strcmp(foc_str,"x")) {
+      foc_met = FOCUS_X;
       is_set = true;
     }
 
-    if (!strcmp(foc_met_str,"y")) {
-      foc_met = 3;
+    if (!strcmp(foc_str,"y")) {
+      foc_met = FOCUS_Y;
       is_set = true;
     }
 
-    if (!strcmp(foc_met_str,"xy")) {
-      foc_met = 4;
+    if (!strcmp(foc_str,"xy")) {
+      foc_met = FOCUS_XY;
       is_set = true;
     }
 
-    if (!strcmp(foc_met_str,"x+y")) {
-      foc_met = 5;
+    if (!strcmp(foc_str,"x+y")) {
+      foc_met = FOCUS_X_Y;
       is_set = true;
     }
 
-   if (is_set == false)
+    if (is_set == false) {
       dream_err_msg("Unknown focusing method!");
+    }
 
     // Check that arg 7 is a scalar.
-    if (mxGetM(prhs[6]) * mxGetN(prhs[6]) !=1 )
+    if (mxGetM(prhs[6]) * mxGetN(prhs[6]) != NO_FOCUS ) {
       dream_err_msg("Argument 7 must be a scalar!");
+    }
 
     // Focal point (in mm).
     focal = mxGetScalar(prhs[6]);
 
   } else {
-    foc_met = 1;
+    foc_met = NO_FOCUS;
   }
 
   //
@@ -364,8 +373,9 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
   if (nrhs == 8) {
 
-    if (!mxIsChar(prhs[7]))
+    if (!mxIsChar(prhs[7])) {
       dream_err_msg("Argument 8 must be a string");
+    }
 
     buflen = (mxGetM(prhs[7]) * mxGetN(prhs[7]) * sizeof(mxChar)) + 1;
     mxGetString(prhs[7],err_str,buflen);
@@ -387,12 +397,12 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       is_set = true;
     }
 
-    if (is_set == false)
+    if (is_set == false) {
       dream_err_msg("Unknown error level!");
-
-  }
-  else
+    }
+  } else {
     err_level = STOP; // Default.
+  }
 
   // Create an output matrix for the impulse response
   plhs[0] = mxCreateDoubleMatrix(nt,no,mxREAL);
@@ -403,15 +413,15 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   //
 
   if ((old_handler = signal(SIGTERM, &sighandler)) == SIG_ERR) {
-    printf("Couldn't register SIGTERM signal handler.\n");
+    std::cerr << "Couldn't register SIGTERM signal handler!" << std::endl;
   }
 
-  if (( old_handler_abrt=signal(SIGABRT, &sighandler)) == SIG_ERR) {
-    printf("Couldn't register SIGABRT signal handler.\n");
+  if ((old_handler_abrt=signal(SIGABRT, &sighandler)) == SIG_ERR) {
+    std::cerr << "Couldn't register SIGABRT signal handler!" << std::endl;
   }
 
-  if (( old_handler_keyint=signal(SIGINT, &sighandler)) == SIG_ERR) {
-    printf("Couldn't register SIGINT signal handler.\n");
+  if ((old_handler_keyint=signal(SIGINT, &sighandler)) == SIG_ERR) {
+    std::cerr << "Couldn't register SIGINT signal handler!" << std::endl;
   }
 
   //
@@ -456,10 +466,11 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     D[thread_n].dt = dt;
     D[thread_n].nt = nt;
 
-    if (mxGetM(prhs[3]) * mxGetN(prhs[3]) == 1)
+    if (mxGetM(prhs[3]) * mxGetN(prhs[3]) == 1) {
       D[thread_n].delay_method = SINGLE; // delay is a scalar.
-    else
+    } else {
       D[thread_n].delay_method = MULTIPLE; // delay is a vector.
+    }
 
     D[thread_n].delay = delay;
     D[thread_n].v = v;
@@ -493,15 +504,15 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   //
 
   if (signal(SIGTERM, old_handler) == SIG_ERR) {
-    printf("Couldn't register old SIGTERM signal handler.\n");
+    std::cerr << "Couldn't register old SIGTERM signal handler!" << std::endl;
   }
 
   if (signal(SIGABRT,  old_handler_abrt) == SIG_ERR) {
-    printf("Couldn't register old SIGABRT signal handler.\n");
+    std::cerr << "Couldn't register old SIGABRT signal handler!" << std::endl;
   }
 
   if (signal(SIGINT, old_handler_keyint) == SIG_ERR) {
-    printf("Couldn't register old  SIGINT signal handler.\n");
+    std::cerr << "Couldn't register old SIGINT signal handler!" << std::endl;
   }
 
   if (!running) {

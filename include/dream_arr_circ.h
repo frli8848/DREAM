@@ -24,7 +24,7 @@
 
 
 #include "dream.h"
-#include "att.h"
+#include "attenuation.h"
 
 int dream_arr_circ(double xo, double yo, double zo,
                    double R,

@@ -25,12 +25,9 @@
 #include <string.h>
 #include <stdio.h>
 #include <math.h>
-#include "att.h"
-#include "dream_error.h"
 
-#ifdef USE_FFTW
-#include "att.h"
-#endif
+#include "attenuation.h"
+#include "dream_error.h"
 
 //
 // Octave headers.
@@ -45,7 +42,6 @@
 #define mxGetM(N)   args(N).matrix_value().rows()
 #define mxGetN(N)   args(N).matrix_value().cols()
 #define mxIsChar(N) args(N).is_string()
-
 
 /***
  *
@@ -114,12 +110,12 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   if (nrhs != 4) {
     error("dream_att requires 4 input arguments!");
     return oct_retval;
-  }
-  else
+  } else {
     if (nlhs > 1) {
       error("dream_att requires one output argument!");
       return oct_retval;
     }
+  }
 
   //
   // Observation point.

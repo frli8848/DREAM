@@ -27,7 +27,7 @@
 #include <stdlib.h>
 
 #include <complex>
-#include "att.h"
+#include "attenuation.h"
 
 // This file is just a C++ version of att.c for Octave. It's for
 // enabling the toolbox to be build with MSVC (which isn't iso C99

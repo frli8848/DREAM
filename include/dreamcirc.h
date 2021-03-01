@@ -22,7 +22,7 @@
 ***/
 
 #include "dream.h"
-#include "att.h"
+#include "attenuation.h"
 
 int dreamcirc(double xo, double yo, double zo,
               double R,

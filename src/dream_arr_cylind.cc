@@ -29,7 +29,7 @@
 #include "dream_arr_cylind.h"
 #include "dreamcylind.h"
 #include "dream_error.h"
-#include "att.h"
+#include "attenuation.h"
 #include "arr_functions.h"
 
 /***

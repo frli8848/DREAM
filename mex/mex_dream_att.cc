@@ -21,12 +21,13 @@
 *
 ***/
 
-
 #include <math.h>
 #include <uchar.h>
-#include "mex.h"
-#include "att.h"
+
+#include "attenuation.h"
 #include "dream_error.h"
+
+#include "mex.h"
 
 /***
  *
@@ -46,19 +47,20 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
   if (nrhs != 4) {
     dream_err_msg("dream_att requires 4 input arguments!");
-  }
-  else
+  } else {
     if (nlhs > 1) {
       dream_err_msg("dream_att requires one output argument!");
     }
+  }
 
   //
   // Observation point.
   //
 
- // Check that arg (number of observation points) x 3 matrix
-  if (!mxGetN(prhs[0])==3)
+  // Check that arg (number of observation points) x 3 matrix
+  if (!mxGetN(prhs[0])==3) {
     dream_err_msg("Argument 1 must be a (number of observation points) x 3 matrix!");
+  }
 
   no = mxGetM(prhs[0]); // Number of observation points.
   ro = mxGetPr(prhs[0]);
@@ -68,8 +70,9 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   //
 
   // Check that arg 2 is a 4 element vector
-  if (!((mxGetM(prhs[1])==2 && mxGetN(prhs[1])==1) || (mxGetM(prhs[1])==1 && mxGetN(prhs[1])==2)))
+  if (!((mxGetM(prhs[1])==2 && mxGetN(prhs[1])==1) || (mxGetM(prhs[1])==1 && mxGetN(prhs[1])==2))) {
     dream_err_msg("Argument 2 must be a vector of length 2!");
+  }
 
   s_par = mxGetPr(prhs[1]);
   dt    = s_par[0];		// Temporal discretization size (= 1/sampling freq).
@@ -80,8 +83,9 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   //
 
   // Check that arg 3 is a scalar (or vector).
-  if ( (mxGetM(prhs[2]) * mxGetN(prhs[2]) !=1) && ((mxGetM(prhs[2]) * mxGetN(prhs[2])) != no))
+  if ( (mxGetM(prhs[2]) * mxGetN(prhs[2]) !=1) && ((mxGetM(prhs[2]) * mxGetN(prhs[2])) != no)) {
     dream_err_msg("Argument 3 must be a scalar or a vector with a length equal to the number of observation points!");
+  }
 
   delay = mxGetPr(prhs[2]);
 
@@ -90,8 +94,9 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   //
 
   // Check that arg 4 is a 2 element vector.
-  if (!((mxGetM(prhs[3])==2 && mxGetN(prhs[3])==1) || (mxGetM(prhs[3])==1 && mxGetN(prhs[3])==2)))
+  if (!((mxGetM(prhs[3])==2 && mxGetN(prhs[3])==1) || (mxGetM(prhs[3])==1 && mxGetN(prhs[3])==2))) {
     dream_err_msg("Argument 4 must be a vector of length 2!");
+  }
 
   m_par = mxGetPr(prhs[3]);
   cp    = m_par[0]; // Sound speed.

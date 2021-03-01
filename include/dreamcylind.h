@@ -24,7 +24,7 @@
 
 
 #include "dream.h"
-#include "att.h"
+#include "attenuation.h"
 
 int dreamcylind(double xo, double yo, double zo,
                 double a, double b, double Rcurv,

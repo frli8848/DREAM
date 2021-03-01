@@ -24,7 +24,7 @@
 
 
 #include "dream.h"
-#include "att.h"
+#include "attenuation.h"
 
 /***
  *

@@ -23,7 +23,7 @@
 
 #include <math.h>
 #include "dreamrect.h"
-#include "att.h"
+#include "attenuation.h"
 #include "dream_error.h"
 
 /***

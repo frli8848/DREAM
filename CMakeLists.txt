@@ -129,7 +129,7 @@ if (OCTAVE_FOUND)
 
   set (oct_dreamline_SOURCE_FILES
     oct/oct_dreamline.cc
-    src/att.cc
+    src/attenuation.cc
     src/affinity.cc
     src/dreamline.cc
     src/dream_error.cc
@@ -159,7 +159,7 @@ if (Matlab_FOUND)
 
   set (mex_dreamline_SOURCE_FILES
     mex/mex_dreamline.cc
-    src/att.cc
+    src/attenuation.cc
     src/affinity.cc
     src/dreamline.cc
     src/dream_error.cc
@@ -192,7 +192,7 @@ if (OCTAVE_FOUND)
   set (oct_dreamrect_SOURCE_FILES
     oct/oct_dreamrect.cc
     src/dreamrect.cc
-    src/att.cc
+    src/attenuation.cc
     src/affinity.cc
     src/dream_error.cc
     )
@@ -224,7 +224,7 @@ if (Matlab_FOUND)
 
   set (mex_dreamrect_SOURCE_FILES
     mex/mex_dreamrect.cc
-    src/att.cc
+    src/attenuation.cc
     src/affinity.cc
     src/dreamrect.cc
     src/dream_error.cc
@@ -256,7 +256,7 @@ if (OCTAVE_FOUND)
 
   set (oct_dreamrect_f_SOURCE_FILES
     oct/oct_dreamrect_f.cc
-    src/att.cc
+    src/attenuation.cc
     src/affinity.cc
     src/dreamrect_f.cc
     src/dream_error.cc
@@ -284,7 +284,7 @@ if (Matlab_FOUND)
 
   set (mex_dreamrect_f_SOURCE_FILES
     mex/mex_dreamrect_f.cc
-    src/att.cc
+    src/attenuation.cc
     src/affinity.cc
     src/dreamrect_f.cc
     src/dream_error.cc
@@ -317,7 +317,7 @@ if (OCTAVE_FOUND)
 
   set (oct_dreamcirc_SOURCE_FILES
     oct/oct_dreamcirc.cc
-    src/att.cc
+    src/attenuation.cc
     src/affinity.cc
     src/dreamcirc.cc
     src/dream_error.cc
@@ -350,7 +350,7 @@ if (Matlab_FOUND)
 
   set (mex_dreamcirc_SOURCE_FILES
     mex/mex_dreamcirc.cc
-    src/att.cc
+    src/attenuation.cc
     src/affinity.cc
     src/dreamcirc.cc
     src/dream_error.cc
@@ -383,7 +383,7 @@ if (OCTAVE_FOUND)
 
   set (oct_dreamcirc_f_SOURCE_FILES
     oct/oct_dreamcirc_f.cc
-    src/att.cc
+    src/attenuation.cc
     src/affinity.cc
     src/dreamcirc_f.cc
     src/dream_error.cc
@@ -411,7 +411,7 @@ if (Matlab_FOUND)
 
   set (mex_dreamcirc_f_SOURCE_FILES
     mex/mex_dreamcirc_f.cc
-    src/att.cc
+    src/attenuation.cc
     src/affinity.cc
     src/dreamcirc_f.cc
     src/dream_error.cc
@@ -444,7 +444,7 @@ if (OCTAVE_FOUND)
 
   set (oct_dreamsphere_SOURCE_FILES
     oct/oct_dreamsphere.cc
-    src/att.cc
+    src/attenuation.cc
     src/affinity.cc
     src/dreamsphere.cc
     src/dream_error.cc
@@ -472,7 +472,7 @@ if (Matlab_FOUND)
 
   set (mex_dreamsphere_SOURCE_FILES
     mex/mex_dreamsphere.cc
-    src/att.cc
+    src/attenuation.cc
     src/affinity.cc
     src/dreamsphere.cc
     src/dream_error.cc
@@ -505,7 +505,7 @@ if (OCTAVE_FOUND)
 
   set (oct_dreamcylind_SOURCE_FILES
     oct/oct_dreamcylind.cc
-    src/att.cc
+    src/attenuation.cc
     src/affinity.cc
     src/dreamcylind.cc
     src/dream_error.cc
@@ -533,7 +533,7 @@ if (Matlab_FOUND)
 
   set (mex_dreamcylind_SOURCE_FILES
     mex/mex_dreamcylind.cc
-    src/att.cc
+    src/attenuation.cc
     src/affinity.cc
     src/dreamcylind.cc
     src/dream_error.cc
@@ -566,7 +566,7 @@ if (OCTAVE_FOUND)
 
   set (oct_dream_arr_rect_SOURCE_FILES
     oct/oct_dream_arr_rect.cc
-    src/att.cc
+    src/attenuation.cc
     src/affinity.cc
     src/arr_functions.cc
     src/dream_arr_rect.cc
@@ -595,7 +595,7 @@ if (Matlab_FOUND)
 
   set (mex_dream_arr_rect_SOURCE_FILES
     mex/mex_dream_arr_rect.cc
-    src/att.cc
+    src/attenuation.cc
     src/affinity.cc
     src/arr_functions.cc
     src/dream_arr_rect.cc
@@ -628,7 +628,7 @@ if (OCTAVE_FOUND)
 
   set (oct_dream_arr_circ_SOURCE_FILES
     oct/oct_dream_arr_circ.cc
-    src/att.cc
+    src/attenuation.cc
     src/affinity.cc
     src/arr_functions.cc
     src/dream_arr_circ.cc
@@ -657,7 +657,7 @@ if (Matlab_FOUND)
 
   set (mex_dream_arr_circ_SOURCE_FILES
     mex/mex_dream_arr_circ.cc
-    src/att.cc
+    src/attenuation.cc
     src/affinity.cc
     src/arr_functions.cc
     src/dream_arr_circ.cc
@@ -691,7 +691,7 @@ if (OCTAVE_FOUND)
 
   set (oct_dream_arr_cylind_SOURCE_FILES
     oct/oct_dream_arr_cylind.cc
-    src/att.cc
+    src/attenuation.cc
     src/affinity.cc
     src/arr_functions.cc
     src/dream_arr_cylind.cc
@@ -721,7 +721,7 @@ if (Matlab_FOUND)
 
   set (mex_dream_arr_cylind_SOURCE_FILES
     mex/mex_dream_arr_cylind.cc
-    src/att.cc
+    src/attenuation.cc
     src/affinity.cc
     src/arr_functions.cc
     src/dream_arr_cylind.cc
@@ -756,7 +756,7 @@ if (OCTAVE_FOUND)
 
   set (oct_dream_arr_annu_SOURCE_FILES
     oct/oct_dream_arr_annu.cc
-    src/att.cc
+    src/attenuation.cc
     src/affinity.cc
     src/arr_functions.cc
     src/dream_arr_annu.cc
@@ -786,7 +786,7 @@ if (Matlab_FOUND)
 
   set (mex_dream_arr_annu_SOURCE_FILES
     mex/mex_dream_arr_annu.cc
-    src/att.cc
+    src/attenuation.cc
     src/affinity.cc
     src/arr_functions.cc
     src/dream_arr_annu.cc
@@ -884,7 +884,7 @@ if (OCTAVE_FOUND)
 
   set (oct_dream_att_SOURCE_FILES
     oct/oct_dream_att.cc
-    src/att.cc
+    src/attenuation.cc
     src/affinity.cc
     src/dream_error.cc
     )
@@ -911,7 +911,7 @@ if (Matlab_FOUND)
 
   set (mex_dream_att_SOURCE_FILES
     mex/mex_dream_att.cc
-    src/att.cc
+    src/attenuation.cc
     src/affinity.cc
     src/dream_error.cc
     )

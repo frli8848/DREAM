@@ -319,18 +319,4 @@ class FFT
   fftw_plan m_p_forward;
   fftw_plan m_p_backward;
 #endif
-
-  };
-
-#if defined DREAM_OCTAVE || defined HAVE_FFTW
-void fft_init(dream_idx_type n, fftw_complex *xc, double *y);
-void fft_close();
-#endif
-
-#if defined DREAM_OCTAVE || defined HAVE_FFTW
-void cr_ifft(fftw_complex *xc, double *y, dream_idx_type n);
-void cc_ifft(fftw_complex *xc, fftw_complex *yc, dream_idx_type n);
-#else
-void cr_ifft(double *xir, double *xii, double *y, dream_idx_type n);
-void cc_ifft(double *xir, double *xii, double *yor, double *yoi, dream_idx_type n);
-#endif
+};

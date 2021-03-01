@@ -29,20 +29,6 @@
 #include "dream.h"
 #include "fft.h"
 
-/***
- *
- * Header file for attenuation functions (att.cc)
- *
- ***/
-
-#if defined DREAM_OCTAVE || defined HAVE_FFTW
-void att_init(dream_idx_type nt, dream_idx_type n_threads);
-void att_close();
-#endif
-
-void att(double alpha, double r, dream_idx_type it, double dt, double cp, double *h, dream_idx_type nt, double ai);
-void att_annu(double alpha, double r, dream_idx_type it, double  dt, double cp, double *h, dream_idx_type nt, double ai, int element);
-
 class Attenuation
 {
  public:

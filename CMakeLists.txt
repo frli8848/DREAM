@@ -132,7 +132,6 @@ if (OCTAVE_FOUND)
     src/att.cc
     src/affinity.cc
     src/dreamline.cc
-    src/fft_octave.cc
     src/dream_error.cc
     )
 
@@ -163,7 +162,6 @@ if (Matlab_FOUND)
     src/att.cc
     src/affinity.cc
     src/dreamline.cc
-    src/fft_matlab.cc
     src/dream_error.cc
     )
 
@@ -196,7 +194,6 @@ if (OCTAVE_FOUND)
     src/dreamrect.cc
     src/att.cc
     src/affinity.cc
-    src/fft_octave.cc
     src/dream_error.cc
     )
 
@@ -230,7 +227,6 @@ if (Matlab_FOUND)
     src/att.cc
     src/affinity.cc
     src/dreamrect.cc
-    src/fft_matlab.cc
     src/dream_error.cc
     )
 
@@ -263,7 +259,6 @@ if (OCTAVE_FOUND)
     src/att.cc
     src/affinity.cc
     src/dreamrect_f.cc
-    src/fft_octave.cc
     src/dream_error.cc
     )
 
@@ -292,7 +287,6 @@ if (Matlab_FOUND)
     src/att.cc
     src/affinity.cc
     src/dreamrect_f.cc
-    src/fft_matlab.cc
     src/dream_error.cc
     )
 
@@ -326,7 +320,6 @@ if (OCTAVE_FOUND)
     src/att.cc
     src/affinity.cc
     src/dreamcirc.cc
-    src/fft_octave.cc
     src/dream_error.cc
     )
 
@@ -360,7 +353,6 @@ if (Matlab_FOUND)
     src/att.cc
     src/affinity.cc
     src/dreamcirc.cc
-    src/fft_matlab.cc
     src/dream_error.cc
     )
 
@@ -394,7 +386,6 @@ if (OCTAVE_FOUND)
     src/att.cc
     src/affinity.cc
     src/dreamcirc_f.cc
-    src/fft_octave.cc
     src/dream_error.cc
     )
 
@@ -423,7 +414,6 @@ if (Matlab_FOUND)
     src/att.cc
     src/affinity.cc
     src/dreamcirc_f.cc
-    src/fft_matlab.cc
     src/dream_error.cc
     )
 
@@ -457,7 +447,6 @@ if (OCTAVE_FOUND)
     src/att.cc
     src/affinity.cc
     src/dreamsphere.cc
-    src/fft_octave.cc
     src/dream_error.cc
     )
 
@@ -486,7 +475,6 @@ if (Matlab_FOUND)
     src/att.cc
     src/affinity.cc
     src/dreamsphere.cc
-    src/fft_matlab.cc
     src/dream_error.cc
     )
 
@@ -520,7 +508,6 @@ if (OCTAVE_FOUND)
     src/att.cc
     src/affinity.cc
     src/dreamcylind.cc
-    src/fft_octave.cc
     src/dream_error.cc
     )
 
@@ -549,7 +536,6 @@ if (Matlab_FOUND)
     src/att.cc
     src/affinity.cc
     src/dreamcylind.cc
-    src/fft_matlab.cc
     src/dream_error.cc
     )
 
@@ -584,7 +570,6 @@ if (OCTAVE_FOUND)
     src/affinity.cc
     src/arr_functions.cc
     src/dream_arr_rect.cc
-    src/fft_octave.cc
     src/dream_error.cc
     )
 
@@ -614,7 +599,6 @@ if (Matlab_FOUND)
     src/affinity.cc
     src/arr_functions.cc
     src/dream_arr_rect.cc
-    src/fft_matlab.cc
     src/dream_error.cc
     )
 
@@ -648,7 +632,6 @@ if (OCTAVE_FOUND)
     src/affinity.cc
     src/arr_functions.cc
     src/dream_arr_circ.cc
-    src/fft_octave.cc
     src/dream_error.cc
     )
 
@@ -678,7 +661,6 @@ if (Matlab_FOUND)
     src/affinity.cc
     src/arr_functions.cc
     src/dream_arr_circ.cc
-    src/fft_matlab.cc
     src/dream_error.cc
     )
 
@@ -714,7 +696,6 @@ if (OCTAVE_FOUND)
     src/arr_functions.cc
     src/dream_arr_cylind.cc
     src/dreamcylind.cc
-    src/fft_octave.cc
     src/dream_error.cc
     )
 
@@ -745,7 +726,6 @@ if (Matlab_FOUND)
     src/arr_functions.cc
     src/dream_arr_cylind.cc
     src/dreamcylind.cc
-    src/fft_matlab.cc
     src/dream_error.cc
     )
 
@@ -780,7 +760,7 @@ if (OCTAVE_FOUND)
     src/affinity.cc
     src/arr_functions.cc
     src/dream_arr_annu.cc
-    src/fft_octave.cc
+    src/dreamcirc.cc
     src/dream_error.cc
     )
 
@@ -810,7 +790,7 @@ if (Matlab_FOUND)
     src/affinity.cc
     src/arr_functions.cc
     src/dream_arr_annu.cc
-    src/fft_matlab.cc
+    src/dreamcirc.cc
     src/dream_error.cc
     )
 
@@ -906,7 +886,6 @@ if (OCTAVE_FOUND)
     oct/oct_dream_att.cc
     src/att.cc
     src/affinity.cc
-    src/fft_octave.cc
     src/dream_error.cc
     )
 
@@ -934,7 +913,6 @@ if (Matlab_FOUND)
     mex/mex_dream_att.cc
     src/att.cc
     src/affinity.cc
-    src/fft_matlab.cc
     src/dream_error.cc
     )
 

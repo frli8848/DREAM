@@ -22,28 +22,23 @@
 ***/
 
 #include <math.h>
-#include <stdio.h>
 #include <stdlib.h>
 
-#include "att.h"
-#include "arr_functions.h"
 #include "dream_arr_annu.h"
+#include "dreamcirc.h"
 #include "dream_error.h"
 
 //
 // Function prototypes
 //
 
-void center_pos_annular(double *rs, double *gr, int num_elements, int nv, double *ramax);
-void superpos_annular(double *hi, double *ha, dream_idx_type  nt, double weight, double retfoc, dream_idx_type j, double  dt);
-void focusing_annular(int foc_type, double focal, double rs, double ramax, double cp, double *retfoc);
-void apodization_annular(int apod_type, int i, double *apod, double *weight, double rs,
-                         double ramax, double param);
-int circ_annular(double xo, double  yo, double  zo, double  a, double dx, double dy, double dt,
-                 dream_idx_type nt, double delay, double v, double cp, double alpha, double weight, double *h,
-                 dream_idx_type k, int num_elements,int err_level);
-void xlimit_annular(double yi, double a, double *xsmin, double *xsmax);
-void resp_annular(double *h, double *hi, dream_idx_type nt, dream_idx_type j);
+void annular_disc_radii(double *ring_r, double *gr, dream_idx_type num_radii);
+double focusing_annular(int foc_type, double focal, double ring_r, double ring_r_max, double cp);
+double apodization_annular(int apod_type, dream_idx_type n, double *apod, double ring_r,
+                           double ring_r_max, double param);
+void resp_annular(double *h_disc, double *h_ring, dream_idx_type nt, dream_idx_type n);
+void superpos_annular(double *h_ring, double *h, dream_idx_type nt,
+                      double weight, double foc_delay, dream_idx_type n, double dt);
 
 /***
 *
@@ -53,403 +48,316 @@ void resp_annular(double *h, double *hi, dream_idx_type nt, dream_idx_type j);
 *
 ***/
 
-int dream_arr_annu(double xo, double yo, double zo, double dx, double dy, double dt,
-                    dream_idx_type  nt, double delay, double v, double cp, double alpha,
-                    int num_elements, double *gr, int foc_type, double focal, double *apod, bool do_apod,
-                    int apod_type, double param,double *ha,int err_level)
+int dream_arr_annu(double xo, double yo, double zo,
+                   double dx, double dy, double dt,
+                   dream_idx_type nt,
+                   double delay,
+                   double v, double cp,
+                   dream_idx_type num_radii, double *gr,
+                   int foc_type, double *focal,
+                   double *apod, bool do_apod, int apod_type, double param,
+                   double *h, int err_level)
 {
-  double r, *h;
-  double *hi;
-  dream_idx_type i, j;
-  double ramax;
-  int    nv;
-  double *rs, retfoc = 0, weight = 0;
   int err = NONE, out_err = NONE;
 
-  h  = (double*) malloc( nt*num_elements * sizeof(double));
-  hi = (double*) malloc( nt*num_elements * sizeof(double));
-  rs = (double*) malloc(num_elements*sizeof(double));
+  // NB. The first ring have no inner radius (it is a normal
+  // circular disc).
+  dream_idx_type num_elements = (num_radii+1)/2; // The number of rings.
 
-  for (i=0; i< nt; i++) {
-    ha[i] = 0.0;
+  // Allocate scratch data
+  std::unique_ptr<double[]> h_disc = std::make_unique<double[]>(nt*num_radii); // Impulse responses for each disc.
+  std::unique_ptr<double[]> h_ring = std::make_unique<double[]>(nt*num_elements); // Impulse responses for each ring.
+  std::unique_ptr<double[]> ring_radii = std::make_unique<double[]>(num_elements); // Vector of ring radii.
+
+  // Clear output impulse response vector.
+  for (dream_idx_type i=0; i<nt; i++) {
+    h[i] = 0.0;
   }
 
-  retfoc = 0.0;
-  weight = 1.0;
-  // nv - number of annulus.
-  nv = (num_elements+1)/2;
-  //nv = (num_elements)/2; // This is wrong!!
-
-  for (i=0; i<nt; i++) {
-    for (j=0; j<num_elements; j++) {
-      h[i+j*nt] = (double) 0.0;
+  // Clear data
+  for (dream_idx_type i=0; i<nt; i++) {
+    for (dream_idx_type n=0; n<num_radii; n++) {
+      h_disc[i + n*nt] = 0.0;
     }
   }
 
-  /* ----------------------------------------- */
+  // Compute the impulse reponses for all circular
+  // (full) discs.
+  for (dream_idx_type n=0; n<num_radii; n++) {
 
-  for (i=0; i<num_elements; i++) {
-    r = gr[i];
-
-    if (i==0 && r == (double) 0.0 ) {
-      for (j=0; j<nt; j++) {
-        h[j] = (double) 0.0; // h(j,1) = 0.0;
+    if (n==0 && gr[n] <= std::numeric_limits<double>::epsilon()  ) {
+      for (dream_idx_type i=0; i<nt; i++) {
+        h_disc[i] = 0.0; // h(i,1) = 0.0;
       }
     } else {
-      err = circ_annular(xo,yo,zo,r,dx,dy,dt,nt,delay,v,cp,alpha,weight,h,i,num_elements,err_level);
-      if (err != NONE)
+      err = dreamcirc(xo, yo, zo,
+                      gr[n],
+                      dx, dy, dt, nt,
+                      delay,
+                      v, cp, &h_disc[n*nt], err_level);
+      if (err != NONE) {
         out_err = err;
+      }
     }
   }
 
-  /* --------------------------------------------- */
+  // Compute the "middle" radius for each array ring
+  // of the transducer (which is the radius used when
+  // focusing).
+  annular_disc_radii(ring_radii.get(), gr, num_radii);
+  double ring_r_max = ring_radii[num_elements-1]; // Radius of the outer most (last) ring.
 
-  center_pos_annular(rs, gr, num_elements, nv, &ramax);
+  for (dream_idx_type n=0; n<num_elements; n++) {
 
-  for (i=0; i<nv; i++) {
-    focusing_annular(foc_type, focal, rs[i], ramax, cp, &retfoc);
+    double foc_delay = 0.0;
+    if (foc_type != FOCUS_UD) {
+      foc_delay = focusing_annular(foc_type, focal[0], ring_radii[n], ring_r_max, cp);
+    } else {
+      foc_delay = focusing_annular(foc_type, focal[n], ring_radii[n], ring_r_max, cp);
+    }
+
+    double weight = 1.0;
     if (do_apod){
-      apodization_annular(apod_type, i, apod, &weight, rs[i], ramax, param);
+      weight = apodization_annular(apod_type, n, apod, ring_radii[n], ring_r_max, param);
     }
-    resp_annular(h, hi, nt, i);
-    superpos_annular(hi, ha, nt, weight, retfoc, i, dt);
+
+    resp_annular(h_disc.get(), h_ring.get(), nt, n); // Compute the impulse response for the n:th ring.
+    superpos_annular(h_ring.get(), h, nt, weight, foc_delay, n, dt); // Add the n:th impulse response.
   }
 
-  free(h);
-  free(hi);
-  free(rs);
+  return out_err;
+}
+
+int dream_arr_annu(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
+                   double xo, double yo, double zo,
+                   double dx, double dy, double dt,
+                   dream_idx_type nt,
+                   double delay,
+                   double v, double cp,
+                   dream_idx_type num_radii, double *gr,
+                   int foc_type, double *focal,
+                   double *apod, bool do_apod, int apod_type, double param,
+                   double *h, int err_level)
+{
+  int err = NONE, out_err = NONE;
+
+  // NB. The first ring have no inner radius (it is a normal
+  // circular disc).
+  dream_idx_type num_elements = (num_radii+1)/2; // The number of rings.
+
+  // Allocate scratch data
+  std::unique_ptr<double[]> h_disc = std::make_unique<double[]>(nt*num_radii); // Impulse responses for each disc.
+  std::unique_ptr<double[]> h_ring = std::make_unique<double[]>(nt*num_elements); // Impulse responses for each ring.
+  std::unique_ptr<double[]> ring_radii = std::make_unique<double[]>(num_elements); // Vector of ring radii.
+
+  // Clear output impulse response vector.
+  for (dream_idx_type i=0; i<nt; i++) {
+    h[i] = 0.0;
+  }
+
+  // Clear data
+  for (dream_idx_type i=0; i<nt; i++) {
+    for (dream_idx_type n=0; n<num_radii; n++) {
+      h_disc[i + n*nt] = 0.0;
+    }
+  }
+
+  // Compute the impulse reponses for all circular
+  // (full) discs.
+  for (dream_idx_type n=0; n<num_radii; n++) {
+
+    if (n==0 && gr[n] <= std::numeric_limits<double>::epsilon()  ) {
+      for (dream_idx_type i=0; i<nt; i++) {
+        h_disc[i] = 0.0; // h(i,1) = 0.0;
+      }
+    } else {
+      err = dreamcirc(att, xc_vec, x_vec,
+                      xo, yo, zo,
+                      gr[n],
+                      dx, dy, dt, nt,
+                      delay,
+                      v, cp, &h_disc[n*nt], err_level);
+      if (err != NONE) {
+        out_err = err;
+      }
+    }
+  }
+
+  // Compute the "middle" radius for each array ring
+  // of the transducer (which is the radius used when
+  // focusing).
+  annular_disc_radii(ring_radii.get(), gr, num_radii);
+  double ring_r_max = ring_radii[num_elements-1]; // Radius of the outer most (last) ring.
+
+  for (dream_idx_type n=0; n<num_elements; n++) {
+
+    double foc_delay = 0.0;
+    if (foc_type != FOCUS_UD) {
+      foc_delay = focusing_annular(foc_type, focal[0], ring_radii[n], ring_r_max, cp);
+    } else {
+      foc_delay = focusing_annular(foc_type, focal[n], ring_radii[n], ring_r_max, cp);
+    }
+
+    double weight = 1.0;
+    if (do_apod){
+      weight = apodization_annular(apod_type, n, apod, ring_radii[n], ring_r_max, param);
+    }
+
+    resp_annular(h_disc.get(), h_ring.get(), nt, n); // Compute the impulse response for the n:th ring.
+    superpos_annular(h_ring.get(), h, nt, weight, foc_delay, n, dt); // Add the n:th impulse response.
+  }
 
   return out_err;
 }
 
 /***
  *
- * dream_arr_annu_ud
- *
- * Routine for computation of spatial impulse response of an annular array -
- * user defined focusing.
+ * Compute the radius of each ring.  We use the (outer radius + inner radius)/2.
  *
  ***/
 
-int dream_arr_annu_ud(double xo, double yo, double zo, double dx, double dy, double dt,
-                      dream_idx_type  nt, double delay, double v, double cp, double alpha,
-                      int num_elements, double *gr, int foc_type, double *focal, double *apod, bool do_apod,
-                      int apod_type, double param, double *ha,int err_level)
+void annular_disc_radii(double *ring_r, double *gr, dream_idx_type num_radii)
 {
-  double r, *h;
-  double *hi;
-  dream_idx_type i, j;
-  double ramax;
-  int    nv;
-  double *rs, retfoc = 0, weight = 0;
-  int err = NONE, out_err = NONE;
-
-  h  = (double*) malloc( nt*num_elements * sizeof(double));
-  hi = (double*) malloc( nt*num_elements * sizeof(double));
-  rs = (double*) malloc(num_elements*sizeof(double));
-
-  for (i=0; i< nt; i++) {
-    ha[i] = 0.0;
+  //ring_r[0] = gr[0]/2.0; // FIXME Should we use 0.0?
+  ring_r[0] = 0.0;
+  for (dream_idx_type n=2, ns=1; n<num_radii; n += 2, ns++) {
+    ring_r[ns] = (gr[n]+gr[n-1]) / 2.0; // "Middle" radius.
   }
-
-  retfoc = 0.0;
-  weight = 1.0;
-
-  // nv - number of annulus.
-  nv = (num_elements+1)/2;
-  //nv = (num_elements)/2; // This is wrong!!
-
-  for (i=0; i<nt; i++) {
-    for (j=0; j<num_elements; j++) {
-      h[i+j*nt] = (double) 0.0;
-    }
-  }
-
-  /* ----------------------------------------- */
-
-  for (i=0; i<num_elements; i++) {
-    r = gr[i];
-
-    if (i==0 && r == (double) 0.0 ) {
-      for (j=0; j<nt; j++) {
-        h[j] = 0.0; // h(j,1) = 0.0;
-      }
-    } else {
-      err = circ_annular(xo,yo,zo,r,dx,dy,dt,nt,delay,v,cp,alpha,weight,h,i,num_elements,err_level);
-      if (err != NONE)
-        out_err = err;
-    }
-  }
-
-  /* --------------------------------------------- */
-
-  center_pos_annular(rs, gr, num_elements, nv, &ramax);
-
-  for (i=0; i<nv; i++) {
-    focusing_annular(foc_type, focal[i], rs[i], ramax, cp, &retfoc);  // Note foc_type must be 6 here!
-    if (do_apod){
-      apodization_annular(apod_type, i, apod, &weight, rs[i], ramax, param);
-    }
-    resp_annular(h, hi, nt, i);
-    superpos_annular(hi, ha, nt, weight, retfoc, i, dt);
-  }
-
-  free(h);
-  free(hi);
-  free(rs);
-
-  return out_err;
-} /* dream_arr_annu */
-
-
-/***
- *
- * center_pos_annular
- *
- ***/
-
-void center_pos_annular(double *rs, double *gr, int num_elements, int nv, double *ramax)
-{
-  int i, ns = 0;
-
-  rs[0] = gr[0]/2;
-  for (i=2; i<num_elements; i += 2) {
-    ns = (i+1) / 2;
-    rs[ns] = (gr[i]+gr[i-1]) / 2;
-  }
-  *ramax = rs[nv-1];
-
-  return;
 }
 
 /***
 *
-* subroutine focussing gives le retard retfoc du au focussing
+* Focus delay for the annular array
 *
 ***/
 
-void focusing_annular(int foc_type, double focal, double rs, double ramax, double cp, double *retfoc)
+double focusing_annular(int foc_type, double focal, double ring_r, double ring_r_max, double cp)
 {
-  double diff, rmax;
+  double foc_delay=0.0;
 
-  // foc_type = 1 - no foc, 2 foc xy.
-  if (foc_type == 1) {
-    *retfoc = 0.0;
-    return;
+  switch  (foc_type) {
+
+  case FOCUS_X:
+  case FOCUS_Y:
+  case FOCUS_XY:
+  case FOCUS_X_Y:
+    {
+      double rmax = sqrt(ring_r_max*ring_r_max + focal*focal);
+      double diff = rmax - sqrt(ring_r*ring_r + focal*focal);
+      foc_delay = diff * 1000 / cp;
+    }
+    break;
+
+  case FOCUS_UD:
+    foc_delay = focal; // Here focal is the user defined time delay in [us] (not the focal depth)
+    break;
+
+  case NO_FOCUS:
+  default:
+    foc_delay = 0.0;
+    break;
+
   }
 
-  if (foc_type == 2) {
-    rmax = sqrt(ramax*ramax + focal*focal);
-    diff = rmax - sqrt(rs*rs + focal*focal);
-
-    *retfoc = diff * 1000 / cp;
-  }
-
-  // User defined focusing.
-  if (foc_type == 6)
-    *retfoc = focal; // Here focal is the user defined time delay in [us] (not the focal depth)
-
-  return;
+  return foc_delay;
 }
 
 /***
  *
  *  apodization
  *
- * apodization apod_type = 0 apodization with imported apodisation function apod(x,y)
- *
- * param=input parameter
- *
- * apod_type = 0 - user defined.
- * apod_type = 1 traingle.
- * apod_type = 2 gauss.
- * apod_type = 3 rised cosine
- * apod_type = 4 simply supported.
- * apod_type = 5 clamped.
- *
  ***/
 
-void apodization_annular(int apod_type, int i, double *apod, double *weight, double rs,
-                         double ramax, double param)
+double apodization_annular(int apod_type, dream_idx_type n, double *apod, double ring_r,
+                           double ring_r_max, double param)
 {
-  double pi = atan((double) 1.0) * (double) 4.0;
+  double weight=1.0;
 
   switch(apod_type) {
 
-  case 0:
-    *weight = apod[i];
+  case APOD_UD:
+    weight = apod[n];
     break;
 
-  case 1:
-    *weight = 1.0 - fabs(rs) / ramax;
+  case APOD_TRIANGLE:
+    weight = 1.0 - fabs(ring_r) / ring_r_max;
     break;
 
-  case 2:
-    *weight = exp(-(param * rs*rs) / (ramax*ramax));
+  case APOD_GAUSS:
+    weight = exp(-(param * ring_r*ring_r) / (ring_r_max*ring_r_max));
     break;
 
-  case 3:
-    *weight = param + cos(rs * pi / ramax);
+  case APOD_RISED_COSINE:
+    weight = param + cos(ring_r * M_PI / ring_r_max);
     break;
 
-  case 4:
-    *weight = 1.0 - rs*rs / (ramax*ramax);
+  case APOD_SIMPLY_SUPPORTED:
+    weight = 1.0 - ring_r*ring_r / (ring_r_max*ring_r_max);
     break;
 
-  case 5:
-    *weight = (1.0 - rs*rs / (ramax*ramax)) * (1.0 - rs*rs / (ramax*ramax));
+  case APOD_CLAMPED:
+    weight = (1.0 - ring_r*ring_r / (ring_r_max*ring_r_max)) * (1.0 - ring_r*ring_r / (ring_r_max*ring_r_max));
     break;
 
   default:
     break;
   }
 
-  return;
+  return weight;
 }
 
 /***
  *
- * subroutine circ - pour calculer pulse respone of a circular aperture
+ * superpos_annular - Superposition the n:th element
  *
- * a = R1,R2,...,Rk,...,Rnum_elements = gr(k)
- *
+ * h : output response
+ * h_ring : input response of actual element
  ***/
 
-int circ_annular(double xo, double  yo, double  zo, double  r, double dx, double dy, double dt,
-                  dream_idx_type nt, double delay, double v, double cp, double alpha, double weight, double *h,
-                  dream_idx_type k, int num_elements, int err_level)
+void superpos_annular(double *h_ring, double *h, dream_idx_type nt,
+                      double weight, double foc_delay, dream_idx_type n, double dt)
 {
-  double t;
-  double xsmin, ysmin, xsmax, ysmax, ai, ds, pi, ri;
-  dream_idx_type it;
-  double zs, x, y;
-  int err = NONE;
-
-  pi = atan( (double) 1.0) * 4.0;
-  ds = dx * dy;
-  zs = (double) 0.0;
-
-  ysmin = -r;
-  ysmax =  r;
-
-  y = ysmin + dy/2.0;
-  while (y <= ysmax) {
-
-    xlimit_annular(y, r, &xsmin, &xsmax);
-
-    x = xsmin + dx/2.0;
-    while (x <= xsmax) {
-
-      distance(xo, yo, zo, x, y, zs, &ri);
-      ai = weight * v * ds / (2*pi*ri);
-      ai /= dt;
-      ai *= 1000;               // Convert to SI units.
-
-      // Propagation delay in micro seconds.
-      t = ri * 1000 / cp;
-      it = (dream_idx_type) rint((t - delay)/dt);
-
-      if ((it < nt) && (it >= 0))
-
-        if (alpha == (double) 0.0) {
-          h[it + k*nt] += ai;
-        }
-        else {
-          att_annu(alpha, ri, it, dt, cp, h, nt, ai, k);
-        }
-      else  {
-        if  (it >= 0)
-          err = dream_out_of_bounds_err("SIR out of bounds",it-nt+1,err_level);
-        else
-          err = dream_out_of_bounds_err("SIR out of bounds",it,err_level);
-
-        if ( (err_level == PARALLEL_STOP) || (err_level == STOP) )
-          return err; // Bail out.
-      }
-
-      x += dx;
-    }
-    y += dy;
+  double *buf = (double*) malloc(2*nt*sizeof(double));
+  for (dream_idx_type i=0; i<2*nt; i++) {
+    buf[i] = 0.0;
   }
 
-  return err;
-}
+  dream_idx_type delay_idx = (dream_idx_type) rint(foc_delay/dt) + 1;
+  for (dream_idx_type i=0; i<nt; i++) { // FIXME: can delay_idx be > nt?
+    if (delay_idx < nt) {
+      buf[i + delay_idx] = h_ring[i + n*nt];
+    }
+  }
 
-/***
- *
- * xlimit_annular
- *
- * Computes the x-axis integration limits.
- *
- ***/
-
-void xlimit_annular(double yi, double a, double *xsmin, double *xsmax)
-{
-  double rs;
-
-  rs = sqrt(a*a - yi*yi);
-  *xsmin = -rs;
-  *xsmax = rs;
-
-  return;
-}
-
-/***
- *
- * call superpos(h,ha) subroutine pour superposer les contributions des elements
- *
- * ha = output response
- * h  = input responce of actual element
- ***/
-
-void superpos_annular(double *hi, double *ha, dream_idx_type  nt, double weight, double retfoc, dream_idx_type j, double  dt)
-{
-  double *buf;
-  dream_idx_type    i,it1;
-
-  buf = (double*) malloc(2*nt*sizeof(double));
-
-  it1 = (dream_idx_type) (retfoc / dt) + 1;
-
-  for (i=0; i<2*nt; i++)
-    buf[i] = (double) 0.0;
-
-  for (i=0; i<nt; i++)
-    buf[i+it1] = hi[i+j*nt];
-
-  for (i=0; i<nt; i++)
-    ha[i] += weight * buf[i];
+  for (dream_idx_type i=0; i<nt; i++) {
+    h[i] += weight * buf[i];
+  }
 
   free(buf);
 
   return;
-} /* superpos_annular */
-
+}
 
 /***
  *
- * resp_annular
+ * Computes the response from one ring by subtracting the inner disc response from
+ * the outer disc response.
  *
  ***/
 
-void resp_annular(double *h, double *hi, dream_idx_type nt, dream_idx_type j)
+void resp_annular(double *h_disc, double *h_ring, dream_idx_type nt, dream_idx_type n)
 {
-  dream_idx_type i, k;
-
-  k = 2*j;
+  dream_idx_type k = 2*n;
 
   if (k == 0) {
-    for (i=0; i<nt; i++) { // Center element.
-      // hi(i,j) = h(i,1)
-      hi[i+j*nt] = h[i];
+    for (dream_idx_type i=0; i<nt; i++) { // Center element.
+      h_ring[i + n*nt] = h_disc[i];
     }
-  }
-  else {
-    for (i=0; i <nt; i++) { // Ring # j.
-      // hi(i,j) = h(i,k)-h(i,k-1)
-      hi[i+j*nt] = h[i+k*nt] - h[i+(k-1)*nt];
+  } else {
+    for (dream_idx_type i=0; i <nt; i++) { // n:th ring
+      h_ring[i + n*nt] = h_disc[i + k*nt] - h_disc[i + (k-1)*nt]; // Outer response - inner response.
     }
   }
 
   return;
-} /* resp_annular */
+}

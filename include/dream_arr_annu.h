@@ -24,6 +24,7 @@
 
 
 #include "dream.h"
+#include "att.h"
 
 /***
  *
@@ -31,14 +32,21 @@
  *
  ***/
 
-int dream_arr_annu(double xo, double yo, double zo, double dx, double dy, double dt,
-                   dream_idx_type nt, double delay, double v, double cp, double alpha,
-                   int num_elements, double *gr, int foc_type, double focal,
+int dream_arr_annu(double xo, double yo, double zo,
+                   double dx, double dy, double dt, dream_idx_type nt,
+                   double delay,
+                   double v, double cp,
+                   dream_idx_type num_radii, double *gr,
+                   int foc_type, double *focal,
                    double *apod, bool do_apod, int apod_type, double param,
-                   double *ha,int err_level);
+                   double *h, int err_level);
 
-int dream_arr_annu_ud(double xo, double yo, double zo, double dx, double dy, double dt,
-                      dream_idx_type nt, double delay, double v, double cp, double alpha,
-                      int num_elements, double *gr, int foc_type, double *focal,
-                      double *apod, bool do_apod, int apod_type, double param,
-                      double *ha,int err_level);
+int dream_arr_annu(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
+                   double xo, double yo, double zo,
+                   double dx, double dy, double dt, dream_idx_type nt,
+                   double delay,
+                   double v, double cp,
+                   dream_idx_type num_radii, double *gr,
+                   int foc_type, double *focal,
+                   double *apod, bool do_apod, int apod_type, double param,
+                   double *h, int err_level);

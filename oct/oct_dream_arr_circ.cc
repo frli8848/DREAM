@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2006,2007,2008,2009,2012,2014,2015,2016,2019 Fredrik Lingvall
+* Copyright (C) 2006,2007,2008,2009,2012,2014,2015,2016,2019,2021 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -36,23 +36,12 @@
 #define SINGLE 0
 #define MULTIPLE 1
 
-#ifdef USE_FFTW
-#include "att.h"
-#endif
-
 //
 // Octave headers.
 //
 
 #include <octave/oct.h>
 
-//
-// Macros
-//
-
-#define mxGetM(N)   args(N).matrix_value().rows()
-#define mxGetN(N)   args(N).matrix_value().cols()
-#define mxIsChar(N) args(N).is_string()
 
 //
 // Globals
@@ -67,26 +56,26 @@ int running;
 
 typedef struct
 {
-  octave_idx_type no;
-  octave_idx_type start;
-  octave_idx_type stop;
+  dream_idx_type no;
+  dream_idx_type start;
+  dream_idx_type stop;
   double *ro;
   double R;
   double dx;
   double dy;
   double dt;
-  octave_idx_type nt;
+  dream_idx_type nt;
   int delay_method;
   double *delay;
   double v;
   double cp;
   Attenuation *att;
-  int num_elements;
+  dream_idx_type num_elements;
   double *G;
   int foc_met;
   int steer_met;
   bool do_apod;
-  int apod_type;
+  int apod_met;
   double *focal;
   double *apod;
   double theta;
@@ -120,18 +109,18 @@ void* smp_dream_arr_circ(void *arg)
   double xo, yo, zo;
   double *h = D.h;
   double R=D.R, dx=D.dx, dy=D.dy, dt=D.dt;
-  octave_idx_type n, no=D.no, nt=D.nt;
+  dream_idx_type n, no=D.no, nt=D.nt;
   int    tmp_lev, err_level=D.err_level;
   double *delay=D.delay, *ro=D.ro, v=D.v, cp=D.cp;
   Attenuation *att = D.att;
-  octave_idx_type start=D.start, stop=D.stop;
-  int    foc_met=D.foc_met, steer_met=D.steer_met, do_apod = D.do_apod,apod_type=D.apod_type;
+  dream_idx_type start=D.start, stop=D.stop;
+  int    foc_met=D.foc_met, steer_met=D.steer_met, do_apod = D.do_apod,apod_met=D.apod_met;
   double *focal=D.focal, *apod=D.apod, theta=D.theta,phi=D.phi,param=D.param;
-  int    num_elements = D.num_elements;
+  dream_idx_type    num_elements = D.num_elements;
 
-  double *gx = D.G;			// First column in the matrix.
-  double *gy = gx + num_elements;    // Second column in the matrix.
-  double *gz = gy + num_elements;    // Third column in the matrix.
+  double *gx = D.G;               // First column in the matrix.
+  double *gy = gx + num_elements; // Second column in the matrix.
+  double *gz = gy + num_elements; // Third column in the matrix.
 
   // Buffers for the FFTs in the Attenuation
   std::unique_ptr<FFTCVec> xc_vec;
@@ -142,10 +131,11 @@ void* smp_dream_arr_circ(void *arg)
   }
 
   // Let the thread finish and then catch the error.
-  if (err_level == STOP)
+  if (err_level == STOP) {
     tmp_lev = PARALLEL_STOP;
-  else
+  } else {
     tmp_lev = err_level;
+  }
 
   for (n=start; n<stop; n++) {
     xo = ro[n];
@@ -167,7 +157,7 @@ void* smp_dream_arr_circ(void *arg)
                            num_elements, gx, gy, gz,
                            foc_met, focal,
                            steer_met, theta, phi,
-                           apod, do_apod, apod_type, param,
+                           apod, do_apod, apod_met, param,
                            &h[n*nt], tmp_lev);
     } else {
       err = dream_arr_circ(*att, *xc_vec, *x_vec,
@@ -178,15 +168,16 @@ void* smp_dream_arr_circ(void *arg)
                            num_elements, gx, gy, gz,
                            foc_met, focal,
                            steer_met, theta, phi,
-                           apod, do_apod, apod_type, param,
+                           apod, do_apod, apod_met, param,
                            &h[n*nt], tmp_lev);
 
     }
 
-      if (err != NONE || out_err ==  PARALLEL_STOP) {
-        tmp_err = err;
-        if (err == PARALLEL_STOP || out_err ==  PARALLEL_STOP)
+    if (err != NONE || out_err ==  PARALLEL_STOP) {
+      tmp_err = err;
+      if (err == PARALLEL_STOP || out_err ==  PARALLEL_STOP) {
         break; // Jump out when a STOP error occurs.
+      }
     }
 
     if (!running) {
@@ -199,8 +190,9 @@ void* smp_dream_arr_circ(void *arg)
   // Lock out_err for update, update it, and unlock.
   err_lock.lock();
 
-  if ((tmp_err != NONE) && (out_err == NONE))
+  if ((tmp_err != NONE) && (out_err == NONE)) {
     out_err = tmp_err;
+  }
 
   err_lock.unlock();
 
@@ -368,20 +360,20 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   double *ro,*geom_par,*s_par,*m_par;
   double *steer_par;
   double R, dx, dy, dt;
-  octave_idx_type nt,no,n;
+  dream_idx_type nt, no;
   double param=0,*delay, v, cp, alpha;
-  int    num_elements;
+  dream_idx_type    num_elements;
   double *G;
   int    foc_met=NO_FOCUS;
   double *focal= nullptr;
   int    steer_met=0;
   double theta=0,phi=0,*apod=nullptr;
   bool   do_apod=false;
-  int    apod_type=0;
+  int    apod_met=0;
   double *h, *err_p;
   int    err_level=STOP, is_set = false;
   DATA   *D;
-  octave_idx_type start, stop;
+  dream_idx_type start, stop;
   std::thread *threads;
   unsigned int thread_n, nthreads;
   sighandler_t old_handler, old_handler_abrt, old_handler_keyint;
@@ -394,12 +386,12 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   if (!((nrhs == 13) || (nrhs == 14))) {
     error("dream_arr_circ requires 13 or 14 input arguments!");
     return oct_retval;
-  }
-  else
+  } else {
     if (nlhs > 2) {
       error("Too many output arguments for dream_arr_circ!");
       return oct_retval;
     }
+  }
 
   //
   // Observation point.
@@ -456,7 +448,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   dx    = s_par[0];		// Spatial x discretization size.
   dy    = s_par[1];		// Spatial dy iscretization size.
   dt    = s_par[2];		// Temporal discretization size (= 1/sampling freq).
-  nt    = (octave_idx_type) s_par[3];	// Length of SIR.
+  nt    = (dream_idx_type) s_par[3];	// Length of SIR.
 
   //
   // Start point of impulse response vector ([us]).
@@ -474,7 +466,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   // Material parameters
   //
 
- // Check that arg 6 is a 3 element vectora
+  // Check that arg 6 is a 3 element vector.
   if (!((mxGetM(5)==3 && mxGetN(5)==1) || (mxGetM(5)==1 && mxGetN(5)==3))) {
     error("Argument 6 must be a vector of length 3!");
     return oct_retval;
@@ -488,8 +480,6 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   //
   // Focusing parameters.
   //
-
-  //  foc_met = 1 - no foc, 2 foc x ,3 foc y, 4 foc xy (del=fsqrt(x*x+y*y)), 5 focx+focy.
 
   if (nrhs >= 7) {
 
@@ -561,8 +551,6 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   // Beam steering.
   //
 
-  // Beam steering: steer_met = 1 - no steering, 2 steer ph=ax ,3 steer y ph=by, 4 steer xy ph=ax+by.
-
   if (nrhs >= 9) {
 
     if (!mxIsChar(8)) {
@@ -619,9 +607,6 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   // Apodization.
   //
 
-  // do_apod = false - no apodization, 2  apodization.
-  // apod_type = 0 - user defined, 1 traingle, 2 Gauss, 3 raised cosine, 4 simply supported, 5 clamped.
-
   if (nrhs >= 11) {
 
     if (!mxIsChar(10)) {
@@ -641,7 +626,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
 
     if (apod_str == "ud") {
       do_apod = true;
-      apod_type = APOD_UD;
+      apod_met = APOD_UD;
       is_set = true;
 
       // Vector of apodization weights.
@@ -655,31 +640,31 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
 
     if (apod_str == "triangle") {
       do_apod = true;
-      apod_type = APOD_TRIANGLE;
+      apod_met = APOD_TRIANGLE;
       is_set = true;
     }
 
     if (apod_str == "gauss") {
       do_apod = true;
-      apod_type = APOD_GAUSS;
+      apod_met = APOD_GAUSS;
       is_set = true;
     }
 
     if (apod_str == "raised") {
       do_apod = true;
-      apod_type = APOD_RISED_COSINE;
+      apod_met = APOD_RISED_COSINE;
       is_set = true;
     }
 
     if (apod_str == "simply") {
       do_apod = true;
-      apod_type = APOD_SIMPLY_SUPPORTED;
+      apod_met = APOD_SIMPLY_SUPPORTED;
       is_set = true;
     }
 
     if (apod_str == "clamped") {
       do_apod = true;
-      apod_type = APOD_CLAMPED;
+      apod_met = APOD_CLAMPED;
       is_set = true;
     }
 
@@ -753,8 +738,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
       error("Unknown error level!");
       return oct_retval;
     }
-  }
-  else {
+  } else {
     err_level = STOP; // Default.
   }
 
@@ -828,7 +812,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
     D[thread_n].foc_met = foc_met;
     D[thread_n].steer_met = steer_met;
     D[thread_n].do_apod = do_apod;
-    D[thread_n].apod_type = apod_type;
+    D[thread_n].apod_met = apod_met;
     D[thread_n].focal = focal;
     D[thread_n].apod = apod;
     D[thread_n].theta = theta;

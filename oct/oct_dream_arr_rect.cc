@@ -306,7 +306,7 @@ theta [deg] is the x-direction steer angle and \n\
 phi [deg] is the y-direction steer angle.\n\
 @end table\n\
 \n\
-odization parameters: apod_met, apod, and win_par. The apod_met (apodization method) options are:\n\
+Apodization parameters: apod_met, apod, and win_par. The apod_met (apodization method) options are:\n\
 \n\
 @table @code\n\
 \n\

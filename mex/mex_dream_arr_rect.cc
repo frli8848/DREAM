@@ -128,10 +128,11 @@ void* smp_dream_arr_rect(void *arg)
   }
 
   // Let the thread finish and then catch the error.
-  if (err_level == STOP)
+  if (err_level == STOP) {
     tmp_lev = PARALLEL_STOP;
-  else
+  } else {
     tmp_lev = err_level;
+  }
 
   for (n=start; n<stop; n++) {
     xo = ro[n];
@@ -170,8 +171,9 @@ void* smp_dream_arr_rect(void *arg)
 
     if (err != NONE || out_err ==  PARALLEL_STOP) {
       tmp_err = err;
-      if (err == PARALLEL_STOP || out_err ==  PARALLEL_STOP)
+      if (err == PARALLEL_STOP || out_err ==  PARALLEL_STOP) {
         break; // Jump out when a STOP error occurs.
+      }
     }
 
     if (!running) {
@@ -261,8 +263,9 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   //
 
   // Check that arg (number of observation points) x 3 matrix
-  if (mxGetN(prhs[0]) != 3)
+  if (mxGetN(prhs[0]) != 3) {
     dream_err_msg("Argument 1 must be a (number of observation points) x 3 matrix!");
+  }
 
   no = mxGetM(prhs[0]); // Number of observation points.
   ro = mxGetPr(prhs[0]);
@@ -272,8 +275,9 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   //
 
   // Check that arg 2 is a 2 element vector
-  if (!((mxGetM(prhs[1])==2 && mxGetN(prhs[1])==1) || (mxGetM(prhs[1])==1 && mxGetN(prhs[1])==2)))
+  if (!((mxGetM(prhs[1])==2 && mxGetN(prhs[1])==1) || (mxGetM(prhs[1])==1 && mxGetN(prhs[1])==2))) {
     dream_err_msg("Argument 2 must be a vector of length 2!");
+  }
 
   geom_par = mxGetPr(prhs[1]);
   a = geom_par[0];              // x-width of the array element.
@@ -297,8 +301,9 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   //
 
   // Check that arg 4 is a 4 element vector
-  if (!((mxGetM(prhs[3])==4 && mxGetN(prhs[3])==1) || (mxGetM(prhs[3])==1 && mxGetN(prhs[3])==4)))
+  if (!((mxGetM(prhs[3])==4 && mxGetN(prhs[3])==1) || (mxGetM(prhs[3])==1 && mxGetN(prhs[3])==4))) {
     dream_err_msg("Argument 4 must be a vector of length 4!");
+  }
 
   s_par = mxGetPr(prhs[3]);
   dx    = s_par[0];		// Spatial x discretization size.
@@ -329,7 +334,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   m_par = mxGetPr(prhs[5]);
   v     = m_par[0]; // Normal velocity of transducer surface.
   cp    = m_par[1]; // Sound speed.
-  alpha  = m_par[2]; // Attenuation coefficient [dB/(cm MHz)].
+  alpha = m_par[2]; // Attenuation coefficient [dB/(cm MHz)].
 
   //
   // Focusing parameters.
@@ -385,8 +390,9 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     } else {
 
       // Check that arg 8 is a scalar.
-      if (mxGetM(prhs[7]) * mxGetN(prhs[7]) !=1 )
+      if (mxGetM(prhs[7]) * mxGetN(prhs[7]) !=1 ) {
         dream_err_msg("Argument 8  must be a scalar!");
+      }
 
       // Focal point (in mm).
       focal = mxGetPr(prhs[7]);
@@ -718,8 +724,9 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Check for Error.
   //
 
-  if ( (err_level == STOP) && (out_err != NONE))
+  if ( (err_level == STOP) && (out_err != NONE)) {
     dream_err_msg(""); // Bail out if error.
+  }
 
   //
   // Return error.

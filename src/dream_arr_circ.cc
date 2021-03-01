@@ -22,7 +22,6 @@
 ***/
 
 #include <math.h>
-#include <stdio.h>
 #include <stdlib.h>
 
 #include "dream_arr_circ.h"
@@ -64,51 +63,47 @@ int dream_arr_circ(double xo, double yo, double zo,
                    double dx, double dy, double dt, dream_idx_type nt,
                    double delay,
                    double v, double cp,
-                   int  num_elements, double *gx, double *gy, double *gz,
+                   dream_idx_type num_elements, double *gx, double *gy, double *gz,
                    int foc_type, double *focal,
                    int steer_type, double theta, double phi, double *apod, bool do_apod,
                    int apod_type, double param, double *h, int err_level)
 {
-  dream_idx_type i;
-  double ramax, xamax, yamax;
-  double foc_delay, steer_delay, weight;
   int err = NONE, out_err = NONE;
 
-  for (i=0; i<nt; i++) {
+  for (dream_idx_type i=0; i<nt; i++) {
     h[i] = 0.0;
   }
 
-  foc_delay   = 0.0;
-  steer_delay = 0.0;
-  weight      = 1.0;
-
+  double foc_delay=0.0, steer_delay=0.0, weight=1.0;
+  double ramax, xamax, yamax;
   max_dim_arr(&xamax, &yamax, &ramax, gx, gy, gz, num_elements);
 
-  for (i=0; i<num_elements; i++) {
+  for (dream_idx_type n=0; n<num_elements; n++) {
 
     if (foc_type != FOCUS_UD) {
-      focusing(foc_type, focal[0], gx[i], gy[i], xamax, yamax, ramax, cp, &foc_delay);
+      focusing(foc_type, focal[0], gx[n], gy[n], xamax, yamax, ramax, cp, &foc_delay);
     } else {
-      focusing(foc_type, focal[i], gx[i], gy[i], xamax, yamax, ramax, cp, &foc_delay);
+      focusing(foc_type, focal[n], gx[n], gy[n], xamax, yamax, ramax, cp, &foc_delay);
     }
 
-    beamsteering(steer_type, theta, phi, gx[i], gy[i], xamax, yamax, ramax, cp, &steer_delay);
+    beamsteering(steer_type, theta, phi, gx[n], gy[n], xamax, yamax, ramax, cp, &steer_delay);
 
     if (do_apod) {
-      apodization(apod_type, i, apod, &weight, gx[i], gy[i], ramax, param);
+      apodization(apod_type, n, apod, &weight, gx[n], gy[n], ramax, param);
     }
 
-    // Compute the response for the i:th element and add it to the impulse response vector h.
+    // Compute the response for the n:th element and add it to the impulse response vector h.
     err = circ_arr(xo, yo, zo,
-                   gx[i], gy[i],
+                   gx[n], gy[n],
                    R,
                    dx, dy, dt, nt,
                    delay, foc_delay, steer_delay,
                    v, cp, weight,
                    h, err_level);
 
-    if (err != NONE)
+    if (err != NONE) {
       out_err = err;
+    }
   }
 
   return out_err;
@@ -120,17 +115,16 @@ int dream_arr_circ(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
                    double dx, double dy, double dt, dream_idx_type nt,
                    double delay,
                    double v, double cp,
-                   int  num_elements, double *gx, double *gy, double *gz,
+                   dream_idx_type num_elements, double *gx, double *gy, double *gz,
                    int foc_type, double *focal,
                    int steer_type, double theta, double phi, double *apod, bool do_apod,
                    int apod_type, double param, double *h, int err_level)
 {
-  dream_idx_type i;
   double ramax, xamax, yamax;
   double foc_delay, steer_delay, weight;
   int err = NONE, out_err = NONE;
 
-  for (i=0; i<nt; i++) {
+  for (dream_idx_type i=0; i<nt; i++) {
     h[i] = 0.0;
   }
 
@@ -140,32 +134,33 @@ int dream_arr_circ(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
 
   max_dim_arr(&xamax, &yamax, &ramax, gx, gy, gz, num_elements);
 
-  for (i=0; i<num_elements; i++) {
+  for (dream_idx_type n=0; n<num_elements; n++) {
 
     if (foc_type != FOCUS_UD) {
-      focusing(foc_type, focal[0], gx[i], gy[i], xamax, yamax, ramax, cp, &foc_delay);
+      focusing(foc_type, focal[0], gx[n], gy[n], xamax, yamax, ramax, cp, &foc_delay);
     } else {
-      focusing(foc_type, focal[i], gx[i], gy[i], xamax, yamax, ramax, cp, &foc_delay);
+      focusing(foc_type, focal[n], gx[n], gy[n], xamax, yamax, ramax, cp, &foc_delay);
     }
 
-    beamsteering(steer_type, theta, phi, gx[i], gy[i], xamax, yamax, ramax, cp, &steer_delay);
+    beamsteering(steer_type, theta, phi, gx[n], gy[n], xamax, yamax, ramax, cp, &steer_delay);
 
     if (do_apod) {
-      apodization(apod_type, i, apod, &weight, gx[i], gy[i], ramax, param);
+      apodization(apod_type, n, apod, &weight, gx[n], gy[n], ramax, param);
     }
 
-    // Compute the response for the i:th element and add it to the impulse response vector h.
+    // Compute the response for the n:th element and add it to the impulse response vector h.
     err = circ_arr(att, xc_vec, x_vec,
                    xo, yo, zo,
-                   gx[i], gy[i],
+                   gx[n], gy[n],
                    R,
                    dx, dy, dt, nt,
                    delay, foc_delay, steer_delay,
                    v, cp, weight,
                    h, err_level);
 
-    if (err != NONE)
+    if (err != NONE) {
       out_err = err;
+    }
   }
 
   return out_err;
@@ -190,39 +185,36 @@ int circ_arr(double xo, double yo, double zo,
              double weight,
              double *h, int err_level)
 {
-  double t;
-  double x_min, ysmin, x_max, ysmax, ai, ds;
-  dream_idx_type  it;
-  double xs, ys, zs;
   int err = NONE;
 
-  ds = dx * dy;
-  zs = (double) 0.0;
-  ysmin = -R + ys;
-  ysmax =  R + ys;
+  double ds = dx * dy;
+  double zs=0.0;
+
+  double ysmin = -R + y;
+  double ysmax =  R + y;
 
   // Loop over all surface elements (xs, ys)
 
-  ys = ysmin + dy/2.0;
+  double ys = ysmin + dy/2.0;
   while (ys <= ysmax) {
 
     // Compute the x-axis integration limits.
     double rs = sqrt(R*R - (y-ys)*(y-ys));
-    x_min = -rs + x;
-    x_max =  rs + x;
+    double x_min = -rs + x;
+    double x_max =  rs + x;
 
-    xs = x_min + dx/2.0;
+    double xs = x_min + dx/2.0;
     while (xs <= x_max) {
 
       double r;
       distance(xo, yo, zo, xs, ys, zs, &r);
-      ai = weight * v * ds / (2*M_PI * r);
+      double ai = weight * v * ds / (2*M_PI * r);
       ai /= dt;
       ai *= 1.0e3; // Convert to SI units.
 
       // Propagation delay in micro seconds.
-      t = r * 1.0e3/cp;
-      it = (dream_idx_type) rint((t - delay + foc_delay + steer_delay)/dt);
+      double t = r * 1.0e3/cp;
+      dream_idx_type it = (dream_idx_type) rint((t - delay + foc_delay + steer_delay)/dt);
 
       // Check if index is out of bounds.
       if ((it < nt) && (it >= 0)) {
@@ -258,39 +250,36 @@ int circ_arr(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
              double weight,
              double *h, int err_level)
 {
-  double t;
-  double x_min, ysmin, x_max, ysmax, ai;
-  dream_idx_type  it;
-  double xs, ys, zs;
   int err = NONE;
 
   double ds = dx * dy;
-  zs = (double) 0.0;
-  ysmin = -R + ys;
-  ysmax =  R + ys;
+  double zs = 0.0;
+
+  double ysmin = -R + y;
+  double ysmax =  R + y;
 
   // Loop over all surface elements (xs, ys)
 
-  ys = ysmin + dy/2.0;
+  double ys = ysmin + dy/2.0;
   while (ys <= ysmax) {
 
     // Compute the x-axis integration limits.
     double rs = sqrt(R*R - (y-ys)*(y-ys));
-    x_min = -rs + x;
-    x_max =  rs + x;
+    double x_min = -rs + x;
+    double x_max =  rs + x;
 
-    xs = x_min + dx/2.0;
+    double xs = x_min + dx/2.0;
     while (xs <= x_max) {
 
       double r;
       distance(xo, yo, zo, xs, ys, zs, &r);
-      ai = weight * v * ds / (2*M_PI * r);
+      double ai = weight * v * ds / (2*M_PI * r);
       ai /= dt;
       ai *= 1.0e3; // Convert to SI units.
 
       // Propagation delay in micro seconds.
-      t = r * 1.0e3/cp;
-      it = (dream_idx_type) rint((t - delay + foc_delay + steer_delay)/dt);
+      double t = r * 1.0e3/cp;
+      dream_idx_type it = (dream_idx_type) rint((t - delay + foc_delay + steer_delay)/dt);
 
       // Check if index is out of bounds.
       if ((it < nt) && (it >= 0)) {
@@ -304,8 +293,9 @@ int circ_arr(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
         else
           err = dream_out_of_bounds_err("SIR out of bounds",it,err_level);
 
-        if ( (err_level == PARALLEL_STOP) || (err_level == STOP) )
+        if ( (err_level == PARALLEL_STOP) || (err_level == STOP) ) {
           return err; // Bail out.
+        }
       }
 
       xs += dx;

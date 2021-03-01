@@ -22,7 +22,7 @@ foc_met = 'off';
 %foc_met = 'y';
 %foc_met = 'xy';
 %foc_met = 'x+y';
-focal = 100;                    % Focus radius
+focal = 25;                    % Focus radius
 
 %% Beam steering.
 steer_met = 'off';

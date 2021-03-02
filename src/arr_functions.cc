@@ -208,48 +208,42 @@ void beamsteering(SteerMet steer_met, double theta, double phi, double gx, doubl
 
 /***
  *
- *  Aperture weighting/Apodization
+ * Aperture weighting/Apodization
  *
  * param=input parameter
  *
- * apod_type = 0 User defined
- * apod_type = 1 Traingle
- * apod_type = 2 Gauss
- * apod_type = 3 Rised cosine
- * apod_type = 4 Simply supported
- * apod_type = 5 Clamped
- *
  ***/
 
-void apodization(int apod_type, dream_idx_type i, double *apod_vec, double *weight,
+void apodization(ApodMet apod_met, dream_idx_type n, double *apod_vec, double *weight,
                  double gx, double gy, double ramax, double param)
 {
   double r = sqrt(gx*gx + gy*gy);
 
-  switch(apod_type) {
+  switch(apod_met) {
 
-  case APOD_UD:
-    *weight = apod_vec[i];
+  case ApodMet::ud:
+    *weight = apod_vec[n];
     break;
 
-  case APOD_TRIANGLE:
+  case ApodMet::triangle:
     *weight = 1.0 - fabs(r) / ramax;
     break;
 
-  case APOD_GAUSS:
+  case ApodMet::gauss:
     *weight = exp(-(param * r*r) / (ramax*ramax));
     break;
 
-  case APOD_RISED_COSINE:
+  case ApodMet::raised_cosine:
     *weight = param + cos(r*M_PI/ramax);
     break;
 
-  case APOD_SIMPLY_SUPPORTED:
+  case ApodMet::simply_supported:
     *weight = 1.0 - r*r / (ramax*ramax);
     break;
 
-  case APOD_CLAMPED:
+  case ApodMet::clamped:
     *weight = (1.0 - r*r / (ramax*ramax)) * (1.0  - r*r / (ramax*ramax));
+    break;
 
   default:
     break;

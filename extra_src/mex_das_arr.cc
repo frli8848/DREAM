@@ -93,7 +93,8 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   double *focal=nullptr;
   SteerMet steer_met=SteerMet::none;
   double theta=0,phi=0,*apod=NULL;
-  int    iweight=0, iapo=0;
+  bool    do_apod=false;
+  ApodMet apod_met=ApodMet::gauss;
   double *h, *err_p;
   int    err_level=STOP, err=NONE, out_err = NONE, is_set = false;
   char   err_str[50];
@@ -296,9 +297,6 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Apodization.
   //
 
-  // iweight = 1 - no apodization, 2  apodization.
-  // iapo = 0 - user defined, 1 traingle, 2 Gauss, 3 raised cosine, 4 simply supported, 5 clamped.
-
   if (nrhs >= 10) {
 
     if (!mxIsChar(prhs[9]))
@@ -308,17 +306,17 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     buflen = (mxGetM(prhs[9]) * mxGetN(prhs[9]) * sizeof(mxChar)) + 1;
     mxGetString(prhs[9],apod_str,buflen);
 
-    iweight = 1;			// default off.
+    do_apod = false;			// default off.
     is_set = false;
 
     if (!strcmp(apod_str,"off")) {
-      iweight = 1;
+      do_apod = false;
       is_set = true;
     }
 
     if (!strcmp(apod_str,"ud")) {
-      iweight = 2;
-      iapo = 0;
+      do_apod = true;
+      apod_met = ApodMet::ud;
       is_set = true;
 
       // Vector of apodization weights.
@@ -329,50 +327,53 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     }
 
     if (!strcmp(apod_str,"triangle")) {
-      iweight = 2;
-      iapo = 1;
+      do_apod = true;
+      apod_met = ApodMet::triangle;
       is_set = true;
     }
 
     if (!strcmp(apod_str,"gauss")) {
-      iweight = 2;
-      iapo = 2;
+      do_apod = true;
+      apod_met = ApodMet::gauss;
       is_set = true;
     }
 
     if (!strcmp(apod_str,"raised")) {
-      iweight = 2;
-      iapo = 3;
+      do_apod = true;
+      apod_met = ApodMet::raised_cosine;
       is_set = true;
     }
 
     if (!strcmp(apod_str,"simply")) {
-      iweight = 2;
-      iapo = 4;
+      do_apod = true;
+      apod_met = ApodMet::simply_supported;
       is_set = true;
     }
 
     if (!strcmp(apod_str,"clamped")) {
-      iweight = 2;
-      iapo = 5;
+      do_apod = true;
+      apod_met = ApodMet::simply_supported;
       is_set = true;
     }
 
-   if (is_set == false)
+    if (is_set == false) {
       dream_err_msg("Unknown apodization method!");
+    }
 
     // Parameter for raised cos and Gaussian apodization functions.
-    if (mxGetM(prhs[11]) * mxGetN(prhs[11]) !=1 )
+    if (mxGetM(prhs[11]) * mxGetN(prhs[11]) !=1 ) {
       dream_err_msg("Argument 12 must be a scalar");
+    }
 
     param = mxGetScalar(prhs[11]);
   } else {
-    iweight = 1;
+    do_apod = false;
   }
 
   //
   // Error reporting.
   //
+
   if (nrhs == 13) {
 
    if (!mxIsChar(prhs[12]))
@@ -451,7 +452,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
                   gx, gy, gz,
                   foc_met, focal,
                   steer_met, theta, phi,
-                  apod, iweight, iapo, param,
+                  apod, do_apod, apod_met, param,
                   &h[n*nt],err_level);
 
     if (err != NONE) {

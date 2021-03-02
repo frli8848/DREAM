@@ -87,7 +87,9 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
 @end deftypefn")
 {
   bool do_apod=false;
-  int apod_type=0, i, num_elements=0, is_set = false;
+  ApodMet apod_type=ApodMet::gauss;
+  dream_idx_type i, num_elements=0;
+  bool is_set = false;
   double *apod=nullptr, weight, xs, ys, ramax, param;
   double *h;
   octave_value_list oct_retval;
@@ -98,12 +100,12 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   if (nrhs != 3) {
     error("dream_apodwin requires three input arguments!");
     return oct_retval;
-  }
-  else
+  } else {
     if (nlhs > 1) {
       error("dream_apodwin requires one output argument!");
       return oct_retval;
     }
+  }
 
   //
   // Apodization.
@@ -128,38 +130,38 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
 
   if (apod_str == "ud") {
     do_apod = true;
-    apod_type = APOD_UD;
+    apod_type = ApodMet::ud;
     error(" 'ud'- (user defined) meaningless for this function!");
     return oct_retval;
   }
 
   if (apod_str == "triangle") {
     do_apod = true;
-    apod_type = APOD_TRIANGLE;
+    apod_type = ApodMet::triangle;
     is_set = true;
   }
 
   if (apod_str == "gauss") {
     do_apod = true;
-    apod_type = APOD_GAUSS;
+    apod_type = ApodMet::gauss;
     is_set = true;
   }
 
   if (apod_str == "raised") {
     do_apod = true;
-    apod_type = APOD_RISED_COSINE;
+    apod_type = ApodMet::raised_cosine;
     is_set = true;
   }
 
   if (apod_str == "simply") {
     do_apod = true;
-    apod_type = APOD_SIMPLY_SUPPORTED;
+    apod_type = ApodMet::simply_supported;
       is_set = true;
   }
 
   if (apod_str == "clamped") {
     do_apod = true;
-    apod_type = APOD_CLAMPED;
+    apod_type = ApodMet::clamped;
     is_set = true;
   }
 

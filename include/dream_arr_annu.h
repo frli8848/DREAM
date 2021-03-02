@@ -26,19 +26,13 @@
 #include "dream.h"
 #include "attenuation.h"
 
-/***
- *
- * Header file for dream_arr_annu.c
- *
- ***/
-
 int dream_arr_annu(double xo, double yo, double zo,
                    double dx, double dy, double dt, dream_idx_type nt,
                    double delay,
                    double v, double cp,
                    dream_idx_type num_radii, double *gr,
                    FocusMet foc_met, double *focal,
-                   double *apod, bool do_apod, int apod_type, double param,
+                   double *apod, bool do_apod, ApodMet apod_met, double param,
                    double *h, int err_level);
 
 int dream_arr_annu(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
@@ -48,5 +42,5 @@ int dream_arr_annu(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
                    double v, double cp,
                    dream_idx_type num_radii, double *gr,
                    FocusMet foc_met, double *focal,
-                   double *apod, bool do_apod, int apod_type, double param,
+                   double *apod, bool do_apod, ApodMet apod_met, double param,
                    double *h, int err_level);

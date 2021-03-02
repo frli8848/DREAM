@@ -48,8 +48,8 @@ int centroid(double *h,dream_idx_type nt);
 int das_arr(double xo, double yo, double zo, double dt, dream_idx_type nt,
             double delay, double cp, int  num_elements,
             double *gx, double *gy, double *gz, FocusMet foc_met, double focal,
-            SteerMet steer_met, double theta, double phi, double *apod, bool do_apod,
-            int apod_type, double param, double *ha,int err_level)
+            SteerMet steer_met, double theta, double phi,
+            double *apod, bool do_apod, ApodMet apod_met, double param, double *ha,int err_level)
 {
   double steer_delay;
   double *h;
@@ -64,20 +64,24 @@ int das_arr(double xo, double yo, double zo, double dt, dream_idx_type nt,
     ha[i] = (double) 0.0;
   }
 
-  foc_delay   = (double) 0.0;
-  steer_delay = (double) 0.0;
-  weight   = (double) 1.0;
+  foc_delay   = 0.0;
+  steer_delay = 0.0;
+  weight = 1.0;
 
   max_dim_arr(&xamax, &yamax, &ramax, gx, gy, gz, num_elements);
 
-  for (i=0; i<num_elements; i++) {
-    center_pos(&xs, &ys, &zs, i, gx, gy, gz);
-    focusing(foc_met, focal, xs, ys, xamax, yamax, ramax, cp, &foc_delay);
-    beamsteering(steer_met, theta, phi, xs, ys, xamax, yamax, ramax, cp, &steer_delay);
+  for (dream_idx_type n=0; n<num_elements; n++) {
+    focusing(foc_met, focal, gx[n], gy[n], xamax, yamax, ramax, cp, &foc_delay);
+    beamsteering(steer_met, theta, phi, gx[n], gy[n], xamax, yamax, ramax, cp, &steer_delay);
+
     if (do_apod) {
-      apodization(apod_type, i, apod, &weight, xs, ys, ramax, param);
+      apodization(apod_met, n, apod, &weight, xs, ys, ramax, param);
     }
-    err = delay_arr(xo,yo,zo,xs,ys,zs,dt,nt,delay,foc_delay,steer_delay,cp,weight,h,err_level);
+
+    err = delay_arr(xo, yo, zo,
+                    gx[n], gy[n], gz[n],
+                    dt, nt, delay, foc_delay, steer_delay, cp, weight, h,err_level);
+
     if (err != NONE) {
       out_err = err;
       if ( (err == PARALLEL_STOP) || (err == STOP) ) {
@@ -95,12 +99,12 @@ int das_arr(double xo, double yo, double zo, double dt, dream_idx_type nt,
 
   if ((i_c < nt) && (i_c >= 0)) {
     ha[i_c] += 1.0;
-  }
-  else {
-    if  (i_c >= 0)
-      err = dream_out_of_bounds_err("Centroid out of bounds",i_c-nt+1,err_level);
-    else
-      err = dream_out_of_bounds_err("Centroid out of bounds",i_c,err_level);
+  } else {
+    if  (i_c >= 0) {
+      err = dream_out_of_bounds_err("Centroid out of bounds", i_c-nt+1, err_level);
+    } else {
+      err = dream_out_of_bounds_err("Centroid out of bounds", i_c, err_level);
+    }
 
     if ( (err == PARALLEL_STOP) || (err == STOP) ) {
       free(h);
@@ -112,7 +116,7 @@ int das_arr(double xo, double yo, double zo, double dt, dream_idx_type nt,
   free(h);
 
   return out_err;
-} /* dream_arr_circ */
+}
 
 /***
  *
@@ -121,10 +125,11 @@ int das_arr(double xo, double yo, double zo, double dt, dream_idx_type nt,
  ***/
 
 int das_arr_ud(double xo, double yo, double zo, double dt, dream_idx_type nt,
-                    double delay, double cp, int  num_elements,
-                      double *gx, double *gy, double *gz, FocusMet foc_met, double *focal,
-                      SteerMet steer_met, double theta, double phi, double *apod, bool do_apod,
-                      int apod_type, double param, double *ha,int err_level)
+               double delay, double cp, int  num_elements,
+               double *gx, double *gy, double *gz, FocusMet foc_met, double *focal,
+               SteerMet steer_met, double theta, double phi,
+               double *apod, bool do_apod,
+               ApodMet apod_met, double param, double *ha,int err_level)
 {
   double steer_delay;
   double *h;
@@ -139,19 +144,21 @@ int das_arr_ud(double xo, double yo, double zo, double dt, dream_idx_type nt,
     ha[i] = (double) 0.0;
   }
 
-  foc_delay   = (double) 0.0;
-  steer_delay = (double) 0.0;
-  weight   = (double) 1.0;
+  foc_delay   = 0.0;
+  steer_delay = 0.0;
+  weight = 1.0;
 
   max_dim_arr(&xamax, &yamax, &ramax, gx, gy, gz, num_elements);
 
   for (i=0; i<num_elements; i++) {
-    center_pos(&xs, &ys, &zs, i, gx, gy, gz);
-    focusing(foc_met, focal[i], xs, ys, xamax, yamax, ramax, cp, &foc_delay);   // Note foc_met must be 6 here!
-    beamsteering(steer_met, theta, phi, xs, ys, xamax, yamax, ramax, cp, &steer_delay);
+
+    focusing(foc_met, focal[i], gx[i], gy[i],  xamax, yamax, ramax, cp, &foc_delay);   // Note foc_met must be 6 here!
+    beamsteering(steer_met, theta, phi, gx[i], gy[i], xamax, yamax, ramax, cp, &steer_delay);
+
     if (do_apod) {
-      apodization(apod_type, i, apod, &weight, xs, ys, ramax, param);
+      apodization(apod_met, i, apod, &weight, xs, ys, ramax, param);
     }
+
     err = delay_arr(xo,yo,zo,xs,ys,zs,dt,nt,delay,foc_delay,steer_delay,cp,weight,h,err_level);
     if (err != NONE) {
       out_err = err;
@@ -163,7 +170,6 @@ int das_arr_ud(double xo, double yo, double zo, double dt, dream_idx_type nt,
     superpos(h, ha, nt);
   }
 
-
   i_c = centroid(ha,nt);
 
   for (i = 0; i < nt; i++) {
@@ -172,12 +178,12 @@ int das_arr_ud(double xo, double yo, double zo, double dt, dream_idx_type nt,
 
   if ((i_c < nt) && (i_c >= 0)) {
     ha[i_c] += 1.0;
-  }
-  else {
-    if  (i_c >= 0)
+  } else {
+    if  (i_c >= 0) {
       err = dream_out_of_bounds_err("Centroid out of bounds",i_c-nt+1,err_level);
-    else
+    } else {
       err = dream_out_of_bounds_err("Centroid out of bounds",i_c,err_level);
+    }
 
     if ( (err == PARALLEL_STOP) || (err == STOP) ) {
       free(h);
@@ -190,9 +196,6 @@ int das_arr_ud(double xo, double yo, double zo, double dt, dream_idx_type nt,
 
   return out_err;
 } /* das_arr_ud */
-
-/********************************************************************/
-
 
 /***
  *

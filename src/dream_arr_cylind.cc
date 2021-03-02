@@ -45,7 +45,7 @@ int dream_arr_cylind(double xo, double yo, double zo,
                      dream_idx_type num_elements, double *gx, double *gy, double *gz,
                      FocusMet foc_met, double *focal,
                      SteerMet steer_met, double theta, double phi,
-                     double *apod, bool do_apod, int apod_type, double param,
+                     double *apod, bool do_apod, ApodMet apod_met, double param,
                      double *ha, int err_level)
 {
   dream_idx_type i;
@@ -78,8 +78,8 @@ int dream_arr_cylind(double xo, double yo, double zo,
     beamsteering(steer_met, theta, phi, gx[i], gy[i], xamax, yamax, ramax, cp, &steer_delay);
 
     if (do_apod) {
-      //apodization(apod_type, i, apod, &weight, xs, ys, ramax, param);
-      apodization(apod_type, i, apod, &weight, gx[i], gy[i], ramax, param);
+      //apodization(apod_met, i, apod, &weight, xs, ys, ramax, param);
+      apodization(apod_met, i, apod, &weight, gx[i], gy[i], ramax, param);
     }
     // Compute the response for the i:th element and add it to the impulse response vector ha.
     //err = cylind_f(xo,yo,zo,xs,ys,zs,Rcurv,a,b,dx,dy,dt,nt,delay,retfoc,retsteer,v,cp,alpha,weight,ha,err_level);
@@ -106,7 +106,7 @@ int dream_arr_cylind(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
                      dream_idx_type num_elements, double *gx, double *gy, double *gz,
                      FocusMet foc_met, double *focal,
                      SteerMet steer_met, double theta, double phi,
-                     double *apod, bool do_apod, int apod_type, double param,
+                     double *apod, bool do_apod, ApodMet apod_met, double param,
                      double *ha, int err_level)
 {
   dream_idx_type i;
@@ -139,8 +139,8 @@ int dream_arr_cylind(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
     beamsteering(steer_met, theta, phi, gx[i], gy[i], xamax, yamax, ramax, cp, &steer_delay);
 
     if (do_apod) {
-      //apodization(apod_type, i, apod, &weight, xs, ys, ramax, param);
-      apodization(apod_type, i, apod, &weight, gx[i], gy[i], ramax, param);
+      //apodization(apod_met, i, apod, &weight, xs, ys, ramax, param);
+      apodization(apod_met, i, apod, &weight, gx[i], gy[i], ramax, param);
     }
     // Compute the response for the i:th element and add it to the impulse response vector ha.
     //err = cylind_f(xo,yo,zo,xs,ys,zs,Rcurv,a,b,dx,dy,dt,nt,delay,retfoc,retsteer,v,cp,alpha,weight,ha,err_level);

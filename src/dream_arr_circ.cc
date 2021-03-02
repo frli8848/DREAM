@@ -66,7 +66,7 @@ int dream_arr_circ(double xo, double yo, double zo,
                    dream_idx_type num_elements, double *gx, double *gy, double *gz,
                    FocusMet foc_met, double *focal,
                    SteerMet steer_met, double theta, double phi, double *apod, bool do_apod,
-                   int apod_type, double param, double *h, int err_level)
+                   ApodMet apod_met, double param, double *h, int err_level)
 {
   int err = NONE, out_err = NONE;
 
@@ -89,7 +89,7 @@ int dream_arr_circ(double xo, double yo, double zo,
     beamsteering(steer_met, theta, phi, gx[n], gy[n], xamax, yamax, ramax, cp, &steer_delay);
 
     if (do_apod) {
-      apodization(apod_type, n, apod, &weight, gx[n], gy[n], ramax, param);
+      apodization(apod_met, n, apod, &weight, gx[n], gy[n], ramax, param);
     }
 
     // Compute the response for the n:th element and add it to the impulse response vector h.
@@ -118,7 +118,7 @@ int dream_arr_circ(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
                    dream_idx_type num_elements, double *gx, double *gy, double *gz,
                    FocusMet foc_met, double *focal,
                    SteerMet steer_met, double theta, double phi, double *apod, bool do_apod,
-                   int apod_type, double param, double *h, int err_level)
+                   ApodMet apod_met, double param, double *h, int err_level)
 {
   double ramax, xamax, yamax;
   double foc_delay, steer_delay, weight;
@@ -145,7 +145,7 @@ int dream_arr_circ(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
     beamsteering(steer_met, theta, phi, gx[n], gy[n], xamax, yamax, ramax, cp, &steer_delay);
 
     if (do_apod) {
-      apodization(apod_type, n, apod, &weight, gx[n], gy[n], ramax, param);
+      apodization(apod_met, n, apod, &weight, gx[n], gy[n], ramax, param);
     }
 
     // Compute the response for the n:th element and add it to the impulse response vector h.

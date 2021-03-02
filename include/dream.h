@@ -44,13 +44,6 @@ enum class SteerMet {
     y,
     xy};
 
-#define APOD_UD 0               // User defined
-#define APOD_TRIANGLE 1
-#define APOD_GAUSS 2
-#define APOD_RISED_COSINE 3
-#define APOD_SIMPLY_SUPPORTED 4
-#define APOD_CLAMPED 5
-
 enum class ApodMet {
   triangle,
     gauss,

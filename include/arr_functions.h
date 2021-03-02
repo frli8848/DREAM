@@ -38,7 +38,7 @@ void focusing(FocusMet foc_met, double focal, double xs, double ys,
               double x_max, double y_max, double r_max, double cp, double *retfoc);
 void beamsteering(SteerMet steer_met, double theta, double phi, double xs, double ys,
                   double x_max, double y_max, double r_max, double cp, double *retsteer);
-void apodization(int apod_type, dream_idx_type i, double  *apod_vec, double *weight,
+void apodization(ApodMet apod_met, dream_idx_type i, double  *apod_vec, double *weight,
                  double xs, double ys, double r_max, double param);
 void distance(double xo, double yo, double zo,double xs,double ys, double zs, double *r);
 void superpos(double *h, double *ha, dream_idx_type nt);

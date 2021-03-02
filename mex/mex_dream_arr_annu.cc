@@ -21,7 +21,6 @@
 *
 ***/
 
-
 #include <string.h>
 #include <stdlib.h>
 #include <signal.h>
@@ -67,7 +66,7 @@ typedef struct
   double *gr;
   FocusMet foc_met;
   bool do_apod;
-  int apod_met;
+  ApodMet apod_met;
   double *focal;
   double *apod;
   double param;
@@ -106,7 +105,8 @@ void* smp_dream_arr_annu(void *arg)
   Attenuation *att = D.att;
   size_t start=D.start, stop=D.stop;
   FocusMet foc_met=D.foc_met;
-  int do_apod = D.do_apod,apod_met=D.apod_met;
+  int do_apod = D.do_apod;
+  ApodMet apod_met=D.apod_met;
   double *focal=D.focal, *apod=D.apod, param=D.param;
   size_t  num_radii = D.num_radii;
 
@@ -226,7 +226,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   double *focal=nullptr;
   double *apod=NULL;
   bool   do_apod=false;
-  int    apod_met=0;
+  ApodMet apod_met=ApodMet::gauss;
   double *h, *err_p;
   int    err_level=STOP, is_set = false;
   char   err_str[50];
@@ -378,7 +378,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
     if (!strcmp(apod_str,"ud")) {
       do_apod = true;
-      apod_met = 0;
+      apod_met = ApodMet::ud;
       is_set = true;
 
       // Vector of apodization weights.
@@ -391,31 +391,31 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
     if (!strcmp(apod_str,"triangle")) {
       do_apod = true;
-      apod_met = APOD_TRIANGLE;
+      apod_met = ApodMet::triangle;
       is_set = true;
     }
 
     if (!strcmp(apod_str,"gauss")) {
       do_apod = true;
-      apod_met = APOD_GAUSS;
+      apod_met = ApodMet::gauss;
       is_set = true;
     }
 
     if (!strcmp(apod_str,"raised")) {
       do_apod = true;
-      apod_met = APOD_RISED_COSINE;
+      apod_met = ApodMet::raised_cosine;
       is_set = true;
     }
 
     if (!strcmp(apod_str,"simply")) {
       do_apod = true;
-      apod_met = APOD_SIMPLY_SUPPORTED;
+      apod_met = ApodMet::simply_supported;
       is_set = true;
     }
 
     if (!strcmp(apod_str,"clamped")) {
       do_apod = true;
-      apod_met = APOD_CLAMPED;
+      apod_met = ApodMet::clamped;
       is_set = true;
     }
 

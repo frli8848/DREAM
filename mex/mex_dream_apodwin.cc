@@ -39,10 +39,10 @@
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
   bool do_apod = false;			// default off.
-  char apod_met[40];
+  char apod_str[40];
   int buflen;
-  int apod_type=0, i;
-  mwSize num_elements=0;
+  ApodMet apod_met=ApodMet::gauss;
+  dream_idx_type i, num_elements=0;
   bool is_set = false;
   double *apod=nullptr, weight, xs, ys, ramax, param;
   double *h;
@@ -50,73 +50,72 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Check for proper number of arguments
   if (nrhs != 3) {
     dream_err_msg("dream_apodwin requires three input arguments!");
-  }
-  else
+  } else {
     if (nlhs > 1) {
       dream_err_msg("dream_apodwin requires one output argument!");
     }
-
+  }
 
   buflen = (mxGetM(prhs[0]) * mxGetN(prhs[0]) * sizeof(mxChar)) + 1;
-  mxGetString(prhs[0],apod_met,buflen);
+  mxGetString(prhs[0],apod_str,buflen);
 
   is_set = false;
-  if (!strcmp(apod_met,"off")) {
+  if (!strcmp(apod_str,"off")) {
     do_apod = false;
     is_set = true;
   }
 
-  if (!strcmp(apod_met,"ud")) {
+  if (!strcmp(apod_str,"ud")) {
     do_apod = true;
-    apod_type = 0;
+    apod_met = ApodMet::ud;
     dream_err_msg(" 'ud'- (user defined) meaningless for this function!");
   }
 
-  if (!strcmp(apod_met,"triangle")) {
+  if (!strcmp(apod_str,"triangle")) {
     do_apod = true;
-    apod_type = 1;
+    apod_met = ApodMet::triangle;
     is_set = true;
   }
 
-  if (!strcmp(apod_met,"gauss")) {
+  if (!strcmp(apod_str,"gauss")) {
     do_apod = true;
-    apod_type = 2;
+    apod_met = ApodMet::gauss;
     is_set = true;
   }
 
-  if (!strcmp(apod_met,"raised")) {
+  if (!strcmp(apod_str,"raised")) {
     do_apod = true;
-    apod_type = 3;
+    apod_met = ApodMet::raised_cosine;
     is_set = true;
   }
 
-  if (!strcmp(apod_met,"simply")) {
+  if (!strcmp(apod_str,"simply")) {
     do_apod = true;
-    apod_type = 4;
+    apod_met = ApodMet::simply_supported;
     is_set = true;
   }
 
-  if (!strcmp(apod_met,"clamped")) {
+  if (!strcmp(apod_str,"clamped")) {
     do_apod = true;
-    apod_type = 5;
+    apod_met = ApodMet::clamped;
     is_set = true;
   }
 
-  if (is_set == false)
+  if (is_set == false) {
     dream_err_msg("Unknown apodization level!");
-
+  }
 
   //
   // Apodization.
   //
 
-  // apod_type = 0 - user defined, 1 traingle, 2 Gauss, 3 raised cosine, 4 simply supported, 5 clamped.
-
-  if (!mxIsChar(prhs[0]))
+  if (!mxIsChar(prhs[0])) {
     dream_err_msg("Argument 1 must be a string");
+  }
 
-  if (mxGetM(prhs[1]) * mxGetN(prhs[1]) !=1)
+  if (mxGetM(prhs[1]) * mxGetN(prhs[1]) !=1){
     dream_err_msg("Argument 2 must be a scalar!");
+  }
 
   num_elements = (int) mxGetScalar(prhs[1]);
 
@@ -143,7 +142,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   if (do_apod) {
     for (i=0; i<num_elements; i++) {
       xs = 2*ramax * (0.5 - ((double) i / (double) num_elements));
-      apodization(apod_type, i, apod, &weight, xs, ys, ramax, param);
+      apodization(apod_met, i, apod, &weight, xs, ys, ramax, param);
       h[i] = weight;
     }
   }

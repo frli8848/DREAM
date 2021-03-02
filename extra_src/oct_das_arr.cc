@@ -197,7 +197,6 @@ Copyright @copyright{} 2008-2019 Fredrik Lingvall.\n\
 {
   double *ro,*s_par,*m_par;
   double *steer_par;
-  char   apod_met[50];
   int    buflen;
   double xo,yo,zo,dt;
   dream_idx_type    nt,no,n;
@@ -208,7 +207,8 @@ Copyright @copyright{} 2008-2019 Fredrik Lingvall.\n\
   double *focal=nullptr;
   SteerMet steer_met=SteerMet::none;
   double theta=0,phi=0,*apod=NULL;
-  int    iweight=0,iapo=0;
+  bool    do_apod=false;
+  ApodMet apod_met=ApodMet::gauss;
   double *h, *err_p;
   int    err_level=STOP, err=NONE, out_err = NONE, is_set = false;
   char   err_str[50];
@@ -436,9 +436,6 @@ Copyright @copyright{} 2008-2019 Fredrik Lingvall.\n\
   // Apodization.
   //
 
-  // iweight = 1 - no apodization, 2  apodization.
-  // iapo = 0 - user defined, 1 traingle, 2 Gauss, 3 raised cosine, 4 simply supported, 5 clamped.
-
   if (nrhs >= 10) {
 
     if (!mxIsChar(9)) {
@@ -446,24 +443,19 @@ Copyright @copyright{} 2008-2019 Fredrik Lingvall.\n\
       return oct_retval;
     }
 
-    std::string strin = args(9).string_value();
-    buflen = strin.length();
-    for ( n=0; n<=buflen; n++ ) {
-      apod_met[n] = strin[n];
-    }
-    apod_met[buflen] = '\0';
+    std::string apod_str = args(9).string_value();
 
-    iweight = 1;                        // default off.
+    do_apod = false;                        // default off.
     is_set = false;
 
-    if (!strcmp(apod_met,"off")) {
-      iweight = 1;
+    if (apod_str == "off") {
+      do_apod = false;
       is_set = true;
     }
 
-    if (!strcmp(apod_met,"ud")) {
-      iweight = 2;
-      iapo = 0;
+    if (apod_str == "ud") {
+      do_apod = true;
+      apod_met = ApodMet::ud;
       is_set = true;
 
       // Vector of apodization weights.
@@ -477,33 +469,33 @@ Copyright @copyright{} 2008-2019 Fredrik Lingvall.\n\
 
     }
 
-    if (!strcmp(apod_met,"triangle")) {
-      iweight = 2;
-      iapo = 1;
+    if (apod_str == "triangle") {
+      do_apod = true;
+      apod_met = ApodMet::triangle;;
       is_set = true;
     }
 
-    if (!strcmp(apod_met,"gauss")) {
-      iweight = 2;
-      iapo = 2;
+    if (apod_str == "gauss") {
+      do_apod = true;
+      apod_met = ApodMet::gauss;
       is_set = true;
     }
 
-    if (!strcmp(apod_met,"raised")) {
-      iweight = 2;
-      iapo = 3;
+    if (apod_str == "raised") {
+      do_apod = true;
+      apod_met = ApodMet::raised_cosine;
       is_set = true;
     }
 
-    if (!strcmp(apod_met,"simply")) {
-      iweight = 2;
-      iapo = 4;
+    if (apod_str == "simply") {
+      do_apod = true;
+      apod_met = ApodMet::simply_supported;
       is_set = true;
     }
 
-    if (!strcmp(apod_met,"clamped")) {
-      iweight = 2;
-      iapo = 5;
+    if (apod_str == "clamped") {
+      do_apod = true;
+      apod_met = ApodMet::clamped;
       is_set = true;
     }
 
@@ -521,13 +513,14 @@ Copyright @copyright{} 2008-2019 Fredrik Lingvall.\n\
     const Matrix tmp7 = args(11).matrix_value();
     param = (double) tmp7.fortran_vec()[0];
 
+  } else {
+    do_apod = false;
   }
-  else
-    iweight = 1;
 
   //
   // Error reporting.
   //
+
   if (nrhs == 13) {
 
     if (!mxIsChar(12)) {
@@ -613,7 +606,7 @@ Copyright @copyright{} 2008-2019 Fredrik Lingvall.\n\
                   gx, gy, gz,
                   foc_met, focal,
                   steer_met, theta, phi,
-                  apod,iweight,iapo,param,
+                  apod, do_apod, apod_met, param,
                   &h[n*nt],err_level);
 
     if (err != NONE) {

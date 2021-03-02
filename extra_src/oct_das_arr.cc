@@ -197,7 +197,7 @@ Copyright @copyright{} 2008-2019 Fredrik Lingvall.\n\
 {
   double *ro,*s_par,*m_par;
   double *steer_par;
-  char   apod_met[50],steer_met[50];
+  char   apod_met[50];
   int    buflen;
   double xo,yo,zo,dt;
   dream_idx_type    nt,no,n;
@@ -206,11 +206,11 @@ Copyright @copyright{} 2008-2019 Fredrik Lingvall.\n\
   double *gx,*gy,*gz;
   FocusMet foc_met=FocusMet::none;
   double *focal=nullptr;
-  int    ister=0;
+  SteerMet steer_met=SteerMet::none;
   double theta=0,phi=0,*apod=NULL;
   int    iweight=0,iapo=0;
   double *h, *err_p;
-  int    err_level=STOP, err=NONE, out_err = NONE, set = false;
+  int    err_level=STOP, err=NONE, out_err = NONE, is_set = false;
   char   err_str[50];
   sighandler_t   old_handler, old_handler_abrt, old_handler_keyint;
   octave_value_list oct_retval;
@@ -320,36 +320,36 @@ Copyright @copyright{} 2008-2019 Fredrik Lingvall.\n\
 
     std::string foc_str = args(5).string_value();
 
-    set = false;
+    is_set = false;
 
     if (foc_str == "off") {
       foc_met = FocusMet::none;
-      set = true;
+      is_set = true;
     }
 
     if (foc_str == "x") {
       foc_met = FocusMet::x;
-      set = true;
+      is_set = true;
     }
 
     if (foc_str == "y") {
       foc_met = FocusMet::y;
-      set = true;
+      is_set = true;
     }
 
     if (foc_str == "xy") {
       foc_met = FocusMet::xy;
-      set = true;
+      is_set = true;
     }
 
     if (foc_str == "x+y") {
       foc_met = FocusMet::x_y;
-      set = true;
+      is_set = true;
     }
 
     if (foc_str == "ud") {
       foc_met = FocusMet::ud;
-      set = true;
+      is_set = true;
 
       if (mxGetM(6) * mxGetN(6) != isize ) {
         error("The time delay vector (argument 7) for user defined ('ud') focusing\n") ;
@@ -365,7 +365,7 @@ Copyright @copyright{} 2008-2019 Fredrik Lingvall.\n\
       }
     }
 
-    if (set == false) {
+    if (is_set == false) {
       error("Unknown focusing method!");
       return oct_retval;
     }
@@ -381,8 +381,6 @@ Copyright @copyright{} 2008-2019 Fredrik Lingvall.\n\
   // Beam steering.
   //
 
-  // Beam steering: ister = 1 - no steering, 2 steer ph=ax ,3 steer y ph=by, 4 steer xy ph=ax+by.
-
   if (nrhs >= 8) {
 
     if (!mxIsChar(7)) {
@@ -390,37 +388,32 @@ Copyright @copyright{} 2008-2019 Fredrik Lingvall.\n\
       return oct_retval;
     }
 
-    std::string strin = args(7).string_value();
-    buflen = strin.length();
-    for ( n=0; n<=buflen; n++ ) {
-      steer_met[n] = strin[n];
-    }
-    steer_met[buflen] = '\0';
+    std::string steer_str = args(7).string_value();
 
-    ister = 1;                  // Default no steering
-    set = false;
+    steer_met = SteerMet::none;                  // Default no steering
+    is_set = false;
 
-    if (!strcmp(steer_met,"off")) {
-      ister = 1;
-      set = true;
+    if (steer_str == "off") {
+      steer_met = SteerMet::none;
+      is_set = true;
     }
 
-    if (!strcmp(steer_met,"x")) {
-      ister = 2;
-      set = true;
+    if (steer_str == "x") {
+      steer_met = SteerMet::x;
+      is_set = true;
     }
 
-    if (!strcmp(steer_met,"y")) {
-      ister = 3;
-      set = true;
+    if (steer_str == "y") {
+      steer_met = SteerMet::y;
+      is_set = true;
     }
 
-    if (!strcmp(steer_met,"xy")) {
-      ister = 4;
-      set = true;
+    if (steer_str == "xy") {
+      steer_met = SteerMet::xy;
+      is_set = true;
     }
 
-    if (set == false) {
+    if (is_set == false) {
       error("Unknown beamsteering method!");
       return oct_retval;
     }
@@ -435,8 +428,9 @@ Copyright @copyright{} 2008-2019 Fredrik Lingvall.\n\
     steer_par = (double*) tmp5.fortran_vec();
     theta  = steer_par[0];              // Angle in x-direction.
     phi    = steer_par[1];              // Angle in y-direction.
-  } else
-    ister = 1;
+  } else {
+    steer_met = SteerMet::none;
+  }
 
   //
   // Apodization.
@@ -460,17 +454,17 @@ Copyright @copyright{} 2008-2019 Fredrik Lingvall.\n\
     apod_met[buflen] = '\0';
 
     iweight = 1;                        // default off.
-    set = false;
+    is_set = false;
 
     if (!strcmp(apod_met,"off")) {
       iweight = 1;
-      set = true;
+      is_set = true;
     }
 
     if (!strcmp(apod_met,"ud")) {
       iweight = 2;
       iapo = 0;
-      set = true;
+      is_set = true;
 
       // Vector of apodization weights.
       if (mxGetM(10) * mxGetN(10) != isize) {
@@ -486,34 +480,34 @@ Copyright @copyright{} 2008-2019 Fredrik Lingvall.\n\
     if (!strcmp(apod_met,"triangle")) {
       iweight = 2;
       iapo = 1;
-      set = true;
+      is_set = true;
     }
 
     if (!strcmp(apod_met,"gauss")) {
       iweight = 2;
       iapo = 2;
-      set = true;
+      is_set = true;
     }
 
     if (!strcmp(apod_met,"raised")) {
       iweight = 2;
       iapo = 3;
-      set = true;
+      is_set = true;
     }
 
     if (!strcmp(apod_met,"simply")) {
       iweight = 2;
       iapo = 4;
-      set = true;
+      is_set = true;
     }
 
     if (!strcmp(apod_met,"clamped")) {
       iweight = 2;
       iapo = 5;
-      set = true;
+      is_set = true;
     }
 
-    if (set == false) {
+    if (is_set == false) {
       error("Unknown apodization method!");
       return oct_retval;
     }
@@ -548,24 +542,24 @@ Copyright @copyright{} 2008-2019 Fredrik Lingvall.\n\
     }
     err_str[buflen] = '\0';
 
-    set = false;
+    is_set = false;
 
     if (!strcmp(err_str,"ignore")) {
       err_level = IGNORE;
-      set = true;
+      is_set = true;
     }
 
     if (!strcmp(err_str,"warn")) {
       err_level = WARN;
-      set = true;
+      is_set = true;
     }
 
     if (!strcmp(err_str,"stop")) {
       err_level = STOP;
-      set = true;
+      is_set = true;
     }
 
-    if (set == false) {
+    if (is_set == false) {
       error("Unknown error level!");
       return oct_retval;
     }
@@ -618,7 +612,7 @@ Copyright @copyright{} 2008-2019 Fredrik Lingvall.\n\
                   cp,isize,
                   gx, gy, gz,
                   foc_met, focal,
-                  ister,theta,phi,
+                  steer_met, theta, phi,
                   apod,iweight,iapo,param,
                   &h[n*nt],err_level);
 

@@ -38,11 +38,6 @@ enum class FocusMet {
     x_y,
     ud};
 
-#define NO_STEER 1
-#define STEER_X 2
-#define STEER_Y 3
-#define STEER_XY 4
-
 enum class SteerMet {
   none,
     x,

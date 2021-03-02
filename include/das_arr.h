@@ -25,14 +25,9 @@
 
 #include "dream.h"
 
-/***
- *
- * Header file for delay-and-sum array routine.
- *
- ***/
-
 int das_arr(double xo, double yo, double zo, double dt, dream_idx_type nt,
             double delay, double cp, int  num_elements,
             double *gx, double *gy, double *gz, FocusMet foc_met, double *focal,
-            int ister, double theta, double phi, double *apod, bool do_apod,
-            int apod_type, double param, double *ha,int err_level);
+            SteerMet steer_met, double theta, double phi,
+            double *apod, bool do_apod, int apod_type, double param,
+            double *h, int err_level);

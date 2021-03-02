@@ -67,7 +67,7 @@ typedef struct
   dream_idx_type num_elements;
   double *G;
   FocusMet foc_met;
-  int steer_met;
+  SteerMet steer_met;
   bool do_apod;
   int apod_met;
   double *focal;
@@ -109,7 +109,8 @@ void* smp_dream_arr_circ(void *arg)
   Attenuation *att = D.att;
   dream_idx_type start=D.start, stop=D.stop;
   FocusMet foc_met=D.foc_met;
-  int steer_met=D.steer_met, do_apod = D.do_apod, apod_met=D.apod_met;
+  SteerMet steer_met=D.steer_met;
+  int do_apod = D.do_apod, apod_met=D.apod_met;
   double  *focal=D.focal, *apod=D.apod, theta=D.theta, phi=D.phi, param=D.param;
   dream_idx_type num_elements = D.num_elements;
 
@@ -234,7 +235,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   double *G;
   FocusMet foc_met=FocusMet::none;
   double *focal=nullptr;
-  int    steer_met=0;
+  SteerMet steer_met=SteerMet::none;
   double theta=0.0, phi=0.0, *apod=nullptr;
   bool   do_apod=false;
   int    apod_met=0;
@@ -416,26 +417,26 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     buflen = (mxGetM(prhs[8]) * mxGetN(prhs[8]) * sizeof(mxChar)) + 1;
     mxGetString(prhs[8],steer_str,buflen);
 
-    steer_met = NO_STEER;			// Default no steering
+    steer_met = SteerMet::none;			// Default no steering
     is_set = false;
 
     if (!strcmp(steer_str,"off")) {
-      steer_met = NO_STEER;
+      steer_met = SteerMet::none;
       is_set = true;
     }
 
     if (!strcmp(steer_str,"x")) {
-      steer_met = STEER_X;
+      steer_met = SteerMet::x;
       is_set = true;
     }
 
     if (!strcmp(steer_str,"y")) {
-      steer_met = STEER_Y;
+      steer_met = SteerMet::y;
       is_set = true;
     }
 
     if (!strcmp(steer_str,"xy")) {
-      steer_met = STEER_XY;
+      steer_met = SteerMet::xy;
       is_set = true;
     }
 
@@ -453,7 +454,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     phi    = steer_par[1];		// Angle in y-direction.
 
   } else {
-    steer_met = NO_STEER;
+    steer_met = SteerMet::none;
   }
 
   //

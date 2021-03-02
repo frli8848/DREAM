@@ -32,7 +32,7 @@ int dream_arr_cylind(double xo, double yo, double zo,
                      double delay, double v, double cp,
                      dream_idx_type num_elements, double *gx, double *gy, double *gz,
                      FocusMet foc_met, double *focal,
-                     int steer_type, double theta, double phi,
+                     SteerMet steer_met, double theta, double phi,
                      double *apod, bool do_apod, int apod_type, double param,
                      double *ha, int err_level);
 
@@ -43,6 +43,6 @@ int dream_arr_cylind(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
                      double delay, double v, double cp,
                      dream_idx_type num_elements, double *gx, double *gy, double *gz,
                      FocusMet foc_met, double *focal,
-                     int steer_type, double theta, double phi,
+                     SteerMet steer_met, double theta, double phi,
                      double *apod, bool do_apod, int apod_type, double param,
                      double *ha, int err_level);

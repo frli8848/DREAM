@@ -44,7 +44,7 @@ int dream_arr_cylind(double xo, double yo, double zo,
                      double delay, double v, double cp,
                      dream_idx_type num_elements, double *gx, double *gy, double *gz,
                      FocusMet foc_met, double *focal,
-                     int steer_type, double theta, double phi,
+                     SteerMet steer_met, double theta, double phi,
                      double *apod, bool do_apod, int apod_type, double param,
                      double *ha, int err_level)
 {
@@ -74,8 +74,8 @@ int dream_arr_cylind(double xo, double yo, double zo,
       focusing(foc_met, focal[i], gx[i], gy[i], xamax, yamax, ramax, cp, &foc_delay);
     }
 
-    //beamsteering(steer_type, theta, phi, xs, ys, xamax, yamax, ramax, cp, &retsteer);
-    beamsteering(steer_type, theta, phi, gx[i], gy[i], xamax, yamax, ramax, cp, &steer_delay);
+    //beamsteering(steer_met, theta, phi, xs, ys, xamax, yamax, ramax, cp, &retsteer);
+    beamsteering(steer_met, theta, phi, gx[i], gy[i], xamax, yamax, ramax, cp, &steer_delay);
 
     if (do_apod) {
       //apodization(apod_type, i, apod, &weight, xs, ys, ramax, param);
@@ -105,7 +105,7 @@ int dream_arr_cylind(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
                      double delay, double v, double cp,
                      dream_idx_type num_elements, double *gx, double *gy, double *gz,
                      FocusMet foc_met, double *focal,
-                     int steer_type, double theta, double phi,
+                     SteerMet steer_met, double theta, double phi,
                      double *apod, bool do_apod, int apod_type, double param,
                      double *ha, int err_level)
 {
@@ -135,8 +135,8 @@ int dream_arr_cylind(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
       focusing(foc_met, focal[i], gx[i], gy[i], xamax, yamax, ramax, cp, &foc_delay);
     }
 
-    //beamsteering(steer_type, theta, phi, xs, ys, xamax, yamax, ramax, cp, &retsteer);
-    beamsteering(steer_type, theta, phi, gx[i], gy[i], xamax, yamax, ramax, cp, &steer_delay);
+    //beamsteering(steer_met, theta, phi, xs, ys, xamax, yamax, ramax, cp, &retsteer);
+    beamsteering(steer_met, theta, phi, gx[i], gy[i], xamax, yamax, ramax, cp, &steer_delay);
 
     if (do_apod) {
       //apodization(apod_type, i, apod, &weight, xs, ys, ramax, param);

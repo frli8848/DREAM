@@ -91,7 +91,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   double *gx, *gy, *gz;
   FocusMet foc_met=FocusMet::none;
   double *focal=nullptr;
-  int    ister=0;
+  SteerMet steer_met=SteerMet::none;
   double theta=0,phi=0,*apod=NULL;
   int    iweight=0, iapo=0;
   double *h, *err_p;
@@ -244,8 +244,6 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Beam steering.
   //
 
-  // Beam steering: ister = 1 - no steering, 2 steer ph=ax ,3 steer y ph=by, 4 steer xy ph=ax+by.
-
   if (nrhs >= 8) {
 
    if (!mxIsChar(prhs[7]))
@@ -254,42 +252,45 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     buflen = (mxGetM(prhs[7]) * mxGetN(prhs[7]) * sizeof(mxChar)) + 1;
     mxGetString(prhs[7],steer_str,buflen);
 
-    ister = 1;			// Default no steering
+    steer_met = SteerMet::none; // Default no steering
     is_set = false;
 
     if (!strcmp(steer_str,"off")) {
-      ister = 1;
+      steer_met = SteerMet::none;
       is_set = true;
     }
 
     if (!strcmp(steer_str,"x")) {
-      ister = 2;
+      steer_met = SteerMet::x;
       is_set = true;
     }
 
     if (!strcmp(steer_str,"y")) {
-      ister = 3;
+      steer_met = SteerMet::y;
       is_set = true;
     }
 
     if (!strcmp(steer_str,"xy")) {
-      ister = 4;
+      steer_met = SteerMet::xy;
       is_set = true;
     }
 
-    if (is_set == false)
+    if (is_set == false) {
       dream_err_msg("Unknown beamsteering method!");
+    }
 
     // Check that arg 9 is a 2 element vector
-    if (!((mxGetM(prhs[8])==2 && mxGetN(prhs[8])==1) || (mxGetM(prhs[8])==1 && mxGetN(prhs[8])==2)))
+    if (!((mxGetM(prhs[8])==2 && mxGetN(prhs[8])==1) || (mxGetM(prhs[8])==1 && mxGetN(prhs[8])==2))) {
       dream_err_msg("Argument 9 must be a vector of length 2!");
+    }
 
     steer_par = mxGetPr(prhs[8]);
     theta  = steer_par[0];		// Angle in x-direction.
     phi    = steer_par[1];		// Angle in y-direction.
 
-  } else
-    ister = 1;
+  } else {
+    steer_met = SteerMet::none;
+  }
 
   //
   // Apodization.
@@ -449,7 +450,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
                   isize,
                   gx, gy, gz,
                   foc_met, focal,
-                  ister, theta, phi,
+                  steer_met, theta, phi,
                   apod, iweight, iapo, param,
                   &h[n*nt],err_level);
 

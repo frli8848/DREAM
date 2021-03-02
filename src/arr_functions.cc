@@ -155,19 +155,18 @@ void focusing(FocusMet foc_met, double focal, double gx, double gy,
  *
  ***/
 
-void beamsteering(int steer_type, double theta, double phi, double gx, double gy,
+void beamsteering(SteerMet steer_met, double theta, double phi, double gx, double gy,
                   double x_max, double y_max, double ramax, double cp, double *steer_delay)
 {
   const double deg2rad = M_PI / (double) 180.0;
 
-  switch(steer_type) {
+  switch(steer_met) {
 
-  case 0:
-  case NO_STEER:
+  case SteerMet::none:
     *steer_delay = 0.0;
     break;
 
-  case STEER_X:
+  case SteerMet::x:
     {
       double sinx = sin(theta * deg2rad);
       double rmax = x_max * sinx;
@@ -176,7 +175,7 @@ void beamsteering(int steer_type, double theta, double phi, double gx, double gy
     }
     break;
 
-  case STEER_Y:
+  case SteerMet::y:
     {
       double siny = sin(phi * deg2rad);
       double rmax = y_max * siny;
@@ -185,7 +184,7 @@ void beamsteering(int steer_type, double theta, double phi, double gx, double gy
     }
     break;
 
-  case STEER_XY:
+  case SteerMet::xy:
     {
       double sinx = sin(theta * deg2rad);
       double rmax = x_max * sinx;

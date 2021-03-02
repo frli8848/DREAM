@@ -27,9 +27,7 @@
 #include <pthread.h>
 #include <signal.h>
 #include <uchar.h>
-#include "mex.h"
 
-//#include <complex.h> // C (iso C99, don't work with MSVC).
 #include <complex> // C++
 #include <stdio.h>
 #include <fftw3.h>
@@ -37,6 +35,8 @@
 //#include <unistd.h>
 
 #include "dream.h"
+
+#include "mex.h"
 
 /***
  *

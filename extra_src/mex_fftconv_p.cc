@@ -23,13 +23,9 @@
 
 
 #include <string.h>
-//#include <stdlib.h>
-//#include <uchar.h>
 #include <signal.h>
 
 #include <thread>
-
-
 
 #include "mex.h"
 

@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2009,2015 Fredrik Lingvall
+* Copyright (C) 2009,2015,2021 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -21,11 +21,7 @@
 *
 ***/
 
-
 #include "dream.h"
-
-#define TRUE 1
-#define FALSE 0
 
 #define EQU 0
 #define SUM 1
@@ -42,13 +38,13 @@ void conv(double *xr, dream_idx_type nx, double *yr, dream_idx_type ny, double *
   dream_idx_type i,j;
 
   // Don't clear if in-place '+=' and '-=' modes.
-  if (in_place == FALSE || mode == EQU) {
+  if (in_place == false || mode == EQU) {
     for (i=0; i < (nx+ny)-1; i++) {
       zr[i]=0.0;
     }
   }
 
-  if (in_place == FALSE) { // Normal mode.
+  if (in_place == false) { // Normal mode.
 
     for(i=0; i<nx; i++) {
       for(j=0; j<ny; j++) {

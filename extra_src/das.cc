@@ -21,9 +21,9 @@
 *
 ***/
 
-
 #include <math.h>
 #include <stdio.h>
+
 #include "das.h"
 #include "dream_error.h"
 
@@ -43,37 +43,30 @@ int das(double xo, double yo, double zo,
         double dt, dream_idx_type  nt, double delay,
         double cp, double *h, int err_level)
 {
-  dream_idx_type i,it;
-  double t,tt;
-  double ri;
-  double qan;
   int err = NONE;
 
-  for (i = 0; i < nt; i++) {
-    h[i] = (double) 0.0 ;
+  for (dream_idx_type it = 0; it<nt; it++) {
+    h[it] = 0.0 ;
   }
 
-  ri = sqrt( xo*xo + yo*yo + zo*zo );
-
-  t = ri * 1000.0/cp;
-  tt = t - delay;
-  qan = tt / dt;
-  it = 0;
-  it = (dream_idx_type) rint(qan);
+  double ri = sqrt(xo*xo + yo*yo + zo*zo);
+  double t = ri * 1000.0/cp;
+  dream_idx_type it = (dream_idx_type) rint((t - delay)/dt);
 
   // Check if index is out of bounds.
   if ((it < nt) && (it >= 0)) {
     h[it] += 1.0;
-  }
-  else  {
-    if  (it >= 0)
+  } else  {
+    if  (it >= 0) {
       err = dream_out_of_bounds_err("Delay out of bounds",it-nt+1,err_level);
-    else
+    } else {
       err = dream_out_of_bounds_err("Delay out of bounds",it,err_level);
+    }
 
-    if ( (err_level == PARALLEL_STOP) || (err_level == STOP) )
+    if ( (err_level == PARALLEL_STOP) || (err_level == STOP) ) {
       return err; // Bail out.
+    }
   }
 
   return err;
-} /* das */
+}

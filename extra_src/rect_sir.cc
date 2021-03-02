@@ -25,6 +25,7 @@
 #include <math.h>
 #include <string.h>
 #include <stdio.h>
+
 #include "rect_sir.h"
 #include "dream_error.h"
 
@@ -52,18 +53,15 @@ void rect_sir(double xo_i,
 {
   dream_idx_type    it, k;
   double t, t_z, xo, yo, zo;
-  double          pi;
   double          tau_1, tau_2, tau_3, tau_4, a, b;
   double          a_k=0, g_k=0, s_k=0, l_k=0;
-
-  pi = atan( (double) 1.0) * 4.0;
 
   // Convert to [m].
   xo = fabs(xo_i) / 1000.0;	// Can take abs due to symmetry.
   yo = fabs(yo_i) / 1000.0;	// Can take abs due to symmetry.
   zo = zo_i / 1000.0;
-  a = a_i / 1000;
-  b = b_i / 1000;
+  a = a_i / 1000.0;
+  b = b_i / 1000.0;
 
   for (it = 0; it < nt; it++) {
     h[it] = (double) 0.0;
@@ -215,10 +213,10 @@ void rect_sir(double xo_i,
         a_k += cp/4;
 
       if ( (t >= tau_2) && (t <= tau_4) )
-        a_k -= cp/(2*pi) * acos( s_k / (cp * sqrt(t*t - t_z*t_z)));
+        a_k -= cp/(2*M_PI) * acos( s_k / (cp * sqrt(t*t - t_z*t_z)));
 
       if ( (t >= tau_3) && (t <= tau_4) )
-        a_k -= cp/(2*pi) * acos( l_k / (cp * sqrt(t*t - t_z*t_z)));
+        a_k -= cp/(2*M_PI) * acos( l_k / (cp * sqrt(t*t - t_z*t_z)));
 
       h[it] += g_k * a_k;
 

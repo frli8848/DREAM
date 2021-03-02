@@ -24,6 +24,7 @@
 
 #include <string.h>
 #include <stdio.h>
+
 #include "arr_functions.h"
 #include "dream_error.h"
 
@@ -32,14 +33,6 @@
 //
 
 #include <octave/oct.h>
-
-//
-// Macros
-//
-
-#define mxGetM(N)   args(N).matrix_value().rows()
-#define mxGetN(N)   args(N).matrix_value().cols()
-#define mxIsChar(N) args(N).is_string()
 
 /***
  *

@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2006,2007,2008,2009,2012,2016,2019 Fredrik Lingvall
+* Copyright (C) 2006,2007,2008,2009,2012,2016,2019,2021 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -21,23 +21,25 @@
 *
 ***/
 
+// FIXME: We cannot use FFTW for mex-files due to lib conflicts!
 
 #include <string.h>
 #include <stdlib.h>
 #include <thread>
 #include <signal.h>
 #include <uchar.h>
-#include "mex.h"
-#include "affinity.h"
 
-#include <complex.h> // C
-//#include <complex> // C++
 #include <stdio.h>
 #include <fftw3.h>
 #include <math.h>
 #include <unistd.h>
 
+#include <complex> // C++
+
 #include "dream.h"
+#include "affinity.h"
+
+#include "mex.h"
 
 /***
  *

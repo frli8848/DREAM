@@ -35,9 +35,6 @@
 
 #include "mex.h"
 
-#define SINGLE 0
-#define MULTIPLE 1
-
 //
 // Globals
 //
@@ -125,9 +122,9 @@ void* smp_dream_rect_f(void *arg)
     zo = ro[n+2*no];
 
     double dlay = 0.0;
-    if (D.delay_method == SINGLE) {
+    if (D.delay_method == SINGLE_DELAY) {
       dlay = delay[0];
-    } else { // MULTIPLE delays.
+    } else { // MULTIPLE_DELAYS delays.
       dlay = delay[n];
     }
 
@@ -470,9 +467,9 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     D[thread_n].nt = nt;
 
     if (mxGetM(prhs[3]) * mxGetN(prhs[3]) == 1) {
-      D[thread_n].delay_method = SINGLE; // delay is a scalar.
+      D[thread_n].delay_method = SINGLE_DELAY; // delay is a scalar.
     } else {
-      D[thread_n].delay_method = MULTIPLE; // delay is a vector.
+      D[thread_n].delay_method = MULTIPLE_DELAYS; // delay is a vector.
     }
 
     D[thread_n].delay = delay;

@@ -21,10 +21,10 @@
 *
 ***/
 
-
 #include <math.h>
 #include <string.h>
 #include <stdio.h>
+
 #include "circ_sir.h"
 #include "dream_error.h"
 
@@ -51,9 +51,6 @@ void circ_sir(double xo_i,
   dream_idx_type it;
   double t, r_cyl, xo, yo, zo, r;
   double R, Rprim;
-  double pi;
-
-  pi = atan( (double) 1.0) * 4.0;
 
   // Convert to [m].
   xo = xo_i / 1000.0;
@@ -82,7 +79,7 @@ void circ_sir(double xo_i,
         h[it] = v * cp;
       }
       else if ( (cp*t >= Rprim) && (cp*t < R) ) {
-        h[it] = v * cp/pi * acos( (cp*t*cp*t - zo*zo + r_cyl*r_cyl - r*r) / (2*r_cyl*sqrt(cp*t*cp*t-zo*zo)));
+        h[it] = v * cp/M_PI * acos( (cp*t*cp*t - zo*zo + r_cyl*r_cyl - r*r) / (2*r_cyl*sqrt(cp*t*cp*t-zo*zo)));
       }
       else if (cp*t >= R) {
         h[it] = 0.0;
@@ -95,7 +92,7 @@ void circ_sir(double xo_i,
         h[it] = 0.0;
       }
       else if ( (cp*t >= Rprim) && (cp*t < R) ) {
-        h[it] = v * cp/pi * acos( (cp*t*cp*t - zo*zo + r_cyl*r_cyl - r*r) / (2*r_cyl*sqrt(cp*t*cp*t-zo*zo)));
+        h[it] = v * cp/M_PI * acos( (cp*t*cp*t - zo*zo + r_cyl*r_cyl - r*r) / (2*r_cyl*sqrt(cp*t*cp*t-zo*zo)));
       }
       else if (cp*t >= R) {
         h[it] = 0.0;

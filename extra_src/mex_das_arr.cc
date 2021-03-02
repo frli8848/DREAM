@@ -21,13 +21,14 @@
 *
 ***/
 
-
 #include <string.h>
 #include <signal.h>
 #include <uchar.h>
-#include "mex.h"
+
 #include "das_arr.h"
 #include "dream_error.h"
+
+#include "mex.h"
 
 //
 // Globals
@@ -57,7 +58,7 @@ typedef void (*sighandler_t)(int);
 
 void sighandler(int signum) {
   //mexPrintf("Caught signal SIGTERM.\n");
-  running = FALSE;
+  running = false;
 }
 
 void sig_abrt_handler(int signum) {
@@ -94,7 +95,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   double theta=0,phi=0,*apod=NULL;
   int    iweight=0, iapo=0;
   double *h, *err_p;
-  int    err_level=STOP, err=NONE, out_err = NONE, set = FALSE;
+  int    err_level=STOP, err=NONE, out_err = NONE, set = false;
   char   err_str[50];
   sighandler_t old_handler, old_handler_abrt, old_handler_keyint;
 
@@ -178,36 +179,36 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     buflen = (mxGetM(prhs[5]) * mxGetN(prhs[5]) * sizeof(mxChar)) + 1;
     mxGetString(prhs[5],foc_met,buflen);
 
-    set = FALSE;
+    set = false;
 
     if (!strcmp(foc_met,"off")) {
       ifoc = 1;
-      set = TRUE;
+      set = true;
     }
 
     if (!strcmp(foc_met,"x")) {
       ifoc = 2;
-      set = TRUE;
+      set = true;
     }
 
     if (!strcmp(foc_met,"y")) {
       ifoc = 3;
-      set = TRUE;
+      set = true;
     }
 
     if (!strcmp(foc_met,"xy")) {
       ifoc = 4;
-      set = TRUE;
+      set = true;
     }
 
     if (!strcmp(foc_met,"x+y")) {
       ifoc = 5;
-      set = TRUE;
+      set = true;
     }
 
     if (!strcmp(foc_met,"ud")) {
       ifoc = 6;
-      set = TRUE;
+      set = true;
 
       if (mxGetM(prhs[6]) * mxGetN(prhs[6]) != isize ) {
         dream_err_msg("The time delay vector (argument 7) for user defined ('ud') focusing\n delays must have the same length as the number of array elements.!");
@@ -224,7 +225,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       focal = mxGetScalar(prhs[6]);
     }
 
-    if (set == FALSE)
+    if (set == false)
       dream_err_msg("Unknown focusing method!");
 
   } else
@@ -246,29 +247,29 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     mxGetString(prhs[7],steer_met,buflen);
 
     ister = 1;			// Default no steering
-    set = FALSE;
+    set = false;
 
     if (!strcmp(steer_met,"off")) {
       ister = 1;
-      set = TRUE;
+      set = true;
     }
 
     if (!strcmp(steer_met,"x")) {
       ister = 2;
-      set = TRUE;
+      set = true;
     }
 
     if (!strcmp(steer_met,"y")) {
       ister = 3;
-      set = TRUE;
+      set = true;
     }
 
     if (!strcmp(steer_met,"xy")) {
       ister = 4;
-      set = TRUE;
+      set = true;
     }
 
-    if (set == FALSE)
+    if (set == false)
       dream_err_msg("Unknown beamsteering method!");
 
     // Check that arg 9 is a 2 element vector
@@ -299,17 +300,17 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     mxGetString(prhs[9],apod_met,buflen);
 
     iweight = 1;			// default off.
-    set = FALSE;
+    set = false;
 
     if (!strcmp(apod_met,"off")) {
       iweight = 1;
-      set = TRUE;
+      set = true;
     }
 
     if (!strcmp(apod_met,"ud")) {
       iweight = 2;
       iapo = 0;
-      set = TRUE;
+      set = true;
 
       // Vector of apodization weights.
       if (mxGetM(prhs[10]) * mxGetN(prhs[10]) != isize)
@@ -321,34 +322,34 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     if (!strcmp(apod_met,"triangle")) {
       iweight = 2;
       iapo = 1;
-      set = TRUE;
+      set = true;
     }
 
     if (!strcmp(apod_met,"gauss")) {
       iweight = 2;
       iapo = 2;
-      set = TRUE;
+      set = true;
     }
 
     if (!strcmp(apod_met,"raised")) {
       iweight = 2;
       iapo = 3;
-      set = TRUE;
+      set = true;
     }
 
     if (!strcmp(apod_met,"simply")) {
       iweight = 2;
       iapo = 4;
-      set = TRUE;
+      set = true;
     }
 
     if (!strcmp(apod_met,"clamped")) {
       iweight = 2;
       iapo = 5;
-      set = TRUE;
+      set = true;
     }
 
-   if (set == FALSE)
+   if (set == false)
       dream_err_msg("Unknown apodization method!");
 
     // Parameter for raised cos and Gaussian apodization functions.
@@ -371,24 +372,24 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     buflen = (mxGetM(prhs[12]) * mxGetN(prhs[12]) * sizeof(mxChar)) + 1;
     mxGetString(prhs[12],err_str,buflen);
 
-    set = FALSE;
+    set = false;
 
     if (!strcmp(err_str,"ignore")) {
       err_level = IGNORE;
-      set = TRUE;
+      set = true;
     }
 
     if (!strcmp(err_str,"warn")) {
       err_level = WARN;
-      set = TRUE;
+      set = true;
     }
 
     if (!strcmp(err_str,"stop")) {
       err_level = STOP;
-      set = TRUE;
+      set = true;
     }
 
-    if (set == FALSE)
+    if (set == false)
       dream_err_msg("Unknown error level!");
   }
   else
@@ -418,7 +419,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Call the DAS subroutine.
   //
 
-  running = TRUE;
+  running = true;
 
   if (ifoc != 6) {
 

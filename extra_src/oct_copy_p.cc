@@ -25,22 +25,15 @@
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
-#include <thread>
 #include <signal.h>
+
+#include <thread>
 
 //
 // Octave headers.
 //
 
 #include <octave/oct.h>
-
-//
-// Macros
-//
-
-#define mxGetM(N)   args(N).matrix_value().rows()
-#define mxGetN(N)   args(N).matrix_value().cols()
-#define mxIsChar(N) args(N).is_string()
 
 #include "dream.h"
 #include "affinity.h"

@@ -21,15 +21,16 @@
 *
 ***/
 
+// FIXME: Move to the FFT class?
 
 #include <string.h>
-#include <thread>
 #include <signal.h>
-
-//#include <complex.h> // C (iso C99).
-#include <complex> // C++
 #include <stdio.h>
+
 #include <fftw3.h>
+
+#include <thread>
+#include <complex> // C++
 
 //
 // Octave headers.
@@ -46,7 +47,7 @@
 #define mxIsChar(N) args(N).is_string()
 
 #define DOUBLE_PRECISION 0
-#define SINGLE_PRECISION 1
+#define SINGLE_DELAY_PRECISION 1
 
 #define EQU 0
 #define SUM 1
@@ -1064,7 +1065,7 @@ Copyright @copyright{} 2010-2019 Fredrik Lingvall.\n\
   // Single precision input data.
   if(args(0).is_single_type() && args(1).is_single_type() ) {
 
-    data_format = SINGLE_PRECISION;
+    data_format = SINGLE_DELAY_PRECISION;
 
     const FloatMatrix tmp0 = args(0).float_matrix_value();
     const FloatMatrix tmp1 = args(1).float_matrix_value();
@@ -1169,7 +1170,7 @@ Copyright @copyright{} 2010-2019 Fredrik Lingvall.\n\
         fftw_free(the_str); // Clean up.
     }
 
-    if (data_format == SINGLE_PRECISION) {
+    if (data_format == SINGLE_DELAY_PRECISION) {
       if (!fftwf_import_wisdom_from_string(the_str)) {
         error("Failed to load (double precision) fftw wisdom!");
         return oct_retval;
@@ -1227,7 +1228,7 @@ Copyright @copyright{} 2010-2019 Fredrik Lingvall.\n\
 
   } //  if (data_format == DOUBLE_PRECISION)
 
-  if (data_format == SINGLE_PRECISION) {
+  if (data_format == SINGLE_DELAY_PRECISION) {
 
     sa = (float*) fftw_malloc(sizeof(float)*2*(fft_len/2+1));
     saf = (std::complex<float>*) fftw_malloc(sizeof(fftwf_complex)*2*(fft_len/2+1));
@@ -1262,7 +1263,7 @@ Copyright @copyright{} 2010-2019 Fredrik Lingvall.\n\
       sp_backward = fftwf_plan_dft_c2r_1d(fft_len, reinterpret_cast<fftwf_complex*>(scf), sc,  FFTW_ESTIMATE);
     }
 
-  } // if (data_format == SINGLE_PRECISION)
+  } // if (data_format == SINGLE_DELAY_PRECISION)
 
 
   // ********************************************
@@ -1837,7 +1838,7 @@ Copyright @copyright{} 2010-2019 Fredrik Lingvall.\n\
   //
   // ********************************************
 
-  if (data_format == SINGLE_PRECISION) {
+  if (data_format == SINGLE_DELAY_PRECISION) {
 
     // Get pointers to input data.
     const FloatMatrix tmp0 = args(0).float_matrix_value();
@@ -2395,7 +2396,7 @@ Copyright @copyright{} 2010-2019 Fredrik Lingvall.\n\
       return oct_retval;
     }
 
-  } // if (data_format == SINGLE_PRECISION)
+  } // if (data_format == SINGLE_DELAY_PRECISION)
 
   return oct_retval;
 }

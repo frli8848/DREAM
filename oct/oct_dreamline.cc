@@ -21,7 +21,6 @@
 *
 ***/
 
-
 #include <string.h>
 #include <stdlib.h>
 #include <signal.h>
@@ -34,22 +33,11 @@
 #include "affinity.h"
 #include "dream_error.h"
 
-#define SINGLE 0
-#define MULTIPLE 1
-
 //
 // Octave headers.
 //
 
 #include <octave/oct.h>
-
-//
-// Macros
-//
-
-#define mxGetM(N)   args(N).matrix_value().rows()
-#define mxGetN(N)   args(N).matrix_value().cols()
-#define mxIsChar(N) args(N).is_string()
 
 //
 // Globals
@@ -132,9 +120,9 @@ void* smp_dream_line(void *arg)
     zo = ro[n+2*no];
 
     double dlay = 0.0;
-    if (D.delay_method == SINGLE) {
+    if (D.delay_method == SINGLE_DELAY) {
       dlay = delay[0];
-    } else { // MULTIPLE delays.
+    } else { // MULTIPLE_DELAYS delays.
       dlay = delay[n];
     }
 
@@ -276,12 +264,12 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   if (!((nrhs == 5) || (nrhs == 6))) {
     error("dreamline requires 5 or 6 input arguments!");
     return oct_retval;
-  }
-  else
+  } else {
     if (nlhs > 2) {
       error("Too many output arguments for dreamline!");
       return oct_retval;
     }
+  }
 
   //
   // Observation points.
@@ -416,10 +404,9 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
       return oct_retval;
     }
 
-  }
-  else
+  } else {
     err_level = STOP; // Default.
-
+  }
 
   // Create an output matrix for the impulse response
   Matrix h_mat(nt, no);
@@ -478,9 +465,9 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
     D[thread_n].nt = nt;
 
     if (mxGetM(3) * mxGetN(3) == 1) {
-      D[thread_n].delay_method = SINGLE; // delay is a scalar.
+      D[thread_n].delay_method = SINGLE_DELAY; // delay is a scalar.
     } else {
-      D[thread_n].delay_method = MULTIPLE; // delay is a vector.
+      D[thread_n].delay_method = MULTIPLE_DELAYS; // delay is a vector.
     }
 
     D[thread_n].delay = delay;

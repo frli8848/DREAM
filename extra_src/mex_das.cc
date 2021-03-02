@@ -21,13 +21,14 @@
 *
 ***/
 
-
 #include <string.h>
 #include <signal.h>
 #include <uchar.h>
-#include "mex.h"
+
 #include "das.h"
 #include "dream_error.h"
+
+#include "mex.h"
 
 //
 // Globals
@@ -57,7 +58,7 @@ typedef void (*sighandler_t)(int);
 
 void sighandler(int signum) {
   //mexPrintf("Caught signal SIGTERM.\n");
-  running = FALSE;
+  running = false;
 }
 
 void sig_abrt_handler(int signum) {
@@ -81,7 +82,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   double xo, yo, zo, dt;
   double *delay, cp;
   double *h, *err_p;
-  int    err_level=STOP, err=NONE, out_err = NONE, is_set = FALSE;
+  int    err_level=STOP, err=NONE, out_err = NONE, is_set = false;
   char   err_str[50];
   int    buflen;
   sighandler_t   old_handler, old_handler_abrt, old_handler_keyint;
@@ -151,20 +152,20 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
     if (!strcmp(err_str,"ignore")) {
       err_level = IGNORE;
-      is_set = TRUE;
+      is_set = true;
     }
 
     if (!strcmp(err_str,"warn")) {
       err_level = WARN;
-      is_set = TRUE;
+      is_set = true;
     }
 
     if (!strcmp(err_str,"stop")) {
       err_level = STOP;
-      is_set = TRUE;
+      is_set = true;
     }
 
-    if (is_set == FALSE)
+    if (is_set == false)
       dream_err_msg("Unknown error level!");
 
   }
@@ -196,7 +197,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Call the DAS subroutine.
   //
 
-  running = TRUE;
+  running = true;
 
   if (mxGetM(prhs[2]) * mxGetN(prhs[2]) == 1) {
     for (n=0; n<no; n++) {

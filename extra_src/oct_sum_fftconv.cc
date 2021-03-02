@@ -21,33 +21,27 @@
 *
 ***/
 
+// FIXME: Move to the FFT class?
 
 #include <string.h>
 #include <stdlib.h>
-#include <thread>
-#include <signal.h>
 
-//#include <complex.h> // C
-#include <complex> // C++
+#include <signal.h>
 #include <stdio.h>
+
+#include <thread>
+#include <complex> // C++
+
 #include <fftw3.h>
+
+#include "dream.h"
+#include "affinity.h"
 
 //
 // Octave headers.
 //
 
 #include <octave/oct.h>
-
-//
-// Macros
-//
-
-#define mxGetM(N)   args(N).matrix_value().rows()
-#define mxGetN(N)   args(N).matrix_value().cols()
-#define mxIsChar(N) args(N).is_string()
-
-#include "dream.h"
-#include "affinity.h"
 
 /***
  *

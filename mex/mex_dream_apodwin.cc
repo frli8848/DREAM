@@ -23,9 +23,11 @@
 
 #include <string.h>
 #include <uchar.h>
-#include "mex.h"
+
 #include "arr_functions.h"
 #include "dream_error.h"
+
+#include "mex.h"
 
 /***
  *

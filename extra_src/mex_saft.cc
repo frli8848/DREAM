@@ -23,19 +23,19 @@
 
 
 #include <string.h>
-#include <string>
 #include <stdlib.h>
 #include <math.h>
-#include <thread>
 #include <signal.h>
 #include <uchar.h>
-#include "mex.h"
+
+#include <string>
+#include <thread>
+
 #include "dream.h"
 #include "affinity.h"
 #include "dream_error.h"
 
-#define SINGLE 0
-#define MULTIPLE 1
+#include "mex.h"
 
 /***
  *
@@ -103,7 +103,7 @@ void* smp_dream_saft(void *arg)
   double *r_trans = D.r_trans, a = D.a;
   double x_trans, y_trans, z_trans, d, z, z_prim, tmp;
 
-  if (D.delay_method == SINGLE) {
+  if (D.delay_method == SINGLE_DELAY) {
     for (n=start; n<stop; n++) {
       xo = ro[n];
       yo = ro[n+1*no];
@@ -155,7 +155,7 @@ void* smp_dream_saft(void *arg)
 
     }
 
-  } else { // MULTIPLE delays.
+  } else { // MULTIPLE_DELAYS delays.
 
     for (n=start; n<stop; n++) {
       xo = ro[n];
@@ -399,9 +399,9 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     D[thread_n].dt = dt;
 
     if (mxGetM(prhs[3]) * mxGetN(prhs[3]) == 1)
-      D[thread_n].delay_method = SINGLE; // delay is a scalar.
+      D[thread_n].delay_method = SINGLE_DELAY; // delay is a scalar.
     else
-      D[thread_n].delay_method = MULTIPLE; // delay is a vector.
+      D[thread_n].delay_method = MULTIPLE_DELAYS; // delay is a vector.
 
     D[thread_n].delay = delay;
     D[thread_n].B = B;

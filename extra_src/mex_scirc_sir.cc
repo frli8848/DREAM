@@ -24,19 +24,15 @@
 
 #include <string.h>
 #include <signal.h>
+#include <uchar.h>
+
 #include <iostream>
 #include <thread>
-#include <uchar.h>
-#include "mex.h"
+
 #include "scirc_sir.h"
 #include "dream_error.h"
 
-//
-// Macros
-//
-
-#define SINGLE 0
-#define MULTIPLE 1
+#include "mex.h"
 
 //
 // Globals
@@ -97,7 +93,7 @@ void* smp_dream_scirc_sir(void *arg)
     tmp_lev = err_level;
   */
 
-  if (D.delay_method == SINGLE) {
+  if (D.delay_method == SINGLE_DELAY) {
     for (n=start; n<stop; n++) {
       xo = ro[n];
       yo = ro[n+1*no];
@@ -111,7 +107,7 @@ void* smp_dream_scirc_sir(void *arg)
       }
 
     }
-  } else { // MULTIPLE delays.
+  } else { // MULTIPLE_DELAYS delays.
     for (n=start; n<stop; n++) {
       xo = ro[n];
       yo = ro[n+1*no];
@@ -329,9 +325,9 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     D[thread_n].nt = nt;
 
     if (mxGetM(prhs[3]) * mxGetN(prhs[3]) == 1)
-      D[thread_n].delay_method = SINGLE; // delay is a scalar.
+      D[thread_n].delay_method = SINGLE_DELAY; // delay is a scalar.
     else
-      D[thread_n].delay_method = MULTIPLE; // delay is a vector.
+      D[thread_n].delay_method = MULTIPLE_DELAYS; // delay is a vector.
 
     D[thread_n].delay = delay;
     D[thread_n].v = v;

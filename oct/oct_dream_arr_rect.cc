@@ -21,7 +21,6 @@
 *
 ***/
 
-
 #include <string.h>
 #include <stdlib.h>
 #include <signal.h>
@@ -33,16 +32,13 @@
 #include "affinity.h"
 #include "dream_error.h"
 
-#define SINGLE 0
-#define MULTIPLE 1
-
 //
 // Octave headers.
 //
 
 #include <octave/oct.h>
 
-
+//
 // Globals
 //
 
@@ -143,9 +139,9 @@ void* smp_dream_arr_rect(void *arg)
     zo = ro[n+2*no];
 
     double dlay = 0.0;
-    if (D.delay_method == SINGLE) {
+    if (D.delay_method == SINGLE_DELAY) {
       dlay = delay[0];
-    } else { // MULTIPLE delays.
+    } else { // MULTIPLE_DELAYS delays.
       dlay = delay[n];
     }
 
@@ -802,9 +798,9 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
     D[thread_n].nt = nt;
 
     if (mxGetM(4) * mxGetN(4) == 1)
-      D[thread_n].delay_method = SINGLE; // delay is a scalar.
+      D[thread_n].delay_method = SINGLE_DELAY; // delay is a scalar.
     else
-      D[thread_n].delay_method = MULTIPLE; // delay is a vector.
+      D[thread_n].delay_method = MULTIPLE_DELAYS; // delay is a vector.
 
     D[thread_n].delay = delay;
     D[thread_n].v = v;

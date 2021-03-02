@@ -25,11 +25,11 @@
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
-#include <thread>
+#include <stdio.h>
 #include <signal.h>
 
+#include <thread>
 #include <complex> // C++
-#include <stdio.h>
 
 //
 // Octave headers.
@@ -40,10 +40,6 @@
 //
 // Macros
 //
-
-#define mxGetM(N)   args(N).matrix_value().rows()
-#define mxGetN(N)   args(N).matrix_value().cols()
-#define mxIsChar(N) args(N).is_string()
 
 #define EQU 0
 #define SUM 1

@@ -21,7 +21,6 @@
 *
 ***/
 
-
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -35,7 +34,7 @@
 //
 
 int delay_arr(double xo, double yo, double zo, double xs, double ys, double zs, double dt,
-              dream_idx_type nt, double delay, double retfoc, double retsteer, double cp,
+              dream_idx_type nt, double delay, double foc_delay, double steer_delay, double cp,
               double weight, double *h, int err_level);
 
 int centroid(double *h,dream_idx_type nt);
@@ -52,11 +51,11 @@ int das_arr(double xo, double yo, double zo, double dt, dream_idx_type nt,
             int ister, double theta, double phi, double *apod, bool do_apod,
             int apod_type, double param, double *ha,int err_level)
 {
-  double retsteer;
+  double steer_delay;
   double *h;
   dream_idx_type i, i_c;
   double ramax, xamax, yamax;
-  double xs, ys, zs, retfoc, weight;
+  double xs, ys, zs, foc_delay, weight;
   int err = NONE, out_err = NONE;
 
   h = (double*) malloc(nt*sizeof(double));
@@ -65,20 +64,20 @@ int das_arr(double xo, double yo, double zo, double dt, dream_idx_type nt,
     ha[i] = (double) 0.0;
   }
 
-  retfoc   = (double) 0.0;
-  retsteer = (double) 0.0;
+  foc_delay   = (double) 0.0;
+  steer_delay = (double) 0.0;
   weight   = (double) 1.0;
 
   max_dim_arr(&xamax, &yamax, &ramax, gx, gy, gz, num_elements);
 
   for (i=0; i<num_elements; i++) {
     center_pos(&xs, &ys, &zs, i, gx, gy, gz);
-    focusing(ifoc, focal, xs, ys, xamax, yamax, ramax, cp, &retfoc);
-    beamsteering(ister, theta, phi, xs, ys, xamax, yamax, ramax, cp, &retsteer);
+    focusing(ifoc, focal, xs, ys, xamax, yamax, ramax, cp, &foc_delay);
+    beamsteering(ister, theta, phi, xs, ys, xamax, yamax, ramax, cp, &steer_delay);
     if (do_apod) {
       apodization(apod_type, i, apod, &weight, xs, ys, ramax, param);
     }
-    err = delay_arr(xo,yo,zo,xs,ys,zs,dt,nt,delay,retfoc,retsteer,cp,weight,h,err_level);
+    err = delay_arr(xo,yo,zo,xs,ys,zs,dt,nt,delay,foc_delay,steer_delay,cp,weight,h,err_level);
     if (err != NONE) {
       out_err = err;
       if ( (err == PARALLEL_STOP) || (err == STOP) ) {
@@ -127,11 +126,11 @@ int das_arr_ud(double xo, double yo, double zo, double dt, dream_idx_type nt,
                       int ister, double theta, double phi, double *apod, bool do_apod,
                       int apod_type, double param, double *ha,int err_level)
 {
-  double retsteer;
+  double steer_delay;
   double *h;
   dream_idx_type i, i_c;
   double ramax, xamax, yamax;
-  double xs, ys, zs, retfoc, weight;
+  double xs, ys, zs, foc_delay, weight;
   int err = NONE, out_err = NONE;
 
   h = (double*) malloc(nt*sizeof(double));
@@ -140,20 +139,20 @@ int das_arr_ud(double xo, double yo, double zo, double dt, dream_idx_type nt,
     ha[i] = (double) 0.0;
   }
 
-  retfoc   = (double) 0.0;
-  retsteer = (double) 0.0;
+  foc_delay   = (double) 0.0;
+  steer_delay = (double) 0.0;
   weight   = (double) 1.0;
 
   max_dim_arr(&xamax, &yamax, &ramax, gx, gy, gz, num_elements);
 
   for (i=0; i<num_elements; i++) {
     center_pos(&xs, &ys, &zs, i, gx, gy, gz);
-    focusing(ifoc, focal[i], xs, ys, xamax, yamax, ramax, cp, &retfoc);   // Note ifoc must be 6 here!
-    beamsteering(ister, theta, phi, xs, ys, xamax, yamax, ramax, cp, &retsteer);
+    focusing(ifoc, focal[i], xs, ys, xamax, yamax, ramax, cp, &foc_delay);   // Note ifoc must be 6 here!
+    beamsteering(ister, theta, phi, xs, ys, xamax, yamax, ramax, cp, &steer_delay);
     if (do_apod) {
       apodization(apod_type, i, apod, &weight, xs, ys, ramax, param);
     }
-    err = delay_arr(xo,yo,zo,xs,ys,zs,dt,nt,delay,retfoc,retsteer,cp,weight,h,err_level);
+    err = delay_arr(xo,yo,zo,xs,ys,zs,dt,nt,delay,foc_delay,steer_delay,cp,weight,h,err_level);
     if (err != NONE) {
       out_err = err;
       if ( (err == PARALLEL_STOP) || (err == STOP) ) {
@@ -202,40 +201,33 @@ int das_arr_ud(double xo, double yo, double zo, double dt, dream_idx_type nt,
  ***/
 
 int delay_arr(double xo, double yo, double zo, double xs, double ys, double zs, double dt,
-              dream_idx_type nt, double delay, double retfoc, double retsteer, double cp,
+              dream_idx_type nt, double delay, double foc_delay, double steer_delay, double cp,
               double weight, double *h, int err_level)
 {
-  dream_idx_type    i;
-  double t,decal,tt;
-  double ri;
-  dream_idx_type    it;
-  double qan;
   int err = NONE;
 
-  decal = retfoc + retsteer;
-
-  for (i = 0; i < nt; i++) {
-    h[i] = (double) 0.0;
+  for (dream_idx_type it = 0; it < nt; it++) {
+    h[it] = 0.0;
   }
 
+  double ri;
   distance(xo, yo, zo, xs, ys, zs, &ri);
-  t = ri * 1000/cp;
-  tt = t - delay + decal;
-  qan = tt / dt;
-  it = (dream_idx_type) rint(qan);
+  double t = ri * 1.0e3/cp;
+  dream_idx_type it = (dream_idx_type) rint((t - delay + foc_delay + steer_delay)/dt);
 
   // Check if index is out of bounds.
   if ((it < nt) && (it >= 0)) {
     h[it] += 1.0;
-  }
-  else  {
-    if  (it >= 0)
+  } else  {
+    if  (it >= 0) {
       err = dream_out_of_bounds_err("Delay out of bounds",it-nt+1,err_level);
-    else
+    } else {
       err = dream_out_of_bounds_err("Delay out of bounds",it,err_level);
+    }
 
-    if ( (err == PARALLEL_STOP) || (err == STOP) )
+    if ( (err == PARALLEL_STOP) || (err == STOP) ) {
       return err; // Bail out.
+    }
   }
 
   return err;
@@ -249,10 +241,9 @@ int delay_arr(double xo, double yo, double zo, double xs, double ys, double zs, 
 
 int centroid(double *h, dream_idx_type nt)
 {
-  dream_idx_type n;
   double sum=0.0, t_c = 0.0;
 
-  for (n=0; n<nt; n++) {
+  for (dream_idx_type n=0; n<nt; n++) {
     sum += h[n];
     t_c += ((double) n) * h[n];
   }

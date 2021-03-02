@@ -21,10 +21,10 @@
 *
 ***/
 
-
 #include <string.h>
 #include <thread>
 #include <mutex>
+
 #include "rect_sir.h"
 #include "affinity.h"
 #include "dream_error.h"
@@ -34,16 +34,6 @@
 //
 
 #include <octave/oct.h>
-
-//
-// Macros
-//
-
-#define SINGLE 0
-#define MULTIPLE 1
-#define mxGetM(N)   args(N).matrix_value().rows()
-#define mxGetN(N)   args(N).matrix_value().cols()
-#define mxIsChar(N) args(N).is_string()
 
 //
 // Globals
@@ -104,7 +94,7 @@ void* smp_dream_rect_sir(void *arg)
     tmp_lev = err_level;
   */
 
-  if (D.delay_method == SINGLE) {
+  if (D.delay_method == SINGLE_DELAY) {
     for (n=start; n<stop; n++) {
       xo = ro[n];
       yo = ro[n+1*no];
@@ -118,7 +108,7 @@ void* smp_dream_rect_sir(void *arg)
       }
 
     }
-  } else { // MULTIPLE delays.
+  } else { // MULTIPLE_DELAYS delays.
     for (n=start; n<stop; n++) {
       xo = ro[n];
       yo = ro[n+1*no];
@@ -427,9 +417,9 @@ Copyright @copyright{} 2008-2020 Fredrik Lingvall.\n\
     D[thread_n].nt = nt;
 
     if (mxGetM(3) * mxGetN(3) == 1)
-      D[thread_n].delay_method = SINGLE; // delay is a scalar.
+      D[thread_n].delay_method = SINGLE_DELAY; // delay is a scalar.
     else
-      D[thread_n].delay_method = MULTIPLE; // delay is a vector.
+      D[thread_n].delay_method = MULTIPLE_DELAYS; // delay is a vector.
 
     D[thread_n].delay = delay;
     D[thread_n].v = v;

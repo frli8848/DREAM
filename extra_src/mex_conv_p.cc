@@ -22,18 +22,18 @@
 ***/
 
 #include <string.h>
-#include <string>
 #include <stdlib.h>
 #include <math.h>
-#include <thread>
 #include <signal.h>
 #include <uchar.h>
-#include "mex.h"
+
+#include <string>
+#include <thread>
 
 #include "dream.h"
 #include "dream_error.h"
 
-#define printf mexPrintf
+#include "mex.h"
 
 #define EQU 0
 #define SUM 1

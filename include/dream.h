@@ -30,13 +30,6 @@ enum class DelayType {
     multiple
     };
 
-#define NO_FOCUS 1
-#define FOCUS_X 2
-#define FOCUS_Y 3
-#define FOCUS_XY 4
-#define FOCUS_X_Y 5             // X+Y
-#define FOCUS_UD 6              // User defined
-
 enum class FocusMet {
   none,
     x,

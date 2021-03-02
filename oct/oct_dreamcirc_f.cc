@@ -57,7 +57,7 @@ typedef struct
   octave_idx_type stop;
   double *ro;
   double R;
-  int foc_met;
+  FocusMet foc_met;
   double focal;
   double dx;
   double dy;
@@ -101,7 +101,7 @@ void* smp_dream_circ_f(void *arg)
   double *delay=D.delay, *ro=D.ro, v=D.v, cp=D.cp, focal=D.focal;
   Attenuation *att = D.att;
   octave_idx_type start=D.start, stop=D.stop;
-  int foc_met = D.foc_met;
+  FocusMet foc_met = D.foc_met;
 
   // Buffers for the FFTs in the Attenuation
   std::unique_ptr<FFTCVec> xc_vec;
@@ -282,7 +282,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
 {
   double *ro,*geom_par,*s_par,*m_par;
   octave_idx_type nt, no;
-  int    foc_met=0;
+  FocusMet foc_met=FocusMet::none;
   double R, dx, dy, dt;
   double *delay,v,cp,alpha,focal=0;
   double *h, *err_p;
@@ -395,27 +395,27 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
     is_set = false;
 
     if (foc_str == "off") {
-      foc_met = NO_FOCUS;
+      foc_met = FocusMet::none;
       is_set = true;
     }
 
     if (foc_str == "x") {
-      foc_met = FOCUS_X;
+      foc_met = FocusMet::x;
       is_set = true;
     }
 
     if (foc_str == "y") {
-      foc_met = FOCUS_Y;
+      foc_met = FocusMet::y;
       is_set = true;
     }
 
     if (foc_str == "xy") {
-      foc_met = FOCUS_XY;
+      foc_met = FocusMet::xy;
       is_set = true;
     }
 
     if (foc_str == "x+y") {
-      foc_met = FOCUS_X_Y;
+      foc_met = FocusMet::x_y;
       is_set = true;
     }
 
@@ -435,7 +435,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
     focal = (double) tmp4.fortran_vec()[0];
 
   } else {
-    foc_met = NO_FOCUS;
+    foc_met = FocusMet::none;
   }
 
   //

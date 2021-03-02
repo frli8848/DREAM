@@ -37,7 +37,7 @@ int dream_arr_annu(double xo, double yo, double zo,
                    double delay,
                    double v, double cp,
                    dream_idx_type num_radii, double *gr,
-                   int foc_type, double *focal,
+                   FocusMet foc_met, double *focal,
                    double *apod, bool do_apod, int apod_type, double param,
                    double *h, int err_level);
 
@@ -47,6 +47,6 @@ int dream_arr_annu(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
                    double delay,
                    double v, double cp,
                    dream_idx_type num_radii, double *gr,
-                   int foc_type, double *focal,
+                   FocusMet foc_met, double *focal,
                    double *apod, bool do_apod, int apod_type, double param,
                    double *h, int err_level);

@@ -1,25 +1,25 @@
 /***
-*
-* Copyright (C) 2008,2009,2016 Fredrik Lingvall
-*
-* This file is part of the DREAM Toolbox.
-*
-* The DREAM Toolbox is free software; you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by the
-* Free Software Foundation; either version 2, or (at your option) any
-* later version.
-*
-* The DREAM Toolbox is distributed in the hope that it will be useful, but
-* WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-* FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
-* for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with the DREAM Toolbox; see the file COPYING.  If not, write to the
-* Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-* 02110-1301, USA.
-*
-***/
+ *
+ * Copyright (C) 2008,2009,2016 Fredrik Lingvall
+ *
+ * This file is part of the DREAM Toolbox.
+ *
+ * The DREAM Toolbox is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2, or (at your option) any
+ * later version.
+ *
+ * The DREAM Toolbox is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with the DREAM Toolbox; see the file COPYING.  If not, write to the
+ * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+ * 02110-1301, USA.
+ *
+ ***/
 
 
 #include <string.h>
@@ -197,15 +197,15 @@ Copyright @copyright{} 2008-2019 Fredrik Lingvall.\n\
 {
   double *ro,*s_par,*m_par;
   double *steer_par;
-  char   apod_met[50],foc_met[50],steer_met[50];
+  char   apod_met[50],steer_met[50];
   int    buflen;
   double xo,yo,zo,dt;
   dream_idx_type    nt,no,n;
   double param=0,*delay,cp;
   int    isize=0;
   double *gx,*gy,*gz;
-  int    ifoc=0;
-  double focal=0, *ud_focal=NULL;
+  FocusMet foc_met=FocusMet::none;
+  double *focal=nullptr;
   int    ister=0;
   double theta=0,phi=0,*apod=NULL;
   int    iweight=0,iapo=0;
@@ -253,8 +253,8 @@ Copyright @copyright{} 2008-2019 Fredrik Lingvall.\n\
 
   const Matrix tmp1 = args(1).matrix_value();
   gx = (double*) tmp1.fortran_vec(); // First column in the matrix.
-  gy    = gx + isize;		// Second column in the matrix.
-  gz    = gy + isize;		// Third column in the matrix.
+  gy    = gx + isize;           // Second column in the matrix.
+  gz    = gy + isize;           // Third column in the matrix.
 
   //
   // Temporal and spatial sampling parameters.
@@ -276,9 +276,18 @@ Copyright @copyright{} 2008-2019 Fredrik Lingvall.\n\
   //
 
   // Check that arg 4 is a scalar (or vector).
+
+  DelayType delay_type=DelayType::single;
+
   if ( (mxGetM(3) * mxGetN(3) !=1) && ((mxGetM(3) * mxGetN(3)) != no)) {
     error("Argument 4 must be a scalar or a vector with a length equal to the number of observation points!");
     return oct_retval;
+  } else {
+    if (mxGetM(3) * mxGetN(3) ==1) {
+      delay_type=DelayType::single;
+    } else {
+      delay_type=DelayType::multiple;
+    }
   }
 
   const Matrix tmp3 = args(3).matrix_value();
@@ -302,8 +311,6 @@ Copyright @copyright{} 2008-2019 Fredrik Lingvall.\n\
   // Focusing parameters.
   //
 
-  //  ifoc = 1 - no foc, 2 foc x ,3 foc y, 4 foc xy (del=fsqrt(x*x+y*y)), 5 focx+focy.
-
   if (nrhs >= 6) {
 
     if (!mxIsChar(5)) {
@@ -311,42 +318,37 @@ Copyright @copyright{} 2008-2019 Fredrik Lingvall.\n\
       return oct_retval;
     }
 
-    std::string strin = args(5).string_value();
-    buflen = strin.length();
-    for ( n=0; n<=buflen; n++ ) {
-      foc_met[n] = strin[n];
-    }
-    foc_met[buflen] = '\0';
+    std::string foc_str = args(5).string_value();
 
     set = false;
 
-    if (!strcmp(foc_met,"off")) {
-      ifoc = 1;
+    if (foc_str == "off") {
+      foc_met = FocusMet::none;
       set = true;
     }
 
-    if (!strcmp(foc_met,"x")) {
-      ifoc = 2;
+    if (foc_str == "x") {
+      foc_met = FocusMet::x;
       set = true;
     }
 
-    if (!strcmp(foc_met,"y")) {
-      ifoc = 3;
+    if (foc_str == "y") {
+      foc_met = FocusMet::y;
       set = true;
     }
 
-    if (!strcmp(foc_met,"xy")) {
-      ifoc = 4;
+    if (foc_str == "xy") {
+      foc_met = FocusMet::xy;
       set = true;
     }
 
-    if (!strcmp(foc_met,"x+y")) {
-      ifoc = 5;
+    if (foc_str == "x+y") {
+      foc_met = FocusMet::x_y;
       set = true;
     }
 
-    if (!strcmp(foc_met,"ud")) {
-      ifoc = 6;
+    if (foc_str == "ud") {
+      foc_met = FocusMet::ud;
       set = true;
 
       if (mxGetM(6) * mxGetN(6) != isize ) {
@@ -354,20 +356,13 @@ Copyright @copyright{} 2008-2019 Fredrik Lingvall.\n\
         error("delays must have the same length as the number of array elements.!");
         return oct_retval;
       }
-      const Matrix tmp5 = args(7).matrix_value();
-      ud_focal = (double*) tmp5.fortran_vec();
-
-    }
-    else {
+    } else {
 
       // Check that arg 7 is a scalar.
       if (mxGetM(6) * mxGetN(6) !=1 ) {
         error("Argument 7 to must be a scalar!");
         return oct_retval;
       }
-      // Focal point (in mm).
-      const Matrix tmp5 = args(6).matrix_value();
-      focal = (double) tmp5.fortran_vec()[0];
     }
 
     if (set == false) {
@@ -375,8 +370,12 @@ Copyright @copyright{} 2008-2019 Fredrik Lingvall.\n\
       return oct_retval;
     }
 
-  } else
-    ifoc = 1;
+  } else {
+    foc_met = FocusMet::none;
+  }
+
+  const Matrix tmp6 = args(6).matrix_value();
+  focal = (double*) tmp6.fortran_vec();
 
   //
   // Beam steering.
@@ -398,7 +397,7 @@ Copyright @copyright{} 2008-2019 Fredrik Lingvall.\n\
     }
     steer_met[buflen] = '\0';
 
-    ister = 1;			// Default no steering
+    ister = 1;                  // Default no steering
     set = false;
 
     if (!strcmp(steer_met,"off")) {
@@ -434,8 +433,8 @@ Copyright @copyright{} 2008-2019 Fredrik Lingvall.\n\
 
     const Matrix tmp5 = args(8).matrix_value();
     steer_par = (double*) tmp5.fortran_vec();
-    theta  = steer_par[0];		// Angle in x-direction.
-    phi    = steer_par[1];		// Angle in y-direction.
+    theta  = steer_par[0];              // Angle in x-direction.
+    phi    = steer_par[1];              // Angle in y-direction.
   } else
     ister = 1;
 
@@ -460,7 +459,7 @@ Copyright @copyright{} 2008-2019 Fredrik Lingvall.\n\
     }
     apod_met[buflen] = '\0';
 
-    iweight = 1;			// default off.
+    iweight = 1;                        // default off.
     set = false;
 
     if (!strcmp(apod_met,"off")) {
@@ -600,96 +599,40 @@ Copyright @copyright{} 2008-2019 Fredrik Lingvall.\n\
 
   running = true;
 
-  if (ifoc != 6) {
+  for (n=0; n<no; n++) {
 
-    if (mxGetM(3) * mxGetN(3) == 1) {
-      for (n=0; n<no; n++) {
-        xo = ro[n];
-        yo = ro[n+1*no];
-        zo = ro[n+2*no];
+    xo = ro[n];
+    yo = ro[n+1*no];
+    zo = ro[n+2*no];
 
-        err = das_arr(xo,yo,zo,dt,nt,delay[0],cp,isize,gx,gy,gz,
-                             ifoc,focal,ister,theta,phi,apod,iweight,iapo,param,&h[n*nt],err_level);
-        if (err != NONE) {
-          out_err = err;
-          if (err == STOP) {
-            error("");
-            return oct_retval;
-          }
-
-          if (!running) {
-            break; // CTRL-C pressed.
-          }
-
-        }
-      }
-    } else {
-      for (n=0; n<no; n++) {
-        xo = ro[n];
-        yo = ro[n+1*no];
-        zo = ro[n+2*no];
-
-        err = das_arr(xo,yo,zo,dt,nt,delay[n],cp,isize,gx,gy,gz,
-                             ifoc,focal,ister,theta,phi,apod,iweight,iapo,param,&h[n*nt],err_level);
-        if (err != NONE) {
-          out_err = err;
-          if (err == STOP) {
-            error("");
-            return oct_retval;
-          }
-
-          if (!running) {
-            break; // CTRL-C pressed.
-          }
-
-        }
-      }
+    double dlay = 0.0;
+    if (delay_type == DelayType::single) {
+      dlay = delay[0];
+    } else { // DelayType::multiple.
+      dlay = delay[n];
     }
-  }
-  else { // User defined focusing.
 
-    if (mxGetM(3) * mxGetN(3) == 1) {
-      for (n=0; n<no; n++) {
-        xo = ro[n];
-        yo = ro[n+1*no];
-        zo = ro[n+2*no];
+    err = das_arr(xo, yo, zo,
+                  dt, nt,
+                  dlay,
+                  cp,isize,
+                  gx, gy, gz,
+                  foc_met, focal,
+                  ister,theta,phi,
+                  apod,iweight,iapo,param,
+                  &h[n*nt],err_level);
 
-        err = das_arr_ud(xo,yo,zo,dt,nt,delay[0],cp,isize,gx,gy,gz,
-                         ifoc,ud_focal,ister,theta,phi,apod,iweight,iapo,param,&h[n*nt],err_level);
-        if (err != NONE) {
-          out_err = err;
-          if (err == STOP) {
-            error("");
-            return oct_retval;
-          }
-        }
-
-        if (!running) {
-          break; // CTRL-C pressed.
-        }
-
+    if (err != NONE) {
+      out_err = err;
+      if (err == STOP) {
+        error("");
+        return oct_retval;
       }
-    } else {
-      for (n=0; n<no; n++) {
-        xo = ro[n];
-        yo = ro[n+1*no];
-        zo = ro[n+2*no];
 
-        err = das_arr_ud(xo,yo,zo,dt,nt,delay[n],cp,isize,gx,gy,gz,
-                         ifoc,ud_focal,ister,theta,phi,apod,iweight,iapo,param,&h[n*nt],err_level);
-        if (err != NONE) {
-          out_err = err;
-          if (err == STOP) {
-            error("");
-            return oct_retval;
-          }
-        }
-
-        if (!running) {
-          break; // CTRL-C pressed.
-        }
-
+      if (!running) {
+        break; // CTRL-C pressed.
       }
+
     }
   }
 

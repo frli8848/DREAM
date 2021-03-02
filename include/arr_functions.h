@@ -34,7 +34,7 @@
 
 void center_pos(double *xs, double *ys, double *zs, dream_idx_type i, double *gx, double *gy, double *gz);
 void max_dim_arr(double *xamax, double *y_max, double *r_max, double *gx, double *gy, double *gz, dream_idx_type num_elements);
-void focusing(int foc_type, double focal, double xs, double ys,
+void focusing(FocusMet foc_met, double focal, double xs, double ys,
               double x_max, double y_max, double r_max, double cp, double *retfoc);
 void beamsteering(int steer_type, double theta, double phi, double xs, double ys,
                   double x_max, double y_max, double r_max, double cp, double *retsteer);

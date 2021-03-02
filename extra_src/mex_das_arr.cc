@@ -82,20 +82,20 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
   double *ro,*s_par,*m_par;
   double *steer_par;
-  char   apod_met[50],foc_met[50],steer_met[50];
+  char   apod_str[50],foc_str[50],steer_str[50];
   int    buflen;
   double xo,yo,zo,dt;
   size_t nt,no,n;
   double param=0,*delay,cp;
   int    isize=0;
   double *gx, *gy, *gz;
-  int    ifoc=0;
-  double focal=0, *ud_focal=NULL;
+  FocusMet foc_met=FocusMet::none;
+  double *focal=nullptr;
   int    ister=0;
   double theta=0,phi=0,*apod=NULL;
   int    iweight=0, iapo=0;
   double *h, *err_p;
-  int    err_level=STOP, err=NONE, out_err = NONE, set = false;
+  int    err_level=STOP, err=NONE, out_err = NONE, is_set = false;
   char   err_str[50];
   sighandler_t old_handler, old_handler_abrt, old_handler_keyint;
 
@@ -149,8 +149,18 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   //
 
   // Check that arg 4 is a scalar.
-  if ( (mxGetM(prhs[3]) * mxGetN(prhs[3]) !=1) && ((mxGetM(prhs[3]) * mxGetN(prhs[3])) != no))
+
+  DelayType delay_type=DelayType::single;
+
+  if ( (mxGetM(prhs[3]) * mxGetN(prhs[3]) !=1) && ((mxGetM(prhs[3]) * mxGetN(prhs[3])) != no)) {
     dream_err_msg("Argument 4 must be a scalar or a vector with a length equal to the number of observation points!");
+  } else {
+    if (mxGetM(prhs[3]) * mxGetN(prhs[3]) ==1) {
+      delay_type=DelayType::single;
+    } else {
+      delay_type=DelayType::multiple;
+    }
+  }
 
   delay = mxGetPr(prhs[3]);
 
@@ -169,68 +179,66 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Focusing parameters.
   //
 
-  //  ifoc = 1 - no foc, 2 foc x ,3 foc y, 4 foc xy (del=fsqrt(x*x+y*y)), 5 focx+focy.
-
   if (nrhs >= 6) {
 
    if (!mxIsChar(prhs[5]))
       dream_err_msg("Argument 6 must be a string");
 
     buflen = (mxGetM(prhs[5]) * mxGetN(prhs[5]) * sizeof(mxChar)) + 1;
-    mxGetString(prhs[5],foc_met,buflen);
+    mxGetString(prhs[5],foc_str,buflen);
 
-    set = false;
+    is_set = false;
 
-    if (!strcmp(foc_met,"off")) {
-      ifoc = 1;
-      set = true;
+    if (!strcmp(foc_str,"off")) {
+      foc_met = FocusMet::none;
+      is_set = true;
     }
 
-    if (!strcmp(foc_met,"x")) {
-      ifoc = 2;
-      set = true;
+    if (!strcmp(foc_str,"x")) {
+      foc_met = FocusMet::x;
+      is_set = true;
     }
 
-    if (!strcmp(foc_met,"y")) {
-      ifoc = 3;
-      set = true;
+    if (!strcmp(foc_str,"y")) {
+      foc_met = FocusMet::y;
+      is_set = true;
     }
 
-    if (!strcmp(foc_met,"xy")) {
-      ifoc = 4;
-      set = true;
+    if (!strcmp(foc_str,"xy")) {
+      foc_met = FocusMet::xy;
+      is_set = true;
     }
 
-    if (!strcmp(foc_met,"x+y")) {
-      ifoc = 5;
-      set = true;
+    if (!strcmp(foc_str,"x+y")) {
+      foc_met = FocusMet::x_y;
+      is_set = true;
     }
 
-    if (!strcmp(foc_met,"ud")) {
-      ifoc = 6;
-      set = true;
+    if (!strcmp(foc_str,"ud")) {
+      foc_met = FocusMet::ud;
+      is_set = true;
 
       if (mxGetM(prhs[6]) * mxGetN(prhs[6]) != isize ) {
         dream_err_msg("The time delay vector (argument 7) for user defined ('ud') focusing\n delays must have the same length as the number of array elements.!");
       }
-      ud_focal = mxGetPr(prhs[6]);
-    }
-    else {
+      focal = mxGetPr(prhs[6]);
+    } else {
 
       // Check that arg 7 is a scalar.
       if (mxGetM(prhs[6]) * mxGetN(prhs[6]) !=1 )
         dream_err_msg("Argument 7 to must be a scalar!");
 
       // Focal point (in mm).
-      focal = mxGetScalar(prhs[6]);
+      focal = mxGetPr(prhs[6]);
     }
 
-    if (set == false)
+    if (is_set == false) {
       dream_err_msg("Unknown focusing method!");
+    }
 
-  } else
-    ifoc = 1;
-
+  } else {
+    foc_met = FocusMet::none;
+  }
 
   //
   // Beam steering.
@@ -244,32 +252,32 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       dream_err_msg("Argument 8 must be a string");
 
     buflen = (mxGetM(prhs[7]) * mxGetN(prhs[7]) * sizeof(mxChar)) + 1;
-    mxGetString(prhs[7],steer_met,buflen);
+    mxGetString(prhs[7],steer_str,buflen);
 
     ister = 1;			// Default no steering
-    set = false;
+    is_set = false;
 
-    if (!strcmp(steer_met,"off")) {
+    if (!strcmp(steer_str,"off")) {
       ister = 1;
-      set = true;
+      is_set = true;
     }
 
-    if (!strcmp(steer_met,"x")) {
+    if (!strcmp(steer_str,"x")) {
       ister = 2;
-      set = true;
+      is_set = true;
     }
 
-    if (!strcmp(steer_met,"y")) {
+    if (!strcmp(steer_str,"y")) {
       ister = 3;
-      set = true;
+      is_set = true;
     }
 
-    if (!strcmp(steer_met,"xy")) {
+    if (!strcmp(steer_str,"xy")) {
       ister = 4;
-      set = true;
+      is_set = true;
     }
 
-    if (set == false)
+    if (is_set == false)
       dream_err_msg("Unknown beamsteering method!");
 
     // Check that arg 9 is a 2 element vector
@@ -297,20 +305,20 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 
     buflen = (mxGetM(prhs[9]) * mxGetN(prhs[9]) * sizeof(mxChar)) + 1;
-    mxGetString(prhs[9],apod_met,buflen);
+    mxGetString(prhs[9],apod_str,buflen);
 
     iweight = 1;			// default off.
-    set = false;
+    is_set = false;
 
-    if (!strcmp(apod_met,"off")) {
+    if (!strcmp(apod_str,"off")) {
       iweight = 1;
-      set = true;
+      is_set = true;
     }
 
-    if (!strcmp(apod_met,"ud")) {
+    if (!strcmp(apod_str,"ud")) {
       iweight = 2;
       iapo = 0;
-      set = true;
+      is_set = true;
 
       // Vector of apodization weights.
       if (mxGetM(prhs[10]) * mxGetN(prhs[10]) != isize)
@@ -319,37 +327,37 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       apod = mxGetPr(prhs[10]);
     }
 
-    if (!strcmp(apod_met,"triangle")) {
+    if (!strcmp(apod_str,"triangle")) {
       iweight = 2;
       iapo = 1;
-      set = true;
+      is_set = true;
     }
 
-    if (!strcmp(apod_met,"gauss")) {
+    if (!strcmp(apod_str,"gauss")) {
       iweight = 2;
       iapo = 2;
-      set = true;
+      is_set = true;
     }
 
-    if (!strcmp(apod_met,"raised")) {
+    if (!strcmp(apod_str,"raised")) {
       iweight = 2;
       iapo = 3;
-      set = true;
+      is_set = true;
     }
 
-    if (!strcmp(apod_met,"simply")) {
+    if (!strcmp(apod_str,"simply")) {
       iweight = 2;
       iapo = 4;
-      set = true;
+      is_set = true;
     }
 
-    if (!strcmp(apod_met,"clamped")) {
+    if (!strcmp(apod_str,"clamped")) {
       iweight = 2;
       iapo = 5;
-      set = true;
+      is_set = true;
     }
 
-   if (set == false)
+   if (is_set == false)
       dream_err_msg("Unknown apodization method!");
 
     // Parameter for raised cos and Gaussian apodization functions.
@@ -357,9 +365,9 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       dream_err_msg("Argument 12 must be a scalar");
 
     param = mxGetScalar(prhs[11]);
-  }
-  else
+  } else {
     iweight = 1;
+  }
 
   //
   // Error reporting.
@@ -372,28 +380,29 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     buflen = (mxGetM(prhs[12]) * mxGetN(prhs[12]) * sizeof(mxChar)) + 1;
     mxGetString(prhs[12],err_str,buflen);
 
-    set = false;
+    is_set = false;
 
     if (!strcmp(err_str,"ignore")) {
       err_level = IGNORE;
-      set = true;
+      is_set = true;
     }
 
     if (!strcmp(err_str,"warn")) {
       err_level = WARN;
-      set = true;
+      is_set = true;
     }
 
     if (!strcmp(err_str,"stop")) {
       err_level = STOP;
-      set = true;
+      is_set = true;
     }
 
-    if (set == false)
+    if (is_set == false) {
       dream_err_msg("Unknown error level!");
-  }
-  else
+    }
+  } else {
     err_level = STOP; // Default.
+  }
 
   // Create an output matrix for the impulse response
   plhs[0] = mxCreateDoubleMatrix(nt,no,mxREAL);
@@ -421,66 +430,31 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
   running = true;
 
-  if (ifoc != 6) {
+  for (n=0; n<no; n++) {
+    xo = ro[n];
+    yo = ro[n+1*no];
+    zo = ro[n+2*no];
 
-    if (mxGetM(prhs[3]) * mxGetN(prhs[3]) == 1) {
-      for (n=0; n<no; n++) {
-        xo = ro[n];
-        yo = ro[n+1*no];
-        zo = ro[n+2*no];
-
-        err = das_arr(xo,yo,zo,dt,nt,delay[0],cp,isize,gx,gy,gz,
-                             ifoc,focal,ister,theta,phi,apod,iweight,iapo,param,&h[n*nt],err_level);
-        if (err != NONE)
-          out_err = err;
-      }
-    } else {
-      for (n=0; n<no; n++) {
-        xo = ro[n];
-        yo = ro[n+1*no];
-        zo = ro[n+2*no];
-
-        err = das_arr(xo,yo,zo,dt,nt,delay[n],cp,isize,gx,gy,gz,
-                             ifoc,focal,ister,theta,phi,apod,iweight,iapo,param,&h[n*nt],err_level);
-        if (err != NONE)
-          out_err = err;
-      }
+    double dlay = 0.0;
+    if (delay_type == DelayType::single) {
+      dlay = delay[0];
+    } else { // DelayType::multiple.
+      dlay = delay[n];
     }
-  }
-  else { // User defined focusing.
 
-    if (mxGetM(prhs[3]) * mxGetN(prhs[3]) == 1) {
-      for (n=0; n<no; n++) {
-        xo = ro[n];
-        yo = ro[n+1*no];
-        zo = ro[n+2*no];
+    err = das_arr(xo, yo, zo,
+                  dt, nt,
+                  dlay,
+                  cp,
+                  isize,
+                  gx, gy, gz,
+                  foc_met, focal,
+                  ister, theta, phi,
+                  apod, iweight, iapo, param,
+                  &h[n*nt],err_level);
 
-        err = das_arr_ud(xo,yo,zo,dt,nt,delay[0],cp,isize,gx,gy,gz,
-                         ifoc,ud_focal,ister,theta,phi,apod,iweight,iapo,param,&h[n*nt],err_level);
-        if (err != NONE)
-          out_err = err;
-
-        if (!running) {
-          break; // CTRL-C pressed.
-        }
-
-      }
-    } else {
-      for (n=0; n<no; n++) {
-        xo = ro[n];
-        yo = ro[n+1*no];
-        zo = ro[n+2*no];
-
-        err = das_arr_ud(xo,yo,zo,dt,nt,delay[n],cp,isize,gx,gy,gz,
-                         ifoc,ud_focal,ister,theta,phi,apod,iweight,iapo,param,&h[n*nt],err_level);
-        if (err != NONE)
-          out_err = err;
-
-        if (!running) {
-          break; // CTRL-C pressed.
-        }
-
-      }
+    if (err != NONE) {
+      out_err = err;
     }
   }
 

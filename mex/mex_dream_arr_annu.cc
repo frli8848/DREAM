@@ -65,7 +65,7 @@ typedef struct
   Attenuation *att;
   size_t num_radii;
   double *gr;
-  int foc_met;
+  FocusMet foc_met;
   bool do_apod;
   int apod_met;
   double *focal;
@@ -105,7 +105,8 @@ void* smp_dream_arr_annu(void *arg)
   double *delay=D.delay, *ro=D.ro, v=D.v, cp=D.cp;
   Attenuation *att = D.att;
   size_t start=D.start, stop=D.stop;
-  int    foc_met=D.foc_met, do_apod = D.do_apod,apod_met=D.apod_met;
+  FocusMet foc_met=D.foc_met;
+  int do_apod = D.do_apod,apod_met=D.apod_met;
   double *focal=D.focal, *apod=D.apod, param=D.param;
   size_t  num_radii = D.num_radii;
 
@@ -221,7 +222,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   double param=0,*delay,v,cp,alpha;
   size_t num_radii=0;
   double *gr;
-  int    foc_met=0;
+  FocusMet foc_met=FocusMet::none;
   double *focal=nullptr;
   double *apod=NULL;
   bool   do_apod=false;
@@ -322,15 +323,15 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     mxGetString(prhs[5],foc_str,buflen);
 
     if (!strcmp(foc_str,"off")) {
-      foc_met = NO_FOCUS;
+      foc_met = FocusMet::none;
     }
 
     if (!strcmp(foc_str,"on")) {
-      foc_met = FOCUS_XY;
+      foc_met = FocusMet::xy;
     }
 
     if (!strcmp(foc_str,"ud")) {
-      foc_met = FOCUS_UD;
+      foc_met = FocusMet::ud;
       is_set = true;
 
       if (mxGetM(prhs[6]) * mxGetN(prhs[6]) != num_radii ) {
@@ -351,7 +352,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     }
 
   } else {
-    foc_met = NO_FOCUS;
+    foc_met = FocusMet::none;
   }
 
   //

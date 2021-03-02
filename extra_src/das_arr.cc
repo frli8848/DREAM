@@ -47,7 +47,7 @@ int centroid(double *h,dream_idx_type nt);
 
 int das_arr(double xo, double yo, double zo, double dt, dream_idx_type nt,
             double delay, double cp, int  num_elements,
-            double *gx, double *gy, double *gz, int ifoc, double focal,
+            double *gx, double *gy, double *gz, FocusMet foc_met, double focal,
             int ister, double theta, double phi, double *apod, bool do_apod,
             int apod_type, double param, double *ha,int err_level)
 {
@@ -72,7 +72,7 @@ int das_arr(double xo, double yo, double zo, double dt, dream_idx_type nt,
 
   for (i=0; i<num_elements; i++) {
     center_pos(&xs, &ys, &zs, i, gx, gy, gz);
-    focusing(ifoc, focal, xs, ys, xamax, yamax, ramax, cp, &foc_delay);
+    focusing(foc_met, focal, xs, ys, xamax, yamax, ramax, cp, &foc_delay);
     beamsteering(ister, theta, phi, xs, ys, xamax, yamax, ramax, cp, &steer_delay);
     if (do_apod) {
       apodization(apod_type, i, apod, &weight, xs, ys, ramax, param);
@@ -122,7 +122,7 @@ int das_arr(double xo, double yo, double zo, double dt, dream_idx_type nt,
 
 int das_arr_ud(double xo, double yo, double zo, double dt, dream_idx_type nt,
                     double delay, double cp, int  num_elements,
-                      double *gx, double *gy, double *gz, int ifoc, double *focal,
+                      double *gx, double *gy, double *gz, FocusMet foc_met, double *focal,
                       int ister, double theta, double phi, double *apod, bool do_apod,
                       int apod_type, double param, double *ha,int err_level)
 {
@@ -147,7 +147,7 @@ int das_arr_ud(double xo, double yo, double zo, double dt, dream_idx_type nt,
 
   for (i=0; i<num_elements; i++) {
     center_pos(&xs, &ys, &zs, i, gx, gy, gz);
-    focusing(ifoc, focal[i], xs, ys, xamax, yamax, ramax, cp, &foc_delay);   // Note ifoc must be 6 here!
+    focusing(foc_met, focal[i], xs, ys, xamax, yamax, ramax, cp, &foc_delay);   // Note foc_met must be 6 here!
     beamsteering(ister, theta, phi, xs, ys, xamax, yamax, ramax, cp, &steer_delay);
     if (do_apod) {
       apodization(apod_type, i, apod, &weight, xs, ys, ramax, param);

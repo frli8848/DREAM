@@ -93,16 +93,16 @@ void max_dim_arr(double *x_max, double *y_max, double *ramax,
  *
  ***/
 
-void focusing(int foc_type, double focal, double gx, double gy,
+void focusing(FocusMet foc_met, double focal, double gx, double gy,
               double x_max, double y_max, double ramax, double cp, double *foc_delay)
 {
-  switch(foc_type) {
+  switch(foc_met) {
 
-  case NO_FOCUS:
+  case FocusMet::none:
     *foc_delay = 0.0;
     return;
 
-  case FOCUS_X:
+  case FocusMet::x:
     {
       double rmax = sqrt(x_max*x_max + focal*focal);
       double diff = rmax - sqrt(gx*gx + focal*focal);
@@ -110,7 +110,7 @@ void focusing(int foc_type, double focal, double gx, double gy,
     }
     break;
 
-  case FOCUS_Y:
+  case FocusMet::y:
     {
       double rmax = sqrt(y_max*y_max + focal*focal);
       double diff = rmax - sqrt(gy*gy + focal*focal);
@@ -118,7 +118,7 @@ void focusing(int foc_type, double focal, double gx, double gy,
     }
     break;
 
-  case FOCUS_XY:
+  case FocusMet::xy:
     {
       double rmax = sqrt(ramax*ramax + focal*focal);
       double diff = rmax - sqrt(gx*gx + gy*gy + focal*focal);
@@ -126,7 +126,7 @@ void focusing(int foc_type, double focal, double gx, double gy,
     }
     break;
 
-  case FOCUS_X_Y:
+  case FocusMet::x_y:
     {
       double rmax = sqrt(ramax*ramax + focal*focal);
       double retx = sqrt(gx*gx + focal*focal);
@@ -136,7 +136,7 @@ void focusing(int foc_type, double focal, double gx, double gy,
     }
     break;
 
-  case FOCUS_UD:
+  case FocusMet::ud:
     *foc_delay = focal; // Here focal is the user defined time delay in [us] (not the focal depth).
     break;
 

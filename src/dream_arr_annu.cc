@@ -33,7 +33,7 @@
 //
 
 void annular_disc_radii(double *ring_r, double *gr, dream_idx_type num_radii);
-double focusing_annular(int foc_type, double focal, double ring_r, double ring_r_max, double cp);
+double focusing_annular(FocusMet foc_met, double focal, double ring_r, double ring_r_max, double cp);
 double apodization_annular(int apod_type, dream_idx_type n, double *apod, double ring_r,
                            double ring_r_max, double param);
 void resp_annular(double *h_disc, double *h_ring, dream_idx_type nt, dream_idx_type n);
@@ -54,7 +54,7 @@ int dream_arr_annu(double xo, double yo, double zo,
                    double delay,
                    double v, double cp,
                    dream_idx_type num_radii, double *gr,
-                   int foc_type, double *focal,
+                   FocusMet foc_met, double *focal,
                    double *apod, bool do_apod, int apod_type, double param,
                    double *h, int err_level)
 {
@@ -110,10 +110,10 @@ int dream_arr_annu(double xo, double yo, double zo,
   for (dream_idx_type n=0; n<num_elements; n++) {
 
     double foc_delay = 0.0;
-    if (foc_type != FOCUS_UD) {
-      foc_delay = focusing_annular(foc_type, focal[0], ring_radii[n], ring_r_max, cp);
+    if (foc_met != FocusMet::ud) {
+      foc_delay = focusing_annular(foc_met, focal[0], ring_radii[n], ring_r_max, cp);
     } else {
-      foc_delay = focusing_annular(foc_type, focal[n], ring_radii[n], ring_r_max, cp);
+      foc_delay = focusing_annular(foc_met, focal[n], ring_radii[n], ring_r_max, cp);
     }
 
     double weight = 1.0;
@@ -135,7 +135,7 @@ int dream_arr_annu(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
                    double delay,
                    double v, double cp,
                    dream_idx_type num_radii, double *gr,
-                   int foc_type, double *focal,
+                   FocusMet foc_met, double *focal,
                    double *apod, bool do_apod, int apod_type, double param,
                    double *h, int err_level)
 {
@@ -192,10 +192,10 @@ int dream_arr_annu(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
   for (dream_idx_type n=0; n<num_elements; n++) {
 
     double foc_delay = 0.0;
-    if (foc_type != FOCUS_UD) {
-      foc_delay = focusing_annular(foc_type, focal[0], ring_radii[n], ring_r_max, cp);
+    if (foc_met != FocusMet::ud) {
+      foc_delay = focusing_annular(foc_met, focal[0], ring_radii[n], ring_r_max, cp);
     } else {
-      foc_delay = focusing_annular(foc_type, focal[n], ring_radii[n], ring_r_max, cp);
+      foc_delay = focusing_annular(foc_met, focal[n], ring_radii[n], ring_r_max, cp);
     }
 
     double weight = 1.0;
@@ -231,16 +231,16 @@ void annular_disc_radii(double *ring_r, double *gr, dream_idx_type num_radii)
 *
 ***/
 
-double focusing_annular(int foc_type, double focal, double ring_r, double ring_r_max, double cp)
+double focusing_annular(FocusMet foc_met, double focal, double ring_r, double ring_r_max, double cp)
 {
   double foc_delay=0.0;
 
-  switch  (foc_type) {
+  switch  (foc_met) {
 
-  case FOCUS_X:
-  case FOCUS_Y:
-  case FOCUS_XY:
-  case FOCUS_X_Y:
+  case FocusMet::x:
+  case FocusMet::y:
+  case FocusMet::xy:
+  case FocusMet::x_y:
     {
       double rmax = sqrt(ring_r_max*ring_r_max + focal*focal);
       double diff = rmax - sqrt(ring_r*ring_r + focal*focal);
@@ -248,11 +248,11 @@ double focusing_annular(int foc_type, double focal, double ring_r, double ring_r
     }
     break;
 
-  case FOCUS_UD:
+  case FocusMet::ud:
     foc_delay = focal; // Here focal is the user defined time delay in [us] (not the focal depth)
     break;
 
-  case NO_FOCUS:
+  case FocusMet::none:
   default:
     foc_delay = 0.0;
     break;

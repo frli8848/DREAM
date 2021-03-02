@@ -68,7 +68,7 @@ typedef struct
   Attenuation *att;
   int num_radii;
   double *gr;
-  int foc_met;
+  FocusMet foc_met;
   bool do_apod;
   int apod_met;
   double *focal;
@@ -107,7 +107,8 @@ void* smp_dream_arr_annu(void *arg)
   double *delay=D.delay, *ro=D.ro, v=D.v, cp=D.cp;
   Attenuation *att = D.att;
   octave_idx_type start=D.start, stop=D.stop;
-  int    foc_met=D.foc_met, apod_met=D.apod_met;
+  FocusMet foc_met=D.foc_met;
+  int apod_met=D.apod_met;
   bool   do_apod=D.do_apod;
   double *focal=D.focal, *apod=D.apod, param=D.param;
   int    num_radii = D.num_radii;
@@ -327,7 +328,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   double param=0,*delay, v, cp, alpha;
   octave_idx_type num_radii=0;
   double *gr;
-  int    foc_met=0;
+  FocusMet foc_met=FocusMet::none;
   double *focal=nullptr;
   double *apod=nullptr;
   bool   do_apod=false;
@@ -439,17 +440,17 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
     is_set = false;
 
     if (foc_str == "off") {
-      foc_met = NO_FOCUS;
+      foc_met = FocusMet::none;
       is_set = true;
     }
 
     if (foc_str == "on") {
-      foc_met = FOCUS_XY;
+      foc_met = FocusMet::xy;
       is_set = true;
     }
 
     if (foc_str == "ud") {
-      foc_met = FOCUS_UD;
+      foc_met = FocusMet::ud;
       is_set = true;
 
       if (mxGetM(6) * mxGetN(6) != num_radii ) {
@@ -473,7 +474,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
     }
 
   } else {
-    foc_met = NO_FOCUS;
+    foc_met = FocusMet::none;
   }
 
   const Matrix tmp5 = args(6).matrix_value();

@@ -30,7 +30,7 @@
 //  Function prototypes.
 //
 
-double focus_delay_rect(int foc_type, double focal,
+double focus_delay_rect(FocusMet foc_met, double focal,
                 double xs, double ys,
                 double xamax, double yamax, double ramax,
                 double cp);
@@ -43,7 +43,7 @@ double focus_delay_rect(int foc_type, double focal,
 
 int dreamrect_f(double xo, double yo, double zo,
                 double a, double b,
-                int foc_type, double focal,
+                FocusMet foc_met, double focal,
                 double dx, double dy, double dt, dream_idx_type nt,
                 double delay,
                 double v, double cp,
@@ -78,7 +78,7 @@ int dreamrect_f(double xo, double yo, double zo,
       double rx = xo - xs;
       double r = sqrt(rx*rx + ry*ry + zo*zo);
 
-      double foc_delay = focus_delay_rect(foc_type, focal, xs, ys, a, b, c, cp);
+      double foc_delay = focus_delay_rect(foc_met, focal, xs, ys, a, b, c, cp);
 
       double ai = v * ds / (2*M_PI * r);
       ai /= dt;
@@ -114,7 +114,7 @@ int dreamrect_f(double xo, double yo, double zo,
 
 int dreamrect_f(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
                 double xo, double yo, double zo,
-                double a, double b, int foc_type, double focal,
+                double a, double b, FocusMet foc_met, double focal,
                 double dx, double dy, double dt,
                 dream_idx_type nt,
                 double delay,
@@ -151,7 +151,7 @@ int dreamrect_f(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
       double rx = xo - xs;
       double r = sqrt(rx*rx + ry*ry + zo*zo);
 
-      double foc_delay = focus_delay_rect(foc_type, focal, xs, ys, a, b, c, cp);
+      double foc_delay = focus_delay_rect(foc_met, focal, xs, ys, a, b, c, cp);
 
       double ai = v * ds / (2*M_PI * r);
       ai /= dt;
@@ -191,19 +191,19 @@ int dreamrect_f(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
  *
  ***/
 
-double focus_delay_rect(int foc_type, double focal,
+double focus_delay_rect(FocusMet foc_met, double focal,
                         double xs, double ys,
                         double xamax, double yamax, double ramax,
                         double cp)
 {
   double foc_delay = 0.0;
 
-  switch (foc_type) {
+  switch (foc_met) {
 
-  case NO_FOCUS:
+  case FocusMet::none:
     break;
 
-  case FOCUS_X:
+  case FocusMet::x:
     {
       double rmax = sqrt(xamax*xamax + focal*focal);
       double diff = rmax - sqrt(xs*xs + focal*focal);
@@ -211,7 +211,7 @@ double focus_delay_rect(int foc_type, double focal,
     }
     break;
 
-  case FOCUS_Y:
+  case FocusMet::y:
     {
       double rmax = sqrt(yamax*yamax + focal*focal);
       double diff = rmax - sqrt(ys*ys + focal*focal);
@@ -219,7 +219,7 @@ double focus_delay_rect(int foc_type, double focal,
     }
     break;
 
-  case FOCUS_XY:
+  case FocusMet::xy:
     {
       double rmax = sqrt(ramax*ramax + focal*focal);
       double diff = rmax - sqrt(xs*xs + ys*ys + focal*focal);
@@ -227,7 +227,7 @@ double focus_delay_rect(int foc_type, double focal,
     }
     break;
 
-  case FOCUS_X_Y:
+  case FocusMet::x_y:
     {
       double rmax = sqrt(ramax*ramax + focal*focal);
       double delay_x = sqrt(xs*xs + focal*focal);

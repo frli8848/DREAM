@@ -43,7 +43,7 @@ int dream_arr_cylind(double xo, double yo, double zo,
                      double dx, double dy, double dt, dream_idx_type nt,
                      double delay, double v, double cp,
                      dream_idx_type num_elements, double *gx, double *gy, double *gz,
-                     int foc_type, double *focal,
+                     FocusMet foc_met, double *focal,
                      int steer_type, double theta, double phi,
                      double *apod, bool do_apod, int apod_type, double param,
                      double *ha, int err_level)
@@ -66,12 +66,12 @@ int dream_arr_cylind(double xo, double yo, double zo,
   for (i=0; i<num_elements; i++) {
 
     //center_pos(&xs, &ys, &zs, i, gx, gy, gz);
-    //focusing(foc_type, focal, xs, ys, xamax, yamax, ramax, cp, &retfoc);
+    //focusing(foc_met, focal, xs, ys, xamax, yamax, ramax, cp, &retfoc);
 
-    if (foc_type != FOCUS_UD) {
-      focusing(foc_type, focal[0], gx[i], gy[i], xamax, yamax, ramax, cp, &foc_delay);
+    if (foc_met != FocusMet::ud) {
+      focusing(foc_met, focal[0], gx[i], gy[i], xamax, yamax, ramax, cp, &foc_delay);
     } else {
-      focusing(foc_type, focal[i], gx[i], gy[i], xamax, yamax, ramax, cp, &foc_delay);
+      focusing(foc_met, focal[i], gx[i], gy[i], xamax, yamax, ramax, cp, &foc_delay);
     }
 
     //beamsteering(steer_type, theta, phi, xs, ys, xamax, yamax, ramax, cp, &retsteer);
@@ -104,7 +104,7 @@ int dream_arr_cylind(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
                      double dx, double dy, double dt, dream_idx_type nt,
                      double delay, double v, double cp,
                      dream_idx_type num_elements, double *gx, double *gy, double *gz,
-                     int foc_type, double *focal,
+                     FocusMet foc_met, double *focal,
                      int steer_type, double theta, double phi,
                      double *apod, bool do_apod, int apod_type, double param,
                      double *ha, int err_level)
@@ -127,12 +127,12 @@ int dream_arr_cylind(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
   for (i=0; i<num_elements; i++) {
 
     //center_pos(&xs, &ys, &zs, i, gx, gy, gz);
-    //focusing(foc_type, focal, xs, ys, xamax, yamax, ramax, cp, &retfoc);
+    //focusing(foc_met, focal, xs, ys, xamax, yamax, ramax, cp, &retfoc);
 
-    if (foc_type != FOCUS_UD) {
-      focusing(foc_type, focal[0], gx[i], gy[i], xamax, yamax, ramax, cp, &foc_delay);
+    if (foc_met != FocusMet::ud) {
+      focusing(foc_met, focal[0], gx[i], gy[i], xamax, yamax, ramax, cp, &foc_delay);
     } else {
-      focusing(foc_type, focal[i], gx[i], gy[i], xamax, yamax, ramax, cp, &foc_delay);
+      focusing(foc_met, focal[i], gx[i], gy[i], xamax, yamax, ramax, cp, &foc_delay);
     }
 
     //beamsteering(steer_type, theta, phi, xs, ys, xamax, yamax, ramax, cp, &retsteer);

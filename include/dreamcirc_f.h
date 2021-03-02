@@ -25,7 +25,7 @@
 #include "attenuation.h"
 
 int dreamcirc_f(double xo, double yo, double zo,
-                double R, int foc_type, double focal,
+                double R, FocusMet foc_met, double focal,
                 double dx, double dy, double dt,
                 dream_idx_type nt,
                 double delay,
@@ -35,7 +35,7 @@ int dreamcirc_f(double xo, double yo, double zo,
 
 int dreamcirc_f(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
                 double xo, double yo, double zo,
-                double R, int foc_type, double focal,
+                double R, FocusMet foc_met, double focal,
                 double dx, double dy, double dt,
                 dream_idx_type nt,
                 double delay,

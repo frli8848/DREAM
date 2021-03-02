@@ -33,7 +33,7 @@
  ***/
 
 int dreamrect_f(double xo, double yo, double zo,
-                double a, double b, int foc_type, double focal,
+                double a, double b, FocusMet foc_met, double focal,
                 double dx, double dy, double dt,
                 dream_idx_type nt,
                 double delay,
@@ -43,7 +43,7 @@ int dreamrect_f(double xo, double yo, double zo,
 
 int dreamrect_f(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
                 double xo, double yo, double zo,
-                double a, double b, int foc_type, double focal,
+                double a, double b, FocusMet foc_met, double focal,
                 double dx, double dy, double dt,
                 dream_idx_type nt,
                 double delay,

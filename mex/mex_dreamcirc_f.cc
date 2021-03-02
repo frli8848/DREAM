@@ -54,7 +54,7 @@ typedef struct
   dream_idx_type stop;
   double *ro;
   double R;
-  int foc_met;
+  FocusMet foc_met;
   double focal;
   double dx;
   double dy;
@@ -98,7 +98,7 @@ void* smp_dream_circ_f(void *arg)
   double *delay=D.delay, *ro=D.ro, v=D.v, cp=D.cp, focal=D.focal;
   Attenuation *att = D.att;
   dream_idx_type start=D.start, stop=D.stop;
-  int foc_met=D.foc_met;
+  FocusMet foc_met=D.foc_met;
 
   // Buffers for the FFTs in the Attenuation
   std::unique_ptr<FFTCVec> xc_vec;
@@ -202,7 +202,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   dream_idx_type buflen;
   double R, dx, dy, dt;
   double *delay=nullptr, v, cp, alpha;
-  int    foc_met=NO_FOCUS;
+  FocusMet foc_met=FocusMet::none;
   char   foc_str[50];
   double focal=0.0;
   double *h, *err_p;
@@ -304,27 +304,27 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     is_set = false;
 
     if (!strcmp(foc_str,"off")) {
-      foc_met = NO_FOCUS;
+      foc_met = FocusMet::none;
       is_set = true;
     }
 
     if (!strcmp(foc_str,"x")) {
-      foc_met = FOCUS_X;
+      foc_met = FocusMet::x;
       is_set = true;
     }
 
     if (!strcmp(foc_str,"y")) {
-      foc_met = FOCUS_Y;
+      foc_met = FocusMet::y;
       is_set = true;
     }
 
     if (!strcmp(foc_str,"xy")) {
-      foc_met = FOCUS_XY;
+      foc_met = FocusMet::xy;
       is_set = true;
     }
 
     if (!strcmp(foc_str,"x+y")) {
-      foc_met = FOCUS_X_Y;
+      foc_met = FocusMet::x_y;
       is_set = true;
     }
 
@@ -333,7 +333,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     }
 
     // Check that arg 7 is a scalar.
-    if (mxGetM(prhs[6]) * mxGetN(prhs[6]) != NO_FOCUS ) {
+    if (mxGetM(prhs[6]) * mxGetN(prhs[6]) != 1 ) {
       dream_err_msg("Argument 7 must be a scalar!");
     }
 
@@ -341,7 +341,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     focal = mxGetScalar(prhs[6]);
 
   } else {
-    foc_met = NO_FOCUS;
+    foc_met = FocusMet::none;
   }
 
   //

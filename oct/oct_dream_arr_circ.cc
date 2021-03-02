@@ -69,7 +69,7 @@ typedef struct
   Attenuation *att;
   dream_idx_type num_elements;
   double *G;
-  int foc_met;
+  FocusMet foc_met;
   int steer_met;
   bool do_apod;
   int apod_met;
@@ -111,7 +111,8 @@ void* smp_dream_arr_circ(void *arg)
   double *delay=D.delay, *ro=D.ro, v=D.v, cp=D.cp;
   Attenuation *att = D.att;
   dream_idx_type start=D.start, stop=D.stop;
-  int    foc_met=D.foc_met, steer_met=D.steer_met, do_apod = D.do_apod,apod_met=D.apod_met;
+  FocusMet foc_met=D.foc_met;
+  int steer_met=D.steer_met, do_apod = D.do_apod,apod_met=D.apod_met;
   double *focal=D.focal, *apod=D.apod, theta=D.theta,phi=D.phi,param=D.param;
   dream_idx_type    num_elements = D.num_elements;
 
@@ -361,7 +362,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   double param=0,*delay, v, cp, alpha;
   dream_idx_type    num_elements;
   double *G;
-  int    foc_met=NO_FOCUS;
+  FocusMet foc_met=FocusMet::none;
   double *focal= nullptr;
   int    steer_met=0;
   double theta=0,phi=0,*apod=nullptr;
@@ -490,32 +491,32 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
     is_set = false;
 
     if (foc_str == "off") {
-      foc_met = NO_FOCUS;
+      foc_met = FocusMet::none;
       is_set = true;
     }
 
     if (foc_str == "x") {
-      foc_met = FOCUS_X;
+      foc_met = FocusMet::x;
       is_set = true;
     }
 
     if (foc_str == "y") {
-      foc_met = FOCUS_Y;
+      foc_met = FocusMet::y;
       is_set = true;
     }
 
     if (foc_str == "xy") {
-      foc_met = FOCUS_XY;
+      foc_met = FocusMet::xy;
       is_set = true;
     }
 
     if (foc_str == "x+y") {
-      foc_met = FOCUS_X_Y;
+      foc_met = FocusMet::x_y;
       is_set = true;
     }
 
     if (foc_str == "ud") {
-      foc_met = FOCUS_UD;
+      foc_met = FocusMet::ud;
       is_set = true;
 
       if (mxGetM(7) * mxGetN(7) != num_elements ) {
@@ -538,7 +539,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
     }
 
   } else {
-    foc_met = NO_FOCUS;
+    foc_met = FocusMet::none;
   }
 
   const Matrix tmp7 = args(7).matrix_value();

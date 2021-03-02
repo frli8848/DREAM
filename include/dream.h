@@ -25,12 +25,10 @@
 #ifndef __DREAM__
 #define __DREAM__
 
-#define SINGLE_DELAY 0
-#define MULTIPLE_DELAYS 1
-
 enum class DelayType {
   single,
-    multiple};
+    multiple
+    };
 
 #define NO_FOCUS 1
 #define FOCUS_X 2

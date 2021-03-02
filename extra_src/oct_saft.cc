@@ -63,7 +63,7 @@ typedef struct
   int    stop;
   double *ro;
   double dt;
-  int delay_method;
+  DelayType delay_type;
   double *delay;
   double cp;
   double a;
@@ -106,7 +106,7 @@ void* smp_dream_saft(void *arg)
   double *r_trans = D.r_trans, a = D.a;
   double x_trans, y_trans, z_trans, d, z, z_prim, tmp;
 
-  if (D.delay_method == SINGLE_DELAY) {
+  if (D.delay_type == DelayType::single) {
     for (n=start; n<stop; n++) {
       xo = ro[n];
       yo = ro[n+1*no];
@@ -158,7 +158,7 @@ void* smp_dream_saft(void *arg)
 
     }
 
-  } else { // MULTIPLE_DELAYS delays.
+  } else { // DelayType::multiple.
 
     for (n=start; n<stop; n++) {
       xo = ro[n];
@@ -471,9 +471,9 @@ Copyright @copyright{} 2008-2019 Fredrik Lingvall.\n\
     D[thread_n].dt = dt;
 
     if (mxGetM(3) * mxGetN(3) == 1)
-      D[thread_n].delay_method = SINGLE_DELAY; // delay is a scalar.
+      D[thread_n].delay_type = DelayType::single; // delay is a scalar.
     else
-      D[thread_n].delay_method = MULTIPLE_DELAYS; // delay is a vector.
+      D[thread_n].delay_type = DelayType::multiple; // delay is a vector.
 
     D[thread_n].delay = delay;
     D[thread_n].B = B;

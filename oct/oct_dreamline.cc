@@ -62,7 +62,7 @@ typedef struct
   double dy;
   double dt;
   octave_idx_type nt;
-  int delay_method;
+  DelayType delay_type;
   double *delay;
   double v;
   double cp;
@@ -120,9 +120,9 @@ void* smp_dream_line(void *arg)
     zo = ro[n+2*no];
 
     double dlay = 0.0;
-    if (D.delay_method == SINGLE_DELAY) {
+    if (D.delay_type == DelayType::single) {
       dlay = delay[0];
-    } else { // MULTIPLE_DELAYS delays.
+    } else { // DelayType::multiple.
       dlay = delay[n];
     }
 
@@ -465,9 +465,9 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
     D[thread_n].nt = nt;
 
     if (mxGetM(3) * mxGetN(3) == 1) {
-      D[thread_n].delay_method = SINGLE_DELAY; // delay is a scalar.
+      D[thread_n].delay_type = DelayType::single; // delay is a scalar.
     } else {
-      D[thread_n].delay_method = MULTIPLE_DELAYS; // delay is a vector.
+      D[thread_n].delay_type = DelayType::multiple; // delay is a vector.
     }
 
     D[thread_n].delay = delay;

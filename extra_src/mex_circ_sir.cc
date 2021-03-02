@@ -24,22 +24,16 @@
 
 #include <string.h>
 #include <signal.h>
+#include <uchar.h>
+
 #include <iostream>
 #include <thread>
-#include <uchar.h>
 
 #include "affinity.h"
 #include "circ_sir.h"
 #include "dream_error.h"
 
 #include "mex.h"
-
-//
-// Macros
-//
-
-#define SINGLE_DELAY 0
-#define MULTIPLE_DELAYS 1
 
 //
 // Globals
@@ -62,7 +56,7 @@ typedef struct
   double r;
   double dt;
   size_t nt;
-  int delay_method;
+  DelayType delay_type;
   double *delay;
   double v;
   double cp;
@@ -99,7 +93,7 @@ void* smp_dream_circ_sir(void *arg)
     tmp_lev = err_level;
   */
 
-  if (D.delay_method == SINGLE_DELAY) {
+  if (D.delay_type == DelayType::single) {
     for (n=start; n<stop; n++) {
       xo = ro[n];
       yo = ro[n+1*no];
@@ -113,7 +107,7 @@ void* smp_dream_circ_sir(void *arg)
       }
 
     }
-  } else { // MULTIPLE_DELAYS delays.
+  } else { // DelayType::multiple.
     for (n=start; n<stop; n++) {
       xo = ro[n];
       yo = ro[n+1*no];
@@ -318,9 +312,9 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     D[thread_n].nt = nt;
 
     if (mxGetM(prhs[3]) * mxGetN(prhs[3]) == 1)
-      D[thread_n].delay_method = SINGLE_DELAY; // delay is a scalar.
+      D[thread_n].delay_type = DelayType::single; // delay is a scalar.
     else
-      D[thread_n].delay_method = MULTIPLE_DELAYS; // delay is a vector.
+      D[thread_n].delay_type = DelayType::multiple; // delay is a vector.
 
     D[thread_n].delay = delay;
     D[thread_n].v = v;

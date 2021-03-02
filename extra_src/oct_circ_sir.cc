@@ -38,16 +38,6 @@
 #include <octave/oct.h>
 
 //
-// Macros
-//
-
-#define SINGLE_DELAY 0
-#define MULTIPLE_DELAYS 1
-#define mxGetM(N)   args(N).matrix_value().rows()
-#define mxGetN(N)   args(N).matrix_value().cols()
-#define mxIsChar(N) args(N).is_string()
-
-//
 // Globals
 //
 
@@ -68,7 +58,7 @@ typedef struct
   double r;
   double dt;
   octave_idx_type nt;
-  int delay_method;
+  DelayType delay_type;
   double *delay;
   double v;
   double cp;
@@ -105,7 +95,7 @@ void* smp_dream_circ_sir(void *arg)
     tmp_lev = err_level;
   */
 
-  if (D.delay_method == SINGLE_DELAY) {
+  if (D.delay_type == DelayType::single) {
     for (n=start; n<stop; n++) {
       xo = ro[n];
       yo = ro[n+1*no];
@@ -119,7 +109,7 @@ void* smp_dream_circ_sir(void *arg)
       }
 
     }
-  } else { // MULTIPLE_DELAYS delays.
+  } else { // DelayType::multiple.
     for (n=start; n<stop; n++) {
       xo = ro[n];
       yo = ro[n+1*no];
@@ -395,9 +385,9 @@ Copyright @copyright{} 2008-2019 Fredrik Lingvall.\n\
     D[thread_n].nt = nt;
 
     if (mxGetM(3) * mxGetN(3) == 1)
-      D[thread_n].delay_method = SINGLE_DELAY; // delay is a scalar.
+      D[thread_n].delay_type = DelayType::single; // delay is a scalar.
     else
-      D[thread_n].delay_method = MULTIPLE_DELAYS; // delay is a vector.
+      D[thread_n].delay_type = DelayType::multiple; // delay is a vector.
 
     D[thread_n].delay = delay;
     D[thread_n].v = v;

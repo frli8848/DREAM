@@ -29,21 +29,15 @@
 
 /***
  *
- *  Delay-and-sum response.
- *
- ***/
-
-/***
- *
  *  das - Delay-and-sum.
  *
  ***/
 
-int das(double xo, double yo, double zo,
-        double dt, dream_idx_type  nt, double delay,
-        double cp, double *h, int err_level)
+ErrorLevel das(double xo, double yo, double zo,
+               double dt, dream_idx_type  nt, double delay,
+               double cp, double *h, ErrorLevel err_level)
 {
-  int err = NONE;
+  ErrorLevel err = ErrorLevel::none;
 
   for (dream_idx_type it = 0; it<nt; it++) {
     h[it] = 0.0 ;
@@ -63,7 +57,7 @@ int das(double xo, double yo, double zo,
       err = dream_out_of_bounds_err("Delay out of bounds",it,err_level);
     }
 
-    if ( (err_level == PARALLEL_STOP) || (err_level == STOP) ) {
+    if ( (err_level == ErrorLevel::parallel_stop) || (err_level == ErrorLevel::stop) ) {
       return err; // Bail out.
     }
   }

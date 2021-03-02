@@ -24,8 +24,8 @@
 
 #include <math.h>
 #include <stdio.h>
+
 #include "dreamline.h"
-#include "dream_error.h"
 
 /***
  *
@@ -33,15 +33,15 @@
  *
  ***/
 
-int dreamline(double xo, double yo, double zo, double a,
-              double dx, double dy, double dt, dream_idx_type nt, double delay, double v,
-              double cp, double *h, int err_level)
+ErrorLevel dreamline(double xo, double yo, double zo, double a,
+                     double dx, double dy, double dt, dream_idx_type nt, double delay, double v,
+                     double cp, double *h, ErrorLevel err_level)
 {
   dream_idx_type i, it;
   double t;
   double ai;
   double r;
-  int    err=NONE;
+  ErrorLevel err=ErrorLevel::none;
   double xsmax = a/2.0;
   double xsmin = -a/2.0;
 
@@ -75,7 +75,7 @@ int dreamline(double xo, double yo, double zo, double a,
       else
         err = dream_out_of_bounds_err("SIR out of bounds",it,err_level);
 
-      if ( (err_level == PARALLEL_STOP) || (err_level == STOP) )
+      if ( (err_level == ErrorLevel::parallel_stop) || (err_level == ErrorLevel::stop) )
         return err; // Bail out.
     }
     xs += dx;
@@ -84,17 +84,16 @@ int dreamline(double xo, double yo, double zo, double a,
   return err;
 }
 
-
-int dreamline(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
-              double xo, double yo, double zo, double a,
-              double dx, double dy, double dt, dream_idx_type nt, double delay, double v,
-              double cp, double *h, int err_level)
+ErrorLevel dreamline(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
+                     double xo, double yo, double zo, double a,
+                     double dx, double dy, double dt, dream_idx_type nt, double delay, double v,
+                     double cp, double *h, ErrorLevel err_level)
 {
   dream_idx_type i, it;
   double t;
   double ai;
   double r;
-  int    err=NONE;
+  ErrorLevel err=ErrorLevel::none;
   double xsmax = a/2.0;
   double xsmin = -a/2.0;
 
@@ -130,7 +129,7 @@ int dreamline(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
       else
         err = dream_out_of_bounds_err("SIR out of bounds",it,err_level);
 
-      if ( (err_level == PARALLEL_STOP) || (err_level == STOP) )
+      if ( (err_level == ErrorLevel::parallel_stop) || (err_level == ErrorLevel::stop) )
         return err; // Bail out.
     }
     xs += dx;

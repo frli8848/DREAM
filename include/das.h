@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2003,2006,2007,2008,2009 Fredrik Lingvall
+* Copyright (C) 2003,2006,2007,2008,2009,2021 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -24,16 +24,8 @@
 
 
 #include "dream.h"
+#include "dream_error.h"
 
-/***
- *
- * Header file for das.
- *
- ***/
-
-#ifdef __cplusplus
-extern "C"
-#endif
-int das(double xo, double yo, double zo,
-        double dt, dream_idx_type nt, double delay,
-        double cp, double *h, int err_level);
+ErrorLevel das(double xo, double yo, double zo,
+               double dt, dream_idx_type nt, double delay,
+               double cp, double *h, ErrorLevel err_level);

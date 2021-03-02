@@ -24,7 +24,6 @@
 #include <math.h>
 
 #include "dreamrect_f.h"
-#include "dream_error.h"
 
 //
 //  Function prototypes.
@@ -41,16 +40,16 @@ double focus_delay_rect(FocusMet foc_met, double focal,
  *
  ***/
 
-int dreamrect_f(double xo, double yo, double zo,
-                double a, double b,
-                FocusMet foc_met, double focal,
-                double dx, double dy, double dt, dream_idx_type nt,
-                double delay,
-                double v, double cp,
-                double *h,
-                int err_level)
+ErrorLevel dreamrect_f(double xo, double yo, double zo,
+                       double a, double b,
+                       FocusMet foc_met, double focal,
+                       double dx, double dy, double dt, dream_idx_type nt,
+                       double delay,
+                       double v, double cp,
+                       double *h,
+                       ErrorLevel err_level)
 {
-  int err = NONE;
+  ErrorLevel err = ErrorLevel::none;
 
   // x-dim and y-dim integration bounds
   double xsmin = -a/2;
@@ -99,7 +98,7 @@ int dreamrect_f(double xo, double yo, double zo,
           err = dream_out_of_bounds_err("SIR out of bounds",it,err_level);
         }
 
-        if ( (err_level == PARALLEL_STOP) || (err_level == STOP) ) {
+        if ( (err_level == ErrorLevel::parallel_stop) || (err_level == ErrorLevel::stop) ) {
           return err; // Bail out.
         }
       }
@@ -112,22 +111,22 @@ int dreamrect_f(double xo, double yo, double zo,
   return err;
 }
 
-int dreamrect_f(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
-                double xo, double yo, double zo,
-                double a, double b, FocusMet foc_met, double focal,
-                double dx, double dy, double dt,
-                dream_idx_type nt,
-                double delay,
-                double v, double cp,
-                double *h,
-                int err_level)
+ErrorLevel dreamrect_f(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
+                       double xo, double yo, double zo,
+                       double a, double b, FocusMet foc_met, double focal,
+                       double dx, double dy, double dt,
+                       dream_idx_type nt,
+                       double delay,
+                       double v, double cp,
+                       double *h,
+                       ErrorLevel err_level)
 {
   // x-dim and y-dim integration bounds
   double xsmin = -a/2;
   double xsmax = a/2;
   double ysmin = -b/2;
   double ysmax = b/2;
-  int err = NONE;
+  ErrorLevel err = ErrorLevel::none;
 
   double ds = dx * dy;
   double c = sqrt(a*a + b*b);
@@ -172,7 +171,7 @@ int dreamrect_f(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
           err = dream_out_of_bounds_err("SIR out of bounds",it,err_level);
         }
 
-        if ( (err_level == PARALLEL_STOP) || (err_level == STOP) ) {
+        if ( (err_level == ErrorLevel::parallel_stop) || (err_level == ErrorLevel::stop) ) {
           return err; // Bail out.
         }
       }

@@ -21,16 +21,14 @@
 *
 ***/
 
+#pragma once
 
-// Error levels.
-#define NONE   0
-#define STOP   -1
-#define WARN   -2
-#define IGNORE -3
-#define PARALLEL_STOP -4
+enum class ErrorLevel {
+  none,
+    stop,
+    warn,
+    ignore,
+    parallel_stop};
 
-#define TRUE 1
-#define FALSE 0
-
-int dream_out_of_bounds_err(const char *msg, int idx, int err_level);
+ErrorLevel dream_out_of_bounds_err(const char *msg, int idx, ErrorLevel err_level);
 void dream_err_msg(const char *msg);

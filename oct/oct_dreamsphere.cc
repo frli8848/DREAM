@@ -42,7 +42,7 @@
 // Globals
 //
 
-volatile int out_err = NONE;
+volatile ErrorLevel out_err=ErrorLevel::none;
 std::mutex err_lock;
 int running;
 
@@ -68,7 +68,7 @@ typedef struct
   double cp;
   Attenuation *att;
   double *h;
-  int err_level;
+  ErrorLevel err_level;
 } DATA;
 
 typedef void (*sighandler_t)(int);
@@ -89,13 +89,13 @@ void sig_keyint_handler(int signum);
 
 void* smp_dream_sphere(void *arg)
 {
-  int tmp_err = NONE, err = NONE;
+  ErrorLevel tmp_err=ErrorLevel::none, err=ErrorLevel::none;
   DATA D = *(DATA *)arg;
   double xo, yo, zo;
   double *h = D.h;
   double R=D.R, Rcurv=D.Rcurv, dx=D.dx, dy=D.dy, dt=D.dt;
   octave_idx_type n, no=D.no, nt=D.nt;
-  int tmp_lev, err_level=D.err_level;
+  ErrorLevel tmp_lev, err_level=D.err_level;
   double *delay=D.delay, *ro=D.ro, v=D.v, cp=D.cp;
   Attenuation *att = D.att;
   octave_idx_type start=D.start, stop=D.stop;
@@ -109,10 +109,11 @@ void* smp_dream_sphere(void *arg)
   }
 
   // Let the thread finish and then catch the error.
-  if (err_level == STOP)
-    tmp_lev = PARALLEL_STOP;
-  else
+  if (err_level == ErrorLevel::stop) {
+    tmp_lev = ErrorLevel::parallel_stop;
+  } else {
     tmp_lev = err_level;
+  }
 
   for (n=start; n<stop; n++) {
     xo = ro[n];
@@ -141,10 +142,10 @@ void* smp_dream_sphere(void *arg)
                         &h[n*nt], tmp_lev);
     }
 
-    if (err != NONE || out_err ==  PARALLEL_STOP) {
+    if (err != ErrorLevel::none || out_err ==  ErrorLevel::parallel_stop) {
       tmp_err = err;
-      if (err == PARALLEL_STOP || out_err ==  PARALLEL_STOP) {
-        break; // Jump out when a STOP error occurs.
+      if (err == ErrorLevel::parallel_stop || out_err ==  ErrorLevel::parallel_stop) {
+        break; // Jump out when a ErrorLevel::stop error occurs.
       }
     }
 
@@ -158,7 +159,7 @@ void* smp_dream_sphere(void *arg)
   // Lock out_err for update, update it, and unlock.
   err_lock.lock();
 
-  if ((tmp_err != NONE) && (out_err == NONE)) {
+  if ((tmp_err != ErrorLevel::none) && (out_err == ErrorLevel::none)) {
     out_err = tmp_err;
   }
 
@@ -272,10 +273,9 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   double R, Rcurv, dx, dy, dt;
   octave_idx_type nt, no;
   double *delay, v, cp, alpha, *h, *err_p;
-  int    err_level=STOP, is_set = false;
-  char   err_str[50];
-  int    buflen;
-  DATA   *D;
+  ErrorLevel err_level=ErrorLevel::stop;
+  bool is_set = false;
+  DATA *D;
   octave_idx_type start, stop;
   std::thread *threads;
   unsigned int thread_n, nthreads;
@@ -398,26 +398,22 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
       error("Argument 6 must be a string");
       return oct_retval;
     }
-    std::string strin = args(5).string_value();
-    buflen = strin.length();
-    for (int n=0; n<=buflen; n++ ) {
-      err_str[n] = strin[n];
-    }
-    err_str[buflen] = '\0';
+    std::string err_str = args(5).string_value();
 
+    is_set = false;
 
-    if (!strcmp(err_str,"ignore")) {
-      err_level = IGNORE;
+    if (err_str == "ignore") {
+      err_level = ErrorLevel::ignore;
       is_set = true;
     }
 
-    if (!strcmp(err_str,"warn")) {
-      err_level = WARN;
+    if (err_str == "warn") {
+      err_level = ErrorLevel::warn;
       is_set = true;
     }
 
-    if (!strcmp(err_str,"stop")) {
-      err_level = STOP;
+    if (err_str == "stop") {
+      err_level = ErrorLevel::stop;
       is_set = true;
     }
 
@@ -425,10 +421,9 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
       error("Unknown error level!");
       return oct_retval;
     }
+  } else {
+    err_level = ErrorLevel::stop; // Default.
   }
-  else
-    err_level = STOP; // Default.
-
 
   // Create an output matrix for the impulse response
   Matrix h_mat(nt, no);
@@ -454,7 +449,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   // Call the DREAM subroutine.
   //
 
-  out_err = NONE;
+  out_err = ErrorLevel::none;
   running = true;
 
   // Check if we have attenuation
@@ -537,7 +532,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   // Check for Error.
   //
 
-  if ( (err_level == STOP) && (out_err != NONE)) {
+  if ( (err_level == ErrorLevel::stop) && (out_err != ErrorLevel::none)) {
     error(""); // Bail out if error.
     return oct_retval;
   }

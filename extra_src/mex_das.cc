@@ -82,10 +82,11 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   double xo, yo, zo, dt;
   double *delay, cp;
   double *h, *err_p;
-  int    err_level=STOP, err=NONE, out_err = NONE, is_set = false;
-  char   err_str[50];
-  int    buflen;
-  sighandler_t   old_handler, old_handler_abrt, old_handler_keyint;
+  ErrorLevel err_level=ErrorLevel::stop, err=ErrorLevel::none, out_err = ErrorLevel::none;
+  bool is_set = false;
+  char err_str[50];
+  int  buflen;
+  sighandler_t old_handler, old_handler_abrt, old_handler_keyint;
 
   // Check for proper number of arguments
 
@@ -151,17 +152,17 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     mxGetString(prhs[4],err_str,buflen);
 
     if (!strcmp(err_str,"ignore")) {
-      err_level = IGNORE;
+      err_level = ErrorLevel::ignore;
       is_set = true;
     }
 
     if (!strcmp(err_str,"warn")) {
-      err_level = WARN;
+      err_level = ErrorLevel::warn;
       is_set = true;
     }
 
     if (!strcmp(err_str,"stop")) {
-      err_level = STOP;
+      err_level = ErrorLevel::stop;
       is_set = true;
     }
 
@@ -170,7 +171,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
   }
   else
-    err_level = STOP; // Default.
+    err_level = ErrorLevel::stop; // Default.
 
 
   // Create an output matrix for the impulse response
@@ -207,7 +208,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
       err = das(xo,yo,zo,dt,nt,delay[0],cp,&h[n*nt],err_level);
 
-      if (err != NONE)
+      if (err != ErrorLevel::none)
         out_err = err;
 
       if (!running) {
@@ -223,7 +224,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
       err = das(xo,yo,zo,dt,nt,delay[n],cp,&h[n*nt],err_level);
 
-      if (err != NONE)
+      if (err != ErrorLevel::none)
         out_err = err;
 
       if (!running) {

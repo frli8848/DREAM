@@ -26,7 +26,6 @@
 #include <signal.h>
 
 #include "das.h"
-#include "dream_error.h"
 
 //
 // Octave headers.
@@ -103,9 +102,8 @@ Copyright @copyright{} 2008-2019 Fredrik Lingvall.\n\
   double xo,yo,zo,dt;
   double *delay,cp;
   double *h, *err_p;
-  int    err_level=STOP, err=NONE, out_err = NONE, is_set = false;
-  char   err_str[50];
-  int    buflen;
+  ErrorLevel err_level=ErrorLevel::stop, err=ErrorLevel::none, out_err = ErrorLevel::none;
+  bool is_set = false;
   octave_value_list oct_retval;
 
   int nrhs = args.length ();
@@ -185,25 +183,20 @@ Copyright @copyright{} 2008-2019 Fredrik Lingvall.\n\
       return oct_retval;
     }
 
-    std::string strin = args(4).string_value();
-    buflen = strin.length();
-    for ( n=0; n<=buflen; n++ ) {
-      err_str[n] = strin[n];
-    }
-    err_str[buflen] = '\0';
+    std::string err_str = args(4).string_value();
 
-    if (!strcmp(err_str,"ignore")) {
-      err_level = IGNORE;
+    if (err_str == "ignore") {
+      err_level = ErrorLevel::ignore;
       is_set = true;
     }
 
-    if (!strcmp(err_str,"warn")) {
-      err_level = WARN;
+    if (err_str == "warn") {
+      err_level = ErrorLevel::warn;
       is_set = true;
     }
 
-    if (!strcmp(err_str,"stop")) {
-      err_level = STOP;
+    if (err_str == "stop") {
+      err_level = ErrorLevel::stop;
       is_set = true;
     }
 
@@ -211,9 +204,9 @@ Copyright @copyright{} 2008-2019 Fredrik Lingvall.\n\
       error("Unknown error level!");
       return oct_retval;
     }
+  } else {
+    err_level = ErrorLevel::stop; // Default.
   }
-  else
-    err_level = STOP; // Default.
 
   // Create an output matrix for the impulse response.
   Matrix h_mat(nt, no);
@@ -226,11 +219,13 @@ Copyright @copyright{} 2008-2019 Fredrik Lingvall.\n\
       yo = ro[n+1*no];
       zo = ro[n+2*no];
 
-      err = das(xo,yo,zo,dt,nt,delay[0],cp,&h[n*nt],err_level);
+      err = das(xo, yo, zo,
+                dt, nt, delay[0],cp,
+                &h[n*nt], err_level);
 
-      if (err != NONE) {
+      if (err != ErrorLevel::none) {
         out_err = err;
-        if (err == STOP) {
+        if (err == ErrorLevel::stop) {
           error("");
           return oct_retval;
         }
@@ -245,9 +240,9 @@ Copyright @copyright{} 2008-2019 Fredrik Lingvall.\n\
 
       err = das(xo,yo,zo,dt,nt,delay[n],cp,&h[n*nt],err_level);
 
-      if (err != NONE) {
+      if (err != ErrorLevel::none) {
         out_err = err;
-        if (err == STOP) {
+        if (err == ErrorLevel::stop) {
           error("");
           return oct_retval;
         }

@@ -23,25 +23,26 @@
 
 #include "dream.h"
 #include "attenuation.h"
+#include "dream_error.h"
 
-int dreamcirc(double xo, double yo, double zo,
-              double R,
-              double dx, double dy, double dt,
-              dream_idx_type nt,
-              double delay,
-              double v, double cp,
-              double *h,
-              int err_level);
+ErrorLevel dreamcirc(double xo, double yo, double zo,
+                     double R,
+                     double dx, double dy, double dt,
+                     dream_idx_type nt,
+                     double delay,
+                     double v, double cp,
+                     double *h,
+                     ErrorLevel err_level);
 
-int dreamcirc(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
-              double xo, double yo, double zo,
-              double R,
-              double dx, double dy, double dt,
-              dream_idx_type nt,
-              double delay,
-              double v, double cp,
-              double *h,
-              int err_level);
+ErrorLevel dreamcirc(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
+                     double xo, double yo, double zo,
+                     double R,
+                     double dx, double dy, double dt,
+                     dream_idx_type nt,
+                     double delay,
+                     double v, double cp,
+                     double *h,
+                     ErrorLevel err_level);
 
 #ifdef USE_OPENCL
 int cl_dreamcirc(const double *Ro, int No,

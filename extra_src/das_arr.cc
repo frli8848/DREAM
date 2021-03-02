@@ -33,11 +33,11 @@
 // Function prototypes.
 //
 
-int delay_arr(double xo, double yo, double zo, double xs, double ys, double zs, double dt,
+ErrorLevel delay_arr(double xo, double yo, double zo, double xs, double ys, double zs, double dt,
               dream_idx_type nt, double delay, double foc_delay, double steer_delay, double cp,
-              double weight, double *h, int err_level);
+              double weight, double *h, ErrorLevel err_level);
 
-int centroid(double *h,dream_idx_type nt);
+dream_idx_type centroid(double *h,dream_idx_type nt);
 
 /***
  *
@@ -45,18 +45,19 @@ int centroid(double *h,dream_idx_type nt);
  *
  ***/
 
-int das_arr(double xo, double yo, double zo, double dt, dream_idx_type nt,
-            double delay, double cp, int  num_elements,
-            double *gx, double *gy, double *gz, FocusMet foc_met, double focal,
-            SteerMet steer_met, double theta, double phi,
-            double *apod, bool do_apod, ApodMet apod_met, double param, double *ha,int err_level)
+ErrorLevel das_arr(double xo, double yo, double zo, double dt, dream_idx_type nt,
+                    double delay, double cp, int  num_elements,
+                    double *gx, double *gy, double *gz, FocusMet foc_met, double focal,
+                    SteerMet steer_met, double theta, double phi,
+                    double *apod, bool do_apod, ApodMet apod_met, double param,
+                    double *ha, ErrorLevel err_level)
 {
   double steer_delay;
   double *h;
   dream_idx_type i, i_c;
   double ramax, xamax, yamax;
   double xs, ys, zs, foc_delay, weight;
-  int err = NONE, out_err = NONE;
+  ErrorLevel err = ErrorLevel::none, out_err = ErrorLevel::none;
 
   h = (double*) malloc(nt*sizeof(double));
 
@@ -80,11 +81,11 @@ int das_arr(double xo, double yo, double zo, double dt, dream_idx_type nt,
 
     err = delay_arr(xo, yo, zo,
                     gx[n], gy[n], gz[n],
-                    dt, nt, delay, foc_delay, steer_delay, cp, weight, h,err_level);
+                    dt, nt, delay, foc_delay, steer_delay, cp, weight, h, err_level);
 
-    if (err != NONE) {
+    if (err != ErrorLevel::none) {
       out_err = err;
-      if ( (err == PARALLEL_STOP) || (err == STOP) ) {
+      if ( (err == ErrorLevel::parallel_stop) || (err == ErrorLevel::stop) ) {
         return err; // Bail out.
       }
     }
@@ -106,7 +107,7 @@ int das_arr(double xo, double yo, double zo, double dt, dream_idx_type nt,
       err = dream_out_of_bounds_err("Centroid out of bounds", i_c, err_level);
     }
 
-    if ( (err == PARALLEL_STOP) || (err == STOP) ) {
+    if ( (err == ErrorLevel::parallel_stop) || (err == ErrorLevel::stop) ) {
       free(h);
       return err; // Bail out.
     }
@@ -124,19 +125,19 @@ int das_arr(double xo, double yo, double zo, double dt, dream_idx_type nt,
  *
  ***/
 
-int das_arr_ud(double xo, double yo, double zo, double dt, dream_idx_type nt,
-               double delay, double cp, int  num_elements,
-               double *gx, double *gy, double *gz, FocusMet foc_met, double *focal,
-               SteerMet steer_met, double theta, double phi,
-               double *apod, bool do_apod,
-               ApodMet apod_met, double param, double *ha,int err_level)
+ErrorLevel das_arr_ud(double xo, double yo, double zo, double dt, dream_idx_type nt,
+                      double delay, double cp, int  num_elements,
+                      double *gx, double *gy, double *gz, FocusMet foc_met, double *focal,
+                      SteerMet steer_met, double theta, double phi,
+                      double *apod, bool do_apod,
+                      ApodMet apod_met, double param, double *ha, ErrorLevel err_level)
 {
   double steer_delay;
   double *h;
   dream_idx_type i, i_c;
   double ramax, xamax, yamax;
   double xs, ys, zs, foc_delay, weight;
-  int err = NONE, out_err = NONE;
+  ErrorLevel err = ErrorLevel::none, out_err = ErrorLevel::none;
 
   h = (double*) malloc(nt*sizeof(double));
 
@@ -160,9 +161,9 @@ int das_arr_ud(double xo, double yo, double zo, double dt, dream_idx_type nt,
     }
 
     err = delay_arr(xo,yo,zo,xs,ys,zs,dt,nt,delay,foc_delay,steer_delay,cp,weight,h,err_level);
-    if (err != NONE) {
+    if (err != ErrorLevel::none) {
       out_err = err;
-      if ( (err == PARALLEL_STOP) || (err == STOP) ) {
+      if ( (err == ErrorLevel::parallel_stop) || (err == ErrorLevel::stop) ) {
         return err; // Bail out.
       }
     }
@@ -185,7 +186,7 @@ int das_arr_ud(double xo, double yo, double zo, double dt, dream_idx_type nt,
       err = dream_out_of_bounds_err("Centroid out of bounds",i_c,err_level);
     }
 
-    if ( (err == PARALLEL_STOP) || (err == STOP) ) {
+    if ( (err == ErrorLevel::parallel_stop) || (err == ErrorLevel::stop) ) {
       free(h);
       return err; // Bail out.
     }
@@ -203,11 +204,11 @@ int das_arr_ud(double xo, double yo, double zo, double dt, dream_idx_type nt,
  *
  ***/
 
-int delay_arr(double xo, double yo, double zo, double xs, double ys, double zs, double dt,
+ErrorLevel delay_arr(double xo, double yo, double zo, double xs, double ys, double zs, double dt,
               dream_idx_type nt, double delay, double foc_delay, double steer_delay, double cp,
-              double weight, double *h, int err_level)
+              double weight, double *h, ErrorLevel err_level)
 {
-  int err = NONE;
+  ErrorLevel err = ErrorLevel::none;
 
   for (dream_idx_type it = 0; it < nt; it++) {
     h[it] = 0.0;
@@ -228,7 +229,7 @@ int delay_arr(double xo, double yo, double zo, double xs, double ys, double zs, 
       err = dream_out_of_bounds_err("Delay out of bounds",it,err_level);
     }
 
-    if ( (err == PARALLEL_STOP) || (err == STOP) ) {
+    if ( (err == ErrorLevel::parallel_stop) || (err == ErrorLevel::stop) ) {
       return err; // Bail out.
     }
   }
@@ -242,7 +243,7 @@ int delay_arr(double xo, double yo, double zo, double xs, double ys, double zs, 
  *
  ***/
 
-int centroid(double *h, dream_idx_type nt)
+dream_idx_type centroid(double *h, dream_idx_type nt)
 {
   double sum=0.0, t_c = 0.0;
 
@@ -253,5 +254,5 @@ int centroid(double *h, dream_idx_type nt)
 
   t_c /= sum;
 
-  return rint(t_c);
+  return dream_idx_type(rint(t_c));
 }

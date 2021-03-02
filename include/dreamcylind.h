@@ -25,20 +25,21 @@
 
 #include "dream.h"
 #include "attenuation.h"
+#include "dream_error.h"
 
-int dreamcylind(double xo, double yo, double zo,
-                double a, double b, double Rcurv,
-                double dx, double dy, double dt,
-                dream_idx_type nt, double delay, double v, double cp,
-                double *h,
-                int err_level,
-                double weight=1.0);
+ErrorLevel dreamcylind(double xo, double yo, double zo,
+                       double a, double b, double Rcurv,
+                       double dx, double dy, double dt,
+                       dream_idx_type nt, double delay, double v, double cp,
+                       double *h,
+                       ErrorLevel err_level,
+                       double weight=1.0);
 
-int dreamcylind(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
-                double xo, double yo, double zo,
-                double a, double b, double Rcurv,
-                double dx, double dy, double dt,
-                dream_idx_type nt, double delay, double v, double cp,
-                double *h,
-                int err_level,
-                double weight=1.0);
+ErrorLevel dreamcylind(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
+                       double xo, double yo, double zo,
+                       double a, double b, double Rcurv,
+                       double dx, double dy, double dt,
+                       dream_idx_type nt, double delay, double v, double cp,
+                       double *h,
+                       ErrorLevel err_level,
+                       double weight=1.0);

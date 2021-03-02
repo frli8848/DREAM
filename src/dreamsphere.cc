@@ -25,7 +25,6 @@
 #include <stdio.h>
 
 #include "dreamsphere.h"
-#include "dream_error.h"
 
 //
 // Function prototypes.
@@ -47,16 +46,16 @@ double sphere_d(double xs, double ys,
  *
  ***/
 
-int dreamsphere(double xo, double yo, double zo,
-                double R, double Rcurv,
-                double dx, double dy, double dt,
-                dream_idx_type nt, double delay, double v, double cp,
-                double *h, int err_level)
+ErrorLevel  dreamsphere(double xo, double yo, double zo,
+                        double R, double Rcurv,
+                        double dx, double dy, double dt,
+                        dream_idx_type nt, double delay, double v, double cp,
+                        double *h, ErrorLevel err_level)
 {
   dream_idx_type i, it;
   double t, ai, r;
   double xsmin, ysmin, xsmax, ysmax;
-  int err = NONE;
+  ErrorLevel err = ErrorLevel::none;
 
   double ds = dx * dy;
 
@@ -106,7 +105,7 @@ int dreamsphere(double xo, double yo, double zo,
         else
           err = dream_out_of_bounds_err("SIR out of bounds",it,err_level);
 
-        if ( (err_level == PARALLEL_STOP) || (err_level == STOP) ) {
+        if ( (err_level == ErrorLevel::parallel_stop) || (err_level == ErrorLevel::stop) ) {
           return err; // Bail out.
         }
       }
@@ -118,17 +117,17 @@ int dreamsphere(double xo, double yo, double zo,
   return err;
 }
 
-int dreamsphere(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
-                double xo, double yo, double zo,
-                double R, double Rcurv,
-                double dx, double dy, double dt,
-                dream_idx_type nt, double delay, double v, double cp,
-                double *h, int err_level)
+ErrorLevel dreamsphere(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
+                       double xo, double yo, double zo,
+                       double R, double Rcurv,
+                       double dx, double dy, double dt,
+                       dream_idx_type nt, double delay, double v, double cp,
+                       double *h, ErrorLevel err_level)
 {
   dream_idx_type i, it;
   double t, ai, r;
   double xsmin, ysmin, xsmax, ysmax;
-  int err = NONE;
+  ErrorLevel err = ErrorLevel::none;
 
   double ds = dx * dy;
 
@@ -177,7 +176,7 @@ int dreamsphere(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
         else
           err = dream_out_of_bounds_err("SIR out of bounds",it,err_level);
 
-        if ( (err_level == PARALLEL_STOP) || (err_level == STOP) ) {
+        if ( (err_level == ErrorLevel::parallel_stop) || (err_level == ErrorLevel::stop) ) {
           return err; // Bail out.
         }
       }

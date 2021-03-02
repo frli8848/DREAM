@@ -96,8 +96,9 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   bool    do_apod=false;
   ApodMet apod_met=ApodMet::gauss;
   double *h, *err_p;
-  int    err_level=STOP, err=NONE, out_err = NONE, is_set = false;
-  char   err_str[50];
+  ErrorLevel err_level=ErrorLevel::stop, err=ErrorLevel::none, out_err = ErrorLevel::none;
+  bool is_set = false;
+  char err_str[50];
   sighandler_t old_handler, old_handler_abrt, old_handler_keyint;
 
   // Check for proper number of arguments
@@ -385,17 +386,17 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     is_set = false;
 
     if (!strcmp(err_str,"ignore")) {
-      err_level = IGNORE;
+      err_level = ErrorLevel::ignore;
       is_set = true;
     }
 
     if (!strcmp(err_str,"warn")) {
-      err_level = WARN;
+      err_level = ErrorLevel::warn;
       is_set = true;
     }
 
     if (!strcmp(err_str,"stop")) {
-      err_level = STOP;
+      err_level = ErrorLevel::stop;
       is_set = true;
     }
 
@@ -403,7 +404,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       dream_err_msg("Unknown error level!");
     }
   } else {
-    err_level = STOP; // Default.
+    err_level = ErrorLevel::stop; // Default.
   }
 
   // Create an output matrix for the impulse response
@@ -455,7 +456,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
                   apod, do_apod, apod_met, param,
                   &h[n*nt],err_level);
 
-    if (err != NONE) {
+    if (err != ErrorLevel::none) {
       out_err = err;
     }
   }

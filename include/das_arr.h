@@ -24,10 +24,11 @@
 
 
 #include "dream.h"
+#include "dream_error.h"
 
-int das_arr(double xo, double yo, double zo, double dt, dream_idx_type nt,
-            double delay, double cp, int  num_elements,
-            double *gx, double *gy, double *gz, FocusMet foc_met, double *focal,
-            SteerMet steer_met, double theta, double phi,
-            double *apod, bool do_apod, ApodMet apod_met, double param,
-            double *h, int err_level);
+ErrorLevel das_arr(double xo, double yo, double zo, double dt, dream_idx_type nt,
+                   double delay, double cp, int  num_elements,
+                   double *gx, double *gy, double *gz, FocusMet foc_met, double *focal,
+                   SteerMet steer_met, double theta, double phi,
+                   double *apod, bool do_apod, ApodMet apod_met, double param,
+                   double *h, ErrorLevel err_level);

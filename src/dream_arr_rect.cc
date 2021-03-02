@@ -28,30 +28,29 @@
 
 #include "dream_arr_rect.h"
 #include "arr_functions.h"
-#include "dream_error.h"
 
 //
 // Function prototypes
 //
 
-int rect_ab(double xo, double yo, double zo,
-            double x, double y, double z,
-            double a, double b,
-            double dx, double dy, double dt,
-            dream_idx_type nt,
-            double delay, double foc_delay, double steer_delay,
-            double v, double cp, double weight,
-            double *h, int err_level);
+ErrorLevel rect_ab(double xo, double yo, double zo,
+                   double x, double y, double z,
+                   double a, double b,
+                   double dx, double dy, double dt,
+                   dream_idx_type nt,
+                   double delay, double foc_delay, double steer_delay,
+                   double v, double cp, double weight,
+                   double *h, ErrorLevel err_level);
 
-int rect_ab(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
-            double xo, double yo, double zo,
-            double x, double y, double z,
-            double a, double b,
-            double dx, double dy, double dt,
-            dream_idx_type nt,
-            double delay, double foc_delay, double steer_delay,
-            double v, double cp, double weight,
-            double *h, int err_level);
+ErrorLevel rect_ab(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
+                   double xo, double yo, double zo,
+                   double x, double y, double z,
+                   double a, double b,
+                   double dx, double dy, double dt,
+                   dream_idx_type nt,
+                   double delay, double foc_delay, double steer_delay,
+                   double v, double cp, double weight,
+                   double *h, ErrorLevel err_level);
 
 /***
  *
@@ -59,17 +58,17 @@ int rect_ab(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
  *
  ***/
 
-int dream_arr_rect(double xo, double yo, double zo,
-                   double a, double b,
-                   double dx, double dy, double dt,
-                   dream_idx_type nt, double delay, double v, double cp,
-                   dream_idx_type num_elements, double *gx, double *gy, double *gz,
-                   FocusMet foc_met, double *focal,
-                   SteerMet steer_met, double theta, double phi,
-                   double *apod, bool do_apod, ApodMet apod_met, double param,
-                   double *h, int err_level)
+ErrorLevel dream_arr_rect(double xo, double yo, double zo,
+                          double a, double b,
+                          double dx, double dy, double dt,
+                          dream_idx_type nt, double delay, double v, double cp,
+                          dream_idx_type num_elements, double *gx, double *gy, double *gz,
+                          FocusMet foc_met, double *focal,
+                          SteerMet steer_met, double theta, double phi,
+                          double *apod, bool do_apod, ApodMet apod_met, double param,
+                          double *h, ErrorLevel err_level)
 {
-  int err = NONE, out_err = NONE;
+  ErrorLevel err = ErrorLevel::none, out_err = ErrorLevel::none;
 
   for (dream_idx_type i=0; i<nt; i++) {
     h[i] = 0.0;
@@ -97,7 +96,7 @@ int dream_arr_rect(double xo, double yo, double zo,
     err = rect_ab(xo, yo, zo, gx[n], gy[n], gz[n], a, b, dx, dy, dt, nt,
                   delay, foc_delay, steer_delay, v, cp, weight, h, err_level);
 
-    if (err != NONE) {
+    if (err != ErrorLevel::none) {
       out_err = err;
     }
   }
@@ -105,18 +104,18 @@ int dream_arr_rect(double xo, double yo, double zo,
   return out_err;
 }
 
-int dream_arr_rect(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
-                   double xo, double yo, double zo,
-                   double a, double b,
-                   double dx, double dy, double dt,
-                   dream_idx_type nt, double delay, double v, double cp,
-                   dream_idx_type num_elements, double *gx, double *gy, double *gz,
-                   FocusMet foc_met, double *focal,
-                   SteerMet steer_met, double theta, double phi,
-                   double *apod, bool do_apod, ApodMet apod_met, double param,
-                   double *h, int err_level)
+ErrorLevel dream_arr_rect(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
+                          double xo, double yo, double zo,
+                          double a, double b,
+                          double dx, double dy, double dt,
+                          dream_idx_type nt, double delay, double v, double cp,
+                          dream_idx_type num_elements, double *gx, double *gy, double *gz,
+                          FocusMet foc_met, double *focal,
+                          SteerMet steer_met, double theta, double phi,
+                          double *apod, bool do_apod, ApodMet apod_met, double param,
+                          double *h, ErrorLevel err_level)
 {
-  int err = NONE, out_err = NONE;
+  ErrorLevel err = ErrorLevel::none, out_err = ErrorLevel::none;
 
   for (dream_idx_type i=0; i<nt; i++) {
     h[i] = 0.0;
@@ -146,7 +145,7 @@ int dream_arr_rect(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
                   xo, yo, zo, gx[n], gy[n], gz[n], a, b, dx, dy, dt, nt,
                   delay, foc_delay, steer_delay, v, cp, weight, h, err_level);
 
-    if (err != NONE) {
+    if (err != ErrorLevel::none) {
       out_err = err;
     }
   }
@@ -164,16 +163,16 @@ int dream_arr_rect(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
  *
  ***/
 
-int rect_ab(double xo, double yo, double zo,
-            double x, double y, double z, // Element center position
-            double a, double b,
-            double dx, double dy, double dt,
-            dream_idx_type nt,
-            double delay, double foc_delay, double steer_delay,
-            double v, double cp, double weight,
-            double *h, int err_level)
+ErrorLevel rect_ab(double xo, double yo, double zo,
+                   double x, double y, double z, // Element center position
+                   double a, double b,
+                   double dx, double dy, double dt,
+                   dream_idx_type nt,
+                   double delay, double foc_delay, double steer_delay,
+                   double v, double cp, double weight,
+                   double *h, ErrorLevel err_level)
 {
-   int err = NONE;
+   ErrorLevel err = ErrorLevel::none;
 
   double ds = dx * dy;
 
@@ -212,7 +211,7 @@ int rect_ab(double xo, double yo, double zo,
         else
           err = dream_out_of_bounds_err("SIR out of bounds",it,err_level);
 
-        if ( (err_level == PARALLEL_STOP) || (err_level == STOP) )
+        if ( (err_level == ErrorLevel::parallel_stop) || (err_level == ErrorLevel::stop) )
           return err; // Bail out.
       }
 
@@ -225,17 +224,17 @@ int rect_ab(double xo, double yo, double zo,
 }
 
 
-int rect_ab(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
-            double xo, double yo, double zo,
-            double x, double y, double z,
-            double a, double b,
-            double dx, double dy, double dt,
-            dream_idx_type nt,
-            double delay, double foc_delay, double steer_delay,
-            double v, double cp, double weight,
-            double *h, int err_level)
+ErrorLevel rect_ab(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
+                   double xo, double yo, double zo,
+                   double x, double y, double z,
+                   double a, double b,
+                   double dx, double dy, double dt,
+                   dream_idx_type nt,
+                   double delay, double foc_delay, double steer_delay,
+                   double v, double cp, double weight,
+                   double *h, ErrorLevel err_level)
 {
-  int err = NONE;
+  ErrorLevel err = ErrorLevel::none;
 
   double ds = dx * dy;
 
@@ -273,7 +272,7 @@ int rect_ab(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
         else
           err = dream_out_of_bounds_err("SIR out of bounds",it,err_level);
 
-        if ( (err_level == PARALLEL_STOP) || (err_level == STOP) ) {
+        if ( (err_level == ErrorLevel::parallel_stop) || (err_level == ErrorLevel::stop) ) {
           return err; // Bail out.
         }
       }

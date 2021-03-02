@@ -38,9 +38,9 @@
 
 // NB. The affinity can be set with the taskset command as well.
 
-int set_dream_thread_affinity(dream_idx_type thread_n, dream_idx_type nthreads, std::thread *threads)
+ErrorLevel set_dream_thread_affinity(dream_idx_type thread_n, dream_idx_type nthreads, std::thread *threads)
 {
-  int err = 0;
+  ErrorLevel err = ErrorLevel::none;
 
 #ifdef HAVE_PTHREADS
 
@@ -59,9 +59,8 @@ int set_dream_thread_affinity(dream_idx_type thread_n, dream_idx_type nthreads, 
 
 #endif
 
-  if (err != 0) {
+  if (err != ErrorLevel::none) {
     perror("Error in set_dream_thread_affinity when setting the CPU affinity\n");
-    return err;
   }
 
   return err;

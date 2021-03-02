@@ -26,7 +26,7 @@
 #include <signal.h>
 
 #include "das_arr.h"
-#include "dream_error.h"
+
 
 //
 // Octave headers.
@@ -210,7 +210,8 @@ Copyright @copyright{} 2008-2019 Fredrik Lingvall.\n\
   bool    do_apod=false;
   ApodMet apod_met=ApodMet::gauss;
   double *h, *err_p;
-  int    err_level=STOP, err=NONE, out_err = NONE, is_set = false;
+  ErrorLevel err_level=ErrorLevel::stop, err=ErrorLevel::none, out_err = ErrorLevel::none;
+  bool is_set = false;
   char   err_str[50];
   sighandler_t   old_handler, old_handler_abrt, old_handler_keyint;
   octave_value_list oct_retval;
@@ -538,17 +539,17 @@ Copyright @copyright{} 2008-2019 Fredrik Lingvall.\n\
     is_set = false;
 
     if (!strcmp(err_str,"ignore")) {
-      err_level = IGNORE;
+      err_level = ErrorLevel::ignore;
       is_set = true;
     }
 
     if (!strcmp(err_str,"warn")) {
-      err_level = WARN;
+      err_level = ErrorLevel::warn;
       is_set = true;
     }
 
     if (!strcmp(err_str,"stop")) {
-      err_level = STOP;
+      err_level = ErrorLevel::stop;
       is_set = true;
     }
 
@@ -557,8 +558,9 @@ Copyright @copyright{} 2008-2019 Fredrik Lingvall.\n\
       return oct_retval;
     }
   }
-  else
-    err_level = STOP; // Default.
+  else {
+    err_level = ErrorLevel::stop; // Default.
+  }
 
   // Create an output matrix for the impulse response
   Matrix h_mat(nt, no);
@@ -607,11 +609,11 @@ Copyright @copyright{} 2008-2019 Fredrik Lingvall.\n\
                   foc_met, focal,
                   steer_met, theta, phi,
                   apod, do_apod, apod_met, param,
-                  &h[n*nt],err_level);
+                  &h[n*nt], err_level);
 
-    if (err != NONE) {
+    if (err != ErrorLevel::none) {
       out_err = err;
-      if (err == STOP) {
+      if (err == ErrorLevel::stop) {
         error("");
         return oct_retval;
       }

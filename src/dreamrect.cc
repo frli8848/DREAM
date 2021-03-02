@@ -22,9 +22,9 @@
 ***/
 
 #include <math.h>
+
 #include "dreamrect.h"
 #include "attenuation.h"
-#include "dream_error.h"
 
 /***
  *
@@ -32,21 +32,21 @@
  *
  ***/
 
-int dreamrect(double xo, double yo, double zo,
-              double a, double b,
-              double dx, double dy, double dt,
-              dream_idx_type nt,
-              double delay,
-              double v, double cp,
-              double *h,
-              int err_level)
+ErrorLevel dreamrect(double xo, double yo, double zo,
+                     double a, double b,
+                     double dx, double dy, double dt,
+                     dream_idx_type nt,
+                     double delay,
+                     double v, double cp,
+                     double *h,
+                     ErrorLevel err_level)
 {
   dream_idx_type i, it;
   double t;
   double ai;
   double r;
   double xsmin, xsmax, ysmin, ysmax;
-  int err = NONE;
+  ErrorLevel err = ErrorLevel::none;
   double rx, ry, rz;
 
   xsmin = -a/2.0;
@@ -94,7 +94,7 @@ int dreamrect(double xo, double yo, double zo,
         else
           err = dream_out_of_bounds_err("SIR out of bounds",it,err_level);
 
-        if ( (err_level == PARALLEL_STOP) || (err_level == STOP) )
+        if ( (err_level == ErrorLevel::parallel_stop) || (err_level == ErrorLevel::stop) )
           return err; // Bail out.
       }
       xs += dx;
@@ -105,22 +105,22 @@ int dreamrect(double xo, double yo, double zo,
   return err;
 }
 
-int dreamrect(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
-              double xo, double yo, double zo,
-              double a, double b,
-              double dx, double dy, double dt,
-              dream_idx_type nt,
-              double delay,
-              double v, double cp,
-              double *h,
-              int err_level)
+ErrorLevel dreamrect(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
+                     double xo, double yo, double zo,
+                     double a, double b,
+                     double dx, double dy, double dt,
+                     dream_idx_type nt,
+                     double delay,
+                     double v, double cp,
+                     double *h,
+                     ErrorLevel err_level)
 {
   dream_idx_type i, it;
   double t;
   double ai;
   double r;
   double xsmin, xsmax, ysmin, ysmax;
-  int err = NONE;
+  ErrorLevel err = ErrorLevel::none;
   double rx,ry,rz;
 
   xsmin = -a/2.0;
@@ -164,7 +164,7 @@ int dreamrect(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
         else
           err = dream_out_of_bounds_err("SIR out of bounds",it,err_level);
 
-        if ( (err_level == PARALLEL_STOP) || (err_level == STOP) )
+        if ( (err_level == ErrorLevel::parallel_stop) || (err_level == ErrorLevel::stop) )
           return err; // Bail out.
       }
       xs += dx;

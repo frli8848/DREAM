@@ -25,24 +25,25 @@
 
 #include "dream.h"
 #include "attenuation.h"
+#include "dream_error.h"
 
-int dream_arr_rect(double xo, double yo, double zo,
-                   double a, double b,
-                   double dx, double dy, double dt,
-                   dream_idx_type nt, double delay, double v, double cp,
-                   dream_idx_type num_elements, double *gx, double *gy, double *gz,
-                   FocusMet foc_met, double *focal,
-                   SteerMet steer_met, double theta, double phi,
-                   double *apod, bool do_apod, ApodMet apod_met, double param,
-                   double *h, int err_level);
+ErrorLevel dream_arr_rect(double xo, double yo, double zo,
+                          double a, double b,
+                          double dx, double dy, double dt,
+                          dream_idx_type nt, double delay, double v, double cp,
+                          dream_idx_type num_elements, double *gx, double *gy, double *gz,
+                          FocusMet foc_met, double *focal,
+                          SteerMet steer_met, double theta, double phi,
+                          double *apod, bool do_apod, ApodMet apod_met, double param,
+                          double *h, ErrorLevel err_level);
 
-int dream_arr_rect(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
-                   double xo, double yo, double zo,
-                   double a, double b,
-                   double dx, double dy, double dt,
-                   dream_idx_type nt, double delay, double v, double cp,
-                   dream_idx_type num_elements, double *gx, double *gy, double *gz,
-                   FocusMet foc_met, double *focal,
-                   SteerMet steer_met, double theta, double phi,
-                   double *apod, bool do_apod, ApodMet apod_met, double param,
-                   double *h, int err_level);
+ErrorLevel dream_arr_rect(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
+                          double xo, double yo, double zo,
+                          double a, double b,
+                          double dx, double dy, double dt,
+                          dream_idx_type nt, double delay, double v, double cp,
+                          dream_idx_type num_elements, double *gx, double *gy, double *gz,
+                          FocusMet foc_met, double *focal,
+                          SteerMet steer_met, double theta, double phi,
+                          double *apod, bool do_apod, ApodMet apod_met, double param,
+                          double *h, ErrorLevel err_level);

@@ -25,6 +25,7 @@
 
 #include "dream.h"
 #include "attenuation.h"
+#include "dream_error.h"
 
 /***
  *
@@ -32,24 +33,24 @@
  *
  ***/
 
-int dreamrect(double xo, double yo, double zo,
-              double a, double b,
-              double dx, double dy, double dt,
-              dream_idx_type nt,
-              double delay,
-              double v, double cp,
-              double *h,
-              int err_level);
+ErrorLevel dreamrect(double xo, double yo, double zo,
+                     double a, double b,
+                     double dx, double dy, double dt,
+                     dream_idx_type nt,
+                     double delay,
+                     double v, double cp,
+                     double *h,
+                     ErrorLevel err_level);
 
-int dreamrect(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
-              double xo, double yo, double zo,
-              double a, double b,
-              double dx, double dy, double dt,
-              dream_idx_type nt,
-              double delay,
-              double v, double cp,
-              double *h,
-              int err_level);
+ErrorLevel dreamrect(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
+                     double xo, double yo, double zo,
+                     double a, double b,
+                     double dx, double dy, double dt,
+                     dream_idx_type nt,
+                     double delay,
+                     double v, double cp,
+                     double *h,
+                     ErrorLevel err_level);
 
 #ifdef USE_OPENCL
 int cl_dreamrect(const double *Ro,

@@ -23,22 +23,23 @@
 
 #include "dream.h"
 #include "attenuation.h"
+#include "dream_error.h"
 
-int dreamcirc_f(double xo, double yo, double zo,
-                double R, FocusMet foc_met, double focal,
-                double dx, double dy, double dt,
-                dream_idx_type nt,
-                double delay,
-                double v, double cp,
-                double *h,
-                int err_level);
+ErrorLevel dreamcirc_f(double xo, double yo, double zo,
+                       double R, FocusMet foc_met, double focal,
+                       double dx, double dy, double dt,
+                       dream_idx_type nt,
+                       double delay,
+                       double v, double cp,
+                       double *h,
+                       ErrorLevel err_level);
 
-int dreamcirc_f(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
-                double xo, double yo, double zo,
-                double R, FocusMet foc_met, double focal,
-                double dx, double dy, double dt,
-                dream_idx_type nt,
-                double delay,
-                double v, double cp,
-                double *h,
-                int err_level);
+ErrorLevel dreamcirc_f(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
+                       double xo, double yo, double zo,
+                       double R, FocusMet foc_met, double focal,
+                       double dx, double dy, double dt,
+                       dream_idx_type nt,
+                       double delay,
+                       double v, double cp,
+                       double *h,
+                       ErrorLevel err_level);

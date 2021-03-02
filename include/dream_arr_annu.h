@@ -23,24 +23,26 @@
 ***/
 
 
+
 #include "dream.h"
 #include "attenuation.h"
+#include "dream_error.h"
 
-int dream_arr_annu(double xo, double yo, double zo,
-                   double dx, double dy, double dt, dream_idx_type nt,
-                   double delay,
-                   double v, double cp,
-                   dream_idx_type num_radii, double *gr,
-                   FocusMet foc_met, double *focal,
-                   double *apod, bool do_apod, ApodMet apod_met, double param,
-                   double *h, int err_level);
+ErrorLevel dream_arr_annu(double xo, double yo, double zo,
+                          double dx, double dy, double dt, dream_idx_type nt,
+                          double delay,
+                          double v, double cp,
+                          dream_idx_type num_radii, double *gr,
+                          FocusMet foc_met, double *focal,
+                          double *apod, bool do_apod, ApodMet apod_met, double param,
+                          double *h, ErrorLevel err_level);
 
-int dream_arr_annu(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
-                   double xo, double yo, double zo,
-                   double dx, double dy, double dt, dream_idx_type nt,
-                   double delay,
-                   double v, double cp,
-                   dream_idx_type num_radii, double *gr,
-                   FocusMet foc_met, double *focal,
-                   double *apod, bool do_apod, ApodMet apod_met, double param,
-                   double *h, int err_level);
+ErrorLevel dream_arr_annu(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
+                          double xo, double yo, double zo,
+                          double dx, double dy, double dt, dream_idx_type nt,
+                          double delay,
+                          double v, double cp,
+                          dream_idx_type num_radii, double *gr,
+                          FocusMet foc_met, double *focal,
+                          double *apod, bool do_apod, ApodMet apod_met, double param,
+                          double *h, ErrorLevel err_level);

@@ -28,7 +28,6 @@
 
 #include "dream_arr_cylind.h"
 #include "dreamcylind.h"
-#include "dream_error.h"
 #include "attenuation.h"
 #include "arr_functions.h"
 
@@ -38,20 +37,20 @@
  *
  ***/
 
-int dream_arr_cylind(double xo, double yo, double zo,
-                     double a, double b, double Rcurv,
-                     double dx, double dy, double dt, dream_idx_type nt,
-                     double delay, double v, double cp,
-                     dream_idx_type num_elements, double *gx, double *gy, double *gz,
-                     FocusMet foc_met, double *focal,
-                     SteerMet steer_met, double theta, double phi,
-                     double *apod, bool do_apod, ApodMet apod_met, double param,
-                     double *ha, int err_level)
+ErrorLevel dream_arr_cylind(double xo, double yo, double zo,
+                            double a, double b, double Rcurv,
+                            double dx, double dy, double dt, dream_idx_type nt,
+                            double delay, double v, double cp,
+                            dream_idx_type num_elements, double *gx, double *gy, double *gz,
+                            FocusMet foc_met, double *focal,
+                            SteerMet steer_met, double theta, double phi,
+                            double *apod, bool do_apod, ApodMet apod_met, double param,
+                            double *ha, ErrorLevel err_level)
 {
   dream_idx_type i;
   double ramax, xamax, yamax;
   //double xs, ys, zs;
-  int err = NONE, out_err = NONE;
+  ErrorLevel err = ErrorLevel::none, out_err = ErrorLevel::none;
 
   for (i=0; i<nt; i++) {
     ha[i] = 0.0;
@@ -90,7 +89,7 @@ int dream_arr_cylind(double xo, double yo, double zo,
                       ha, err_level,
                       weight);
 
-    if (err != NONE) {
+    if (err != ErrorLevel::none) {
       out_err = err;
     }
   }
@@ -98,21 +97,21 @@ int dream_arr_cylind(double xo, double yo, double zo,
   return out_err;
 }
 
-int dream_arr_cylind(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
-                     double xo, double yo, double zo,
-                     double a, double b, double Rcurv,
-                     double dx, double dy, double dt, dream_idx_type nt,
-                     double delay, double v, double cp,
-                     dream_idx_type num_elements, double *gx, double *gy, double *gz,
-                     FocusMet foc_met, double *focal,
-                     SteerMet steer_met, double theta, double phi,
-                     double *apod, bool do_apod, ApodMet apod_met, double param,
-                     double *ha, int err_level)
+ErrorLevel dream_arr_cylind(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
+                            double xo, double yo, double zo,
+                            double a, double b, double Rcurv,
+                            double dx, double dy, double dt, dream_idx_type nt,
+                            double delay, double v, double cp,
+                            dream_idx_type num_elements, double *gx, double *gy, double *gz,
+                            FocusMet foc_met, double *focal,
+                            SteerMet steer_met, double theta, double phi,
+                            double *apod, bool do_apod, ApodMet apod_met, double param,
+                            double *ha, ErrorLevel err_level)
 {
   dream_idx_type i;
   double ramax, xamax, yamax;
   double xs, ys, zs;
-  int err = NONE, out_err = NONE;
+  ErrorLevel err = ErrorLevel::none, out_err = ErrorLevel::none;
 
   for (i=0; i<nt; i++) {
     ha[i] = 0.0;
@@ -152,7 +151,7 @@ int dream_arr_cylind(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
                       ha, err_level,
                       weight);
 
-    if (err != NONE) {
+    if (err != ErrorLevel::none) {
       out_err = err;
     }
   }

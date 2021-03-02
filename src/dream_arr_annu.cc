@@ -26,7 +26,6 @@
 
 #include "dream_arr_annu.h"
 #include "dreamcirc.h"
-#include "dream_error.h"
 
 //
 // Function prototypes
@@ -48,17 +47,17 @@ void superpos_annular(double *h_ring, double *h, dream_idx_type nt,
 *
 ***/
 
-int dream_arr_annu(double xo, double yo, double zo,
-                   double dx, double dy, double dt,
-                   dream_idx_type nt,
-                   double delay,
-                   double v, double cp,
-                   dream_idx_type num_radii, double *gr,
-                   FocusMet foc_met, double *focal,
-                   double *apod, bool do_apod, ApodMet apod_met, double param,
-                   double *h, int err_level)
+ErrorLevel dream_arr_annu(double xo, double yo, double zo,
+                          double dx, double dy, double dt,
+                          dream_idx_type nt,
+                          double delay,
+                          double v, double cp,
+                          dream_idx_type num_radii, double *gr,
+                          FocusMet foc_met, double *focal,
+                          double *apod, bool do_apod, ApodMet apod_met, double param,
+                          double *h, ErrorLevel err_level)
 {
-  int err = NONE, out_err = NONE;
+  ErrorLevel err = ErrorLevel::none, out_err = ErrorLevel::none;
 
   // NB. The first ring have no inner radius (it is a normal
   // circular disc).
@@ -95,7 +94,7 @@ int dream_arr_annu(double xo, double yo, double zo,
                       dx, dy, dt, nt,
                       delay,
                       v, cp, &h_disc[n*nt], err_level);
-      if (err != NONE) {
+      if (err != ErrorLevel::none) {
         out_err = err;
       }
     }
@@ -128,18 +127,18 @@ int dream_arr_annu(double xo, double yo, double zo,
   return out_err;
 }
 
-int dream_arr_annu(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
-                   double xo, double yo, double zo,
-                   double dx, double dy, double dt,
-                   dream_idx_type nt,
-                   double delay,
-                   double v, double cp,
-                   dream_idx_type num_radii, double *gr,
-                   FocusMet foc_met, double *focal,
-                   double *apod, bool do_apod, ApodMet apod_met, double param,
-                   double *h, int err_level)
+ErrorLevel dream_arr_annu(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
+                          double xo, double yo, double zo,
+                          double dx, double dy, double dt,
+                          dream_idx_type nt,
+                          double delay,
+                          double v, double cp,
+                          dream_idx_type num_radii, double *gr,
+                          FocusMet foc_met, double *focal,
+                          double *apod, bool do_apod, ApodMet apod_met, double param,
+                          double *h, ErrorLevel err_level)
 {
-  int err = NONE, out_err = NONE;
+  ErrorLevel err = ErrorLevel::none, out_err = ErrorLevel::none;
 
   // NB. The first ring have no inner radius (it is a normal
   // circular disc).
@@ -177,7 +176,7 @@ int dream_arr_annu(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
                       dx, dy, dt, nt,
                       delay,
                       v, cp, &h_disc[n*nt], err_level);
-      if (err != NONE) {
+      if (err != ErrorLevel::none) {
         out_err = err;
       }
     }

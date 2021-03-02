@@ -26,7 +26,6 @@
 #include <stdio.h>
 
 #include "dreamcylind.h"
-#include "dream_error.h"
 
 //
 //  Function prototypes.
@@ -49,18 +48,18 @@ double cylind_d(double xs, double ys,
  *
  ***/
 
-int dreamcylind(double xo, double yo, double zo,
-                double a, double b, double Rcurv,
-                double dx, double dy, double dt,
-                dream_idx_type nt, double delay, double v, double cp,
-                double *h,
-                int err_level,
-                double weight)
+ErrorLevel dreamcylind(double xo, double yo, double zo,
+                       double a, double b, double Rcurv,
+                       double dx, double dy, double dt,
+                       dream_idx_type nt, double delay, double v, double cp,
+                       double *h,
+                       ErrorLevel err_level,
+                       double weight)
 {
   dream_idx_type i, it;
   double t, xsmin, xsmax, ai, du, r;
   double phi, phi_min, phi_max;
-  int err = NONE;
+  ErrorLevel err = ErrorLevel::none;
 
   if (b > 2*fabs(Rcurv)) {
     dream_err_msg("Error in dreamcylind: the y-size, b, must be less than the curvature diameter 2*Rcurv!\n");
@@ -118,7 +117,7 @@ int dreamcylind(double xo, double yo, double zo,
         else
           err = dream_out_of_bounds_err("SIR out of bounds",it,err_level);
 
-        if ( (err_level == PARALLEL_STOP) || (err_level == STOP) ) {
+        if ( (err_level == ErrorLevel::parallel_stop) || (err_level == ErrorLevel::stop) ) {
           return err; // Bail out.
         }
       }
@@ -133,19 +132,19 @@ int dreamcylind(double xo, double yo, double zo,
   return err;
 }
 
-int dreamcylind(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
-                double xo, double yo, double zo,
-                double a, double b, double Rcurv,
-                double dx, double dy, double dt,
-                dream_idx_type nt, double delay, double v, double cp,
-                double *h,
-                int err_level,
-                double weight)
+ErrorLevel dreamcylind(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
+                       double xo, double yo, double zo,
+                       double a, double b, double Rcurv,
+                       double dx, double dy, double dt,
+                       dream_idx_type nt, double delay, double v, double cp,
+                       double *h,
+                       ErrorLevel err_level,
+                       double weight)
 {
   dream_idx_type i, it;
   double t, xsmin, xsmax, ai, du, r;
   double phi, phi_min, phi_max;
-  int err = NONE;
+  ErrorLevel err = ErrorLevel::none;
 
   if (b > 2*fabs(Rcurv)) {
     dream_err_msg("Error in dreamcylind: the y-size, b, must be less than the curvature diameter 2*Rcurv!\n");
@@ -202,7 +201,7 @@ int dreamcylind(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
         else
           err = dream_out_of_bounds_err("SIR out of bounds",it,err_level);
 
-        if ( (err_level == PARALLEL_STOP) || (err_level == STOP) ) {
+        if ( (err_level == ErrorLevel::parallel_stop) || (err_level == ErrorLevel::stop) ) {
           return err; // Bail out.
         }
       }

@@ -42,7 +42,7 @@
 // Globals
 //
 
-volatile int out_err = NONE;
+volatile ErrorLevel out_err=ErrorLevel::none;
 std::mutex err_lock;
 int running;
 
@@ -67,7 +67,7 @@ typedef struct
   double cp;
   Attenuation *att;
   double *h;
-  int err_level;
+  ErrorLevel err_level;
 } DATA;
 
 typedef void (*sighandler_t)(int);
@@ -89,13 +89,13 @@ void sig_keyint_handler(int signum);
 
 void* smp_dream_circ(void *arg)
 {
-  int tmp_err = NONE, err = NONE;
+  ErrorLevel tmp_err=ErrorLevel::none, err=ErrorLevel::none;
   DATA D = *(DATA *)arg;
   double xo, yo, zo;
   double *h = D.h;
   double R=D.R, dx=D.dx, dy=D.dy, dt=D.dt;
   octave_idx_type n, no=D.no, nt=D.nt;
-  int    tmp_lev, err_level=D.err_level;
+  ErrorLevel tmp_lev=ErrorLevel::none, err_level=D.err_level;
   double *delay=D.delay, *ro=D.ro, v=D.v, cp=D.cp;
   Attenuation *att = D.att;
   octave_idx_type start=D.start, stop=D.stop;
@@ -109,8 +109,8 @@ void* smp_dream_circ(void *arg)
   }
 
   // Let the thread finish and then catch the error.
-  if (err_level == STOP)
-    tmp_lev = PARALLEL_STOP;
+  if (err_level == ErrorLevel::stop)
+    tmp_lev = ErrorLevel::parallel_stop;
   else
     tmp_lev = err_level;
 
@@ -141,10 +141,10 @@ void* smp_dream_circ(void *arg)
                       &h[n*nt], tmp_lev);
     }
 
-    if (err != NONE || out_err ==  PARALLEL_STOP) {
+    if (err != ErrorLevel::none || out_err ==  ErrorLevel::parallel_stop) {
       tmp_err = err;
-      if (err == PARALLEL_STOP || out_err ==  PARALLEL_STOP)
-        break; // Jump out when a STOP error occurs.
+      if (err == ErrorLevel::parallel_stop || out_err ==  ErrorLevel::parallel_stop)
+        break; // Jump out when a ErrorLevel::stop error occurs.
     }
 
     if (!running) {
@@ -157,7 +157,7 @@ void* smp_dream_circ(void *arg)
   // Lock out_err for update, update it, and unlock.
   err_lock.lock();
 
-  if ((tmp_err != NONE) && (out_err == NONE))
+  if ((tmp_err != ErrorLevel::none) && (out_err == ErrorLevel::none))
     out_err = tmp_err;
 
   err_lock.unlock();
@@ -269,7 +269,8 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   double R,dx,dy,dt;
   octave_idx_type nt, no;
   double *delay,v,cp,alpha, *h, *err_p;
-  int    err_level=STOP, is_set = false;
+  ErrorLevel err_level=ErrorLevel::stop;
+  bool is_set = false;
   char   err_str[50];
   int    buflen;
   DATA   *D;
@@ -403,17 +404,17 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
 
 
     if (!strcmp(err_str,"ignore")) {
-      err_level = IGNORE;
+      err_level = ErrorLevel::ignore;
       is_set = true;
     }
 
     if (!strcmp(err_str,"warn")) {
-      err_level = WARN;
+      err_level = ErrorLevel::warn;
       is_set = true;
     }
 
     if (!strcmp(err_str,"stop")) {
-      err_level = STOP;
+      err_level = ErrorLevel::stop;
       is_set = true;
     }
 
@@ -424,7 +425,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
 
   }
   else
-    err_level = STOP; // Default.
+    err_level = ErrorLevel::stop; // Default.
 
   //
   // Compute device
@@ -465,7 +466,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   // Call the DREAM subroutine.
   //
 
-  out_err = NONE;
+  out_err = ErrorLevel::none;
   running = true;
 
     // Check if we should use the GPU
@@ -560,7 +561,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   // Check for Error.
   //
 
-  if ( (err_level == STOP) && (out_err != NONE))
+  if ( (err_level == ErrorLevel::stop) && (out_err != ErrorLevel::none))
     dream_err_msg(""); // Bail out if error.
 
   oct_retval.append(h_mat);

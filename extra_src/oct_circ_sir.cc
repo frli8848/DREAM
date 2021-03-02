@@ -41,7 +41,7 @@
 // Globals
 //
 
-//volatile int out_err = NONE;
+//volatile ErrorLevel out_err=ErrorLevel::none;
 //std::mutex err_lock;
 int running;
 
@@ -64,7 +64,7 @@ typedef struct
   double cp;
   //double alpha;
   double *h;
-  //int err_level;
+  //ErrorLevel err_level;
 } DATA;
 
 typedef void (*sighandler_t)(int);
@@ -77,7 +77,7 @@ typedef void (*sighandler_t)(int);
 
 void* smp_dream_circ_sir(void *arg)
 {
-  //int tmp_err = NONE, err = NONE;
+  //ErrorLevel tmp_err=ErrorLevel::none, err=ErrorLevel::none;
   DATA D = *(DATA *)arg;
   double xo, yo, zo;
   double *h = D.h;
@@ -89,8 +89,8 @@ void* smp_dream_circ_sir(void *arg)
 
   // Let the thread finish and then catch the error.
   /*
-  if (err_level == STOP)
-    tmp_lev = PARALLEL_STOP;
+  if (err_level == ErrorLevel::stop)
+    tmp_lev = ErrorLevel::parallel_stop;
   else
     tmp_lev = err_level;
   */
@@ -129,7 +129,7 @@ void* smp_dream_circ_sir(void *arg)
   /*
   err_lock.lock();
 
-  if ((tmp_err != NONE) && (out_err == NONE))
+  if ((tmp_err != ErrorLevel::none) && (out_err == ErrorLevel::none))
     out_err = tmp_err;
 
   err_lock.unlock();
@@ -361,7 +361,7 @@ Copyright @copyright{} 2008-2019 Fredrik Lingvall.\n\
   // Call the analytic SIR subroutine.
   //
 
-  //out_err = NONE;
+  //out_err = ErrorLevel::none;
   running = true;
 
   // Allocate local data.

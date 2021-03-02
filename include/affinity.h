@@ -24,5 +24,6 @@
 #pragma once
 
 #include "dream.h"
+#include "dream_error.h"
 
-int set_dream_thread_affinity(dream_idx_type thread_n, dream_idx_type nthreads, std::thread *threads);
+ErrorLevel set_dream_thread_affinity(dream_idx_type thread_n, dream_idx_type nthreads, std::thread *threads);

@@ -37,12 +37,12 @@
  *
  ***/
 
-int dream_out_of_bounds_err(const char *msg, int idx, int err_level)
+ErrorLevel dream_out_of_bounds_err(const char *msg, int idx, ErrorLevel err_level)
 {
 
   switch(err_level) {
 
-  case STOP:
+  case ErrorLevel::stop:
 
 #ifdef OCTAVE
     printf("%s (offset = %d samples)\n",msg,idx);
@@ -52,7 +52,7 @@ int dream_out_of_bounds_err(const char *msg, int idx, int err_level)
 #endif
     break;
 
-  case WARN:
+  case ErrorLevel::warn:
 #ifdef OCTAVE
     printf("%s (offset = %d samples)\n",msg,idx);
 #else
@@ -60,10 +60,10 @@ int dream_out_of_bounds_err(const char *msg, int idx, int err_level)
 #endif
     break;
 
-  case IGNORE:
+  case ErrorLevel::ignore:
     break; // Do nothing.
 
-  case PARALLEL_STOP:
+  case ErrorLevel::parallel_stop:
 #ifdef OCTAVE
     printf("%s (offset = %d samples)\n",msg,idx);
 #else

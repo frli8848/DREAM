@@ -21,17 +21,14 @@
 *
 ***/
 
-#include <string.h>
-#include <stdlib.h>
 #include <signal.h>
 
-#include <iostream>
 #include <thread>
 #include <mutex>
 
 #include "affinity.h"
 #include "dreamrect_f.h"
-#include "dream_error.h"
+#include "arg_parser.h"
 
 #include "mex.h"
 
@@ -200,41 +197,30 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
   double *ro, *geom_par, *s_par, *m_par;
   dream_idx_type nt, no;
-  dream_idx_type buflen;
   double a, b, dx, dy, dt;
   double *delay=nullptr, v, cp, alpha;
   FocusMet foc_met=FocusMet::none;
-  char   foc_str[50];
   double focal=0.0;
   double *h, *err_p;
   ErrorLevel err_level=ErrorLevel::stop;
-  bool is_set=false;
-  char   err_str[50];
   DATA   *D;
   dream_idx_type start, stop;
   std::thread *threads;
   unsigned int thread_n, nthreads;
   sighandler_t old_handler, old_handler_abrt, old_handler_keyint;
 
+  ArgParser ap;
+
   // Check for proper number of arguments
 
-  if (!((nrhs == 7) || (nrhs == 8))) {
-    dream_err_msg("dreamrect_f requires 7 or 8 input arguments!");
-  } else {
-    if (nlhs > 2) {
-      dream_err_msg("Too many output arguments for dreamrect_f!");
-    }
-  }
+  ap.check_arg_in("dreamrect_f", nrhs, 7, 8);
+  ap.check_arg_out("dreamrect_f", nlhs, 0, 2);
 
   //
   // Observation point.
   //
 
-  // Check that arg (number of observation points) x 3 matrix
-  if (mxGetN(prhs[0]) != 3) {
-    dream_err_msg("Argument 1 must be a (number of observation points) x 3 matrix!");
-  }
-
+  ap.check_obs_points("dreamrect_f", prhs, 0);
   no = mxGetM(prhs[0]); // Number of observation points.
   ro = mxGetPr(prhs[0]);
 
@@ -242,11 +228,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Transducer geometry
   //
 
-  // Check that arg 2 is a 2 element vector
-  if (!((mxGetM(prhs[1])==2 && mxGetN(prhs[1])==1) || (mxGetM(prhs[1])==1 && mxGetN(prhs[1])==2))) {
-    dream_err_msg("Argument 2 must be a 2 element vector!");
-  }
-
+  ap.check_geometry("dreamrect_f", prhs, 1, 2);
   geom_par = mxGetPr(prhs[1]);
   a = geom_par[0];		// x-size.
   b = geom_par[1];		// y-size.
@@ -255,11 +237,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Temporal and spatial sampling parameters.
   //
 
-  // Check that arg 3 is a 4 element vector
-  if (!((mxGetM(prhs[2])==4 && mxGetN(prhs[2])==1) || (mxGetM(prhs[2])==1 && mxGetN(prhs[2])==4))) {
-    dream_err_msg("Argument 3 must be a vector of length 4!");
-  }
-
+  ap.check_sampling("dreamrect_f", prhs, 2, 4);
   s_par = mxGetPr(prhs[2]);
   dx = s_par[0];  // Spatial x discretization size.
   dy = s_par[1];  // Spatial dy iscretization size.
@@ -270,22 +248,14 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Start point of impulse response vector ([us]).
   //
 
-  // Check that arg 4 is a scalar or vector.
-  if ( (mxGetM(prhs[3]) * mxGetN(prhs[3]) !=1) && ((mxGetM(prhs[3]) * mxGetN(prhs[3])) != no)) {
-    dream_err_msg("Argument 4 must be a scalar or a vector with a length equal to the number of observation points!");
-  }
-
+  ap.check_delay("dreamrect_f", prhs, 3, no);
   delay = mxGetPr(prhs[3]);
 
   //
   // Material parameters
   //
 
-  // Check that arg 5 is a 3 element vector.
-  if (!((mxGetM(prhs[4])==3 && mxGetN(prhs[4])==1) || (mxGetM(prhs[4])==1 && mxGetN(prhs[4])==3))) {
-    dream_err_msg("Argument 5 must be a vector of length 3!");
-  }
-
+  ap.check_material("dreamrect_f", prhs, 4, 3);
   m_par = mxGetPr(prhs[4]);
   v     = m_par[0]; // Normal velocity of transducer surface.
   cp    = m_par[1]; // Sound speed.
@@ -296,53 +266,8 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   //
 
   if (nrhs >= 6) {
-
-    if (!mxIsChar(prhs[5])) {
-      dream_err_msg("Argument 6 must be a string");
-    }
-
-    buflen = (mxGetM(prhs[5]) * mxGetN(prhs[5]) * sizeof(mxChar)) + 1;
-    mxGetString(prhs[5],foc_str,buflen);
-
-    is_set = false;
-
-    if (!strcmp(foc_str,"off")) {
-      foc_met = FocusMet::none;
-      is_set = true;
-    }
-
-    if (!strcmp(foc_str,"x")) {
-      foc_met = FocusMet::x;
-      is_set = true;
-    }
-
-    if (!strcmp(foc_str,"y")) {
-      foc_met = FocusMet::y;
-      is_set = true;
-    }
-
-    if (!strcmp(foc_str,"xy")) {
-      foc_met = FocusMet::xy;
-      is_set = true;
-    }
-
-    if (!strcmp(foc_str,"x+y")) {
-      foc_met = FocusMet::x_y;
-      is_set = true;
-    }
-
-    if (is_set == false) {
-      dream_err_msg("Unknown focusing method!");
-    }
-
-    // Check that arg 7 is a scalar.
-    if (mxGetM(prhs[6]) * mxGetN(prhs[6]) != 1 ) {
-      dream_err_msg("Argument 7 must be a scalar!");
-    }
-
-    // Focal point (in mm).
+    ap.parse_focus_arg("dreamrect_f", prhs, 5, foc_met);
     focal = mxGetScalar(prhs[6]);
-
   } else {
     foc_met = FocusMet::none;
   }
@@ -372,34 +297,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   //
 
   if (nrhs == 8) {
-
-    if (!mxIsChar(prhs[7])) {
-      dream_err_msg("Argument 8 must be a string");
-    }
-
-    buflen = (mxGetM(prhs[7]) * mxGetN(prhs[7]) * sizeof(mxChar)) + 1;
-    mxGetString(prhs[7],err_str,buflen);
-
-    is_set = false;
-
-    if (!strcmp(err_str,"ignore")) {
-      err_level = ErrorLevel::ignore;
-      is_set = true;
-    }
-
-    if (!strcmp(err_str,"warn")) {
-      err_level = ErrorLevel::warn;
-      is_set = true;
-    }
-
-    if (!strcmp(err_str,"stop")) {
-      err_level = ErrorLevel::stop;
-      is_set = true;
-    }
-
-    if (is_set == false) {
-      dream_err_msg("Unknown error level!");
-    }
+    ap.parse_error_arg("dreamrect_f", prhs, 7, err_level);
   } else {
     err_level = ErrorLevel::stop; // Default.
   }

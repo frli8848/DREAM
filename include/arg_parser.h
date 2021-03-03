@@ -203,6 +203,60 @@ class ArgParser
     return retval;
   };
 
+  bool parse_focus_arg(const char *func_name, args_t args, dream_idx_type arg_num, FocusMet &foc_met) {
+    bool retval=true;
+    std::ostringstream s;
+    if (!IS_STRING(arg_num)) {
+      s << func_name <<  " requires that arg " << arg_num+1 << " (focus method) must be a string!";
+      dream_err_msg(s.str().c_str());
+      retval=false;
+    } else {
+      std::string foc_str = get_string_arg(args, arg_num);
+      bool is_set = false;
+
+      if (foc_str == "off") {
+        foc_met = FocusMet::none;
+        is_set = true;
+      }
+
+      if (foc_str == "x") {
+        foc_met = FocusMet::x;
+        is_set = true;
+      }
+
+      if (foc_str == "y") {
+        foc_met = FocusMet::y;
+        is_set = true;
+      }
+
+      if (foc_str == "xy") {
+        foc_met = FocusMet::xy;
+        is_set = true;
+      }
+
+      if (foc_str == "x+y") {
+        foc_met = FocusMet::x_y;
+        is_set = true;
+      }
+
+      if (is_set == false) {
+        retval=false;
+        s << func_name <<  " Unknown focusing method in arg " << arg_num+1 << "!";
+        dream_err_msg(s.str().c_str());
+      }
+
+      // Check that focus arg is a scalar.
+      if (GET_M(arg_num+1)*GET_N(arg_num+1) !=1 ) {
+        retval=false;
+        s << func_name <<  " arg " << arg_num+2 << " must be a scalar!";
+        dream_err_msg(s.str().c_str());
+      }
+    }
+
+    return retval;
+  };
+
+
 private:
 
 };

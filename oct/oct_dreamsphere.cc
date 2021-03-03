@@ -21,8 +21,6 @@
 *
 ***/
 
-#include <string.h>
-#include <stdlib.h>
 #include <signal.h>
 
 #include <thread>
@@ -30,7 +28,7 @@
 
 #include "dreamsphere.h"
 #include "affinity.h"
-#include "dream_error.h"
+#include "arg_parser.h"
 
 //
 // Octave headers.
@@ -274,7 +272,6 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   octave_idx_type nt, no;
   double *delay, v, cp, alpha, *h, *err_p;
   ErrorLevel err_level=ErrorLevel::stop;
-  bool is_set = false;
   DATA *D;
   octave_idx_type start, stop;
   std::thread *threads;
@@ -284,25 +281,23 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
 
   int nrhs = args.length ();
 
+  ArgParser ap;
+
   // Check for proper number of arguments
 
-  if (!((nrhs == 5) || (nrhs == 6))) {
-    error("dreamsphere requires 5 or 6 input arguments!");
+  if (!ap.check_arg_in("dreamsphere", nrhs, 5, 6)) {
     return oct_retval;
   }
-  else
-    if (nlhs > 2) {
-      error("Too many output arguments for dreamsphere!");
-      return oct_retval;
-    }
+
+  if (!ap.check_arg_out("dreamsphere", nlhs, 0, 2)) {
+    return oct_retval;
+  }
 
   //
   // Observation point.
   //
 
-  // Check that arg (number of observation points) x 3 matrix
-  if (mxGetN(0) != 3) {
-    error("Argument 1 must be a (number of observation points) x 3 matrix!");
+  if (!ap.check_obs_points("dreamsphere", args, 0)) {
     return oct_retval;
   }
 
@@ -314,9 +309,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   // Transducer geometry
   //
 
-  // Check that arg 2 is a 2 element vector
-  if (!((mxGetM(1)==2 && mxGetN(1)==1) || (mxGetM(1)==1 && mxGetN(1)==2))) {
-    error("Argument 2 must be a vector of length 2!");
+  if (!ap.check_geometry("dreamsphere", args, 1, 2)) {
     return oct_retval;
   }
 
@@ -329,11 +322,10 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   // Temporal and spatial sampling parameters.
   //
 
-  // Check that arg 3 is a 4 element vector
-  if (!((mxGetM(2)==4 && mxGetN(2)==1) || (mxGetM(2)==1 && mxGetN(2)==4))) {
-    error("Argument 3 must be a vector of length 4!");
+  if (!ap.check_sampling("dreamsphere", args, 2, 4)) {
     return oct_retval;
   }
+
   const Matrix tmp2 = args(2).matrix_value();
   s_par = (double*) tmp2.fortran_vec();
   dx    = s_par[0];		// Spatial x-direction discretization size.
@@ -345,11 +337,10 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   // Start point of impulse response vector ([us]).
   //
 
-  // Check that arg 4 is a scalar or vector.
-  if ( (mxGetM(3) * mxGetN(3) !=1) && ((mxGetM(3) * mxGetN(3)) != no)) {
-    error("Argument 4 must be a scalar or a vector with a length equal to the number of observation points!");
+  if (!ap.check_delay("dreamsphere", args, 3, no)) {
     return oct_retval;
   }
+
   const Matrix tmp3 = args(3).matrix_value();
   delay = (double*) tmp3.fortran_vec();
 
@@ -357,11 +348,10 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   // Material parameters
   //
 
-  // Check that arg 5 is a 3 element vectora
-  if (!((mxGetM(4)==3 && mxGetN(4)==1) || (mxGetM(4)==1 && mxGetN(4)==3))) {
-    error("Argument 5 must be a vector of length 3!");
+  if (!ap.check_material("dreamsphere", args, 4, 3)) {
     return oct_retval;
   }
+
   const Matrix tmp4 = args(4).matrix_value();
   m_par = (double*) tmp4.fortran_vec();
   v     = m_par[0]; // Normal velocity of transducer surface.
@@ -393,32 +383,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   //
 
   if (nrhs == 6) {
-
-    if (!mxIsChar(5)) {
-      error("Argument 6 must be a string");
-      return oct_retval;
-    }
-    std::string err_str = args(5).string_value();
-
-    is_set = false;
-
-    if (err_str == "ignore") {
-      err_level = ErrorLevel::ignore;
-      is_set = true;
-    }
-
-    if (err_str == "warn") {
-      err_level = ErrorLevel::warn;
-      is_set = true;
-    }
-
-    if (err_str == "stop") {
-      err_level = ErrorLevel::stop;
-      is_set = true;
-    }
-
-    if (is_set == false) {
-      error("Unknown error level!");
+    if (!ap.parse_error_arg("dreamsphere", args, 5, err_level)) {
       return oct_retval;
     }
   } else {

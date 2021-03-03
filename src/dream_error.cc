@@ -21,14 +21,15 @@
 *
 ***/
 
-
 #include "dream_error.h"
 
-#ifdef OCTAVE
-#include <stdio.h>
-#else
+#ifdef DREAM_OCTAVE
+#include <iostream>
+#endif
+
+#ifdef DREAM_MATLAB
 #include <uchar.h>
-#include <mex.h>
+#include "mex.h"
 #endif
 
 /***
@@ -43,32 +44,43 @@ ErrorLevel dream_out_of_bounds_err(const char *msg, int idx, ErrorLevel err_leve
   switch(err_level) {
 
   case ErrorLevel::stop:
-
-#ifdef OCTAVE
-    printf("%s (offset = %d samples)\n",msg,idx);
-#else
-    mexPrintf("%s (offset = %d samples)\n",msg,idx);
-    mexErrMsgTxt(""); // Bail out!
+    {
+#ifdef DREAM_OCTAVE
+      std::cout << msg << " (offset = " << idx << " samples)" << std::endl;
 #endif
+
+#ifdef DREAM_MATLAB
+      mexPrintf("%s (offset = %d samples)\n",msg,idx);
+      mexErrMsgTxt(""); // Bail out!
+#endif
+    }
     break;
 
   case ErrorLevel::warn:
-#ifdef OCTAVE
-    printf("%s (offset = %d samples)\n",msg,idx);
-#else
-    mexPrintf("%s (offset = %d samples)\n",msg,idx);
+    {
+#ifdef DREAM_OCTAVE
+      std::cout << msg << " (offset = " << idx << " samples)" << std::endl;
 #endif
+
+#ifdef DREAM_MATLAB
+      mexPrintf("%s (offset = %d samples)\n",msg,idx);
+#endif
+    }
     break;
 
   case ErrorLevel::ignore:
     break; // Do nothing.
 
   case ErrorLevel::parallel_stop:
-#ifdef OCTAVE
-    printf("%s (offset = %d samples)\n",msg,idx);
-#else
-    mexPrintf("%s (offset = %d samples)\n",msg,idx);
+    {
+#ifdef DREAM_OCTAVE
+      std::cout << msg << " (offset = " << idx << " samples)" << std::endl;
 #endif
+
+#ifdef DREAM_MATLAB
+      mexPrintf("%s (offset = %d samples)\n",msg,idx);
+#endif
+    }
     break;
 
   default:
@@ -80,10 +92,11 @@ ErrorLevel dream_out_of_bounds_err(const char *msg, int idx, ErrorLevel err_leve
 
 void dream_err_msg(const char *msg)
 {
+#ifdef DREAM_OCTAVE
+  std::cout << msg << std::endl;
+#endif
 
-#ifdef OCTAVE
-  printf("%s\n",msg);
-#else
+#ifdef DREAM_MATLAB
   mexErrMsgTxt(msg);
 #endif
 

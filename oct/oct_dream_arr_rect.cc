@@ -497,8 +497,8 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
 
     const Matrix tmp9 = args(9).matrix_value();
     steer_par = (double*) tmp9.fortran_vec();
-    theta  = steer_par[0];		// Angle in x-direction.
-    phi    = steer_par[1];		// Angle in y-direction.
+    theta  = steer_par[0];      // Angle in x-direction.
+    phi    = steer_par[1];      // Angle in y-direction.
 
   } else {
     steer_met = SteerMet::none;

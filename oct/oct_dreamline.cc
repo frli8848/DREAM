@@ -21,17 +21,13 @@
 *
 ***/
 
-#include <string.h>
-#include <stdlib.h>
 #include <signal.h>
 
-// C++11 threads
 #include <thread>
 #include <mutex>
 
 #include "dreamline.h"
 #include "affinity.h"
-#include "dream_error.h"
 #include "arg_parser.h"
 
 //

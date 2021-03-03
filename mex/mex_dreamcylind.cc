@@ -21,9 +21,6 @@
 *
 ***/
 
-
-#include <string.h>
-#include <stdlib.h>
 #include <signal.h>
 
 #include <iostream>
@@ -32,7 +29,7 @@
 
 #include "affinity.h"
 #include "dreamcylind.h"
-#include "dream_error.h"
+#include "arg_parser.h"
 
 #include "mex.h"
 
@@ -195,51 +192,36 @@ extern void _main();
 void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
   double *ro, *geom_par, *s_par, *m_par;
-  double  a,b,Rcurv,dx,dy,dt;
-  size_t  nt, no;
+  double a, b, Rcurv, dx, dy, dt;
+  size_t nt, no;
   double *delay, v, cp, alpha, *h, *err_p;
   ErrorLevel err_level=ErrorLevel::stop;
-  bool is_set = false;
-  char   err_str[50];
-  size_t buflen;
-  DATA   *D;
+  DATA *D;
   size_t start, stop;
   std::thread *threads;
   unsigned int thread_n, nthreads;
   sighandler_t old_handler, old_handler_abrt, old_handler_keyint;
 
+  ArgParser ap;
+
   // Check for proper number of arguments
 
-  if (!((nrhs == 5) || (nrhs == 6))) {
-    dream_err_msg("dreamcylind requires 5 or 6 input arguments!");
-  }
-  else
-    if (nlhs > 2) {
-      dream_err_msg("Too many output arguments for dreamcylind!");
-    }
+  ap.check_arg_in("dreamcylind", nrhs, 5, 6);
+  ap.check_arg_out("dreamcylind", nlhs, 0, 2);
 
   //
   // Observation point.
   //
 
-  // Check that arg (number of observation points) x 3 matrix
-  if (mxGetN(prhs[0]) != 3)
-    dream_err_msg("Argument 1 must be a (number of observation points) x 3 matrix!");
-
+  ap.check_obs_points("dreamcylind", prhs, 0);
   no = mxGetM(prhs[0]); // Number of observation points.
   ro = mxGetPr(prhs[0]);
-
-  //if (no<2)
-  //  dream_err_msg("At least 2 observation points i needed for this function!\n Use the serial version for a single observation point.");
 
   //
   // Transducer geometry
   //
 
-  // Check that arg 2 is a 3 element vector
-  if (!((mxGetM(prhs[1])==3 && mxGetN(prhs[1])==1) || (mxGetM(prhs[1])==1 && mxGetN(prhs[1])==3)))
-    dream_err_msg("Argument 2 must be a vector of length 3!");
-
+  ap.check_geometry("dreamcylind", prhs, 1, 3);
   geom_par = mxGetPr(prhs[1]);
   a = geom_par[0];		// x-width of the transducer.
   b = geom_par[1];		// y-width of the transducer.
@@ -249,10 +231,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Temporal and spatial sampling parameters.
   //
 
-  // Check that arg 3 is a 4 element vector
-  if (!((mxGetM(prhs[2])==4 && mxGetN(prhs[2])==1) || (mxGetM(prhs[2])==1 && mxGetN(prhs[2])==4)))
-    dream_err_msg("Argument 3 must be a vector of length 4!");
-
+  ap.check_sampling("dreamcylind", prhs, 2, 4);
   s_par = mxGetPr(prhs[2]);
   dx    = s_par[0];		// Spatial x discretization size.
   dy    = s_par[1];		// Spatial dy iscretization size.
@@ -263,21 +242,14 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Start point of impulse response vector ([us]).
   //
 
-  // Check that arg 4 is a scalar.
-  if ( (mxGetM(prhs[3]) * mxGetN(prhs[3]) !=1) && ((mxGetM(prhs[3]) * mxGetN(prhs[3])) != no))
-    dream_err_msg("Argument 4 must be a scalar or a vector with a length equal to the number of observation points!");
-
+  ap.check_delay("dreamcylind", prhs, 3, no);
   delay = mxGetPr(prhs[3]);
-
 
   //
   // Material parameters
   //
 
-  // Check that arg 5 is a 3 element vectora
-  if (!((mxGetM(prhs[4])==3 && mxGetN(prhs[4])==1) || (mxGetM(prhs[4])==1 && mxGetN(prhs[4])==3)))
-    dream_err_msg("Argument 5 must be a vector of length 3!");
-
+  ap.check_material("dreamcylind", prhs, 4, 3);
   m_par = mxGetPr(prhs[4]);
   v     = m_par[0]; // Normal velocity of transducer surface.
   cp    = m_par[1]; // Sound speed.
@@ -308,31 +280,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   //
 
   if (nrhs == 6) {
-
-    if (!mxIsChar(prhs[5]))
-      dream_err_msg("Argument 6 must be a string");
-
-    buflen = (mxGetM(prhs[5]) * mxGetN(prhs[5]) * sizeof(mxChar)) + 1;
-    mxGetString(prhs[5],err_str,buflen);
-
-    if (!strcmp(err_str,"ignore")) {
-      err_level = ErrorLevel::ignore;
-      is_set = true;
-    }
-
-    if (!strcmp(err_str,"warn")) {
-      err_level = ErrorLevel::warn;
-      is_set = true;
-    }
-
-    if (!strcmp(err_str,"stop")) {
-      err_level = ErrorLevel::stop;
-      is_set = true;
-    }
-
-    if (is_set == false) {
-      dream_err_msg("Unknown error level!");
-    }
+    ap.parse_error_arg("dreamcylind", prhs, 5, err_level);
   } else {
     err_level = ErrorLevel::stop; // Default.
   }

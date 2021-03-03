@@ -21,9 +21,6 @@
 *
 ***/
 
-
-#include <string.h>
-#include <stdlib.h>
 #include <signal.h>
 
 #include <thread>
@@ -31,7 +28,7 @@
 
 #include "dreamcylind.h"
 #include "affinity.h"
-#include "dream_error.h"
+#include "arg_parser.h"
 
 //
 // Octave headers.
@@ -273,50 +270,46 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
   double *ro,*geom_par,*s_par,*m_par;
   double a, b, Rcurv, dx, dy, dt;
   octave_idx_type  nt, no;
-  double *delay,v,cp,alpha, *h;
+  double *delay, v, cp, alpha, *h;
   ErrorLevel err_level=ErrorLevel::stop;
-  bool is_set = false;
-  DATA   *D;
+  DATA *D;
   octave_idx_type start, stop;
   std::thread *threads;
   unsigned int thread_n, nthreads;
-  sighandler_t   old_handler, old_handler_abrt, old_handler_keyint;
+  sighandler_t old_handler, old_handler_abrt, old_handler_keyint;
   octave_value_list oct_retval;
 
   int nrhs = args.length ();
 
+  ArgParser ap;
+
   // Check for proper number of arguments
 
-  if (!((nrhs == 5) || (nrhs == 6))) {
-    dream_err_msg("dreamcylind requires 5 or 6 input arguments!");
+  if (!ap.check_arg_in("dreamcylind", nrhs, 5, 6)) {
+    return oct_retval;
   }
-  else
-    if (nlhs > 2) {
-      dream_err_msg("Too many output arguments for dreamcylind!");
-    }
+
+  if (!ap.check_arg_out("dreamcylind", nlhs, 0, 2)) {
+    return oct_retval;
+  }
 
   //
   // Observation point.
   //
 
-  // Check that arg (number of observation points) x 3 matrix
-  if (mxGetN(0) != 3)
-    dream_err_msg("Argument 1 must be a (number of observation points) x 3 matrix!");
+  if (!ap.check_obs_points("dreamcylind", args, 0)) {
+    return oct_retval;
+  }
 
   no = mxGetM(0); // Number of observation points.
   const Matrix tmp0 = args(0).matrix_value();
   ro = (double*) tmp0.fortran_vec();
 
-  //if (no<2)
-  //  dream_err_msg("At least 2 observation points i needed for this function!\n Use the serial version for a single observation point.");
-
   //
   // Transducer geometry
   //
 
-  // Check that arg 2 is a 3 element vector
-  if (!((mxGetM(1)==3 && mxGetN(1)==1) || (mxGetM(1)==1 && mxGetN(1)==3))) {
-    dream_err_msg("Argument 2 must be a vector of length 3!");
+  if (!ap.check_geometry("dreamcylind", args, 1, 3)) {
     return oct_retval;
   }
 
@@ -330,9 +323,7 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
   // Temporal and spatial sampling parameters.
   //
 
-  // Check that arg 3 is a 4 element vector
-  if (!((mxGetM(2)==4 && mxGetN(2)==1) || (mxGetM(2)==1 && mxGetN(2)==4))) {
-    dream_err_msg("Argument 3 must be a vector of length 4!");
+  if (!ap.check_sampling("dreamcylind", args, 2, 4)) {
     return oct_retval;
   }
 
@@ -347,9 +338,7 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
   // Start point of impulse response vector ([us]).
   //
 
-  // Check that arg 4 is a scalar.
-  if ( (mxGetM(3) * mxGetN(3) !=1) && ((mxGetM(3) * mxGetN(3)) != no)) {
-    dream_err_msg("Argument 4 must be a scalar or a vector with a length equal to the number of observation points!");
+  if (!ap.check_delay("dreamcylind", args, 3, no)) {
     return oct_retval;
   }
 
@@ -360,9 +349,7 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
   // Material parameters
   //
 
-  // Check that arg 5 is a 3 element vectora
-  if (!((mxGetM(4)==3 && mxGetN(4)==1) || (mxGetM(4)==1 && mxGetN(4)==3))) {
-    dream_err_msg("Argument 5 must be a vector of length 3!");
+  if (!ap.check_material("dreamcylind", args, 4, 3)) {
     return oct_retval;
   }
 
@@ -397,34 +384,9 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
   //
 
   if (nrhs == 6) {
-
-    if (!mxIsChar(5)) {
-      dream_err_msg("Argument 6 must be a string");
+    if (!ap.parse_error_arg("dreamcylind", args, 5, err_level)) {
       return oct_retval;
     }
-
-    std::string err_str = args(5).string_value();
-
-    if (err_str == "ignore") {
-      err_level = ErrorLevel::ignore;
-      is_set = true;
-    }
-
-    if (err_str == "warn") {
-      err_level = ErrorLevel::warn;
-      is_set = true;
-    }
-
-    if (err_str == "stop") {
-      err_level = ErrorLevel::stop;
-      is_set = true;
-    }
-
-    if (is_set == false) {
-      dream_err_msg("Unknown error level!");
-      return oct_retval;
-    }
-
   } else {
     err_level = ErrorLevel::stop; // Default.
   }

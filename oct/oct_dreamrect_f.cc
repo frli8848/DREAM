@@ -345,10 +345,10 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
 
   const Matrix tmp2 = args(2).matrix_value();
   s_par = (double*) tmp2.fortran_vec();
-  dx    = s_par[0];        // Spatial x-direction discretization size.
-  dy    = s_par[1];        // Spatial y-direction discretization size.
-  dt    = s_par[2]; // Temporal discretization size (= 1/sampling freq).
-  nt    = (octave_idx_type) s_par[3];	// Length of SIR.
+  dx = s_par[0];  // Spatial x-direction discretization size.
+  dy = s_par[1];  // Spatial y-direction discretization size.
+  dt = s_par[2];  // Temporal discretization size (= 1/sampling freq).
+  nt = (octave_idx_type) s_par[3]; // Length of SIR.
 
   //
   // Start point of impulse response vector ([us]).

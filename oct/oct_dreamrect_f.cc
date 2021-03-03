@@ -302,11 +302,11 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
 
   // Check for proper number of arguments
 
-  if (!ap.check_arg_in("dreamcirc", nrhs, 7, 8)) {
+  if (!ap.check_arg_in("dreamrect_f", nrhs, 7, 8)) {
     return oct_retval;
   }
 
-  if (!ap.check_arg_out("dreamcirc", nlhs, 0, 2)) {
+  if (!ap.check_arg_out("dreamrect_f", nlhs, 0, 2)) {
     return oct_retval;
   }
 
@@ -314,7 +314,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   // Observation point.
   //
 
-  if (!ap.check_obs_points("dreamcirc", args, 0)) {
+  if (!ap.check_obs_points("dreamrect_f", args, 0)) {
     return oct_retval;
   }
 
@@ -326,7 +326,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   // Transducer geometry
   //
 
-  if (!ap.check_geometry("dreamcirc", args, 1, 2)) {
+  if (!ap.check_geometry("dreamrect_f", args, 1, 2)) {
     return oct_retval;
   }
 
@@ -339,7 +339,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   // Temporal and spatial sampling parameters.
   //
 
-  if (!ap.check_sampling("dreamcirc", args, 2, 4)) {
+  if (!ap.check_sampling("dreamrect_f", args, 2, 4)) {
     return oct_retval;
   }
 
@@ -354,7 +354,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   // Start point of impulse response vector ([us]).
   //
 
-  if (!ap.check_delay("dreamcirc", args, 3, no)) {
+  if (!ap.check_delay("dreamrect_f", args, 3, no)) {
     return oct_retval;
   }
 
@@ -365,7 +365,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   // Material parameters
   //
 
-  if (!ap.check_material("dreamcirc", args, 4, 3)) {
+  if (!ap.check_material("dreamrect_f", args, 4, 3)) {
     return oct_retval;
   }
 
@@ -414,7 +414,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   //
 
   if (nrhs == 8) {
-    if (!ap.parse_error_arg("dreamcirc", args, 7, err_level)) {
+    if (!ap.parse_error_arg("dreamrect_f", args, 7, err_level)) {
       return oct_retval;
     }
   } else {

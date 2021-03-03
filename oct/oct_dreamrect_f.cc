@@ -286,7 +286,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   octave_idx_type nt, no;
   FocusMet foc_met=FocusMet::none;
   double a, b, dx, dy, dt;
-  double *delay=nullptr, v, cp, alpha, focal=0;
+  double *delay=nullptr, v, cp, alpha, focal=0.0;
   double *h, *err_p;
   ErrorLevel err_level=ErrorLevel::stop;
   DATA   *D;
@@ -380,11 +380,9 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   //
 
   if (nrhs >= 6) {
-    if (!ap.parse_focus_arg("dreamrect_f", args, 5, foc_met)) {
+    if (!ap.parse_focus_arg("dreamrect_f", args, 5, foc_met, &focal)) {
       return oct_retval;
     }
-    const Matrix tmp6 = args(6).matrix_value();
-    focal = (double) tmp6.fortran_vec()[0];
   } else {
     foc_met = FocusMet::none;
   }

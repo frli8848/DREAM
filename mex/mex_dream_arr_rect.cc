@@ -21,17 +21,14 @@
  *
  ***/
 
-#include <string.h>
-#include <stdlib.h>
 #include <signal.h>
 
-#include <iostream>
 #include <thread>
 #include <mutex>
 
 #include "dream_arr_rect.h"
 #include "affinity.h"
-#include "dream_error.h"
+#include "arg_parser.h"
 
 #include "mex.h"
 
@@ -226,48 +223,36 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
   double *ro, *geom_par, *s_par, *m_par;
   double *steer_par;
-  char   apod_str[50], foc_str[50], steer_str[50];
-  dream_idx_type buflen;
   double a, b, dx, dy, dt;
   dream_idx_type nt, no;
   double param=0.0, *delay, v, cp, alpha;
   dream_idx_type num_elements=0;
   double *G;
   FocusMet foc_met=FocusMet::none;
-  double *focal=nullptr;
   SteerMet steer_met=SteerMet::none;
-  double theta=0.0, phi=0.0, *apod=nullptr;
+  double theta=0.0, phi=0.0;
   bool   do_apod=false;
   ApodMet apod_met=ApodMet::gauss;
   double *h, *err_p;
   ErrorLevel err_level=ErrorLevel::stop;
-  bool is_set = false;
-  char err_str[50];
   DATA *D;
   dream_idx_type start, stop;
   std::thread *threads;
   unsigned int thread_n, nthreads;
   sighandler_t old_handler, old_handler_abrt, old_handler_keyint;
 
+  ArgParser ap;
+
   // Check for proper number of arguments
 
-  if (!((nrhs == 13) || (nrhs == 14))) {
-    dream_err_msg("dream_arr_rect requires 13 or 14 input arguments!");
-  } else {
-    if (nlhs > 2) {
-      dream_err_msg("Too many output arguments for dream_arr_rect!");
-    }
-  }
+  ap.check_arg_in("dream_arr_rect", nrhs, 13, 14);
+  ap.check_arg_out("dream_arr_rect", nlhs, 0, 2);
 
   //
   // Observation point.
   //
 
-  // Check that arg (number of observation points) x 3 matrix
-  if (mxGetN(prhs[0]) != 3) {
-    dream_err_msg("Argument 1 must be a (number of observation points) x 3 matrix!");
-  }
-
+  ap.check_obs_points("dream_arr_rect", prhs, 0);
   no = mxGetM(prhs[0]); // Number of observation points.
   ro = mxGetPr(prhs[0]);
 
@@ -275,11 +260,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Transducer geometry
   //
 
-  // Check that arg 2 is a 2 element vector
-  if (!((mxGetM(prhs[1])==2 && mxGetN(prhs[1])==1) || (mxGetM(prhs[1])==1 && mxGetN(prhs[1])==2))) {
-    dream_err_msg("Argument 2 must be a vector of length 2!");
-  }
-
+  ap.check_geometry("dream_arr_rect", prhs, 1, 2);
   geom_par = mxGetPr(prhs[1]);
   a = geom_par[0];              // x-width of the array element.
   b = geom_par[1];              // y-width of the array element.
@@ -288,12 +269,10 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Grid function (position vectors of the elements).
   //
 
-  num_elements = (int) mxGetM(prhs[2]); // Number of elementents in the array.
-  if (mxGetN(prhs[2]) !=3 ) {
-    dream_err_msg("Argument 3  must a (number of array elements) x 3 matrix!");
-  }
+  ap.check_array("dream_arr_rect", prhs, 2);
 
-  G = mxGetPr(prhs[2]);		// First column in the matrix.
+  num_elements = (dream_idx_type) mxGetM(prhs[2]); // Number of elementents in the array.
+  G = mxGetPr(prhs[2]);                 // First column in the matrix.
   //gy    = gx + num_elements;		// Second column in the matrix.
   //gz    = gy + num_elements;		// Third column in the matrix.
 
@@ -301,11 +280,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Temporal and spatial sampling parameters.
   //
 
-  // Check that arg 4 is a 4 element vector
-  if (!((mxGetM(prhs[3])==4 && mxGetN(prhs[3])==1) || (mxGetM(prhs[3])==1 && mxGetN(prhs[3])==4))) {
-    dream_err_msg("Argument 4 must be a vector of length 4!");
-  }
-
+  ap.check_sampling("dream_arr_rect", prhs, 3, 4);
   s_par = mxGetPr(prhs[3]);
   dx    = s_par[0];		// Spatial x discretization size.
   dy    = s_par[1];		// Spatial dy iscretization size.
@@ -316,22 +291,14 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Start point of impulse response vector ([us]).
   //
 
-  // Check that arg 5 is a scalar or a vector.
-  if ( (mxGetM(prhs[4]) * mxGetN(prhs[4]) !=1) && ((mxGetM(prhs[4]) * mxGetN(prhs[4])) != no)) {
-    dream_err_msg("Argument 5 must be a scalar or a vector with a length equal to the number of observation points!");
-  }
-
+  ap.check_delay("dream_arr_rect", prhs, 4, no);
   delay = mxGetPr(prhs[4]);
 
   //
   // Material parameters
   //
 
-  // Check that arg 6 is a 3 element vector.
-  if (!((mxGetM(prhs[5])==3 && mxGetN(prhs[5])==1) || (mxGetM(prhs[5])==1 && mxGetN(prhs[5])==3))) {
-    dream_err_msg("Argument 6 must be a vector of length 3!");
-  }
-
+  ap.check_material("dream_arr_rect", prhs, 5, 3);
   m_par = mxGetPr(prhs[5]);
   v     = m_par[0]; // Normal velocity of transducer surface.
   cp    = m_par[1]; // Sound speed.
@@ -341,68 +308,11 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Focusing parameters.
   //
 
+  // Allocate space for the user defined focusing delays
+  std::unique_ptr<double[]> focal = std::make_unique<double[]>(num_elements);
+
   if (nrhs >= 7) {
-
-    if (!mxIsChar(prhs[6])) {
-      dream_err_msg("Argument 7 must be a string");
-    }
-
-    buflen = (mxGetM(prhs[6]) * mxGetN(prhs[6]) * sizeof(mxChar)) + 1;
-    mxGetString(prhs[6],foc_str,buflen);
-
-    is_set = false;
-
-    if (!strcmp(foc_str,"off")) {
-      foc_met = FocusMet::none;
-      is_set = true;
-    }
-
-    if (!strcmp(foc_str,"x")) {
-      foc_met = FocusMet::x;
-      is_set = true;
-    }
-
-    if (!strcmp(foc_str,"y")) {
-      foc_met = FocusMet::y;
-      is_set = true;
-    }
-
-    if (!strcmp(foc_str,"xy")) {
-      foc_met = FocusMet::xy;
-      is_set = true;
-    }
-
-    if (!strcmp(foc_str,"x+y")) {
-      foc_met = FocusMet::x_y;
-      is_set = true;
-    }
-
-    if (!strcmp(foc_str,"ud")) {
-      foc_met = FocusMet::ud;
-      is_set = true;
-
-      if (mxGetM(prhs[7]) * mxGetN(prhs[7]) != num_elements ) {
-        mexPrintf("The time delay vector (argument 8) for user defined ('ud') focusing\n") ;
-        dream_err_msg("delays must have the same length as the number of array elements.!");
-      }
-
-      focal = mxGetPr(prhs[7]);
-
-    } else {
-
-      // Check that arg 8 is a scalar.
-      if (mxGetM(prhs[7]) * mxGetN(prhs[7]) !=1 ) {
-        dream_err_msg("Argument 8  must be a scalar!");
-      }
-
-      // Focal point (in mm).
-      focal = mxGetPr(prhs[7]);
-    }
-
-    if (is_set == false) {
-      dream_err_msg("Unknown focusing method!");
-    }
-
+    ap.parse_focus_arg("dream_arr_rect", prhs, 6, foc_met, focal.get());
   } else {
     foc_met = FocusMet::none;
   }
@@ -413,45 +323,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
   if (nrhs >= 9) {
 
-    if (!mxIsChar(prhs[8])) {
-      dream_err_msg("Argument 9 must be a string");
-    }
-
-    buflen = (mxGetM(prhs[8]) * mxGetN(prhs[8]) * sizeof(mxChar)) + 1;
-    mxGetString(prhs[8],steer_str,buflen);
-
-    steer_met = SteerMet::none;       // Default no steering
-    is_set = false;
-
-    if (!strcmp(steer_str,"off")) {
-      steer_met = SteerMet::none;
-      is_set = true;
-    }
-
-    if (!strcmp(steer_str,"x")) {
-      steer_met = SteerMet::x;
-      is_set = true;
-    }
-
-    if (!strcmp(steer_str,"y")) {
-      steer_met = SteerMet::y;
-      is_set = true;
-    }
-
-    if (!strcmp(steer_str,"xy")) {
-      steer_met = SteerMet::xy;
-      is_set = true;
-    }
-
-    if (is_set == false) {
-      dream_err_msg("Unknown beamsteering method!");
-    }
-
-    // Check that arg 10 is a 2 element vector
-    if (!((mxGetM(prhs[9])==2 && mxGetN(prhs[9])==1) || (mxGetM(prhs[9])==1 && mxGetN(prhs[9])==2))) {
-      dream_err_msg("Argument 10 must be a vector of length 2!");
-    }
-
+    ap.parse_steer_args("dream_arr_rect", prhs, 8, steer_met);
     steer_par = mxGetPr(prhs[9]);
     theta  = steer_par[0];      // Angle in x-direction.
     phi    = steer_par[1];      // Angle in y-direction.
@@ -464,77 +336,13 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Apodization.
   //
 
+  // Allocate space for the user defined apodization weights
+  std::unique_ptr<double[]> apod = std::make_unique<double[]>(num_elements);
+
   if (nrhs >= 11) {
-
-    if (!mxIsChar(prhs[10])) {
-      dream_err_msg("Argument 11 must be a string");
-    }
-
-    buflen = (mxGetM(prhs[10]) * mxGetN(prhs[10]) * sizeof(mxChar)) + 1;
-    mxGetString(prhs[10],apod_str,buflen);
-
-    do_apod = false;            // default off.
-    is_set = false;
-
-    if (!strcmp(apod_str,"off")) {
-      do_apod = false;
-      is_set = true;
-    }
-
-    if (!strcmp(apod_str,"ud")) {
-      do_apod = true;
-      apod_met = ApodMet::ud;
-      is_set = true;
-
-      // Vector of apodization weights.
-      if (mxGetM(prhs[11]) * mxGetN(prhs[11]) != num_elements) {
-        dream_err_msg("The length of argument 12 (apodization vector) must be the same as the number of array elements!");
-      }
-
-      apod = mxGetPr(prhs[11]);
-    }
-
-    if (!strcmp(apod_str,"triangle")) {
-      do_apod = true;
-      apod_met = ApodMet::triangle;
-      is_set = true;
-    }
-
-    if (!strcmp(apod_str,"gauss")) {
-      do_apod = true;
-      apod_met = ApodMet::gauss;
-      is_set = true;
-    }
-
-    if (!strcmp(apod_str,"raised")) {
-      do_apod = true;
-      apod_met = ApodMet::raised_cosine;
-      is_set = true;
-    }
-
-    if (!strcmp(apod_str,"simply")) {
-      do_apod = true;
-      apod_met = ApodMet::simply_supported;
-      is_set = true;
-    }
-
-    if (!strcmp(apod_str,"clamped")) {
-      do_apod = true;
-      apod_met = ApodMet::clamped;
-      is_set = true;
-    }
-
-    if (is_set == false) {
-      dream_err_msg("Unknown apodization!");
-    }
-
-    // Parameter for raised cos and Gaussian apodization functions.
-    if (mxGetM(prhs[12]) * mxGetN(prhs[12]) !=1 ) {
-      dream_err_msg("Argument 13 must be a scalar");
-    }
-
+    ap.parse_apod_args("dream_arr_rect", prhs, 10, num_elements,
+                       do_apod, apod.get(), apod_met);
     param = mxGetScalar(prhs[12]);
-
   } else {
     do_apod = false;
   }
@@ -564,35 +372,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   //
 
   if (nrhs == 14) {
-
-    if (!mxIsChar(prhs[13])) {
-      dream_err_msg("Argument 14 must be a string");
-    }
-
-    buflen = (mxGetM(prhs[13]) * mxGetN(prhs[13]) * sizeof(mxChar)) + 1;
-    mxGetString(prhs[13],err_str,buflen);
-
-    is_set = false;
-
-    if (!strcmp(err_str,"ignore")) {
-      err_level = ErrorLevel::ignore;
-      is_set = true;
-    }
-
-    if (!strcmp(err_str,"warn")) {
-      err_level = ErrorLevel::warn;
-      is_set = true;
-    }
-
-    if (!strcmp(err_str,"stop")) {
-      err_level = ErrorLevel::stop;
-      is_set = true;
-    }
-
-    if (is_set == false) {
-      dream_err_msg("Unknown error level!");
-    }
-
+    ap.parse_error_arg("dream_arr_rect", prhs, 13, err_level);
   } else {
     err_level = ErrorLevel::stop; // Default.
   }
@@ -673,8 +453,8 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     D[thread_n].steer_met = steer_met;
     D[thread_n].do_apod = do_apod;
     D[thread_n].apod_met = apod_met;
-    D[thread_n].focal = focal;
-    D[thread_n].apod = apod;
+    D[thread_n].focal = focal.get();
+    D[thread_n].apod = apod.get();
     D[thread_n].theta = theta;
     D[thread_n].phi = phi;
     D[thread_n].param = param;

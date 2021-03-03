@@ -376,11 +376,9 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   //
 
   if (nrhs >= 6) {
-    if (!ap.parse_focus_arg("dreamcirc_f", args, 5, foc_met)) {
+    if (!ap.parse_focus_arg("dreamcirc_f", args, 5, foc_met, &focal)) {
       return oct_retval;
     }
-    const Matrix tmp6 = args(6).matrix_value();
-    focal = (double) tmp6.fortran_vec()[0];
   } else {
     foc_met = FocusMet::none;
   }

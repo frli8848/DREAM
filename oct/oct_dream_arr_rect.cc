@@ -21,8 +21,6 @@
 *
 ***/
 
-#include <string.h>
-#include <stdlib.h>
 #include <signal.h>
 
 #include <thread>
@@ -30,7 +28,7 @@
 
 #include "dream_arr_rect.h"
 #include "affinity.h"
-#include "dream_error.h"
+#include "arg_parser.h"
 
 //
 // Octave headers.
@@ -221,7 +219,7 @@ void sig_keyint_handler(int signum) {
 
 /***
  *
- *  Octave (oct) gateway function for (parallel) dreamrect.
+ *  Octave (oct) gateway function for (parallel) dream_arr_rect.
  *
  ***/
 DEFUN_DLD (dream_arr_rect, args, nlhs,
@@ -366,42 +364,38 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
   dream_idx_type num_elements;
   double *G;
   FocusMet foc_met=FocusMet::none;
-  double *focal=nullptr;
   SteerMet steer_met=SteerMet::none;
-  double theta=0.0, phi=0.0, *apod=nullptr;
+  double theta=0.0, phi=0.0;
   bool   do_apod=false;
   ApodMet apod_met=ApodMet::gauss;
   double *h, *err_p;
   ErrorLevel err_level=ErrorLevel::stop;
-  bool is_set = false;
-  DATA   *D;
+  DATA *D;
   dream_idx_type start, stop;
   std::thread *threads;
   unsigned int thread_n, nthreads;
   sighandler_t old_handler, old_handler_abrt, old_handler_keyint;
   octave_value_list oct_retval;
 
-  int nrhs = args.length ();
+  int nrhs = args.length();
+
+  ArgParser ap;
 
   // Check for proper number of arguments
 
-  if (!((nrhs == 13) || (nrhs == 14))) {
-    error("dream_arr_rect requires 13 or 14 input arguments!");
+  if (!ap.check_arg_in("dream_arr_rect", nrhs, 13, 14)) {
     return oct_retval;
-  } else {
-    if (nlhs > 2) {
-      error("Too many output arguments for dream_arr_rect!");
-      return oct_retval;
-    }
+  }
+
+  if (!ap.check_arg_out("dream_arr_rect", nlhs, 0, 2)) {
+    return oct_retval;
   }
 
   //
   // Observation point.
   //
 
-  // Check that arg (number of observation points) x 3 matrix
-  if (mxGetN(0) != 3) {
-    error("Argument 1 must be a (number of observation points) x 3 matrix!");
+  if (!ap.check_obs_points("dream_arr_rect", args, 0)) {
     return oct_retval;
   }
 
@@ -413,11 +407,10 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
   // Transducer geometry
   //
 
-  // Check that arg 2 is a 2 element vector
-  if (!((mxGetM(1)==2 && mxGetN(1)==1) || (mxGetM(1)==1 && mxGetN(1)==2))) {
-    error("Argument 2 must be a vector of length 2!");
+  if (!ap.check_geometry("dream_arr_rect", args, 1, 2)) {
     return oct_retval;
   }
+
   const Matrix tmp1 = args(1).matrix_value();
   geom_par = (double*) tmp1.fortran_vec();
   a = geom_par[0];		// x-width of the array element.
@@ -427,12 +420,11 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
   // Grid function (position vectors of the elements).
   //
 
-  num_elements = (int) mxGetM(2); // Number of elementents in the array.
-  if (mxGetN(2) !=3 ) {
-    error("Argument 3  must a (number of array elements) x 3 matrix!");
+  if (!ap.check_array("dream_arr_rect", args, 2)) {
     return oct_retval;
   }
 
+  num_elements = (dream_idx_type) mxGetM(2); // Number of elementents in the array.
   const Matrix tmp2 = args(2).matrix_value();
   G = (double*) tmp2.fortran_vec(); // First column in the matrix.
   //gy    = gx + num_elements;		// Second column in the matrix.
@@ -442,11 +434,10 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
   // Temporal and spatial sampling parameters.
   //
 
-  // Check that arg 4 is a 4 element vector
-  if (!((mxGetM(3)==4 && mxGetN(3)==1) || (mxGetM(3)==1 && mxGetN(3)==4))) {
-    error("Argument 4 must be a vector of length 4!");
+  if (!ap.check_sampling("dream_arr_rect", args, 3, 4)) {
     return oct_retval;
   }
+
   const Matrix tmp3 = args(3).matrix_value();
   s_par = (double*) tmp3.fortran_vec();
   dx    = s_par[0];		// Spatial x discretization size.
@@ -458,9 +449,7 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
   // Start point of impulse response vector ([us]).
   //
 
-  // Check that arg 5 is a scalar or a vector.
-  if ( (mxGetM(4) * mxGetN(4) !=1) && ((mxGetM(4) * mxGetN(4)) != no)) {
-    error("Argument 5 must be a scalar or a vector with a length equal to the number of observation points!");
+  if (!ap.check_delay("dream_arr_rect", args, 4, no)) {
     return oct_retval;
   }
 
@@ -471,9 +460,7 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
   // Material parameters
   //
 
-  // Check that arg 6 is a 3 element vector
-  if (!((mxGetM(5)==3 && mxGetN(5)==1) || (mxGetM(5)==1 && mxGetN(5)==3))) {
-    error("Argument 6 must be a vector of length 3!");
+  if (!ap.check_material("dream_arr_rect", args, 5, 3)) {
     return oct_retval;
   }
 
@@ -487,71 +474,16 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
   // Focusing parameters.
   //
 
+  // Allocate space for the user defined focusing delays
+  std::unique_ptr<double[]> focal = std::make_unique<double[]>(num_elements);
+
   if (nrhs >= 7) {
-
-    if (!mxIsChar(6)) {
-      error("Argument 7 must be a string");
+    if (!ap.parse_focus_arg("dream_arr_rect", args, 6, foc_met, focal.get())) {
       return oct_retval;
     }
-
-    std::string foc_str = args(6).string_value();
-
-    is_set = false;
-
-    if (foc_str == "off") {
-      foc_met = FocusMet::none;
-      is_set = true;
-    }
-
-    if (foc_str == "x") {
-      foc_met = FocusMet::x;
-      is_set = true;
-    }
-
-    if (foc_str == "y") {
-      foc_met = FocusMet::y;
-      is_set = true;
-    }
-
-    if (foc_str == "xy") {
-      foc_met = FocusMet::xy;
-      is_set = true;
-    }
-
-    if (foc_str == "x+y") {
-      foc_met = FocusMet::x_y;
-      is_set = true;
-    }
-
-    if (foc_str == "ud") {
-      foc_met = FocusMet::ud;
-      is_set = true;
-
-      if (mxGetM(7) * mxGetN(7) != num_elements ) {
-        error("The time delay vector (argument 8) for user defined ('ud') focusing\n") ;
-        error("delays must have the same length as the number of array elements.!");
-        return oct_retval;
-      }
-
-    } else {
-      // Check that arg 8 is a scalar.
-      if (mxGetM(7) * mxGetN(7) !=1 ) {
-        error("Argument 8 must be a scalar for non-user defined focusing!");
-        return oct_retval;
-      }
-    }
-
-    if (is_set == false) {
-      error("Unknown focusing method!");
-      return oct_retval;
-    }
-
   } else {
     foc_met = FocusMet::none;
   }
-
-  const Matrix tmp7 = args(7).matrix_value();
-  focal = (double*) tmp7.fortran_vec();
 
   //
   // Beam steering.
@@ -559,46 +491,10 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
 
   if (nrhs >= 9) {
 
-    if (!mxIsChar(8)) {
-      error("Argument 9 must be a string");
+    if (!ap.parse_steer_args("dream_arr_rect", args, 8, steer_met)) {
       return oct_retval;
     }
 
-    std::string steer_str = args(8).string_value();
-
-    steer_met = SteerMet::none;      // Default no steering
-    is_set = false;
-
-    if (steer_str == "off") {
-      steer_met = SteerMet::none;
-      is_set = true;
-    }
-
-    if (steer_str == "x") {
-      steer_met = SteerMet::x;
-      is_set = true;
-    }
-
-    if (steer_str == "y") {
-      steer_met = SteerMet::y;
-      is_set = true;
-    }
-
-    if (steer_str == "xy") {
-      steer_met = SteerMet::xy;
-      is_set = true;
-    }
-
-    if (is_set == false) {
-      error("Unknown beamsteering method!");
-      return oct_retval;
-    }
-
-    // Check that arg 10 is a 2 element vector
-    if (!((mxGetM(9)==2 && mxGetN(9)==1) || (mxGetM(9)==1 && mxGetN(9)==2))) {
-      dream_err_msg("Argument 10 must be a vector of length 2!");
-      return oct_retval;
-    }
     const Matrix tmp9 = args(9).matrix_value();
     steer_par = (double*) tmp9.fortran_vec();
     theta  = steer_par[0];		// Angle in x-direction.
@@ -612,80 +508,18 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
   // Apodization.
   //
 
+  // Allocate space for the user defined apodization weights
+  std::unique_ptr<double[]> apod = std::make_unique<double[]>(num_elements);
+
   if (nrhs >= 11) {
 
-    if (!mxIsChar(10)) {
-      error("Argument 11 must be a string");
-      return oct_retval;
-    }
-
-    std::string apod_str = args(10).string_value();
-
-    do_apod = false;			// default off.
-    is_set = false;
-
-    if (apod_str == "off") {
-      do_apod = false;
-      is_set = true;
-    }
-
-    if (apod_str == "ud") {
-      do_apod = true;
-      apod_met = ApodMet::ud;
-      is_set = true;
-
-      // Vector of apodization weights.
-      if (mxGetM(11) * mxGetN(11) != num_elements) {
-        error("The length of argument 12 (apodization vector) must be the same as the number of array elements!");
-        return oct_retval;
-      }
-      const Matrix tmp11 = args(11).matrix_value();
-      apod = (double*) tmp11.fortran_vec(); // FIXME this goes out of scope!
-    }
-
-    if (apod_str == "triangle") {
-      do_apod = true;
-      apod_met = ApodMet::triangle;
-      is_set = true;
-    }
-
-    if (apod_str == "gauss") {
-      do_apod = true;
-      apod_met = ApodMet::gauss;
-      is_set = true;
-    }
-
-    if (apod_str == "raised") {
-      do_apod = true;
-      apod_met = ApodMet::raised_cosine;
-      is_set = true;
-    }
-
-    if (apod_str == "simply") {
-      do_apod = true;
-      apod_met = ApodMet::simply_supported;
-      is_set = true;
-    }
-
-    if (apod_str == "clamped") {
-      do_apod = true;
-      apod_met = ApodMet::clamped;
-      is_set = true;
-    }
-
-    if (is_set == false) {
-      error("Unknown apodization!");
-      return oct_retval;
-    }
-
-    // Parameter for raised cos and Gaussian apodization functions.
-    if (mxGetM(12) * mxGetN(12) !=1 ) {
-      error("Argument 13 must be a scalar");
+    if (!ap.parse_apod_args("dream_arr_rect", args, 10, num_elements,
+                            do_apod, apod.get(), apod_met)) {
       return oct_retval;
     }
 
     const Matrix tmp12 = args(12).matrix_value();
-    param = (double) tmp12.fortran_vec()[0]; // FIXME this goes out of scope!
+    param = (double) tmp12.fortran_vec()[0];
 
   } else {
     do_apod = false;
@@ -716,34 +550,9 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
   //
 
   if (nrhs == 14) {
-
-    if (!mxIsChar(13)) {
-      error("Argument 14 must be a string");
+    if (!ap.parse_error_arg("dream_arr_rect", args, 13, err_level)) {
       return oct_retval;
     }
-
-    std::string err_str = args(13).string_value();
-
-    if (err_str == "ignore") {
-      err_level = ErrorLevel::ignore;
-      is_set = true;
-    }
-
-    if (err_str == "warn") {
-      err_level = ErrorLevel::warn;
-      is_set = true;
-    }
-
-    if (err_str == "stop") {
-      err_level = ErrorLevel::stop;
-      is_set = true;
-    }
-
-    if (is_set == false) {
-      error("Unknown error level!");
-      return oct_retval;
-    }
-
   } else {
     err_level = ErrorLevel::stop; // Default.
   }
@@ -820,8 +629,8 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
     D[thread_n].steer_met = steer_met;
     D[thread_n].do_apod = do_apod;
     D[thread_n].apod_met = apod_met;
-    D[thread_n].focal = focal;
-    D[thread_n].apod = apod;
+    D[thread_n].focal = focal.get();
+    D[thread_n].apod = apod.get();
     D[thread_n].theta = theta;
     D[thread_n].phi = phi;
     D[thread_n].param = param;

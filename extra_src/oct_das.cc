@@ -21,8 +21,6 @@
 *
 ***/
 
-#include <signal.h>
-
 #include "das.h"
 
 //

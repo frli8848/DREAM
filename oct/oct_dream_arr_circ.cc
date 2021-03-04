@@ -21,8 +21,7 @@
 *
 ***/
 
-#include <signal.h>
-
+#include <csignal>
 #include <thread>
 #include <mutex>
 
@@ -549,16 +548,16 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   // Register signal handlers.
   //
 
-  if ((old_handler = signal(SIGTERM, &sighandler)) == SIG_ERR) {
-    printf("Couldn't register SIGTERM signal handler.\n");
+  if ((old_handler = std::signal(SIGTERM, &sighandler)) == SIG_ERR) {
+    std::cerr << "Couldn't register SIGTERM signal handler!" << std::endl;
   }
 
-  if (( old_handler_abrt=signal(SIGABRT, &sighandler)) == SIG_ERR) {
-    printf("Couldn't register SIGABRT signal handler.\n");
+  if ((old_handler_abrt = std::signal(SIGABRT, &sighandler)) == SIG_ERR) {
+    std::cerr << "Couldn't register SIGABRT signal handler!" << std::endl;
   }
 
-  if (( old_handler_keyint=signal(SIGINT, &sighandler)) == SIG_ERR) {
-    printf("Couldn't register SIGINT signal handler.\n");
+  if ((old_handler_keyint = std::signal(SIGINT, &sighandler)) == SIG_ERR) {
+    std::cerr << "Couldn't register SIGINT signal handler!" << std::endl;
   }
 
   //
@@ -644,16 +643,16 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   // Restore old signal handlers.
   //
 
-  if (signal(SIGTERM, old_handler) == SIG_ERR) {
-    printf("Couldn't register old SIGTERM signal handler.\n");
+  if (std::signal(SIGTERM, old_handler) == SIG_ERR) {
+    std::cerr << "Couldn't register old SIGTERM signal handler!" << std::endl;
   }
 
-  if (signal(SIGABRT,  old_handler_abrt) == SIG_ERR) {
-    printf("Couldn't register old SIGABRT signal handler.\n");
+  if (std::signal(SIGABRT,  old_handler_abrt) == SIG_ERR) {
+    std::cerr << "Couldn't register old SIGABRT signal handler!" << std::endl;
   }
 
-  if (signal(SIGINT, old_handler_keyint) == SIG_ERR) {
-    printf("Couldn't register old SIGINT signal handler.\n");
+  if (std::signal(SIGINT, old_handler_keyint) == SIG_ERR) {
+    std::cerr << "Couldn't register old SIGINT signal handler!" << std::endl;
   }
 
   if (!running) {

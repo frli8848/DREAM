@@ -342,11 +342,11 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
 
   // Check for proper number of arguments
 
-  if (!ap.check_arg_in("dream_arr_rect", nrhs, 10, 11)) {
+  if (!ap.check_arg_in("dream_arr_annu", nrhs, 10, 11)) {
     return oct_retval;
   }
 
-  if (!ap.check_arg_out("dream_arr_rect", nlhs, 0, 2)) {
+  if (!ap.check_arg_out("dream_arr_annu", nlhs, 0, 2)) {
     return oct_retval;
   }
 
@@ -354,7 +354,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   // Observation point.
   //
 
-  if (!ap.check_obs_points("dream_arr_rect", args, 0)) {
+  if (!ap.check_obs_points("dream_arr_annu", args, 0)) {
     return oct_retval;
   }
 
@@ -368,7 +368,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
 
   // FIXME: This one needs special treatment. It is the inner and outer radii
   // of the array where the innermost one do not have an inner radius (its zero).
-  if (!ap.check_array("dream_arr_rect", args, 1)) {
+  if (!ap.check_array("dream_arr_annu", args, 1)) {
     return oct_retval;
   }
 
@@ -386,7 +386,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   // Temporal and spatial sampling apod_pareters.
   //
 
-  if (!ap.check_sampling("dream_arr_rect", args, 2, 4)) {
+  if (!ap.check_sampling("dream_arr_annu", args, 2, 4)) {
     return oct_retval;
   }
 
@@ -401,7 +401,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   // Start point of impulse response vector ([us]).
   //
 
-  if (!ap.check_delay("dream_arr_rect", args, 3, no)) {
+  if (!ap.check_delay("dream_arr_annu", args, 3, no)) {
     return oct_retval;
   }
 
@@ -412,7 +412,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   // Material apod_pareters
   //
 
-  if (!ap.check_material("dream_arr_rect", args, 4, 3)) {
+  if (!ap.check_material("dream_arr_annu", args, 4, 3)) {
     return oct_retval;
   }
 
@@ -430,7 +430,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   std::unique_ptr<double[]> focal = std::make_unique<double[]>(num_elements);
 
   if (nrhs >= 6) {
-    if (!ap.parse_focus_args("dream_arr_rect", args, 5, foc_met, focal.get())) {
+    if (!ap.parse_focus_args("dream_arr_annu", args, 5, foc_met, focal.get())) {
       return oct_retval;
     }
   } else {
@@ -445,7 +445,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   std::unique_ptr<double[]> apod = std::make_unique<double[]>(num_elements);
 
   if (nrhs >= 8) {
-    if (!ap.parse_apod_args("dream_arr_rect", args, 7, num_elements,
+    if (!ap.parse_apod_args("dream_arr_annu", args, 7, num_elements,
                             do_apod, apod.get(), apod_met, apod_par)) {
       return oct_retval;
     }
@@ -478,7 +478,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   //
 
   if (nrhs == 11) {
-    if (!ap.parse_error_arg("dream_arr_rect", args, 10, err_level)) {
+    if (!ap.parse_error_arg("dream_arr_annu", args, 10, err_level)) {
       return oct_retval;
     }
   } else {

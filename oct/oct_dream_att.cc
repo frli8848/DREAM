@@ -56,7 +56,7 @@ Observation point(s) ([mm]):\n\
 An N x 3 matrix, Ro = [xo1 yo1 zo2; xo2 yo2 zo2; ... xoN yoN zoN]; where N is the number of observation points.\n\
 @end table\n\
 \n\
-Sampling parameters: s_par = [dt nt]; \n\
+Sampling apod_pareters: s_par = [dt nt]; \n\
 \n\
 @table @code\n\
 @item dt\n\
@@ -72,7 +72,7 @@ Start point of SIR:\n\
 Scalar delay for all observation points or a vector with individual delays for each observation point [us].\n\
 @end table\n\
 \n\
-Material parameters: m_par = [cp alpha];\n\
+Material apod_pareters: m_par = [cp alpha];\n\
 \n\
 @table @code\n\
 @item cp\n\
@@ -124,7 +124,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   ro = (double*) tmp0.fortran_vec();
 
   //
-  // Temporal and spatial sampling parameters.
+  // Temporal and spatial sampling apod_pareters.
   //
 
 
@@ -150,7 +150,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   delay = (double*) tmp2.fortran_vec();
 
   //
-  // Material parameters
+  // Material apod_pareters
   //
 
   // Check that arg 4 is a 2 element vector.

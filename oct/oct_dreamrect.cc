@@ -202,7 +202,7 @@ for a rectangular transducer using parallel processing\n\
 An N x 3 matrix, Ro = [xo1 yo1 zo2; xo2 yo2 zo2; ... xoN yoN zoN]; where N is the number of observation points.\n\
 @end table\n\
 \n\
-Geometrical parameters: geom_par = [a b];\n\
+Geometrical apod_pareters: geom_par = [a b];\n\
 \n\
 @table @code\n\
 @item a\n\
@@ -211,7 +211,7 @@ x-size  of the transducer [mm].\n\
 y-size  of the transducer [mm].\n\
 @end table\n\
 \n\
-Sampling parameters: s_par = [dx dy dt nt]; \n\
+Sampling apod_pareters: s_par = [dx dy dt nt]; \n\
 \n\
 @table @code\n\
 @item dx\n\
@@ -231,7 +231,7 @@ Start point of SIR:\n\
 Scalar delay for all observation points or a vector with individual delays for each observation point [us].\n\
 @end table\n\
 \n\
-Material parameters: m_par = [v cp alpha];\n\
+Material apod_pareters: m_par = [v cp alpha];\n\
 \n\
 @table @code\n\
 @item v\n\
@@ -244,7 +244,7 @@ Attenuation coefficient [dB/(cm MHz)] .\n\
 @end table\n\
 \n\
 Error Handling: err_level;\n\
-err_level is an optional text string parameter for controlling the error behavior, options are:\n\
+err_level is an optional text string apod_pareter for controlling the error behavior, options are:\n\
 \n\
 @table @code\n\
 @item 'ignore'\n\
@@ -318,7 +318,7 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
   b  = geom_par[1];		// y-width of the transducer.
 
   //
-  // Temporal and spatial sampling parameters.
+  // Temporal and spatial sampling apod_pareters.
   //
 
   if (!ap.check_sampling("dreamrect", args, 2, 4)) {
@@ -344,7 +344,7 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
   delay = (double*) tmp3.fortran_vec();
 
   //
-  // Material parameters
+  // Material apod_pareters
   //
 
   if (!ap.check_material("dreamrect", args, 4, 3)) {

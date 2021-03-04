@@ -66,7 +66,7 @@ typedef struct
   ApodMet apod_met;
   double *focal;
   double *apod;
-  double param;
+  double apod_par;
   double *h;
   ErrorLevel err_level;
 } DATA;
@@ -104,7 +104,7 @@ void* smp_dream_arr_annu(void *arg)
   FocusMet foc_met=D.foc_met;
   int do_apod = D.do_apod;
   ApodMet apod_met=D.apod_met;
-  double *focal=D.focal, *apod=D.apod, param=D.param;
+  double *focal=D.focal, *apod=D.apod, apod_par=D.apod_par;
   dream_idx_type  num_radii = D.num_radii;
 
   double *gr=D.gr;
@@ -142,7 +142,7 @@ void* smp_dream_arr_annu(void *arg)
                            dlay, v,cp,
                            num_radii,gr,
                            foc_met, focal,
-                           apod, do_apod, apod_met, param,
+                           apod, do_apod, apod_met, apod_par,
                            &h[n*nt], tmp_lev);
     } else {
       err = dream_arr_annu(*att, *xc_vec, *x_vec,
@@ -151,7 +151,7 @@ void* smp_dream_arr_annu(void *arg)
                            dlay, v,cp,
                            num_radii,gr,
                            foc_met, focal,
-                           apod, do_apod, apod_met, param,
+                           apod, do_apod, apod_met, apod_par,
                            &h[n*nt], tmp_lev);
     }
 
@@ -214,7 +214,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   double *ro, *s_par,*m_par;
   double dx,dy,dt;
   dream_idx_type nt, no;
-  double param=0.0, *delay, v, cp, alpha;
+  double apod_par=0.0, *delay, v, cp, alpha;
   dream_idx_type num_radii=0;
   double *gr;
   FocusMet foc_met=FocusMet::none;
@@ -256,7 +256,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   gr = mxGetPr(prhs[1]);	// Vector of annular radi,
 
   //
-  // Temporal and spatial sampling parameters.
+  // Temporal and spatial sampling apod_pareters.
   //
 
   ap.check_sampling("dream_arr_annu", prhs, 2, 4);
@@ -274,7 +274,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   delay = mxGetPr(prhs[3]);
 
   //
-  // Material parameters
+  // Material apod_pareters
   //
 
   ap.check_material("dream_arr_annu", prhs, 4, 3);
@@ -284,7 +284,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   alpha = m_par[2]; // Attenuation coefficient [dB/(cm MHz)],
 
   //
-  // Focusing parameters.
+  // Focusing apod_pareters.
   //
 
   // Allocate space for the user defined focusing delays
@@ -305,8 +305,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
   if (nrhs >= 8) {
     ap.parse_apod_args("dream_arr_annu", prhs, 7, num_elements,
-                       do_apod, apod.get(), apod_met);
-    param = mxGetScalar(prhs[9]);
+                       do_apod, apod.get(), apod_met, apod_par);
   } else {
     do_apod = false;
   }
@@ -416,7 +415,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     D[thread_n].apod_met = apod_met;
     D[thread_n].focal = focal.get();
     D[thread_n].apod = apod.get();
-    D[thread_n].param = param;
+    D[thread_n].apod_par = apod_par;
     D[thread_n].h = h;
     D[thread_n].err_level = err_level;
 

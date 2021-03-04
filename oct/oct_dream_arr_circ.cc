@@ -74,7 +74,7 @@ typedef struct
   double *apod;
   double theta;
   double phi;
-  double param;
+  double apod_par;
   double *h;
   ErrorLevel err_level;
 } DATA;
@@ -112,7 +112,7 @@ void* smp_dream_arr_circ(void *arg)
   SteerMet steer_met=D.steer_met;
   int do_apod = D.do_apod;
   ApodMet apod_met = D.apod_met;
-  double *focal=D.focal, *apod=D.apod, theta=D.theta,phi=D.phi,param=D.param;
+  double *focal=D.focal, *apod=D.apod, theta=D.theta,phi=D.phi,apod_par=D.apod_par;
   dream_idx_type    num_elements = D.num_elements;
 
   double *gx = D.G;               // First column in the matrix.
@@ -154,7 +154,7 @@ void* smp_dream_arr_circ(void *arg)
                            num_elements, gx, gy, gz,
                            foc_met, focal,
                            steer_met, theta, phi,
-                           apod, do_apod, apod_met, param,
+                           apod, do_apod, apod_met, apod_par,
                            &h[n*nt], tmp_lev);
     } else {
       err = dream_arr_circ(*att, *xc_vec, *x_vec,
@@ -165,7 +165,7 @@ void* smp_dream_arr_circ(void *arg)
                            num_elements, gx, gy, gz,
                            foc_met, focal,
                            steer_met, theta, phi,
-                           apod, do_apod, apod_met, param,
+                           apod, do_apod, apod_met, apod_par,
                            &h[n*nt], tmp_lev);
 
     }
@@ -238,14 +238,14 @@ Observation point(s) ([mm]):\n\
 An N x 3 matrix, Ro = [xo1 yo1 zo2; xo2 yo2 zo2; ... xoN yoN zoN]; where N is the number of observation points.\n\
 @end table\n\
 \n\
-Geometrical parameters: geom_par = [r];\n\
+Geometrical apod_pareters: geom_par = [r];\n\
 \n\
 @table @code\n\
 @item r\n\
 Radius of the transducer elements [mm].\n\
 @end table\n\
 \n\
-Array grid parameter:\n\
+Array grid apod_pareter:\n\
 \n\
 @table @code\n\
 @item G\n\
@@ -254,7 +254,7 @@ of the elements, column 2 the y-positions, and column 3\n\
 the z-positions, and where L is the number of elements.\n\
 @end table\n\
 \n\
-Sampling parameters: s_par = [dx dy dt nt]; \n\
+Sampling apod_pareters: s_par = [dx dy dt nt]; \n\
 \n\
 @table @code\n\
 @item dx\n\
@@ -274,7 +274,7 @@ Start point of SIR:\n\
 Scalar delay for all observation points or a vector with individual delays for each observation point [us].\n\
 @end table\n\
 \n\
-Material parameters: m_par = [v cp alpha];\n\
+Material apod_pareters: m_par = [v cp alpha];\n\
 \n\
 @table @code\n\
 @item v\n\
@@ -286,7 +286,7 @@ Attenuation coefficient [dB/(cm MHz)] .\n\
 \n\
 @end table\n\
 \n\
-Focusing parameters: foc_met and focal:\n\
+Focusing apod_pareters: foc_met and focal:\n\
 \n\
 @table @code\n\
 @item foc_met\n\
@@ -295,7 +295,7 @@ Focusing method, options are: 'off', 'x', 'y', 'xy', 'x+y', and 'ud'.\n\
 Focal distance [mm]. If foc_met = 'ud' (user defined) then focal is a vector of focusing delays.\n\
 @end table\n\
 \n\
-Beam steering parameters: steer_met and steer_par:\n\
+Beam steering apod_pareters: steer_met and steer_par:\n\
 \n\
 @table @code\n\
 @item steer_met\n\
@@ -305,7 +305,7 @@ theta [deg] is the x-direction steer angle and \n\
 phi [deg] is the y-direction steer angle.\n\
 @end table\n\
 \n\
-Apodization parameters: apod_met, apod, and win_par. The apod_met (apodization method) options are:\n\
+Apodization apod_pareters: apod_met, apod, and win_par. The apod_met (apodization method) options are:\n\
 \n\
 @table @code\n\
 \n\
@@ -325,17 +325,17 @@ Simply supported.\n\
 Clamped.\n\
 @end table\n\
 \n\
-and the apod and win_par parameters are:\n\
+and the apod and win_par apod_pareters are:\n\
 \n\
 @table @code\n\
 @item apod\n\
 Vector of apodiztion weights (used for the 'ud' option).\n\
 @item win_par\n\
-A scalar parameter for raised cosine and Gaussian apodization functions.\n\
+A scalar apod_pareter for raised cosine and Gaussian apodization functions.\n\
 @end table\n\
 \n\
 Error Handling: err_level;\n\
-err_level is an optional text string parameter for controlling the error behavior, options are:\n\
+err_level is an optional text string apod_pareter for controlling the error behavior, options are:\n\
 \n\
 @table @code\n\
 @item 'ignore'\n\
@@ -357,7 +357,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   double *ro,*geom_par,*s_par,*m_par;
   double R, dx, dy, dt;
   dream_idx_type nt, no;
-  double param=0,*delay, v, cp, alpha;
+  double apod_par=0,*delay, v, cp, alpha;
   dream_idx_type num_elements;
   double *G;
   FocusMet foc_met=FocusMet::none;
@@ -427,7 +427,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   //gz    = gy + num_elements;		// Third column in the matrix.
 
   //
-  // Temporal and spatial sampling parameters.
+  // Temporal and spatial sampling apod_pareters.
   //
 
   if (!ap.check_sampling("dream_arr_circ", args, 3, 4)) {
@@ -453,7 +453,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   delay = (double*) tmp4.fortran_vec();
 
   //
-  // Material parameters
+  // Material apod_pareters
   //
 
   if (!ap.check_material("dream_arr_circ", args, 5, 3)) {
@@ -467,7 +467,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   alpha  = m_par[2]; // Attenuation coefficient [dB/(cm MHz)].
 
   //
-  // Focusing parameters.
+  // Focusing apod_pareters.
   //
 
   // Allocate space for the user defined focusing delays
@@ -501,15 +501,10 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   std::unique_ptr<double[]> apod = std::make_unique<double[]>(num_elements);
 
   if (nrhs >= 11) {
-
     if (!ap.parse_apod_args("dream_arr_circ", args, 10, num_elements,
-                            do_apod, apod.get(), apod_met)) {
+                            do_apod, apod.get(), apod_met, apod_par)) {
       return oct_retval;
     }
-
-    const Matrix tmp12 = args(12).matrix_value();
-    param = (double) tmp12.fortran_vec()[0];
-
   } else {
     do_apod = false;
   }
@@ -621,7 +616,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
     D[thread_n].apod = apod.get();
     D[thread_n].theta = theta;
     D[thread_n].phi = phi;
-    D[thread_n].param = param;
+    D[thread_n].apod_par = apod_par;
     D[thread_n].h = h;
     D[thread_n].err_level = err_level;
 

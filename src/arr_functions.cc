@@ -210,12 +210,12 @@ void beamsteering(SteerMet steer_met, double theta, double phi, double gx, doubl
  *
  * Aperture weighting/Apodization
  *
- * param=input parameter
+ * apod_par: apodization shape parameter.
  *
  ***/
 
 void apodization(ApodMet apod_met, dream_idx_type n, double *apod_vec, double *weight,
-                 double gx, double gy, double ramax, double param)
+                 double gx, double gy, double ramax, double apod_par)
 {
   double r = sqrt(gx*gx + gy*gy);
 
@@ -230,11 +230,11 @@ void apodization(ApodMet apod_met, dream_idx_type n, double *apod_vec, double *w
     break;
 
   case ApodMet::gauss:
-    *weight = exp(-(param * r*r) / (ramax*ramax));
+    *weight = exp(-(apod_par * r*r) / (ramax*ramax));
     break;
 
   case ApodMet::raised_cosine:
-    *weight = param + cos(r*M_PI/ramax);
+    *weight = apod_par + cos(r*M_PI/ramax);
     break;
 
   case ApodMet::simply_supported:

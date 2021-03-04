@@ -48,7 +48,7 @@ DEFUN_DLD (dream_apodwin, args, nlhs,
 DREAM_APODWIN - Computes apodization using the same method\n\
 as used in the array functions in the DREAM Toolbox.\n\
 \n\
- Input parameters:\n\
+ Input apod_pareters:\n\
 \n\
 @table @code\n\
 @item apod_met\n\
@@ -60,7 +60,7 @@ of apodization weights for the 'ud' option),\n\
 Parameter for raised cosine and Gaussian apodization functions (a scalar).\n\
 @end table\n\
 \n\
-The options for the @code{apod_met} parameter are:\n\
+The options for the @code{apod_met} apod_pareter are:\n\
 \n\
 @table @code\n\
 @item 'off'\n\
@@ -90,7 +90,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   ApodMet apod_type=ApodMet::gauss;
   dream_idx_type i, num_elements=0;
   bool is_set = false;
-  double *apod=nullptr, weight, xs, ys, ramax, param;
+  double *apod=nullptr, weight, xs, ys, ramax, apod_par;
   double *h;
   octave_value_list oct_retval;
 
@@ -187,7 +187,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   }
 
   //
-  // param - Parameter used for raised cos and Gaussian apodization functions.
+  // apod_par - Parameter used for raised cos and Gaussian apodization functions.
   //
 
   if (mxGetM(2) * mxGetN(2) !=1) {
@@ -195,7 +195,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
     return oct_retval;
   }
   const Matrix tmp2 = args(2).matrix_value();
-  param = (double) tmp2.fortran_vec()[0];
+  apod_par = (double) tmp2.fortran_vec()[0];
 
   // Create an output matrix for the impulse response
   Matrix h_mat(num_elements,1);
@@ -206,7 +206,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   if (do_apod) {
     for (i=0; i<num_elements; i++) {
       xs = 2*ramax * (0.5 - ((double) i / (double) num_elements));
-      apodization(apod_type, i, apod, &weight, xs, ys, ramax, param);
+      apodization(apod_type, i, apod, &weight, xs, ys, ramax, apod_par);
       h[i] = weight;
     }
   }

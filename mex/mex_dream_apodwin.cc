@@ -44,7 +44,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   ApodMet apod_met=ApodMet::gauss;
   dream_idx_type i, num_elements=0;
   bool is_set = false;
-  double *apod=nullptr, weight, xs, ys, ramax, param;
+  double *apod=nullptr, weight, xs, ys, ramax, apod_par;
   double *h;
 
   // Check for proper number of arguments
@@ -124,14 +124,14 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     dream_err_msg("Argument 2 must be a positive integer!");
 
   //
-  // param - Parameter used for raised cos and Gaussian apodization functions.
+  // apod_par - Parameter used for raised cos and Gaussian apodization functions.
   //
 
   if (mxGetM(prhs[2]) * mxGetN(prhs[2]) !=1)
     dream_err_msg("Argument 3 must be a scalar!");
 
 
-  param = mxGetScalar(prhs[2]);
+  apod_par = mxGetScalar(prhs[2]);
 
   // Create a matrix for return arguments
   plhs[0] = mxCreateDoubleMatrix(num_elements,1,mxREAL);
@@ -142,7 +142,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   if (do_apod) {
     for (i=0; i<num_elements; i++) {
       xs = 2*ramax * (0.5 - ((double) i / (double) num_elements));
-      apodization(apod_met, i, apod, &weight, xs, ys, ramax, param);
+      apodization(apod_met, i, apod, &weight, xs, ys, ramax, apod_par);
       h[i] = weight;
     }
   }

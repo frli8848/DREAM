@@ -221,7 +221,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   a = geom_par[0];		// Width of strip.
 
   //
-  // Temporal and spatial sampling parameters.
+  // Temporal and spatial sampling apod_pareters.
   //
 
   ap.check_sampling("dreamline", prhs, 2, 4);
@@ -239,7 +239,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   delay = mxGetPr(prhs[3]);
 
   //
-  // Material parameters
+  // Material apod_pareters
   //
 
   ap.check_material("dreamline", prhs, 4, 3);

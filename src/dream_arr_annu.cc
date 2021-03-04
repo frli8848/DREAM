@@ -34,7 +34,7 @@
 void annular_disc_radii(double *ring_r, double *gr, dream_idx_type num_radii);
 double focusing_annular(FocusMet foc_met, double focal, double ring_r, double ring_r_max, double cp);
 double apodization_annular(ApodMet apod_met, dream_idx_type n, double *apod, double ring_r,
-                           double ring_r_max, double param);
+                           double ring_r_max, double apod_par);
 void resp_annular(double *h_disc, double *h_ring, dream_idx_type nt, dream_idx_type n);
 void superpos_annular(double *h_ring, double *h, dream_idx_type nt,
                       double weight, double foc_delay, dream_idx_type n, double dt);
@@ -54,7 +54,7 @@ ErrorLevel dream_arr_annu(double xo, double yo, double zo,
                           double v, double cp,
                           dream_idx_type num_radii, double *gr,
                           FocusMet foc_met, double *focal,
-                          double *apod, bool do_apod, ApodMet apod_met, double param,
+                          double *apod, bool do_apod, ApodMet apod_met, double apod_par,
                           double *h, ErrorLevel err_level)
 {
   ErrorLevel err = ErrorLevel::none, out_err = ErrorLevel::none;
@@ -117,7 +117,7 @@ ErrorLevel dream_arr_annu(double xo, double yo, double zo,
 
     double weight = 1.0;
     if (do_apod){
-      weight = apodization_annular(apod_met, n, apod, ring_radii[n], ring_r_max, param);
+      weight = apodization_annular(apod_met, n, apod, ring_radii[n], ring_r_max, apod_par);
     }
 
     resp_annular(h_disc.get(), h_ring.get(), nt, n); // Compute the impulse response for the n:th ring.
@@ -135,7 +135,7 @@ ErrorLevel dream_arr_annu(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
                           double v, double cp,
                           dream_idx_type num_radii, double *gr,
                           FocusMet foc_met, double *focal,
-                          double *apod, bool do_apod, ApodMet apod_met, double param,
+                          double *apod, bool do_apod, ApodMet apod_met, double apod_par,
                           double *h, ErrorLevel err_level)
 {
   ErrorLevel err = ErrorLevel::none, out_err = ErrorLevel::none;
@@ -199,7 +199,7 @@ ErrorLevel dream_arr_annu(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
 
     double weight = 1.0;
     if (do_apod){
-      weight = apodization_annular(apod_met, n, apod, ring_radii[n], ring_r_max, param);
+      weight = apodization_annular(apod_met, n, apod, ring_radii[n], ring_r_max, apod_par);
     }
 
     resp_annular(h_disc.get(), h_ring.get(), nt, n); // Compute the impulse response for the n:th ring.
@@ -268,7 +268,7 @@ double focusing_annular(FocusMet foc_met, double focal, double ring_r, double ri
  ***/
 
 double apodization_annular(ApodMet apod_met, dream_idx_type n, double *apod, double ring_r,
-                           double ring_r_max, double param)
+                           double ring_r_max, double apod_par)
 {
   double weight=1.0;
 
@@ -283,11 +283,11 @@ double apodization_annular(ApodMet apod_met, dream_idx_type n, double *apod, dou
     break;
 
   case ApodMet::gauss:
-    weight = exp(-(param * ring_r*ring_r) / (ring_r_max*ring_r_max));
+    weight = exp(-(apod_par * ring_r*ring_r) / (ring_r_max*ring_r_max));
     break;
 
   case ApodMet::raised_cosine:
-    weight = param + cos(ring_r * M_PI / ring_r_max);
+    weight = apod_par + cos(ring_r * M_PI / ring_r_max);
     break;
 
   case ApodMet::simply_supported:

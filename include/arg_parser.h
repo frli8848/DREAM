@@ -360,7 +360,7 @@ public:
 
   // A string arg, a vector, and a scalar.
   bool parse_apod_args(const char *func_name, args_t args, dream_idx_type arg_num, dream_idx_type num_elements,
-                       bool &do_apod, double *apod, ApodMet &apod_met) {
+                       bool &do_apod, double *apod, ApodMet &apod_met, double &apod_par) {
     bool retval=true;
     std::ostringstream s;
     if (!IS_STRING(arg_num)) {
@@ -440,6 +440,12 @@ public:
         s << func_name <<  " arg " << arg_num+3 << " must be a scalar!";
         dream_err_msg(s.str().c_str());
       }
+
+      if (is_set && retval) {
+        const double *apod_p = GET_MATRIX(arg_num+2);
+        apod_par = apod_p[0];
+      }
+
     }
 
     return retval;

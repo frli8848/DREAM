@@ -63,7 +63,7 @@ ErrorLevel dream_arr_circ(double xo, double yo, double zo,
                           dream_idx_type num_elements, double *gx, double *gy, double *gz,
                           FocusMet foc_met, double *focal,
                           SteerMet steer_met, double theta, double phi, double *apod, bool do_apod,
-                          ApodMet apod_met, double param, double *h, ErrorLevel err_level)
+                          ApodMet apod_met, double apod_par, double *h, ErrorLevel err_level)
 {
   ErrorLevel err = ErrorLevel::none, out_err = ErrorLevel::none;
 
@@ -86,7 +86,7 @@ ErrorLevel dream_arr_circ(double xo, double yo, double zo,
     beamsteering(steer_met, theta, phi, gx[n], gy[n], xamax, yamax, ramax, cp, &steer_delay);
 
     if (do_apod) {
-      apodization(apod_met, n, apod, &weight, gx[n], gy[n], ramax, param);
+      apodization(apod_met, n, apod, &weight, gx[n], gy[n], ramax, apod_par);
     }
 
     // Compute the response for the n:th element and add it to the impulse response vector h.
@@ -115,7 +115,7 @@ ErrorLevel dream_arr_circ(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
                           dream_idx_type num_elements, double *gx, double *gy, double *gz,
                           FocusMet foc_met, double *focal,
                           SteerMet steer_met, double theta, double phi, double *apod, bool do_apod,
-                          ApodMet apod_met, double param, double *h, ErrorLevel err_level)
+                          ApodMet apod_met, double apod_par, double *h, ErrorLevel err_level)
 {
   double ramax, xamax, yamax;
   double foc_delay, steer_delay, weight;
@@ -142,7 +142,7 @@ ErrorLevel dream_arr_circ(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
     beamsteering(steer_met, theta, phi, gx[n], gy[n], xamax, yamax, ramax, cp, &steer_delay);
 
     if (do_apod) {
-      apodization(apod_met, n, apod, &weight, gx[n], gy[n], ramax, param);
+      apodization(apod_met, n, apod, &weight, gx[n], gy[n], ramax, apod_par);
     }
 
     // Compute the response for the n:th element and add it to the impulse response vector h.

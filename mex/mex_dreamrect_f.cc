@@ -266,7 +266,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   //
 
   if (nrhs >= 6) {
-    ap.parse_focus_arg("dreamrect_f", prhs, 5, foc_met, &focal);
+    ap.parse_focus_args("dreamrect_f", prhs, 5, foc_met, &focal);
   } else {
     foc_met = FocusMet::none;
   }

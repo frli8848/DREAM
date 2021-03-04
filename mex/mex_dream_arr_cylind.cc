@@ -222,7 +222,6 @@ extern void _main();
 void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
   double *ro, *geom_par, *s_par, *m_par;
-  double *steer_par;
   double a, b, Rcurv, dx, dy, dt;
   dream_idx_type nt, no;
   double param=0.0, *delay, v, cp, alpha;
@@ -245,14 +244,14 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
   // Check for proper number of arguments
 
-  ap.check_arg_in("dream_arr_rect", nrhs, 13, 14);
-  ap.check_arg_out("dream_arr_rect", nlhs, 0, 2);
+  ap.check_arg_in("dream_arr_cylind", nrhs, 13, 14);
+  ap.check_arg_out("dream_arr_cylind", nlhs, 0, 2);
 
   //
   // Observation point.
   //
 
-  ap.check_obs_points("dream_arr_rect", prhs, 0);
+  ap.check_obs_points("dream_arr_cylind", prhs, 0);
   no = mxGetM(prhs[0]); // Number of observation points.
   ro = mxGetPr(prhs[0]);
 
@@ -260,7 +259,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Transducer geometry
   //
 
-  ap.check_geometry("dream_arr_rect", prhs, 1, 3);
+  ap.check_geometry("dream_arr_cylind", prhs, 1, 3);
   geom_par = mxGetPr(prhs[1]);  // Element size and radius.
   a = geom_par[0];              // x-width.
   b = geom_par[1];              // y-width.
@@ -270,7 +269,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Grid function (position vectors of the elements).
   //
 
-  ap.check_array("dream_arr_rect", prhs, 2);
+  ap.check_array("dream_arr_cylind", prhs, 2);
 
   num_elements = mxGetM(prhs[2]); // Number of elementents in the array.
   G = mxGetPr(prhs[2]);         // First column in the matrix.
@@ -281,7 +280,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Temporal and spatial sampling parameters.
   //
 
-  ap.check_sampling("dream_arr_rect", prhs, 3, 4);
+  ap.check_sampling("dream_arr_cylind", prhs, 3, 4);
   s_par = mxGetPr(prhs[3]);
   dx    = s_par[0];             // Spatial x discretization size.
   dy    = s_par[1];             // Spatial dy iscretization size.
@@ -292,14 +291,14 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Start point of impulse response vector ([us]).
   //
 
-  ap.check_delay("dream_arr_rect", prhs, 4, no);
+  ap.check_delay("dream_arr_cylind", prhs, 4, no);
   delay = mxGetPr(prhs[4]);
 
   //
   // Material parameters
   //
 
-  ap.check_material("dream_arr_rect", prhs, 5, 3);
+  ap.check_material("dream_arr_cylind", prhs, 5, 3);
   m_par = mxGetPr(prhs[5]);
   v     = m_par[0];          // Normal velocity of transducer surface.
   cp    = m_par[1];          // Sound speed.
@@ -313,7 +312,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   std::unique_ptr<double[]> focal = std::make_unique<double[]>(num_elements);
 
   if (nrhs >= 7) {
-    ap.parse_focus_arg("dream_arr_rect", prhs, 6, foc_met, focal.get());
+    ap.parse_focus_args("dream_arr_cylind", prhs, 6, foc_met, focal.get());
   } else {
     foc_met = FocusMet::none;
   }
@@ -323,12 +322,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   //
 
   if (nrhs >= 9) {
-
-    ap.parse_steer_args("dream_arr_rect", prhs, 8, steer_met);
-    steer_par = mxGetPr(prhs[9]);
-    theta  = steer_par[0];      // Angle in x-direction.
-    phi    = steer_par[1];      // Angle in y-direction.
-
+    ap.parse_steer_args("dream_arr_cylind", prhs, 8, steer_met, theta, phi);
   } else {
     steer_met = SteerMet::none;
   }
@@ -341,7 +335,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   std::unique_ptr<double[]> apod = std::make_unique<double[]>(num_elements);
 
   if (nrhs >= 11) {
-    ap.parse_apod_args("dream_arr_rect", prhs, 10, num_elements,
+    ap.parse_apod_args("dream_arr_cylind", prhs, 10, num_elements,
                        do_apod, apod.get(), apod_met);
     param = mxGetScalar(prhs[12]);
   } else {
@@ -373,7 +367,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   //
 
   if (nrhs == 14) {
-    ap.parse_error_arg("dream_arr_rect", prhs, 13, err_level);
+    ap.parse_error_arg("dream_arr_cylind", prhs, 13, err_level);
   } else {
     err_level = ErrorLevel::stop; // Default.
   }

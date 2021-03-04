@@ -380,7 +380,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   //
 
   if (nrhs >= 6) {
-    if (!ap.parse_focus_arg("dreamrect_f", args, 5, foc_met, &focal)) {
+    if (!ap.parse_focus_args("dreamrect_f", args, 5, foc_met, &focal)) {
       return oct_retval;
     }
   } else {

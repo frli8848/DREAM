@@ -222,7 +222,6 @@ extern void _main();
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
   double *ro, *s_par, *m_par;
-  double *steer_par;
   double R, dx, dy, dt;
   dream_idx_type nt, no;
   double param=0.0, *delay, v, cp, alpha;
@@ -310,7 +309,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   std::unique_ptr<double[]> focal = std::make_unique<double[]>(num_elements);
 
   if (nrhs >= 7) {
-    ap.parse_focus_arg("dream_arr_circ", prhs, 6, foc_met, focal.get());
+    ap.parse_focus_args("dream_arr_circ", prhs, 6, foc_met, focal.get());
   } else {
     foc_met = FocusMet::none;
   }
@@ -320,12 +319,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   //
 
   if (nrhs >= 9) {
-
-    ap.parse_steer_args("dream_arr_circ", prhs, 8, steer_met);
-    steer_par = mxGetPr(prhs[9]);
-    theta  = steer_par[0];      // Angle in x-direction.
-    phi    = steer_par[1];      // Angle in y-direction.
-
+    ap.parse_steer_args("dream_arr_circ", prhs, 8, steer_met, theta, phi);
   } else {
     steer_met = SteerMet::none;
   }

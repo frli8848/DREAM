@@ -218,7 +218,7 @@ public:
 
   // For arrays: A string arg and  a vector
   // For rect_f and circ_f : A string arg and a "one element" vector
-  bool parse_focus_arg(const char *func_name, args_t args, dream_idx_type arg_num,
+  bool parse_focus_args(const char *func_name, args_t args, dream_idx_type arg_num,
                        FocusMet &foc_met, double *focal=nullptr, dream_idx_type num_elements=1) {
     bool retval=true;
     std::ostringstream s;
@@ -303,7 +303,7 @@ public:
 
   // A string arg and a 2 element vector
   bool parse_steer_args(const char *func_name, args_t args, dream_idx_type arg_num,
-                        SteerMet &steer_met) {
+                        SteerMet &steer_met, double &theta, double &phi) {
     bool retval=true;
     std::ostringstream s;
     if (!IS_STRING(arg_num)) {
@@ -346,6 +346,13 @@ public:
         s << func_name <<  " arg " << arg_num+2 << " must be a 2 element vector!";
         dream_err_msg(s.str().c_str());
       }
+
+      if (is_set && retval) {
+        const double *steer_pars = GET_MATRIX(arg_num+1);
+        theta = steer_pars[0];
+        phi= steer_pars[1];
+      }
+
     }
 
     return retval;

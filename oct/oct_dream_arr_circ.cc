@@ -355,7 +355,6 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
 @end deftypefn")
 {
   double *ro,*geom_par,*s_par,*m_par;
-  double *steer_par;
   double R, dx, dy, dt;
   dream_idx_type nt, no;
   double param=0,*delay, v, cp, alpha;
@@ -475,7 +474,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   std::unique_ptr<double[]> focal = std::make_unique<double[]>(num_elements);
 
   if (nrhs >= 7) {
-    if (!ap.parse_focus_arg("dream_arr_circ", args, 6, foc_met, focal.get())) {
+    if (!ap.parse_focus_args("dream_arr_circ", args, 6, foc_met, focal.get())) {
       return oct_retval;
     }
   } else {
@@ -487,16 +486,9 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   //
 
   if (nrhs >= 9) {
-
-    if (!ap.parse_steer_args("dream_arr_circ", args, 8, steer_met)) {
+    if (!ap.parse_steer_args("dream_arr_circ", args, 8, steer_met, theta, phi)) {
       return oct_retval;
     }
-
-    const Matrix tmp9 = args(9).matrix_value();
-    steer_par = (double*) tmp9.fortran_vec();
-    theta  = steer_par[0];      // Angle in x-direction.
-    phi    = steer_par[1];      // Angle in y-direction.
-
   } else {
     steer_met = SteerMet::none;
   }

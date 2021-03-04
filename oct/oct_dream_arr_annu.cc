@@ -366,9 +366,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   // Grid function (position vector of the elements).
   //
 
-  // FIXME: This one needs special treatment. It is the inner and outer radii
-  // of the array where the innermost one do not have an inner radius (its zero).
-  if (!ap.check_array("dream_arr_annu", args, 1)) {
+  if (!ap.check_array_annu("dream_arr_annu", args, 1)) {
     return oct_retval;
   }
 

@@ -123,6 +123,18 @@ public:
     return retval;
   };
 
+  bool check_array_annu(const char *func_name, args_t args, dream_idx_type arg_num) {
+    bool retval=true;
+    std::ostringstream s;
+    if ( (GET_M(arg_num) != 1) && (GET_N(arg_num) != 1) && (GET_N(arg_num)*GET_N(arg_num) % 2 == 0) ) {
+      s << func_name <<  " requires that arg " << arg_num+1 << "  must be a (number of radii) vector with an odd number of elements!";
+      dream_err_msg(s.str().c_str());
+      retval=false;
+    }
+
+    return retval;
+  };
+
   bool check_geometry(const char *func_name, args_t args, dream_idx_type arg_num, dream_idx_type num_pars) {
     bool retval=true;
     std::ostringstream s;
@@ -250,7 +262,7 @@ public:
         is_set = true;
       }
 
-      if (foc_str == "xy") {
+      if ( (foc_str == "xy") || (foc_str == "on") ) { // Annular array uses "on".
         foc_met = FocusMet::xy;
         is_set = true;
       }

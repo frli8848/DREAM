@@ -21,8 +21,8 @@
 *
 ***/
 
-#include <signal.h>
-
+#include <iostream>
+#include <csignal>
 #include <cstring>
 
 #include "das.h"
@@ -182,16 +182,16 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Register signal handlers.
   //
 
-  if ((old_handler = signal(SIGTERM, &sighandler)) == SIG_ERR) {
-    mexPrintf("Couldn't register SIGTERM  signal handler.\n");
+  if ((old_handler = std::signal(SIGTERM, &sighandler)) == SIG_ERR) {
+    std::cerr << "Couldn't register SIGTERM signal handler!" << std::endl;
   }
 
-  if (( old_handler_abrt=signal(SIGABRT, &sighandler)) == SIG_ERR) {
-    mexPrintf("Couldn't register SIGABRT signal handler.\n");
+  if ((old_handler_abrt = std::signal(SIGABRT, &sighandler)) == SIG_ERR) {
+    std::cerr << "Couldn't register SIGABRT signal handler!" << std::endl;
   }
 
-  if (( old_handler_keyint=signal(SIGINT, &sighandler)) == SIG_ERR) {
-    mexPrintf("Couldn't register SIGINT signal handler.\n");
+  if ((old_handler_keyint = std::signal(SIGINT, &sighandler)) == SIG_ERR) {
+    std::cerr << "Couldn't register SIGINT signal handler!" << std::endl;
   }
 
   //
@@ -238,20 +238,20 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Restore old signal handlers.
   //
 
-  if (signal(SIGTERM, old_handler) == SIG_ERR) {
-    mexPrintf("Couldn't register old SIGTERM signal handler.\n");
+  if (std::signal(SIGTERM, old_handler) == SIG_ERR) {
+    std::cerr << "Couldn't register old SIGTERM signal handler!" << std::endl;
   }
 
-  if (signal(SIGABRT,  old_handler_abrt) == SIG_ERR) {
-    mexPrintf("Couldn't register old SIGABRT signal handler.\n");
+  if (std::signal(SIGABRT, old_handler_abrt) == SIG_ERR) {
+    std::cerr << "Couldn't register old SIGABRT signal handler!" << std::endl;
   }
 
-  if (signal(SIGINT, old_handler_keyint) == SIG_ERR) {
-    mexPrintf("Couldn't register old SIGINT signal handler.\n");
+  if (std::signal(SIGINT, old_handler_keyint) == SIG_ERR) {
+    std::cerr << "Couldn't register old SIGINT signal handler!" << std::endl;
   }
 
   if (!running) {
-    mexErrMsgTxt("CTRL-C pressed!\n"); // Bail out.
+    dream_err_msg("CTRL-C pressed!\n"); // Bail out.
   }
 
   // Return error.

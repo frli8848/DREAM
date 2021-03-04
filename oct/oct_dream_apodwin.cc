@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2006,2007,2008,2009,2015,2016,2019 Fredrik Lingvall
+* Copyright (C) 2006,2007,2008,2009,2015,2016,2019,2021 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -21,12 +21,8 @@
 *
 ***/
 
-
-#include <string.h>
-#include <stdio.h>
-
 #include "arr_functions.h"
-#include "dream_error.h"
+#include "arg_parser.h"
 
 //
 // Octave headers.
@@ -87,127 +83,50 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
 @end deftypefn")
 {
   bool do_apod=false;
-  ApodMet apod_type=ApodMet::gauss;
-  dream_idx_type i, num_elements=0;
-  bool is_set = false;
-  double *apod=nullptr, weight, xs, ys, ramax, apod_par;
+  ApodMet apod_met=ApodMet::gauss;
   double *h;
   octave_value_list oct_retval;
 
-  int nrhs = args.length ();
+  dream_idx_type nrhs = args.length ();
 
-  // Check for proper number of arguments
-  if (nrhs != 3) {
-    error("dream_apodwin requires three input arguments!");
+  ArgParser ap;
+
+  if (!ap.check_arg_in("dream_apodwin", nrhs, 3, 3)) {
     return oct_retval;
-  } else {
-    if (nlhs > 1) {
-      error("dream_apodwin requires one output argument!");
-      return oct_retval;
-    }
+  }
+
+  if (!ap.check_arg_out("dream_apodwin", nlhs, 0, 1)) {
+    return oct_retval;
   }
 
   //
   // Apodization.
   //
 
-  // apod_type = 0 - user defined, 1 triangle, 2 Gauss, 3 raised cosine, 4 simply supported, 5 clamped.
-
-  if (!mxIsChar(0)) {
-    error("Argument 1 must be a string");
-    return oct_retval;
-  }
-
-  std::string apod_str = args(0).string_value();
-
-  do_apod = false;			// default off.
-  is_set = false;
-
-  if (apod_str == "off") {
-    do_apod = false;
-    is_set = true;
-  }
-
-  if (apod_str == "ud") {
-    do_apod = true;
-    apod_type = ApodMet::ud;
-    error(" 'ud'- (user defined) meaningless for this function!");
-    return oct_retval;
-  }
-
-  if (apod_str == "triangle") {
-    do_apod = true;
-    apod_type = ApodMet::triangle;
-    is_set = true;
-  }
-
-  if (apod_str == "gauss") {
-    do_apod = true;
-    apod_type = ApodMet::gauss;
-    is_set = true;
-  }
-
-  if (apod_str == "raised") {
-    do_apod = true;
-    apod_type = ApodMet::raised_cosine;
-    is_set = true;
-  }
-
-  if (apod_str == "simply") {
-    do_apod = true;
-    apod_type = ApodMet::simply_supported;
-      is_set = true;
-  }
-
-  if (apod_str == "clamped") {
-    do_apod = true;
-    apod_type = ApodMet::clamped;
-    is_set = true;
-  }
-
-  if (is_set == false) {
-    error("Unknown apodization!");
-    return oct_retval;
-  }
-
-  //
-  // Number of elements.
-  //
-
-  if (mxGetM(1) * mxGetN(1) !=1) {
-    dream_err_msg("Argument 2 must be a scalar!");
-    return oct_retval;
-  }
   const Matrix tmp1 = args(1).matrix_value();
-  num_elements = (int) tmp1.fortran_vec()[0];
+  dream_idx_type num_elements = (dream_idx_type) tmp1.fortran_vec()[0];
 
-  if (num_elements < 0) {
-    error("Argument 2 must be a positive integer!");
+  // Allocate space for the user defined apodization weights
+  std::unique_ptr<double[]> apod = std::make_unique<double[]>(num_elements);
+
+  double apod_par;
+  if (!ap.parse_apod_args("dream_apodwin", args, 0, num_elements,
+                            do_apod, apod.get(), apod_met, apod_par)) {
     return oct_retval;
   }
-
-  //
-  // apod_par - Parameter used for raised cos and Gaussian apodization functions.
-  //
-
-  if (mxGetM(2) * mxGetN(2) !=1) {
-    error("Argument 3 must be a scalar!");
-    return oct_retval;
-  }
-  const Matrix tmp2 = args(2).matrix_value();
-  apod_par = (double) tmp2.fortran_vec()[0];
 
   // Create an output matrix for the impulse response
   Matrix h_mat(num_elements,1);
   h = h_mat.fortran_vec();
 
-  ramax = 1;
-  ys = 0;
+  double weight=1.0;
+  double ramax = 1.0;
+  double ys = 0.0;
   if (do_apod) {
-    for (i=0; i<num_elements; i++) {
-      xs = 2*ramax * (0.5 - ((double) i / (double) num_elements));
-      apodization(apod_type, i, apod, &weight, xs, ys, ramax, apod_par);
-      h[i] = weight;
+    for (dream_idx_type n=0; n<num_elements; n++) {
+      double xs = 2*ramax * (0.5 - ((double) n / (double) num_elements));
+      apodization(apod_met, n, apod.get(), &weight, xs, ys, ramax, apod_par);
+      h[n] = weight;
     }
   }
 

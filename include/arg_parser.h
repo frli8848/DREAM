@@ -24,6 +24,10 @@
 
 #pragma once
 
+#include <sstream>
+#include <cstring>
+#include <memory>
+
 #include "dream.h"
 #include "dream_error.h"
 

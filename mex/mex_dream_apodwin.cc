@@ -21,11 +21,8 @@
 *
 ***/
 
-#include <string.h>
-#include <uchar.h>
-
 #include "arr_functions.h"
-#include "dream_error.h"
+#include "arg_parser.h"
 
 #include "mex.h"
 
@@ -38,112 +35,36 @@
 
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
-  bool do_apod = false;			// default off.
-  char apod_str[40];
-  int buflen;
+  bool do_apod=false;
   ApodMet apod_met=ApodMet::gauss;
-  dream_idx_type i, num_elements=0;
-  bool is_set = false;
-  double *apod=nullptr, weight, xs, ys, ramax, apod_par;
   double *h;
 
-  // Check for proper number of arguments
-  if (nrhs != 3) {
-    dream_err_msg("dream_apodwin requires three input arguments!");
-  } else {
-    if (nlhs > 1) {
-      dream_err_msg("dream_apodwin requires one output argument!");
-    }
-  }
+  ArgParser ap;
 
-  buflen = (mxGetM(prhs[0]) * mxGetN(prhs[0]) * sizeof(mxChar)) + 1;
-  mxGetString(prhs[0],apod_str,buflen);
+  ap.check_arg_in("dream_apodwin", nrhs, 3, 3);
+  ap.check_arg_out("dream_apodwin", nlhs, 0, 1);
 
-  is_set = false;
-  if (!strcmp(apod_str,"off")) {
-    do_apod = false;
-    is_set = true;
-  }
+  dream_idx_type num_elements = (dream_idx_type) mxGetScalar(prhs[1]);
 
-  if (!strcmp(apod_str,"ud")) {
-    do_apod = true;
-    apod_met = ApodMet::ud;
-    dream_err_msg(" 'ud'- (user defined) meaningless for this function!");
-  }
+  // Allocate space for the user defined apodization weights
+  std::unique_ptr<double[]> apod = std::make_unique<double[]>(num_elements);
 
-  if (!strcmp(apod_str,"triangle")) {
-    do_apod = true;
-    apod_met = ApodMet::triangle;
-    is_set = true;
-  }
+  double apod_par;
+  ap.parse_apod_args("dream_apodwin", prhs, 0, num_elements,
+                     do_apod, apod.get(), apod_met, apod_par);
 
-  if (!strcmp(apod_str,"gauss")) {
-    do_apod = true;
-    apod_met = ApodMet::gauss;
-    is_set = true;
-  }
-
-  if (!strcmp(apod_str,"raised")) {
-    do_apod = true;
-    apod_met = ApodMet::raised_cosine;
-    is_set = true;
-  }
-
-  if (!strcmp(apod_str,"simply")) {
-    do_apod = true;
-    apod_met = ApodMet::simply_supported;
-    is_set = true;
-  }
-
-  if (!strcmp(apod_str,"clamped")) {
-    do_apod = true;
-    apod_met = ApodMet::clamped;
-    is_set = true;
-  }
-
-  if (is_set == false) {
-    dream_err_msg("Unknown apodization level!");
-  }
-
-  //
-  // Apodization.
-  //
-
-  if (!mxIsChar(prhs[0])) {
-    dream_err_msg("Argument 1 must be a string");
-  }
-
-  if (mxGetM(prhs[1]) * mxGetN(prhs[1]) !=1){
-    dream_err_msg("Argument 2 must be a scalar!");
-  }
-
-  num_elements = (int) mxGetScalar(prhs[1]);
-
-  //if (!mxIsInt32(prhs[1]) || num_elements < 0)
-  if (num_elements < 0)
-    dream_err_msg("Argument 2 must be a positive integer!");
-
-  //
-  // apod_par - Parameter used for raised cos and Gaussian apodization functions.
-  //
-
-  if (mxGetM(prhs[2]) * mxGetN(prhs[2]) !=1)
-    dream_err_msg("Argument 3 must be a scalar!");
-
-
-  apod_par = mxGetScalar(prhs[2]);
-
-  // Create a matrix for return arguments
+  // Create an output matrix for the impulse response
   plhs[0] = mxCreateDoubleMatrix(num_elements,1,mxREAL);
   h = mxGetPr(plhs[0]);
 
-  ramax = 1;
-  ys = 0;
+  double weight=1.0;
+  double ramax = 1.0;
+  double ys = 0.0;
   if (do_apod) {
-    for (i=0; i<num_elements; i++) {
-      xs = 2*ramax * (0.5 - ((double) i / (double) num_elements));
-      apodization(apod_met, i, apod, &weight, xs, ys, ramax, apod_par);
-      h[i] = weight;
+    for (dream_idx_type n=0; n<num_elements; n++) {
+      double xs = 2*ramax * (0.5 - ((double) n / (double) num_elements));
+      apodization(apod_met, n, apod.get(), &weight, xs, ys, ramax, apod_par);
+      h[n] = weight;
     }
   }
 }

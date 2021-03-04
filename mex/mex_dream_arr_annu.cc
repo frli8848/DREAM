@@ -256,7 +256,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   gr = mxGetPr(prhs[1]);	// Vector of annular radi,
 
   //
-  // Temporal and spatial sampling apod_pareters.
+  // Temporal and spatial sampling parameters.
   //
 
   ap.check_sampling("dream_arr_annu", prhs, 2, 4);
@@ -274,7 +274,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   delay = mxGetPr(prhs[3]);
 
   //
-  // Material apod_pareters
+  // Material parameters
   //
 
   ap.check_material("dream_arr_annu", prhs, 4, 3);
@@ -284,7 +284,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   alpha = m_par[2]; // Attenuation coefficient [dB/(cm MHz)],
 
   //
-  // Focusing apod_pareters.
+  // Focusing parameters.
   //
 
   // Allocate space for the user defined focusing delays

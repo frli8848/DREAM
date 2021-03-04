@@ -66,7 +66,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   ro = mxGetPr(prhs[0]);
 
   //
-  // Temporal and spatial sampling apod_pareters.
+  // Temporal and spatial sampling parameters.
   //
 
   // Check that arg 2 is a 4 element vector
@@ -90,7 +90,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   delay = mxGetPr(prhs[2]);
 
   //
-  // Material apod_pareters
+  // Material parameters
   //
 
   // Check that arg 4 is a 2 element vector.

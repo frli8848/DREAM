@@ -235,7 +235,7 @@ Start point of SIR:\n\
 Scalar delay for all observation points or a vector with individual delays for each observation point [us].\n\
 @end table\n\
 \n\
-Material apod_pareters: m_par = [v cp alpha];\n\
+Material parameters: m_par = [v cp alpha];\n\
 \n\
 @table @code\n\
 @item v\n\
@@ -319,7 +319,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   Rcurv = geom_par[1];		// Radius of the curvature.
 
   //
-  // Temporal and spatial sampling apod_pareters.
+  // Temporal and spatial sampling parameters.
   //
 
   if (!ap.check_sampling("dreamsphere", args, 2, 4)) {
@@ -345,7 +345,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   delay = (double*) tmp3.fortran_vec();
 
   //
-  // Material apod_pareters
+  // Material parameters
   //
 
   if (!ap.check_material("dreamsphere", args, 4, 3)) {

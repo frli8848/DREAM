@@ -234,7 +234,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   b = geom_par[1];		// y-size.
 
   //
-  // Temporal and spatial sampling apod_pareters.
+  // Temporal and spatial sampling parameters.
   //
 
   ap.check_sampling("dreamrect_f", prhs, 2, 4);
@@ -252,7 +252,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   delay = mxGetPr(prhs[3]);
 
   //
-  // Material apod_pareters
+  // Material parameters
   //
 
   ap.check_material("dreamrect_f", prhs, 4, 3);
@@ -262,7 +262,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   alpha  = m_par[2]; // Attenuation coefficient [dB/(cm MHz)].
 
   //
-  // Focusing apod_pareters.
+  // Focusing parameters.
   //
 
   if (nrhs >= 6) {

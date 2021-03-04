@@ -277,7 +277,7 @@ Start point of SIR:\n\
 Scalar delay for all observation points or a vector with individual delays for each observation point [us].\n\
 @end table\n\
 \n\
-Material apod_pareters: m_par = [v cp alpha];\n\
+Material parameters: m_par = [v cp alpha];\n\
 \n\
 @table @code\n\
 @item v\n\
@@ -289,7 +289,7 @@ Attenuation coefficient [dB/(cm MHz)] .\n\
 \n\
 @end table\n\
 \n\
-Focusing apod_pareters: foc_met and focal:\n\
+Focusing parameters: foc_met and focal:\n\
 \n\
 @table @code\n\
 @item foc_met\n\
@@ -431,7 +431,7 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
   //gz    = gy + num_elements;		// Third column in the matrix.
 
   //
-  // Temporal and spatial sampling apod_pareters.
+  // Temporal and spatial sampling parameters.
   //
 
   if (!ap.check_sampling("dream_arr_rect", args, 3, 4)) {
@@ -457,7 +457,7 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
   delay = (double*) tmp4.fortran_vec();
 
   //
-  // Material apod_pareters
+  // Material parameters
   //
 
   if (!ap.check_material("dream_arr_rect", args, 5, 3)) {
@@ -471,7 +471,7 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
   alpha  = m_par[2]; // Attenuation coefficient [dB/(cm MHz)].
 
   //
-  // Focusing apod_pareters.
+  // Focusing parameters.
   //
 
   // Allocate space for the user defined focusing delays

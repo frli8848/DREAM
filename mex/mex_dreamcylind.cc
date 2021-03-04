@@ -228,7 +228,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   Rcurv = geom_par[2];		// Radius of the curvature.
 
   //
-  // Temporal and spatial sampling apod_pareters.
+  // Temporal and spatial sampling parameters.
   //
 
   ap.check_sampling("dreamcylind", prhs, 2, 4);
@@ -246,7 +246,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   delay = mxGetPr(prhs[3]);
 
   //
-  // Material apod_pareters
+  // Material parameters
   //
 
   ap.check_material("dreamcylind", prhs, 4, 3);

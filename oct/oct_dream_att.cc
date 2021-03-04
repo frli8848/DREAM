@@ -72,7 +72,7 @@ Start point of SIR:\n\
 Scalar delay for all observation points or a vector with individual delays for each observation point [us].\n\
 @end table\n\
 \n\
-Material apod_pareters: m_par = [cp alpha];\n\
+Material parameters: m_par = [cp alpha];\n\
 \n\
 @table @code\n\
 @item cp\n\
@@ -124,7 +124,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   ro = (double*) tmp0.fortran_vec();
 
   //
-  // Temporal and spatial sampling apod_pareters.
+  // Temporal and spatial sampling parameters.
   //
 
 
@@ -150,7 +150,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   delay = (double*) tmp2.fortran_vec();
 
   //
-  // Material apod_pareters
+  // Material parameters
   //
 
   // Check that arg 4 is a 2 element vector.

@@ -21,7 +21,7 @@
 *
 ***/
 
-#include <math.h>
+#include <cmath>
 
 #include "dreamrect_f.h"
 
@@ -58,7 +58,7 @@ ErrorLevel dreamrect_f(double xo, double yo, double zo,
   double ysmax = b/2;
 
   double ds = dx * dy;
-  double c = sqrt(a*a + b*b);
+  double c = std::sqrt(a*a + b*b);
 
   for (dream_idx_type i = 0; i < nt; i++) {
     h[i] = 0.0;
@@ -75,7 +75,7 @@ ErrorLevel dreamrect_f(double xo, double yo, double zo,
       // Compute the distance (length) from an observation point (xo,yo,zo)
       // to a point (xs,ys) on the transducer surface.
       double rx = xo - xs;
-      double r = sqrt(rx*rx + ry*ry + zo*zo);
+      double r = std::sqrt(rx*rx + ry*ry + zo*zo);
 
       double foc_delay = focus_delay_rect(foc_met, focal, xs, ys, a, b, c, cp);
 
@@ -85,7 +85,7 @@ ErrorLevel dreamrect_f(double xo, double yo, double zo,
 
       // Propagation delay in micro seconds.
       double t = r * 1.0e3/cp;
-      dream_idx_type it = (dream_idx_type) rint((t - delay + foc_delay)/dt);
+      dream_idx_type it = (dream_idx_type) std::rint((t - delay + foc_delay)/dt);
 
       // Check if index is out of bounds.
       if ((it < nt) && (it >= 0)) {
@@ -129,7 +129,7 @@ ErrorLevel dreamrect_f(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
   ErrorLevel err = ErrorLevel::none;
 
   double ds = dx * dy;
-  double c = sqrt(a*a + b*b);
+  double c = std::sqrt(a*a + b*b);
 
   for (dream_idx_type i = 0; i < nt; i++) {
     h[i] = 0.0;
@@ -148,7 +148,7 @@ ErrorLevel dreamrect_f(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
       // Compute the distance (length) from an observation point (xo,yo,zo)
       // to a point (xs,ys) on the transducer surface.
       double rx = xo - xs;
-      double r = sqrt(rx*rx + ry*ry + zo*zo);
+      double r = std::sqrt(rx*rx + ry*ry + zo*zo);
 
       double foc_delay = focus_delay_rect(foc_met, focal, xs, ys, a, b, c, cp);
 
@@ -158,7 +158,7 @@ ErrorLevel dreamrect_f(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
 
       // Propagation delay in micro seconds.
       double t = r * 1.0e3/cp;
-      dream_idx_type it = (dream_idx_type) rint((t - delay + foc_delay)/dt);
+      dream_idx_type it = (dream_idx_type) std::rint((t - delay + foc_delay)/dt);
 
       // Check if index is out of bounds.
       if ((it < nt) && (it >= 0)) {
@@ -204,33 +204,33 @@ double focus_delay_rect(FocusMet foc_met, double focal,
 
   case FocusMet::x:
     {
-      double rmax = sqrt(xamax*xamax + focal*focal);
-      double diff = rmax - sqrt(xs*xs + focal*focal);
+      double rmax = std::sqrt(xamax*xamax + focal*focal);
+      double diff = rmax - std::sqrt(xs*xs + focal*focal);
       foc_delay = diff * 1.0e3 / cp;
     }
     break;
 
   case FocusMet::y:
     {
-      double rmax = sqrt(yamax*yamax + focal*focal);
-      double diff = rmax - sqrt(ys*ys + focal*focal);
+      double rmax = std::sqrt(yamax*yamax + focal*focal);
+      double diff = rmax - std::sqrt(ys*ys + focal*focal);
       foc_delay = diff * 1.0e3 / cp;
     }
     break;
 
   case FocusMet::xy:
     {
-      double rmax = sqrt(ramax*ramax + focal*focal);
-      double diff = rmax - sqrt(xs*xs + ys*ys + focal*focal);
+      double rmax = std::sqrt(ramax*ramax + focal*focal);
+      double diff = rmax - std::sqrt(xs*xs + ys*ys + focal*focal);
       foc_delay = diff * 1.0e3 / cp;
     }
     break;
 
   case FocusMet::x_y:
     {
-      double rmax = sqrt(ramax*ramax + focal*focal);
-      double delay_x = sqrt(xs*xs + focal*focal);
-      double delay_y = sqrt(ys*ys + focal*focal);
+      double rmax = std::sqrt(ramax*ramax + focal*focal);
+      double delay_x = std::sqrt(xs*xs + focal*focal);
+      double delay_y = std::sqrt(ys*ys + focal*focal);
       double diff = rmax - (delay_x + delay_y);
       foc_delay = diff * 1.0e3 / cp;
     }

@@ -21,9 +21,9 @@
 *
 ***/
 
-#include <string.h>
 #include <signal.h>
-#include <uchar.h>
+
+#include <cstring>
 
 #include "das.h"
 #include "dream_error.h"

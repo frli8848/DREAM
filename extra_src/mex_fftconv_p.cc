@@ -21,26 +21,19 @@
 *
 ***/
 
-
-#include <string.h>
 #include <signal.h>
 
 #include <thread>
+#include <complex>
+
+#include "dream.h"
+#include "fft.h"
 
 #include "mex.h"
 
 #define EQU 0
 #define SUM 1
 #define NEG 2
-
-#include <iostream>
-#include <complex>
-
-#include <stdio.h>
-#include <math.h>
-
-#include "dream.h"
-#include "fft.h"
 
 /***
  *

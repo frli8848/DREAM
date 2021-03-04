@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2003,2006,2007,2008,2009 Fredrik Lingvall
+* Copyright (C) 2003,2006,2007,2008,2009,2021 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -22,18 +22,8 @@
 *
 ***/
 
-
 #include "dream.h"
 
-/***
- *
- * circ_sir
- *
- ***/
-
-#ifdef __cplusplus
-extern "C"
-#endif
 void circ_sir(double xo,
               double yo,
               double zo,

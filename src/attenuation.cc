@@ -21,11 +21,6 @@
  *
  ***/
 
-
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
-
 #include <complex>
 #include "attenuation.h"
 
@@ -117,8 +112,8 @@ void Attenuation::att(FFTCVec &xc_vec, FFTVec &x_vec, double r, dream_idx_type i
 
     // (Roughly) Eq.(A6) in M_Piwakowski and Sbai, IEEE UFFC, vol 46,
     // No 2, March 1999, p. 422--440.
-    b1 = cos( -w*r*alpha/(M_PI*M_PI)*b - t*w ); // Real part.
-    b2 = sin( -w*r*alpha/(M_PI*M_PI)*b - t*w ); // Imag part.
+    b1 = std::cos( -w*r*alpha/(M_PI*M_PI)*b - t*w ); // Real part.
+    b2 = std::sin( -w*r*alpha/(M_PI*M_PI)*b - t*w ); // Imag part.
 
     xc[k]       = std::complex<double>(x1*b1, x1*b2);
     xc[m_len-k] = std::complex<double>(x1*b1,-x1*b2);

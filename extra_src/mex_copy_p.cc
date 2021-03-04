@@ -21,13 +21,11 @@
 *
 ***/
 
-#include <string.h>
-#include <stdlib.h>
-#include <math.h>
 #include <signal.h>
-#include <uchar.h>
 
+#include <cmath>
 #include <string>
+#include <cstring>
 #include <thread>
 
 #include "dream.h"

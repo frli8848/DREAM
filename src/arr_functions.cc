@@ -21,9 +21,7 @@
 *
 ***/
 
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <cmath>
 
 #include "arr_functions.h"
 
@@ -80,7 +78,7 @@ void max_dim_arr(double *x_max, double *y_max, double *ramax,
       *y_max = ret;
     }
   }
-  *ramax = sqrt(*x_max * *x_max + *y_max * *y_max);
+  *ramax = std::sqrt(*x_max * *x_max + *y_max * *y_max);
 
   return;
 }
@@ -104,33 +102,33 @@ void focusing(FocusMet foc_met, double focal, double gx, double gy,
 
   case FocusMet::x:
     {
-      double rmax = sqrt(x_max*x_max + focal*focal);
-      double diff = rmax - sqrt(gx*gx + focal*focal);
+      double rmax = std::sqrt(x_max*x_max + focal*focal);
+      double diff = rmax - std::sqrt(gx*gx + focal*focal);
       *foc_delay = diff*1.0e3/cp; // [us]
     }
     break;
 
   case FocusMet::y:
     {
-      double rmax = sqrt(y_max*y_max + focal*focal);
-      double diff = rmax - sqrt(gy*gy + focal*focal);
+      double rmax = std::sqrt(y_max*y_max + focal*focal);
+      double diff = rmax - std::sqrt(gy*gy + focal*focal);
       *foc_delay = diff*1.0e3/cp; // [us]
     }
     break;
 
   case FocusMet::xy:
     {
-      double rmax = sqrt(ramax*ramax + focal*focal);
-      double diff = rmax - sqrt(gx*gx + gy*gy + focal*focal);
+      double rmax = std::sqrt(ramax*ramax + focal*focal);
+      double diff = rmax - std::sqrt(gx*gx + gy*gy + focal*focal);
       *foc_delay = diff*1.0e3/cp; // [us]
     }
     break;
 
   case FocusMet::x_y:
     {
-      double rmax = sqrt(ramax*ramax + focal*focal);
-      double retx = sqrt(gx*gx + focal*focal);
-      double rety = sqrt(gy*gy + focal*focal);
+      double rmax = std::sqrt(ramax*ramax + focal*focal);
+      double retx = std::sqrt(gx*gx + focal*focal);
+      double rety = std::sqrt(gy*gy + focal*focal);
       double diff = rmax - (retx + rety);
       *foc_delay = diff*1.0e3/cp; // [us]
     }
@@ -168,7 +166,7 @@ void beamsteering(SteerMet steer_met, double theta, double phi, double gx, doubl
 
   case SteerMet::x:
     {
-      double sinx = sin(theta * deg2rad);
+      double sinx = std::sin(theta * deg2rad);
       double rmax = x_max * sinx;
       double diff =  rmax + gx*sinx;
       *steer_delay = diff*1.0e3/cp;
@@ -177,7 +175,7 @@ void beamsteering(SteerMet steer_met, double theta, double phi, double gx, doubl
 
   case SteerMet::y:
     {
-      double siny = sin(phi * deg2rad);
+      double siny = std::sin(phi * deg2rad);
       double rmax = y_max * siny;
       double diff = rmax + gy * siny;
       *steer_delay = diff*1.0e3/cp;
@@ -186,11 +184,11 @@ void beamsteering(SteerMet steer_met, double theta, double phi, double gx, doubl
 
   case SteerMet::xy:
     {
-      double sinx = sin(theta * deg2rad);
+      double sinx = std::sin(theta * deg2rad);
       double rmax = x_max * sinx;
       double diff = rmax + gx*sinx;
       double steer_x_delay = diff*1.0e3/cp;
-      double siny = sin(phi * deg2rad);
+      double siny = std::sin(phi * deg2rad);
       rmax = y_max * siny;
       diff = rmax + gy * siny;
       double steer_y_delay = diff*1.0e3/cp;
@@ -217,7 +215,7 @@ void beamsteering(SteerMet steer_met, double theta, double phi, double gx, doubl
 void apodization(ApodMet apod_met, dream_idx_type n, double *apod_vec, double *weight,
                  double gx, double gy, double ramax, double apod_par)
 {
-  double r = sqrt(gx*gx + gy*gy);
+  double r = std::sqrt(gx*gx + gy*gy);
 
   switch(apod_met) {
 
@@ -234,7 +232,7 @@ void apodization(ApodMet apod_met, dream_idx_type n, double *apod_vec, double *w
     break;
 
   case ApodMet::raised_cosine:
-    *weight = apod_par + cos(r*M_PI/ramax);
+    *weight = apod_par + std::cos(r*M_PI/ramax);
     break;
 
   case ApodMet::simply_supported:
@@ -271,7 +269,7 @@ void distance(double xo, double yo, double zo,
   rx = xo - xs;
   ry = yo - ys;
   rz = zo - zs;
-  *ri = sqrt(rx*rx + rz*rz + ry*ry);
+  *ri = std::sqrt(rx*rx + rz*rz + ry*ry);
 
   return;
 }

@@ -23,7 +23,6 @@
 
 #include <signal.h>
 
-#include <iostream>
 #include <thread>
 #include <mutex>
 

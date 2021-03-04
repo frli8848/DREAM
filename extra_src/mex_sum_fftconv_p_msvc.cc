@@ -21,11 +21,12 @@
 *
 ***/
 
+#include <signal.h>
 
 #include <string.h>
 #include <stdlib.h>
 #include <pthread.h>
-#include <signal.h>
+
 #include <uchar.h>
 
 #include <complex> // C++

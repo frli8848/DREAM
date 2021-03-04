@@ -21,9 +21,7 @@
 *
 ***/
 
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <cmath>
 
 #include "das_arr.h"
 #include "arr_functions.h"
@@ -217,7 +215,7 @@ ErrorLevel delay_arr(double xo, double yo, double zo, double xs, double ys, doub
   double ri;
   distance(xo, yo, zo, xs, ys, zs, &ri);
   double t = ri * 1.0e3/cp;
-  dream_idx_type it = (dream_idx_type) rint((t - delay + foc_delay + steer_delay)/dt);
+  dream_idx_type it = (dream_idx_type) std::rint((t - delay + foc_delay + steer_delay)/dt);
 
   // Check if index is out of bounds.
   if ((it < nt) && (it >= 0)) {
@@ -254,5 +252,5 @@ dream_idx_type centroid(double *h, dream_idx_type nt)
 
   t_c /= sum;
 
-  return dream_idx_type(rint(t_c));
+  return dream_idx_type(std::rint(t_c));
 }

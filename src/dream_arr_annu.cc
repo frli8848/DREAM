@@ -21,8 +21,7 @@
 *
 ***/
 
-#include <math.h>
-#include <stdlib.h>
+#include <cmath>
 
 #include "dream_arr_annu.h"
 #include "dreamcirc.h"
@@ -241,8 +240,8 @@ double focusing_annular(FocusMet foc_met, double focal, double ring_r, double ri
   case FocusMet::xy:
   case FocusMet::x_y:
     {
-      double rmax = sqrt(ring_r_max*ring_r_max + focal*focal);
-      double diff = rmax - sqrt(ring_r*ring_r + focal*focal);
+      double rmax = std::sqrt(ring_r_max*ring_r_max + focal*focal);
+      double diff = rmax - std::sqrt(ring_r*ring_r + focal*focal);
       foc_delay = diff * 1000 / cp;
     }
     break;
@@ -287,7 +286,7 @@ double apodization_annular(ApodMet apod_met, dream_idx_type n, double *apod, dou
     break;
 
   case ApodMet::raised_cosine:
-    weight = apod_par + cos(ring_r * M_PI / ring_r_max);
+    weight = apod_par + std::cos(ring_r * M_PI / ring_r_max);
     break;
 
   case ApodMet::simply_supported:
@@ -321,7 +320,7 @@ void superpos_annular(double *h_ring, double *h, dream_idx_type nt,
     buf[i] = 0.0;
   }
 
-  dream_idx_type delay_idx = (dream_idx_type) rint(foc_delay/dt) + 1;
+  dream_idx_type delay_idx = (dream_idx_type) std::rint(foc_delay/dt) + 1;
   for (dream_idx_type i=0; i<nt; i++) { // FIXME: can delay_idx be > nt?
     if (delay_idx < nt) {
       buf[i + delay_idx] = h_ring[i + n*nt];

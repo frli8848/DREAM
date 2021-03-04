@@ -21,10 +21,8 @@
 *
 ***/
 
+#include <cmath>
 
-#include <math.h>
-#include <string.h>
-#include <stdio.h>
 #include "scirc_sir.h"
 #include "dream_error.h"
 
@@ -64,7 +62,7 @@ void scirc_sir(double xo_i,
   double t1, t2, r_cyl, xo, yo, zo, r;
   double R, Rprim;
   double pi;
-  pi = atan( (double) 1.0) * 4.0;
+  pi = std::atan( (double) 1.0) * 4.0;
 
   // Convert to [m].
   xo = xo_i / 1000.0;
@@ -76,9 +74,9 @@ void scirc_sir(double xo_i,
     h[it] = (double) 0.0 ;
   }
 
-  r_cyl = sqrt(xo*xo + yo*yo); // Distance from z-axis.
-  Rprim = sqrt(zo*zo + (r-r_cyl)*(r-r_cyl) );
-  R     = sqrt(zo*zo + (r+r_cyl)*(r+r_cyl) );
+  r_cyl = std::sqrt(xo*xo + yo*yo); // Distance from z-axis.
+  Rprim = std::sqrt(zo*zo + (r-r_cyl)*(r-r_cyl) );
+  R     = std::sqrt(zo*zo + (r+r_cyl)*(r+r_cyl) );
 
   for (it=0; it<nt; it++) {
 
@@ -251,10 +249,10 @@ void scirc_sir(double xo_i,
 double acos_acos(double c1,double c2)
 {
   double ac1=0.0, ac2=0.0;
-  double pi = atan( (double) 1.0) * 4.0;
+  double pi = std::atan( (double) 1.0) * 4.0;
 
   if (c1 >= -1.0 && c1 <= 1.0) {
-    ac1 = acos(c1);
+    ac1 = std::acos(c1);
   }
   else if (c1 < -1.0) {
     ac1 = pi;
@@ -264,7 +262,7 @@ double acos_acos(double c1,double c2)
   }
 
   if (c2 >= -1.0 && c2 <= 1.0) {
-    ac2 = acos(c2);
+    ac2 = std::acos(c2);
   }
   else if (c2 < -1.0) {
     ac2 = pi;
@@ -290,8 +288,8 @@ double trapets_int(double t1, double t2, double zo, double r, double r_cyl, doub
   t = t1;
   for (n = 0; n < int_len; n++) {
 
-    c1 = (cp*t*cp*t - zo*zo + r_cyl*r_cyl - r*r) / (2*r_cyl*sqrt(cp*t*cp*t-zo*zo));
-    c2 = (cp*(t+dt)*cp*(t+dt) - zo*zo + r_cyl*r_cyl - r*r)  / (2*r_cyl*sqrt(cp*(t+dt)*cp*(t+dt)-zo*zo));
+    c1 = (cp*t*cp*t - zo*zo + r_cyl*r_cyl - r*r) / (2*r_cyl*std::sqrt(cp*t*cp*t-zo*zo));
+    c2 = (cp*(t+dt)*cp*(t+dt) - zo*zo + r_cyl*r_cyl - r*r)  / (2*r_cyl*std::sqrt(cp*(t+dt)*cp*(t+dt)-zo*zo));
 
     y += acos_acos(c1,c2)/2 * dt;
 

@@ -21,9 +21,7 @@
 *
 ***/
 
-#include <math.h>
-#include <string.h>
-#include <stdio.h>
+#include <cmath>
 
 #include "circ_sir.h"
 #include "dream_error.h"
@@ -62,13 +60,13 @@ void circ_sir(double xo_i,
     h[it] = (double) 0.0;
   }
 
-  r_cyl = sqrt(xo*xo + yo*yo); // Distance from z-axis.
-  Rprim = sqrt(zo*zo + (r-r_cyl)*(r-r_cyl) );
-  R     = sqrt(zo*zo + (r+r_cyl)*(r+r_cyl) );
+  r_cyl = std::sqrt(xo*xo + yo*yo); // Distance from z-axis.
+  Rprim = std::sqrt(zo*zo + (r-r_cyl)*(r-r_cyl) );
+  R     = std::sqrt(zo*zo + (r+r_cyl)*(r+r_cyl) );
 
   for (it=0; it<nt; it++) {
 
-    t = (((double) it) * dt + delay)/1e6; // in [s].
+    t = (((double) it) * dt + delay)/1.0e6; // in [s].
 
     if (r > r_cyl) {
 
@@ -79,7 +77,7 @@ void circ_sir(double xo_i,
         h[it] = v * cp;
       }
       else if ( (cp*t >= Rprim) && (cp*t < R) ) {
-        h[it] = v * cp/M_PI * acos( (cp*t*cp*t - zo*zo + r_cyl*r_cyl - r*r) / (2*r_cyl*sqrt(cp*t*cp*t-zo*zo)));
+        h[it] = v * cp/M_PI * std::acos( (cp*t*cp*t - zo*zo + r_cyl*r_cyl - r*r) / (2.0*r_cyl*std::sqrt(cp*t*cp*t-zo*zo)));
       }
       else if (cp*t >= R) {
         h[it] = 0.0;
@@ -92,7 +90,7 @@ void circ_sir(double xo_i,
         h[it] = 0.0;
       }
       else if ( (cp*t >= Rprim) && (cp*t < R) ) {
-        h[it] = v * cp/M_PI * acos( (cp*t*cp*t - zo*zo + r_cyl*r_cyl - r*r) / (2*r_cyl*sqrt(cp*t*cp*t-zo*zo)));
+        h[it] = v * cp/M_PI * std::acos( (cp*t*cp*t - zo*zo + r_cyl*r_cyl - r*r) / (2.0*r_cyl*std::sqrt(cp*t*cp*t-zo*zo)));
       }
       else if (cp*t >= R) {
         h[it] = 0.0;

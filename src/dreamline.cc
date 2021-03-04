@@ -21,9 +21,7 @@
 *
 ***/
 
-
-#include <math.h>
-#include <stdio.h>
+#include <cmath>
 
 #include "dreamline.h"
 
@@ -56,7 +54,7 @@ ErrorLevel dreamline(double xo, double yo, double zo, double a,
 
   while (xs <= xsmax) {
 
-    r = sqrt((xo-xs)*(xo-xs) + yo*yo + zo*zo);
+    r = std::sqrt((xo-xs)*(xo-xs) + yo*yo + zo*zo);
 
     ai = v * ds / (2*M_PI * r);
     ai /= dt;
@@ -64,7 +62,7 @@ ErrorLevel dreamline(double xo, double yo, double zo, double a,
 
     // Propagation delay in micro seconds.
     t = r * 1000.0/cp;
-    it = (dream_idx_type) rint((t - delay)/dt);
+    it = (dream_idx_type) std::rint((t - delay)/dt);
 
     // Check if index is out of bounds.
     if ((it < nt) && (it >= 0)) {
@@ -108,7 +106,7 @@ ErrorLevel dreamline(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
 
   while (xs <= xsmax) {
 
-    r = sqrt((xo-xs)*(xo-xs) + yo*yo + zo*zo);
+    r = std::sqrt((xo-xs)*(xo-xs) + yo*yo + zo*zo);
 
     ai = v * ds / (2*M_PI * r);
     ai /= dt;
@@ -116,7 +114,7 @@ ErrorLevel dreamline(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
 
     // Propagation delay in micro seconds.
     t = r * 1000.0/cp;
-    it = (dream_idx_type) rint((t - delay)/dt);
+    it = (dream_idx_type) std::rint((t - delay)/dt);
 
     // Check if index is out of bounds.
     if ((it < nt) && (it >= 0)) {

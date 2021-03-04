@@ -21,8 +21,7 @@
 *
 ***/
 
-#include <math.h>
-#include <uchar.h>
+#include <cmath>
 
 #include "attenuation.h"
 #include "dream_error.h"
@@ -76,7 +75,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
   s_par = mxGetPr(prhs[1]);
   dt    = s_par[0];		// Temporal discretization size (= 1/sampling freq).
-  nt    = (int) s_par[1];	// Length of SIR.
+  nt    = (dream_idx_type) s_par[1];	// Length of SIR.
 
   //
   // Start point of impulse response vector ([us]).
@@ -122,8 +121,8 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       yo = ro[n+1*no];
       zo = ro[n+2*no];
 
-      r = sqrt(xo*xo + yo*yo + zo*zo);
-      it = (int) ( (r * 1.0e3/cp - delay[0])/dt + 1);
+      r = std::sqrt(xo*xo + yo*yo + zo*zo);
+      it = (dream_idx_type) ( (r * 1.0e3/cp - delay[0])/dt + 1);
       att.att(xc, x, r, it, &h[n*nt], 1.0);
     }
   } else {
@@ -132,8 +131,8 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       yo = ro[n+1*no];
       zo = ro[n+2*no];
 
-      r = sqrt(xo*xo + yo*yo + zo*zo);
-      it = (int) ( (r * 1.0e3/cp - delay[n])/dt + 1);
+      r = std::sqrt(xo*xo + yo*yo + zo*zo);
+      it = (dream_idx_type) ( (r * 1.0e3/cp - delay[n])/dt + 1);
       att.att(xc, x, r, it, &h[n*nt], 1.0);
     }
   }

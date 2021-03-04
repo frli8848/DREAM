@@ -21,8 +21,7 @@
 *
 ***/
 
-#include <math.h>
-#include <stdio.h>
+#include <cmath>
 
 #include "das.h"
 #include "dream_error.h"
@@ -43,7 +42,7 @@ ErrorLevel das(double xo, double yo, double zo,
     h[it] = 0.0 ;
   }
 
-  double ri = sqrt(xo*xo + yo*yo + zo*zo);
+  double ri = std::sqrt(xo*xo + yo*yo + zo*zo);
   double t = ri * 1000.0/cp;
   dream_idx_type it = (dream_idx_type) rint((t - delay)/dt);
 

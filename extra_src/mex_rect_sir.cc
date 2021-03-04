@@ -21,11 +21,10 @@
 *
 ***/
 
-#include <string.h>
 #include <signal.h>
-#include <uchar.h>
 
 #include <iostream>
+#include <string>
 #include <thread>
 
 #include "affinity.h"

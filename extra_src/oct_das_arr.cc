@@ -21,8 +21,6 @@
  *
  ***/
 
-
-#include <string.h>
 #include <signal.h>
 
 #include "das_arr.h"

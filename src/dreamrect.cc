@@ -21,7 +21,7 @@
 *
 ***/
 
-#include <math.h>
+#include <cmath>
 
 #include "dreamrect.h"
 #include "attenuation.h"
@@ -73,14 +73,14 @@ ErrorLevel dreamrect(double xo, double yo, double zo,
     while (xs <= xsmax) {
 
       rx = xo - xs;
-      r = sqrt(rx*rx + ry*ry + rz*rz);
+      r = std::sqrt(rx*rx + ry*ry + rz*rz);
 
       ai = v * ds / (2*M_PI * r);
       ai /= dt;
       ai *= 1000.0;		// Convert to SI units.
 
       t = r * 1000.0/cp;	// Propagation delay in micro seconds.
-      it = (dream_idx_type) rint((t - delay)/dt); // Sample index.
+      it = (dream_idx_type) std::rint((t - delay)/dt); // Sample index.
 
       // Check if index is out of bounds.
       if ( (it < nt) && (it >= 0) ) {
@@ -146,14 +146,14 @@ ErrorLevel dreamrect(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
     while (xs <= xsmax) {
 
       rx = xo - xs;
-      r = sqrt(rx*rx + ry*ry + rz*rz);
+      r = std::sqrt(rx*rx + ry*ry + rz*rz);
 
       ai = v * ds / (2*M_PI * r);
       ai /= dt;
       ai *= 1000.0;		// Convert to SI units.
 
       t = r * 1000.0/cp;	// Propagation delay in micro seconds.
-      it = (dream_idx_type) rint((t - delay)/dt); // Sample index.
+      it = (dream_idx_type) std::rint((t - delay)/dt); // Sample index.
 
       // Check if index is out of bounds.
       if ( (it < nt) && (it >= 0) ) {

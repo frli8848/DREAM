@@ -21,8 +21,7 @@
 *
 ***/
 
-#include <math.h>
-#include <stdlib.h>
+#include <cmath>
 
 #include "dream_arr_circ.h"
 #include "arr_functions.h"
@@ -196,7 +195,7 @@ ErrorLevel circ_arr(double xo, double yo, double zo,
   while (ys <= ysmax) {
 
     // Compute the x-axis integration limits.
-    double rs = sqrt(R*R - (y-ys)*(y-ys));
+    double rs = std::sqrt(R*R - (y-ys)*(y-ys));
     double x_min = -rs + x;
     double x_max =  rs + x;
 
@@ -211,7 +210,7 @@ ErrorLevel circ_arr(double xo, double yo, double zo,
 
       // Propagation delay in micro seconds.
       double t = r * 1.0e3/cp;
-      dream_idx_type it = (dream_idx_type) rint((t - delay + foc_delay + steer_delay)/dt);
+      dream_idx_type it = (dream_idx_type) std::rint((t - delay + foc_delay + steer_delay)/dt);
 
       // Check if index is out of bounds.
       if ((it < nt) && (it >= 0)) {
@@ -261,7 +260,7 @@ ErrorLevel circ_arr(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
   while (ys <= ysmax) {
 
     // Compute the x-axis integration limits.
-    double rs = sqrt(R*R - (y-ys)*(y-ys));
+    double rs = std::sqrt(R*R - (y-ys)*(y-ys));
     double x_min = -rs + x;
     double x_max =  rs + x;
 
@@ -276,7 +275,7 @@ ErrorLevel circ_arr(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
 
       // Propagation delay in micro seconds.
       double t = r * 1.0e3/cp;
-      dream_idx_type it = (dream_idx_type) rint((t - delay + foc_delay + steer_delay)/dt);
+      dream_idx_type it = (dream_idx_type) std::rint((t - delay + foc_delay + steer_delay)/dt);
 
       // Check if index is out of bounds.
       if ((it < nt) && (it >= 0)) {

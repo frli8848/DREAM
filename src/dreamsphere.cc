@@ -21,8 +21,7 @@
 *
 ***/
 
-#include <math.h>
-#include <stdio.h>
+#include <cmath>
 
 #include "dreamsphere.h"
 
@@ -70,7 +69,7 @@ ErrorLevel  dreamsphere(double xo, double yo, double zo,
   while (ys <= ysmax) {
 
     // Compute the x-axis integration limits.
-    double rs = sqrt(R*R - ys*ys);
+    double rs = std::sqrt(R*R - ys*ys);
     xsmin = -rs;
     xsmax =  rs;
 
@@ -93,7 +92,7 @@ ErrorLevel  dreamsphere(double xo, double yo, double zo,
 
       // Propagation delay in micro seconds.
       t = r * 1.0e3/cp;
-      it = (dream_idx_type) rint((t - delay)/dt);
+      it = (dream_idx_type) std::rint((t - delay)/dt);
 
       // Check if index is out of bounds.
       if ((it < nt) && (it >= 0)) {
@@ -141,7 +140,7 @@ ErrorLevel dreamsphere(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
   double ys = ysmin + dy / 2.0;
   while (ys <= ysmax) {
 
-    double rs = sqrt(R*R - ys*ys);
+    double rs = std::sqrt(R*R - ys*ys);
     xsmin = -rs;
     xsmax =  rs;
 
@@ -164,7 +163,7 @@ ErrorLevel dreamsphere(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
 
       // Propagation delay in micro seconds.
       t = r * 1.0e3/cp;
-      it = (dream_idx_type) rint((t - delay)/dt);
+      it = (dream_idx_type) std::rint((t - delay)/dt);
 
       // Check if index is out of bounds.
       if ((it < nt) && (it >= 0)) {
@@ -201,12 +200,12 @@ double sphere_f(double xs, double ys,
 {
   double rx, ry, rz;
 
-  double zs = Rcurv - sqrt(Rcurv*Rcurv - xs*xs - ys*ys);
+  double zs = Rcurv - std::sqrt(Rcurv*Rcurv - xs*xs - ys*ys);
 
   rx = xo - xs;
   ry = yo - ys;
   rz = zo - zs;
-  double r = sqrt(rx*rx + ry*ry + rz*rz);
+  double r = std::sqrt(rx*rx + ry*ry + rz*rz);
 
   return r;
 }
@@ -223,12 +222,12 @@ double sphere_d(double xs, double ys,
 {
   double rx, ry, rz;
 
-  double zs = Rcurv - sqrt(Rcurv*Rcurv - xs*xs - ys*ys);
+  double zs = Rcurv - std::sqrt(Rcurv*Rcurv - xs*xs - ys*ys);
 
   rx = xo - xs;
   ry = yo - ys;
   rz = zo + zs;                // Change the sign of zs for defocused.
-  double r = sqrt(rx*rx + ry*ry + rz*rz);
+  double r = std::sqrt(rx*rx + ry*ry + rz*rz);
 
   return r;
 }

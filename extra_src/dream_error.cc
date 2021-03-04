@@ -25,7 +25,7 @@
 #include "dream_error.h"
 
 #ifdef OCTAVE
-#include <stdio.h>
+#include <iostream>
 #else
 #include <uchar.h>
 #include <mex.h>
@@ -45,7 +45,7 @@ int dream_out_of_bounds_err(const char *msg, int idx, ErrorLevel err_level)
   case ErrorLevel::stop:
 
 #ifdef OCTAVE
-    printf("%s (offset = %d samples)\n",msg,idx);
+    std::cout << msg << "(offset = "  << idx << " samples)" << std::endl;
 #else
     mexPrintf("%s (offset = %d samples)\n",msg,idx);
     mexErrMsgTxt(""); // Bail out!
@@ -54,7 +54,7 @@ int dream_out_of_bounds_err(const char *msg, int idx, ErrorLevel err_level)
 
   case ErrorLevel::warn:
 #ifdef OCTAVE
-    printf("%s (offset = %d samples)\n",msg,idx);
+    std::cout << msg << "(offset = "  << idx << " samples)" << std::endl;
 #else
     mexPrintf("%s (offset = %d samples)\n",msg,idx);
 #endif
@@ -65,7 +65,7 @@ int dream_out_of_bounds_err(const char *msg, int idx, ErrorLevel err_level)
 
   case ErrorLevel::parallel_stop:
 #ifdef OCTAVE
-    printf("%s (offset = %d samples)\n",msg,idx);
+    std::cout << msg << "(offset = "  << idx << " samples)" << std::endl;
 #else
     mexPrintf("%s (offset = %d samples)\n",msg,idx);
 #endif
@@ -80,9 +80,8 @@ int dream_out_of_bounds_err(const char *msg, int idx, ErrorLevel err_level)
 
 void dream_err_msg(const char *msg)
 {
-
 #ifdef OCTAVE
-  printf("%s\n",msg);
+  std::cout << msg << std::endl;
 #else
   mexErrMsgTxt(msg);
 #endif

@@ -21,9 +21,7 @@
 *
 ***/
 
-
-#include <math.h>
-#include <stdio.h>
+#include <cmath>
 
 #include "dreamcylind.h"
 
@@ -61,24 +59,24 @@ ErrorLevel dreamcylind(double xo, double yo, double zo,
   double phi, phi_min, phi_max;
   ErrorLevel err = ErrorLevel::none;
 
-  if (b > 2*fabs(Rcurv)) {
+  if (b > 2.0*std::fabs(Rcurv)) {
     dream_err_msg("Error in dreamcylind: the y-size, b, must be less than the curvature diameter 2*Rcurv!\n");
   }
 
   b /= 2.0;
-  double z_Rcurv = fabs(Rcurv) - sqrt(Rcurv*Rcurv - b*b);
+  double z_Rcurv = std::fabs(Rcurv) - std::sqrt(Rcurv*Rcurv - b*b);
 
   xsmin = -a/2.0;
   xsmax = a/2.0;
 
-  phi = 2.0 * atan(b/(fabs(Rcurv)-z_Rcurv));
-  phi_min = -phi/2;
-  phi_max = phi/2;
+  phi = 2.0 * std::atan(b/(std::fabs(Rcurv)-z_Rcurv));
+  phi_min = -phi/2.0;
+  phi_max = phi/2.0;
 
   // dphi in y-dim [rad].
-  double dphi = asin(dy/fabs(Rcurv));
+  double dphi = std::asin(dy/std::fabs(Rcurv));
   //dphi = dy/r;
-  double ds = fabs(Rcurv) * dx * dphi;
+  double ds = std::fabs(Rcurv) * dx * dphi;
   //ds = dx * dy; // Approx the same as  ds = Rcurv * dx * dphi.
 
   for (i = 0; i < nt; i++) {
@@ -86,7 +84,7 @@ ErrorLevel dreamcylind(double xo, double yo, double zo,
   }
 
   phi = phi_min + dphi/2.0;
-  double ys = fabs(Rcurv) * sin(phi);
+  double ys = std::fabs(Rcurv) * std::sin(phi);
   while (phi <= phi_max) {
 
     double xs = xsmin + dx/2.0;
@@ -96,7 +94,7 @@ ErrorLevel dreamcylind(double xo, double yo, double zo,
       if (Rcurv >= 0.0) {       // Focused
         r = cylind_f(xs, ys, Rcurv, z_Rcurv, xo, yo, zo, du);
       } else {                  // Defocused
-        r = cylind_d(xs, ys, fabs(Rcurv), z_Rcurv, xo, yo, zo, du);
+        r = cylind_d(xs, ys, std::fabs(Rcurv), z_Rcurv, xo, yo, zo, du);
       }
 
       ai = weight * v * ds * du/(2.0*M_PI * r);
@@ -105,7 +103,7 @@ ErrorLevel dreamcylind(double xo, double yo, double zo,
       ai *= 1.0e3;
       // Propagation delay in micro seconds.
       t = r * 1.0e3/cp;
-      it = (dream_idx_type) rint((t - delay)/dt);
+      it = (dream_idx_type) std::rint((t - delay)/dt);
 
       // Check if index is out of bounds.
       if ((it < nt) && (it >= 0)) {
@@ -126,7 +124,7 @@ ErrorLevel dreamcylind(double xo, double yo, double zo,
     }
 
     phi += dphi;
-    ys = fabs(Rcurv) * sin(phi);
+    ys = std::fabs(Rcurv) * std::sin(phi);
   }
 
   return err;
@@ -146,24 +144,24 @@ ErrorLevel dreamcylind(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
   double phi, phi_min, phi_max;
   ErrorLevel err = ErrorLevel::none;
 
-  if (b > 2*fabs(Rcurv)) {
+  if (b > 2.0*std::fabs(Rcurv)) {
     dream_err_msg("Error in dreamcylind: the y-size, b, must be less than the curvature diameter 2*Rcurv!\n");
   }
 
   b /= 2.0;
-  double z_Rcurv = fabs(Rcurv) - sqrt(Rcurv*Rcurv - b*b);
+  double z_Rcurv = std::fabs(Rcurv) - std::sqrt(Rcurv*Rcurv - b*b);
 
   xsmin = -a/2.0;
   xsmax = a/2.0;
 
-  phi = 2.0 * atan(b/(fabs(Rcurv)-z_Rcurv));
+  phi = 2.0 * std::atan(b/(std::fabs(Rcurv)-z_Rcurv));
   phi_min = -phi/2.0;
   phi_max = phi/2.0;
 
   // dphi in y-dim [rad].
-  double dphi = asin(dy/fabs(Rcurv));
+  double dphi = std::asin(dy/std::fabs(Rcurv));
   //dphi = dy/r;
-  double ds = fabs(Rcurv) * dx * dphi;
+  double ds = std::fabs(Rcurv) * dx * dphi;
   //ds = dx * dy; // Approx the same as  ds = Rcurv * dx * dphi.
 
   for (i = 0; i < nt; i++) {
@@ -171,7 +169,7 @@ ErrorLevel dreamcylind(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
   }
 
   phi = phi_min + dphi/2.0;
-  double ys = fabs(Rcurv) * sin(phi);
+  double ys = std::fabs(Rcurv) * std::sin(phi);
   while (phi <= phi_max) {
 
     double xs = xsmin + dx/2.0;
@@ -181,7 +179,7 @@ ErrorLevel dreamcylind(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
       if (Rcurv >= 0.0) {           // Focused
         r = cylind_f(xs, ys, Rcurv, z_Rcurv, xo, yo, zo, du);
       } else {                  // Defocused
-        r = cylind_d(xs, ys, fabs(Rcurv), z_Rcurv, xo, yo, zo, du);
+        r = cylind_d(xs, ys, std::fabs(Rcurv), z_Rcurv, xo, yo, zo, du);
       }
 
       ai = weight * v * ds * du/(2.0*M_PI * r);
@@ -190,7 +188,7 @@ ErrorLevel dreamcylind(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
       ai *= 1.0e3;
       // Propagation delay in micro seconds.
       t = r * 1.0e3/cp;
-      it = (dream_idx_type) rint((t - delay)/dt);
+      it = (dream_idx_type) std::rint((t - delay)/dt);
 
       // Check if index is out of bounds.
       if ((it < nt) && (it >= 0)) {
@@ -210,7 +208,7 @@ ErrorLevel dreamcylind(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
     }
 
     phi += dphi;
-    ys = fabs(Rcurv) * sin(phi);
+    ys = std::fabs(Rcurv) * std::sin(phi);
   }
 
   return err;
@@ -229,12 +227,12 @@ double cylind_f(double xs, double ys,
 {
   du = 1.0;
 
-  double zs = Rcurv - sqrt(Rcurv*Rcurv - ys*ys);
+  double zs = Rcurv - std::sqrt(Rcurv*Rcurv - ys*ys);
 
   double rx = xo - xs;
   double ry = yo - ys;
   double rz = zo - zs;
-  double r = sqrt(rx*rx + ry*ry + rz*rz);
+  double r = std::sqrt(rx*rx + ry*ry + rz*rz);
 
   /* (**) FIXME: The code below protects about something : if we are inside the
      transducer? or perhaps if the angle is too large so we cannot reach
@@ -247,8 +245,8 @@ double cylind_f(double xs, double ys,
 
   if (zo <= z_Rcurv) {
 
-    double d1 = sqrt(xo*xo + yo*yo); // Horizontal distance from origo.
-    double d2 = sqrt(zo * (2.0*Rcurv - zo));
+    double d1 = std::sqrt(xo*xo + yo*yo); // Horizontal distance from origo.
+    double d2 = std::sqrt(zo * (2.0*Rcurv - zo));
 
     if ( (cos_theta <  0.0) || (d1 > d2)) {
       du = (double) 0.0;
@@ -279,12 +277,12 @@ double cylind_d(double xs, double ys,
 {
   du = 1.0;
 
-  double zs = Rcurv - sqrt(Rcurv*Rcurv - ys*ys);
+  double zs = Rcurv - std::sqrt(Rcurv*Rcurv - ys*ys);
 
   double rx = xo - xs;
   double ry = yo - ys;
   double rz = zo + zs;          // zs is negative here.
-  double r = sqrt(rx*rx + ry*ry + rz*rz);
+  double r = std::sqrt(rx*rx + ry*ry + rz*rz);
 
   /* FIXME see (**) above!
   // Cos theta = -[rx ry rz]*[x y (z-r)]' / (R*r) (Scalar prod.). (focused)

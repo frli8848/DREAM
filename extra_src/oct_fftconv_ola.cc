@@ -23,9 +23,7 @@
 
 // FIXME: Move to the FFT class?
 
-#include <string.h>
 #include <signal.h>
-#include <stdio.h>
 
 #include <thread>
 #include <complex> // C++

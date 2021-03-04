@@ -21,7 +21,6 @@
 *
 ***/
 
-#include <string.h>
 #include <thread>
 #include <mutex>
 

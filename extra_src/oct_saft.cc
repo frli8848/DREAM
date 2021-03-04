@@ -21,13 +21,10 @@
 *
 ***/
 
-
-#include <string.h>
-#include <stdlib.h>
-#include <math.h>
-#include <thread>
 #include <signal.h>
 
+#include <cmath>
+#include <thread>
 #include <mutex>
 
 #include "dream.h"
@@ -120,7 +117,7 @@ void* smp_dream_saft(void *arg)
         z_trans = r_trans[l+2*L];
 
         // Horizontal distance between transducer and observation point.
-        r_xy = sqrt( (x_trans - xo)*(x_trans - xo) + (y_trans - yo)*(y_trans - yo) );
+        r_xy = std::sqrt( (x_trans - xo)*(x_trans - xo) + (y_trans - yo)*(y_trans - yo) );
 
         // if r_xy is inside the synthetic aperture.
         if (r_xy <= a/2) {
@@ -128,7 +125,7 @@ void* smp_dream_saft(void *arg)
           // Vertical distance between transducer and observation point.
           z = zo - z_trans;
 
-          z_prim = sqrt(z*z + r_xy*r_xy);
+          z_prim = std::sqrt(z*z + r_xy*r_xy);
           tmp = (2*z_prim/cp * 1e3 - 2*delay[0])/dt;
 
           // Better to round just one time!
@@ -173,7 +170,7 @@ void* smp_dream_saft(void *arg)
         z_trans = r_trans[l+2*L];
 
         // Horizontal distance between transducer and observation point.
-        r_xy = sqrt( (x_trans - xo)*(x_trans - xo) + (y_trans - yo)*(y_trans - yo) );
+        r_xy = std::sqrt( (x_trans - xo)*(x_trans - xo) + (y_trans - yo)*(y_trans - yo) );
 
         // if r_xy is inside the synthetic aperture.
         if (r_xy <= a/2) {
@@ -181,7 +178,7 @@ void* smp_dream_saft(void *arg)
           // Vertical distance between transducer and observation point.
           z = zo - z_trans;
 
-          z_prim = sqrt(z*z + r_xy*r_xy);
+          z_prim = std::sqrt(z*z + r_xy*r_xy);
           tmp = (2*z_prim/cp * 1e3 - 2*delay[n])/dt;
 
           // Better to round just one time!

@@ -21,10 +21,7 @@
 *
 ***/
 
-
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <cmath>
 
 #include "dream_arr_rect.h"
 #include "arr_functions.h"
@@ -195,7 +192,7 @@ ErrorLevel rect_ab(double xo, double yo, double zo,
       double r;
       distance(xo, yo, zo, xs, ys, zs, &r);
       double t = r * 1.0e3/cp; // Propagation delay in micro seconds.
-      dream_idx_type it = (dream_idx_type) rint((t - delay + foc_delay + steer_delay)/dt);
+      dream_idx_type it = (dream_idx_type) std::rint((t - delay + foc_delay + steer_delay)/dt);
 
       if ((it < nt) && (it >= 0)) {
 
@@ -255,7 +252,7 @@ ErrorLevel rect_ab(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
       double r;
       distance(xo, yo, zo, xs, ys, zs, &r);
       double t = r * 1.0e3/cp; // Propagation delay in micro seconds.
-      dream_idx_type it = (dream_idx_type) rint((t - delay + foc_delay + steer_delay)/dt);
+      dream_idx_type it = (dream_idx_type) std::rint((t - delay + foc_delay + steer_delay)/dt);
 
       if ((it < nt) && (it >= 0)) {
 

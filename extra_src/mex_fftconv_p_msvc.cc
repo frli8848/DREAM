@@ -21,33 +21,17 @@
 *
 ***/
 
-
-#include <string.h>
-#include <stdlib.h>
 #include <signal.h>
-#include <uchar.h>
+
+#include <complex> // C++
+
+#include "dream.h"
 
 #include "mex.h"
 
 #define EQU 0
 #define SUM 1
 #define NEG 2
-
-// ToDo: Add check if input pars have zero length
-// ToDo: Add help text for in-place mode.
-// We pobably need fftw >= 3.2.x to handle 64-bit array indexing.
-// ToDO If we have fftw 3.2.x we can use fftw_plan_dft_r2c_1d_64 etc.
-
-//#include <complex.h> // C (iso C99, don't work with MSVC).
-#include <complex> // C++
-#include <stdio.h>
-#include <fftw3.h>
-#include <math.h>
-
-//#include <iostream>
-using namespace std;
-
-#include "dream.h"
 
 /***
  *

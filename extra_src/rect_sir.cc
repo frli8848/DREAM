@@ -21,10 +21,7 @@
 *
 ***/
 
-
-#include <math.h>
-#include <string.h>
-#include <stdio.h>
+#include <cmath>
 
 #include "rect_sir.h"
 #include "dream_error.h"
@@ -200,9 +197,9 @@ void rect_sir(double xo_i,
     t_z = zo / cp;
 
     tau_1 = t_z;
-    tau_2 = sqrt(zo*zo + s_k*s_k) / cp;
-    tau_3 = sqrt(zo*zo + l_k*l_k) / cp;
-    tau_4 = sqrt(zo*zo + l_k*l_k + s_k*s_k) / cp;
+    tau_2 = std::sqrt(zo*zo + s_k*s_k) / cp;
+    tau_3 = std::sqrt(zo*zo + l_k*l_k) / cp;
+    tau_4 = std::sqrt(zo*zo + l_k*l_k + s_k*s_k) / cp;
 
     for (it=0; it<nt; it++) {
 
@@ -213,10 +210,10 @@ void rect_sir(double xo_i,
         a_k += cp/4;
 
       if ( (t >= tau_2) && (t <= tau_4) )
-        a_k -= cp/(2*M_PI) * acos( s_k / (cp * sqrt(t*t - t_z*t_z)));
+        a_k -= cp/(2*M_PI) * std::acos( s_k / (cp * std::sqrt(t*t - t_z*t_z)));
 
       if ( (t >= tau_3) && (t <= tau_4) )
-        a_k -= cp/(2*M_PI) * acos( l_k / (cp * sqrt(t*t - t_z*t_z)));
+        a_k -= cp/(2*M_PI) * std::acos( l_k / (cp * std::sqrt(t*t - t_z*t_z)));
 
       h[it] += g_k * a_k;
 

@@ -23,18 +23,13 @@
 
 // FIXME: We cannot use FFTW for mex-files due to lib conflicts!
 
-#include <string.h>
-#include <stdlib.h>
-#include <thread>
 #include <signal.h>
-#include <uchar.h>
 
-#include <stdio.h>
-#include <fftw3.h>
-#include <math.h>
-#include <unistd.h>
-
+#include <cstring>
+#include <thread>
 #include <complex> // C++
+
+#include <fftw3.h>
 
 #include "dream.h"
 #include "affinity.h"

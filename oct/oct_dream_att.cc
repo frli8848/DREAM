@@ -21,10 +21,7 @@
 *
 ***/
 
-
-#include <string.h>
-#include <stdio.h>
-#include <math.h>
+#include <cmath>
 
 #include "attenuation.h"
 #include "dream_error.h"
@@ -192,7 +189,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
         yo = ro[n+1*no];
         zo = ro[n+2*no];
 
-        r = sqrt(xo*xo + yo*yo + zo*zo);
+        r = std::sqrt(xo*xo + yo*yo + zo*zo);
         it = (int) ( (r * 1.0e3/cp - delay[0])/dt + 1);
         att.att(xc, x, r, it, &h[n*nt], 1.0);
       }
@@ -202,7 +199,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
         yo = ro[n+1*no];
         zo = ro[n+2*no];
 
-        r = sqrt(xo*xo + yo*yo + zo*zo);
+        r = std::sqrt(xo*xo + yo*yo + zo*zo);
         it = (int) ( (r*1.0e3/cp - delay[n])/dt + 1);
         att.att(xc, x, r, it, &h[n*nt], 1.0);
       }

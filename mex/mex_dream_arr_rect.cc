@@ -300,9 +300,9 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
   ap.check_material("dream_arr_rect", prhs, 5, 3);
   m_par = mxGetPr(prhs[5]);
-  v     = m_par[0]; // Normal velocity of transducer surface.
-  cp    = m_par[1]; // Sound speed.
-  alpha = m_par[2]; // Attenuation coefficient [dB/(cm MHz)].
+  v     = m_par[0];          // Normal velocity of transducer surface.
+  cp    = m_par[1];          // Sound speed.
+  alpha = m_par[2];          // Attenuation coefficient [dB/(cm MHz)].
 
   //
   // Focusing parameters.
@@ -336,7 +336,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Apodization.
   //
 
-  // Allocate space for the user defined apodization weights
+  // Allocate memory for the user defined apodization weights.
   std::unique_ptr<double[]> apod = std::make_unique<double[]>(num_elements);
 
   if (nrhs >= 11) {

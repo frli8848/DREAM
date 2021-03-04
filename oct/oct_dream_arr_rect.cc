@@ -129,10 +129,11 @@ void* smp_dream_arr_rect(void *arg)
   }
 
   // Let the thread finish and then catch the error.
-  if (err_level == ErrorLevel::stop)
+  if (err_level == ErrorLevel::stop) {
     tmp_lev = ErrorLevel::parallel_stop;
-  else
+  } else {
     tmp_lev = err_level;
+  }
 
   for (n=start; n<stop; n++) {
     xo = ro[n];
@@ -392,7 +393,7 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
   }
 
   //
-  // Observation point.
+  // Observation points.
   //
 
   if (!ap.check_obs_points("dream_arr_rect", args, 0)) {

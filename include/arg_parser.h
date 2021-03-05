@@ -34,38 +34,11 @@
 #ifdef DREAM_OCTAVE
 #include <octave/oct.h>
 typedef octave_value_list args_t;
-#define GET_M(N) args(N).matrix_value().rows()
-#define GET_N(N) args(N).matrix_value().cols()
-#define GET_MATRIX(N) args(N).matrix_value().fortran_vec()
-#define IS_STRING(N) args(N).is_string()
-
-std::string get_string_arg(args_t args, dream_idx_type arg_num) {
-  return args(arg_num).string_value();
-};
-
 #endif
 
 #ifdef DREAM_MATLAB
 #include "mex.h"
-
 typedef const mxArray** args_t;
-#define GET_M(N)   mxGetM(args[N])
-#define GET_N(N)   mxGetN(args[N])
-#define GET_MATRIX(N) mxGetPr(args[N])
-#define IS_STRING(N) mxIsChar(args[N])
-
-std::string get_string_arg(args_t args, dream_idx_type arg_num) {
-  std::ostringstream s;
-  char tmp_str[100];
-  dream_idx_type buflen = (GET_M(arg_num) * GET_N(arg_num) * sizeof(mxChar)) + 1;
-  if (buflen < 100) {
-    mxGetString(args[arg_num], tmp_str, buflen);
-    s << tmp_str;
-  } else {
-    s << "";
-  }
-  return s.str();
-}
 #endif
 
 class ArgParser
@@ -102,7 +75,7 @@ public:
   bool check_obs_points(const char *func_name, args_t args, dream_idx_type arg_num) {
     bool retval=true;
     std::ostringstream s;
-    if ( GET_N(arg_num) != 3 ) {
+    if ( get_n(args, arg_num) != 3 ) {
       s << func_name <<  " requires that arg " << arg_num+1 << "  must be a (number of observation points) x 3 matrix!";
       dream_err_msg(s.str().c_str());
       retval=false;
@@ -114,7 +87,7 @@ public:
   bool check_array(const char *func_name, args_t args, dream_idx_type arg_num) {
     bool retval=true;
     std::ostringstream s;
-    if ( GET_N(arg_num) != 3 ) {
+    if ( get_n(args, arg_num) != 3 ) {
       s << func_name <<  " requires that arg " << arg_num+1 << "  must be a (number of array elements) x 3 matrix!";
       dream_err_msg(s.str().c_str());
       retval=false;
@@ -126,7 +99,7 @@ public:
   bool check_array_annu(const char *func_name, args_t args, dream_idx_type arg_num) {
     bool retval=true;
     std::ostringstream s;
-    if ( (GET_M(arg_num) != 1) && (GET_N(arg_num) != 1) && (GET_N(arg_num)*GET_N(arg_num) % 2 == 0) ) {
+    if ( (get_m(args, arg_num) != 1) && (get_n(args, arg_num) != 1) && (get_n(args, arg_num)*get_n(args, arg_num) % 2 == 0) ) {
       s << func_name <<  " requires that arg " << arg_num+1 << "  must be a (number of radii) vector with an odd number of elements!";
       dream_err_msg(s.str().c_str());
       retval=false;
@@ -138,7 +111,7 @@ public:
   bool check_geometry(const char *func_name, args_t args, dream_idx_type arg_num, dream_idx_type num_pars) {
     bool retval=true;
     std::ostringstream s;
-    if (!((GET_M(arg_num)==num_pars && GET_N(arg_num)==1) || (GET_M(arg_num)==1 && GET_N(arg_num)==num_pars))) {
+    if (!((get_m(args, arg_num)==num_pars && get_n(args, arg_num)==1) || (get_m(args, arg_num)==1 && get_n(args, arg_num)==num_pars))) {
       if (num_pars == 1) {
         s << func_name <<  " requires that arg " << arg_num+1 << " (geometry) must be a scalar!";
       } else {
@@ -154,7 +127,7 @@ public:
   bool check_sampling(const char *func_name, args_t args, dream_idx_type arg_num, dream_idx_type num_pars) {
     bool retval=true;
     std::ostringstream s;
-    if (!((GET_M(arg_num)==num_pars && GET_N(arg_num)==1) || (GET_M(arg_num)==1 && GET_N(arg_num)==num_pars))) {
+    if (!((get_m(args, arg_num)==num_pars && get_n(args, arg_num)==1) || (get_m(args, arg_num)==1 && get_n(args, arg_num)==num_pars))) {
       s << func_name <<  " requires that arg " << arg_num+1 << " (sampling) must be a " << num_pars << " element vector!";
       dream_err_msg(s.str().c_str());
       retval=false;
@@ -163,10 +136,31 @@ public:
     return retval;
   };
 
+  bool parse_sampling(const char *func_name, args_t args, dream_idx_type arg_num, dream_idx_type num_pars,
+                      double &dx, double &dy, double &dt, dream_idx_type &nt) {
+    bool retval=true;
+    std::ostringstream s;
+    if (!((get_m(args, arg_num)==num_pars && get_n(args, arg_num)==1) || (get_m(args, arg_num)==1 && get_n(args, arg_num)==num_pars))) {
+      s << func_name <<  " requires that arg " << arg_num+1 << " (sampling) must be a " << num_pars << " element vector!";
+      dream_err_msg(s.str().c_str());
+      retval=false;
+    }
+
+    if (retval) {
+      dx = get_fortran_vec(args, arg_num)[0]; // Spatial x-direction discretization size.
+      dy = get_fortran_vec(args, arg_num)[1]; // Spatial y-direction discretization size.
+      dt = get_fortran_vec(args, arg_num)[2]; // Temporal discretization size (= 1/sampling freq).
+      nt = (dream_idx_type) get_fortran_vec(args, arg_num)[3]; // Length of SIR.
+    }
+
+    return retval;
+  };
+
+
   bool check_material(const char *func_name, args_t args, dream_idx_type arg_num, dream_idx_type num_pars) {
     bool retval=true;
     std::ostringstream s;
-    if (!((GET_M(arg_num)==num_pars && GET_N(arg_num)==1) || (GET_M(arg_num)==1 && GET_N(arg_num)==num_pars))) {
+    if (!((get_m(args, arg_num)==num_pars && get_n(args, arg_num)==1) || (get_m(args, arg_num)==1 && get_n(args, arg_num)==num_pars))) {
       s << func_name <<  " requires that arg " << arg_num+1 << " (material parameters) must be a " << num_pars << " element vector!";
       dream_err_msg(s.str().c_str());
       retval=false;
@@ -175,15 +169,35 @@ public:
     return retval;
   };
 
+  bool parse_material(const char *func_name, args_t args, dream_idx_type arg_num,
+                      double &v, double &cp, double &alpha) {
+    bool retval=true;
+    std::ostringstream s;
+    if (!((get_m(args, arg_num)==3 && get_n(args, arg_num)==1) || (get_m(args, arg_num)==1 && get_n(args, arg_num)==3))) {
+      s << func_name <<  " requires that arg " << arg_num+1 << " (material parameters) must be a 3 element vector!";
+      dream_err_msg(s.str().c_str());
+      retval=false;
+    }
+
+    if (retval) {
+      v     = get_fortran_vec(args, arg_num)[0];
+      cp    = get_fortran_vec(args, arg_num)[1];
+      alpha = get_fortran_vec(args, arg_num)[2];
+    }
+
+    return retval;
+  };
+
+
   // Check that the delay is a scalar or vector of length no.
   bool check_delay(const char *func_name, args_t args, dream_idx_type arg_num, dream_idx_type no) {
     bool retval=true;
     std::ostringstream s;
 
-    dream_idx_type delay_len = GET_M(arg_num)*GET_N(arg_num);
+    dream_idx_type delay_len = get_m(args, arg_num)*get_n(args, arg_num);
     if ( (delay_len > 1) && (delay_len != no) ) { // delay is a vector
 
-      if (!((GET_M(arg_num)==delay_len && GET_N(arg_num)==1) || (GET_M(arg_num)==1 && GET_N(arg_num)==delay_len))) {
+      if (!((get_m(args, arg_num)==delay_len && get_n(args, arg_num)==1) || (get_m(args, arg_num)==1 && get_n(args, arg_num)==delay_len))) {
         s << func_name <<  " requires that arg " << arg_num+1 << " (delay) must be a " << delay_len << " element vector";
         s << " (with a length equal to the number of observation points) or a scalar!";
       }
@@ -198,7 +212,7 @@ public:
   bool parse_error_arg(const char *func_name, args_t args, dream_idx_type arg_num, ErrorLevel &err_level) {
     bool retval=true;
     std::ostringstream s;
-    if (!IS_STRING(arg_num)) {
+    if (!is_string(args, arg_num)) {
       s << func_name <<  " requires that arg " << arg_num+1 << " (error type) must be a string!";
       dream_err_msg(s.str().c_str());
       err_level = ErrorLevel::stop; // Default
@@ -232,13 +246,21 @@ public:
     return retval;
   };
 
-  // For arrays: A string arg and  a vector
-  // For rect_f and circ_f : A string arg and a "one element" vector
+  /***
+   *
+   * Read two input args:
+   *
+   * For arrays: A string arg and a vector or scalar
+   * For rect_f and circ_f : A string arg and a scalar
+   *
+   ***/
+
   bool parse_focus_args(const char *func_name, args_t args, dream_idx_type arg_num,
-                       FocusMet &foc_met, double *focal=nullptr, dream_idx_type num_elements=1) {
+                       FocusMet &foc_met, double *focal, dream_idx_type num_elements=1) {
     bool retval=true;
     std::ostringstream s;
-    if (!IS_STRING(arg_num)) {
+
+    if (!is_string(args, arg_num)) {
       s << func_name <<  " requires that arg " << arg_num+1 << " (focus method) must be a string!";
       dream_err_msg(s.str().c_str());
       retval=false;
@@ -277,12 +299,12 @@ public:
         is_set = true;
 
         // Vector of focusing delays.
-        if (GET_M(arg_num+1)*GET_N(arg_num+1) != num_elements) {
+        if (get_m(args, arg_num+1)*get_n(args, arg_num+1) != num_elements) {
           s << func_name <<  " the time delay vector arg " << arg_num+1 << " for user defined ('ud') focusing\n!";
           s << "delays must have the same length as the number of array elements!";
             retval=false;
         } else { // Copy the user defined apodization weights.
-          const double *tmp_focal = GET_MATRIX(arg_num+1);
+          double *tmp_focal = get_fortran_vec(args, arg_num+1);
           if (focal) {
             std::memcpy(focal, tmp_focal, num_elements*sizeof(double));
           } else {
@@ -292,15 +314,16 @@ public:
         }
       } else { // Here focus arg must be a scalar.
 
-        if (GET_M(arg_num+1)*GET_N(arg_num+1) != 1) {
+        if (get_m(args, arg_num+1)*get_n(args, arg_num+1) != 1) {
           s << func_name << " arg " << arg_num+2 << " must be a scalar for non-user defined focusing!";
+          dream_err_msg(s.str().c_str());
           retval=false;
         } else {
           if (focal) {
-            const double *tmp_focal = GET_MATRIX(arg_num+1);
-            focal[0] = tmp_focal[0];
+            focal[0] = get_scalar(args, arg_num+1);
           } else {
             s << func_name << " focal vector not initialzed!";
+            dream_err_msg(s.str().c_str());
             retval=false;
           }
         }
@@ -322,7 +345,7 @@ public:
                         SteerMet &steer_met, double &theta, double &phi) {
     bool retval=true;
     std::ostringstream s;
-    if (!IS_STRING(arg_num)) {
+    if (!is_string(args, arg_num)) {
       s << func_name <<  " requires that arg " << arg_num+1 << " (focus method) must be a string!";
       dream_err_msg(s.str().c_str());
       retval=false;
@@ -357,14 +380,14 @@ public:
       }
 
       // Check that steer arg is a 2 element vector.
-      if (!((GET_M(arg_num+1)==2 && GET_N(arg_num+1)==1) || (GET_M(arg_num+1)==1 && GET_N(arg_num+1)==2))) {
+      if (!((get_m(args, arg_num+1)==2 && get_n(args, arg_num+1)==1) || (get_m(args, arg_num+1)==1 && get_n(args, arg_num+1)==2))) {
         retval=false;
         s << func_name <<  " arg " << arg_num+2 << " must be a 2 element vector!";
         dream_err_msg(s.str().c_str());
       }
 
       if (is_set && retval) {
-        const double *steer_pars = GET_MATRIX(arg_num+1);
+        const double *steer_pars = get_fortran_vec(args, arg_num+1);
         theta = steer_pars[0];
         phi= steer_pars[1];
       }
@@ -379,7 +402,7 @@ public:
                        bool &do_apod, double *apod, ApodMet &apod_met, double &apod_par) {
     bool retval=true;
     std::ostringstream s;
-    if (!IS_STRING(arg_num)) {
+    if (!is_string(args, arg_num)) {
       s << func_name <<  " requires that arg " << arg_num+1 << " (focus method) must be a string!";
       dream_err_msg(s.str().c_str());
       retval=false;
@@ -430,11 +453,11 @@ public:
         is_set = true;
 
         // Vector of apodization weights.
-        if (GET_M(arg_num+1) * GET_N(arg_num+1) != num_elements) {
+        if (get_m(args, arg_num+1) * get_n(args, arg_num+1) != num_elements) {
           s << func_name <<  " the length of argument arg " << arg_num+1 << " (apodization vector) must be the same as the number of array elements!";
           retval=false;
         } else { // Copy the user defined apodization weights.
-          double *tmp_apod = GET_MATRIX(arg_num+1);
+          double *tmp_apod = get_fortran_vec(args, arg_num+1);
           if (apod) {
             std::memcpy(apod, tmp_apod, num_elements*sizeof(double));
           } else {
@@ -451,15 +474,14 @@ public:
       }
 
       // Check that apod par is a scalar.
-      if (!(GET_M(arg_num+2)==1 && GET_N(arg_num+2)==1)) {
+      if (!(get_m(args, arg_num+2)==1 && get_n(args, arg_num+2)==1)) {
         retval=false;
         s << func_name <<  " arg " << arg_num+3 << " must be a scalar!";
         dream_err_msg(s.str().c_str());
       }
 
       if (is_set && retval) {
-        const double *apod_p = GET_MATRIX(arg_num+2);
-        apod_par = apod_p[0];
+        apod_par = get_scalar(args, arg_num+2);
       }
 
     }
@@ -469,5 +491,71 @@ public:
 
 
 private:
+
+#ifdef DREAM_OCTAVE
+
+  dream_idx_type get_m(args_t args, dream_idx_type arg_num) {
+    return args(arg_num).matrix_value().rows();
+  };
+
+  dream_idx_type get_n(args_t args, dream_idx_type arg_num) {
+    return args(arg_num).matrix_value().cols();
+  };
+
+  double* get_fortran_vec(const args_t args, dream_idx_type arg_num) {
+    const Matrix tmp_mat = args(arg_num).matrix_value();
+    return (double*) tmp_mat.fortran_vec();
+  };
+
+  double get_scalar(const args_t args, dream_idx_type arg_num) {
+    return args(arg_num).double_value();
+  };
+
+  bool is_string (args_t args, dream_idx_type arg_num) {
+    return args(arg_num).is_string();
+  };
+
+  std::string get_string_arg(args_t args, dream_idx_type arg_num) {
+    return args(arg_num).string_value();
+  };
+
+#endif
+
+#ifdef DREAM_MATLAB
+
+  dream_idx_type get_m(args_t args, dream_idx_type arg_num) {
+    return mxGetM(args[arg_num]);
+  };
+
+  dream_idx_type get_n(args_t args, dream_idx_type arg_num) {
+    return mxGetN(args[arg_num]);
+  };
+
+  double* get_fortran_vec(args_t args, dream_idx_type arg_num) {
+    return (double*) mxGetPr(args[arg_num]);
+  };
+
+  double get_scalar(const args_t args, dream_idx_type arg_num) {
+    return mxGetScalar(args[arg_num]);
+  };
+
+  bool is_string (args_t args, dream_idx_type arg_num) {
+    return mxIsChar(args[arg_num]);
+  };
+
+  std::string get_string_arg(args_t args, dream_idx_type arg_num) {
+    std::ostringstream s;
+    char tmp_str[100];
+    dream_idx_type buflen = (get_m(args, arg_num) * get_n(args, arg_num) * sizeof(mxChar)) + 1;
+    if (buflen < 100) {
+      mxGetString(args[arg_num], tmp_str, buflen);
+      s << tmp_str;
+    } else {
+      s << "";
+    }
+    return s.str();
+  };
+#endif
+
 
 };

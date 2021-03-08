@@ -262,10 +262,8 @@ dreamcirc is an oct-function that is a part of the DREAM Toolbox available at\n\
 Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
 @end deftypefn")
 {
-  double *ro,*geom_par,*s_par,*m_par;
-  double R,dx,dy,dt;
-  octave_idx_type nt, no;
-  double *delay,v,cp,alpha, *h, *err_p;
+  double *ro;
+  double *delay, *h, *err_p;
   ErrorLevel err_level=ErrorLevel::stop;
   DATA   *D;
   octave_idx_type start, stop;
@@ -297,7 +295,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
     return oct_retval;
   }
 
-  no = mxGetM(0); // Number of observation points.
+  dream_idx_type no = mxGetM(0); // Number of observation points.
   const Matrix tmp0 = args(0).matrix_value();
   ro = (double*) tmp0.fortran_vec();
 
@@ -305,28 +303,20 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   // Transducer geometry
   //
 
-  if (!ap.check_geometry("dreamcirc", args, 1, 1)) {
+  double R=0.0, dummy1=0.0, dummy2=0.0;
+  if (!ap.parse_geometry("dreamcirc", args, 1, 1, R, dummy1, dummy2)) {
     return oct_retval;
   }
-
-  const Matrix tmp1 = args(1).matrix_value();
-  geom_par = (double*) tmp1.fortran_vec();
-  R = geom_par[0];		// Radius of the transducer.
 
   //
   // Temporal and spatial sampling parameters.
   //
 
-  if (!ap.check_sampling("dreamcirc", args, 2, 4)) {
+  double dx=0.0, dy=0.0, dt=0.0;
+  dream_idx_type nt=0;
+  if (!ap.parse_sampling("dreamcirc", args, 2, 4, dx, dy, dt, nt)) {
     return oct_retval;
   }
-
-  const Matrix tmp2 = args(2).matrix_value();
-  s_par = (double*) tmp2.fortran_vec();
-  dx    = s_par[0];		// Spatial x-direction discretization size.
-  dy    = s_par[1];		// Spatial y-direction discretization size.
-  dt    = s_par[2];		// Temporal discretization size (= 1/sampling freq).
-  nt    = (octave_idx_type) s_par[3];	// Length of SIR.
 
   //
   // Start point of impulse response vector ([us]).
@@ -343,15 +333,10 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   // Material parameters
   //
 
-  if (!ap.check_material("dreamcirc", args, 4, 3)) {
+  double v=1.0, cp=1000.0, alpha=0.0;
+  if (!ap.parse_material("dreamcirc", args, 4, v, cp, alpha)) {
     return oct_retval;
   }
-
-  const Matrix tmp4 = args(4).matrix_value();
-  m_par = (double*) tmp4.fortran_vec();
-  v     = m_par[0]; // Normal velocity of transducer surface.
-  cp    = m_par[1]; // Sound speed.
-  alpha  = m_par[2]; // Attenuation coefficient [dB/(cm MHz)].
 
   //
   // Number of threads.

@@ -171,7 +171,7 @@ void* smp_dream_arr_circ(void *arg)
 
     if (err != ErrorLevel::none || out_err ==  ErrorLevel::parallel_stop) {
       tmp_err = err;
-      if (err == ErrorLevel::parallel_stop || out_err ==  ErrorLevel::parallel_stop) {
+      if (err == ErrorLevel::parallel_stop || out_err == ErrorLevel::parallel_stop) {
         break; // Jump out when a ErrorLevel::stop error occurs.
       }
     }
@@ -341,7 +341,7 @@ err_level is an optional text string apod_pareter for controlling the error beha
 An error is ignored (no error message is printed and the program is not stopped) but the err output \n\
 argument is negative if an error occured.\n\
 @item 'warn'\n\
-An error message is printed but the program in not stopped (and err is negative).\n\
+A warning message is printed but the program in not stopped.\n\
 @item 'stop'\n\
 An error message is printed and the program is stopped.\n\
 @end table\n\
@@ -353,15 +353,10 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
 @seealso {dreamcirc}\n\
 @end deftypefn")
 {
-  double *ro,*geom_par,*s_par,*m_par;
-  double R, dx, dy, dt;
-  dream_idx_type nt, no;
-  double apod_par=0,*delay, v, cp, alpha;
-  dream_idx_type num_elements;
+  double apod_par=0;
   double *G;
   FocusMet foc_met=FocusMet::none;
   SteerMet steer_met=SteerMet::none;
-  double theta=0.0, phi=0.0;
   bool   do_apod=false;
   ApodMet apod_met=ApodMet::gauss;
   double *h, *err_p;
@@ -395,21 +390,18 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
     return oct_retval;
   }
 
-  no = mxGetM(0); // Number of observation points.
+  dream_idx_type no = mxGetM(0); // Number of observation points.
   const Matrix tmp0 = args(0).matrix_value();
-  ro = (double*) tmp0.fortran_vec();
+  double *ro = (double*) tmp0.fortran_vec();
 
   //
   // Transducer geometry
   //
 
-  if (!ap.check_geometry("dream_arr_circ", args, 1, 1)) {
+  double R=0.0, dummy1=0.0, dummy2=0.0;
+  if (!ap.parse_geometry("dream_arr_circ", args, 1, 1, R, dummy1, dummy2)) {
     return oct_retval;
   }
-
-  const Matrix tmp1 = args(1).matrix_value();
-  geom_par = (double*) tmp1.fortran_vec();
-  R = geom_par[0];		// Radius of the array elements.
 
   //
   // Grid function (position vectors of the elements).
@@ -419,7 +411,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
     return oct_retval;
   }
 
-  num_elements = (int) mxGetM(2); // Number of elementents in the array.
+  dream_idx_type num_elements = (dream_idx_type) mxGetM(2); // Number of elementents in the array.
   const Matrix tmp2 = args(2).matrix_value();
   G = (double*) tmp2.fortran_vec(); // First column in the matrix.
   //gy    = gx + num_elements;		// Second column in the matrix.
@@ -429,16 +421,11 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   // Temporal and spatial sampling parameters.
   //
 
-  if (!ap.check_sampling("dream_arr_circ", args, 3, 4)) {
+  double dx=0.0, dy=0.0, dt=0.0;
+  dream_idx_type nt=0;
+  if (!ap.parse_sampling("dream_arr_circ", args, 3, 4, dx, dy, dt, nt)) {
     return oct_retval;
   }
-
-  const Matrix tmp3 = args(3).matrix_value();
-  s_par = (double*) tmp3.fortran_vec();
-  dx    = s_par[0];		// Spatial x discretization size.
-  dy    = s_par[1];		// Spatial dy iscretization size.
-  dt    = s_par[2];		// Temporal discretization size (= 1/sampling freq).
-  nt    = (dream_idx_type) s_par[3];	// Length of SIR.
 
   //
   // Start point of impulse response vector ([us]).
@@ -449,21 +436,16 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   }
 
   const Matrix tmp4 = args(4).matrix_value();
-  delay = (double*) tmp4.fortran_vec();
+  double *delay = (double*) tmp4.fortran_vec();
 
   //
   // Material parameters
   //
 
-  if (!ap.check_material("dream_arr_circ", args, 5, 3)) {
+  double v=1.0, cp=1000.0, alpha=0.0;
+  if (!ap.parse_material("dream_arr_circ", args, 5, v, cp, alpha)) {
     return oct_retval;
   }
-
-  const Matrix tmp5 = args(5).matrix_value();
-  m_par = (double*) tmp5.fortran_vec();
-  v     = m_par[0]; // Normal velocity of transducer surface.
-  cp    = m_par[1]; // Sound speed.
-  alpha  = m_par[2]; // Attenuation coefficient [dB/(cm MHz)].
 
   //
   // Focusing parameters.
@@ -484,6 +466,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   // Beam steering.
   //
 
+  double theta=0.0, phi=0.0;
   if (nrhs >= 9) {
     if (!ap.parse_steer_args("dream_arr_circ", args, 8, steer_met, theta, phi)) {
       return oct_retval;
@@ -544,6 +527,9 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   Matrix h_mat(nt, no);
   h = h_mat.fortran_vec();
 
+  SIRData hsir(h, nt, no);
+  hsir.clear();
+
   //
   // Register signal handlers.
   //
@@ -596,10 +582,11 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
     D[thread_n].dt = dt;
     D[thread_n].nt = nt;
 
-    if (mxGetM(4) * mxGetN(4) == 1)
+    if (mxGetM(4) * mxGetN(4) == 1) {
       D[thread_n].delay_type = DelayType::single; // delay is a scalar.
-    else
+    } else {
       D[thread_n].delay_type = DelayType::multiple; // delay is a vector.
+    }
 
     D[thread_n].delay = delay;
     D[thread_n].v = v;

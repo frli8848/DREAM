@@ -264,10 +264,8 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
 @seealso {dreamrect}\n\
 @end deftypefn")
 {
-  double *ro,*geom_par,*s_par,*m_par;
-  double a,b,dx,dy,dt;
-  octave_idx_type nt, no;
-  double *delay,v,cp,alpha, *h, *err_p;
+  double *ro;
+  double *delay, *h, *err_p;
   ErrorLevel err_level=ErrorLevel::stop;
   DATA   *D;
   octave_idx_type start, stop;
@@ -299,37 +297,27 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
     return oct_retval;
   }
 
-  no = mxGetM(0); // Number of observation points.
+  dream_idx_type no = mxGetM(0); // Number of observation points.
   const Matrix tmp0 = args(0).matrix_value();
   ro = (double*) tmp0.fortran_vec();
 
   //
   // Transducer geometry
   //
-
-  if (!ap.check_geometry("dreamrect", args, 1, 2)) {
+  double a=0.0, b=0.0, dummy=0.0;
+  if (!ap.parse_geometry("dreamrect", args, 1, 2, a, b, dummy)) {
     return oct_retval;
   }
-
-  const Matrix tmp1 = args(1).matrix_value();
-  geom_par = (double*) tmp1.fortran_vec();
-  a = geom_par[0];		// x-width of the transducer.
-  b  = geom_par[1];		// y-width of the transducer.
 
   //
   // Temporal and spatial sampling parameters.
   //
 
-  if (!ap.check_sampling("dreamrect", args, 2, 4)) {
+  double dx=0.0, dy=0.0, dt=0.0;
+  octave_idx_type nt=0;
+  if (!ap.parse_sampling("dreamrect", args, 2, 4, dx, dy, dt, nt)) {
     return oct_retval;
   }
-
-  const Matrix tmp2 = args(2).matrix_value();
-  s_par = (double*) tmp2.fortran_vec();
-  dx    = s_par[0];		// Spatial x-discretization size.
-  dy    = s_par[1];		// Spatial y-discretization size.
-  dt    = s_par[2];		// Temporal discretization size (= 1/sampling freq).
-  nt    = (octave_idx_type) s_par[3];	// Length of SIR.
 
   //
   // Start point of impulse response vector ([us]).
@@ -346,15 +334,10 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
   // Material parameters
   //
 
-  if (!ap.check_material("dreamrect", args, 4, 3)) {
+  double v=1.0, cp=1000.0, alpha=0.0;
+  if (!ap.parse_material("dreamrect", args, 4, v, cp, alpha)) {
     return oct_retval;
   }
-
-  const Matrix tmp4 = args(4).matrix_value();
-  m_par = (double*) tmp4.fortran_vec();
-  v     = m_par[0]; // Normal velocity of transducer surface.
-  cp    = m_par[1]; // Sound speed.
-  alpha  = m_par[2]; // Attenuation coefficient [dB/(cm MHz)].
 
   //
   // Number of threads.

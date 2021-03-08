@@ -168,11 +168,8 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   Matrix h_mat(nt, no);
   h = h_mat.fortran_vec();
 
-  // Clear data (it looks like h_mat do not get out of
-  // scope between calls!?).
-  for (n=0; n<nt*no; n++)  {
-    h[n] =  0.0;
-  }
+  SIRData hsir(h, nt, no);
+  hsir.clear();
 
   {
     Attenuation att(nt, dt, alpha);

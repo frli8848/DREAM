@@ -28,7 +28,7 @@
 
 #include "affinity.h"
 #include "circ_sir.h"
-#include "dream_error.h"
+#include "arg_parser.h"
 
 //
 // Octave headers.
@@ -230,25 +230,23 @@ Copyright @copyright{} 2008-2019 Fredrik Lingvall.\n\
 
   int nrhs = args.length ();
 
+  ArgParser ap;
+
   // Check for proper number of arguments
 
-  if (nrhs != 5) {
-    error("circ_sir requires 5 input arguments!");
+  if (!ap.check_arg_in("circ_sir", nrhs, 5, 5)) {
     return oct_retval;
   }
-  else
-    if (nlhs > 1) {
-      error("Too many output arguments for circ_sir !");
-      return oct_retval;
-    }
+
+  if (!ap.check_arg_out("circ_sir", nlhs, 0, 1)) {
+    return oct_retval;
+  }
 
   //
   // Observation point.
   //
 
-  // Check that arg (number of observation points) x 3 matrix
-  if (mxGetN(0) != 3) {
-    error("Argument 1 must be a (number of observation points) x 3 matrix!");
+  if (!ap.check_obs_points("circ_sir", args, 0)) {
     return oct_retval;
   }
 
@@ -260,9 +258,7 @@ Copyright @copyright{} 2008-2019 Fredrik Lingvall.\n\
   // Transducer geometry
   //
 
-  // Check that arg 2 is a scalar.
-  if ( (mxGetM(1) != 1) || (mxGetN(1) !=1) ) {
-    error("Argument 2 must be a scalar!");
+  if (!ap.check_geometry("circ_sir", args, 1, 1)) {
     return oct_retval;
   }
 
@@ -274,9 +270,7 @@ Copyright @copyright{} 2008-2019 Fredrik Lingvall.\n\
   // Temporal and spatial sampling parameters.
   //
 
-  // Check that arg 3 is a 2 element vector
-  if (!((mxGetM(2)==2 && mxGetN(2)==1) || (mxGetM(2)==1 && mxGetN(2)==2))) {
-    error("Argument 3 must be a vector of length 2!");
+  if (!ap.check_sampling("circ_sir", args, 2, 2)) {
     return oct_retval;
   }
 
@@ -289,9 +283,7 @@ Copyright @copyright{} 2008-2019 Fredrik Lingvall.\n\
   // Start point of impulse response vector ([us]).
   //
 
-  // Check that arg 4 is a scalar (or vector).
-    if ( (mxGetM(3) * mxGetN(3) !=1) && ((mxGetM(3) * mxGetN(3)) != no)) {
-    error("Argument 4 must be a scalar or a vector with a length equal to the number of observation points!");
+  if (!ap.check_delay("circ_sir", args, 3, no)) {
     return oct_retval;
   }
 
@@ -302,9 +294,7 @@ Copyright @copyright{} 2008-2019 Fredrik Lingvall.\n\
   // Material parameters
   //
 
-  // Check that arg 5 is a 2 element vector.
-  if (!((mxGetM(4)==2 && mxGetN(4)==1) || (mxGetM(4)==1 && mxGetN(4)==2))) {
-    error("Argument 5 must be a vector of length 2!");
+  if (!ap.check_material("circ_sir", args, 4, 2)) {
     return oct_retval;
   }
 
@@ -339,6 +329,9 @@ Copyright @copyright{} 2008-2019 Fredrik Lingvall.\n\
 
   Matrix h_mat(nt, no);
   h = h_mat.fortran_vec();
+
+  SIRData hsir(h, nt, no);
+  hsir.clear();
 
   //
   // Register signal handlers.

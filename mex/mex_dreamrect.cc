@@ -246,7 +246,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Material parameters
   //
 
-  ap.check_material("dreamline", prhs, 4, 3);
+  ap.check_material("dreamrect", prhs, 4, 3);
   m_par = mxGetPr(prhs[4]);
   v     = m_par[0]; // Normal velocity of transducer surface.
   cp    = m_par[1]; // Sound speed.

@@ -281,7 +281,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
 @seealso {dreamrect_f, dreamrect}\n\
 @end deftypefn")
 {
-  double *ro,*geom_par,*s_par,*m_par;
+  double *ro;
   FocusMet foc_met=FocusMet::none;
   double *delay=nullptr;
   double *h, *err_p;
@@ -323,15 +323,10 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   // Transducer geometry
   //
 
-  if (!ap.check_geometry("dreamrect_f", args, 1, 2)) {
+  double a=0.0, b=0.0, dummy=0.0;
+  if (!ap.parse_geometry("dreamrect_f", args, 1, 2, a, b, dummy)) {
     return oct_retval;
   }
-
-  double a, b;
-  const Matrix tmp1 = args(1).matrix_value();
-  geom_par = (double*) tmp1.fortran_vec();
-  a = geom_par[0];		// x-width.
-  b = geom_par[1];		// y-width.
 
   //
   // Temporal and spatial sampling parameters.
@@ -359,18 +354,9 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   //
 
   double v=1.0, cp=1000.0, alpha=0.0;
-  if (!ap.parse_material("dreamrect_f", args, 4,
-                         v, cp, alpha)) {
+  if (!ap.parse_material("dreamrect_f", args, 4, v, cp, alpha)) {
     return oct_retval;
   }
-
-  /*
-  const Matrix tmp4 = args(4).matrix_value();
-  m_par = (double*) tmp4.fortran_vec();
-  v     = m_par[0]; // Normal velocity of transducer surface.
-  cp    = m_par[1]; // Sound speed.
-  alpha  = m_par[2]; // Attenuation coefficient [dB/(cm MHz)].
-  */
 
   //
   // Focusing parameters.
@@ -420,6 +406,9 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   // Create an output matrix for the impulse response
   Matrix h_mat(nt, no);
   h = h_mat.fortran_vec();
+
+  SIRData hsir(h, nt, no);
+  hsir.clear();
 
   //
   // Register signal handlers.

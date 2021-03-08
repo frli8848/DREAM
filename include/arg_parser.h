@@ -26,6 +26,7 @@
 
 #include <sstream>
 #include <cstring>
+#include <cstdarg>
 #include <memory>
 
 #include "dream.h"
@@ -52,7 +53,11 @@ public:
     bool retval=true;
     std::ostringstream s;
     if ( (nrhs <  min_in) || (nrhs > max_in) ) {
-      s << func_name <<  " requires " << min_in << " to " << max_in << " input arguments!";
+      if (min_in == max_in) {
+        s << func_name <<  " requires " << min_in << " input arguments!";
+      } else {
+        s << func_name <<  " requires " << min_in << " to " << max_in << " input arguments!";
+      }
       dream_err_msg(s.str().c_str());
       retval=false;
     }
@@ -60,11 +65,15 @@ public:
     return retval;
   };
 
-  bool check_arg_out(const char *func_name, dream_idx_type nrhs, dream_idx_type min_in, dream_idx_type max_in) {
+  bool check_arg_out(const char *func_name, dream_idx_type nrhs, dream_idx_type min_out, dream_idx_type max_out) {
     bool retval=true;
     std::ostringstream s;
-    if ( (nrhs <  min_in) || (nrhs > max_in) ) {
-      s << func_name <<  " requires " << min_in << " to " << max_in << " output arguments!";
+    if ( (nrhs <  min_out) || (nrhs > max_out) ) {
+      if (min_out == max_out) {
+        s << func_name <<  " requires " << min_out << " output arguments!";
+      } else {
+        s << func_name <<  " requires " << min_out << " to " << max_out << " output arguments!";
+      }
       dream_err_msg(s.str().c_str());
       retval=false;
     }
@@ -119,6 +128,40 @@ public:
       }
       dream_err_msg(s.str().c_str());
       retval=false;
+    }
+
+    return retval;
+  };
+
+  bool parse_geometry(const char *func_name, args_t args, dream_idx_type arg_num, dream_idx_type num_pars,
+                      double &arg1, double &arg2, double &arg3) {
+    bool retval=true;
+    std::ostringstream s;
+    if (!((get_m(args, arg_num)==num_pars && get_n(args, arg_num)==1) || (get_m(args, arg_num)==1 && get_n(args, arg_num)==num_pars))) {
+      if (num_pars == 1) {
+        s << func_name <<  " requires that arg " << arg_num+1 << " (geometry) must be a scalar!";
+      } else {
+        s << func_name <<  " requires that arg " << arg_num+1 << " (geometry) must be a " << num_pars << " element vector!";
+      }
+      dream_err_msg(s.str().c_str());
+      retval=false;
+    } else {
+
+      double *pars = get_fortran_vec(args, arg_num);
+
+      if (num_pars==1) { // Scalars needs special treatment
+        arg1 = get_scalar(args, arg_num);
+      }
+
+      if (num_pars>1) {
+        arg1 = pars[0];
+        arg2 = pars[1];
+      }
+
+      if (num_pars>2) {
+        arg3 = pars[2];
+      }
+
     }
 
     return retval;

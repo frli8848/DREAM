@@ -27,7 +27,7 @@
 #include <thread>
 
 #include "scirc_sir.h"
-#include "dream_error.h"
+#include "arg_parser.h"
 
 #include "mex.h"
 
@@ -168,39 +168,30 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   DATA   *D;
   size_t start, stop;
   std::thread *threads;
-  unsigned int thread_n, nthreads;
-  sighandler_t  old_handler, old_handler_abrt, old_handler_keyint;
+  dream_idx_type thread_n, nthreads;
+  sighandler_t old_handler, old_handler_abrt, old_handler_keyint;
+
+  ArgParser ap;
 
   // Check for proper number of arguments
 
-  if (nrhs != 6) {
-    dream_err_msg("scirc_sir requires 6 input arguments!");
-  }
-  else
-    if (nlhs > 1) {
-      dream_err_msg("Too many output arguments for scirc_sir!");
-    }
+  ap.check_arg_in("scirc_sir", nrhs, 6, 6);
+  ap.check_arg_out("scirc_sir", nlhs, 0, 1);
+
 
   //
   // Observation point.
   //
 
- // Check that arg (number of observation points) x 3 matrix
-  if (!mxGetN(prhs[0])==3)
-    dream_err_msg("Argument 1 must be a (number of observation points) x 3 matrix!");
-
+  ap.check_obs_points("scirc_sir", prhs, 0);
   no = mxGetM(prhs[0]); // Number of observation points.
   ro = mxGetPr(prhs[0]);
-
 
   //
   // Transducer geometry
   //
 
-   // Check that arg 2 is a scalar.
-  if (!((mxGetM(prhs[1])==1 && mxGetN(prhs[1])==1)))
-    dream_err_msg("Argument 2 must be a scalar!");
-
+  ap.check_geometry("scirc_sir", prhs, 1, 1);
   geom_par = mxGetPr(prhs[1]);
   r  = geom_par[0];		// Radius of the transducer.
 
@@ -208,10 +199,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Temporal and spatial sampling parameters.
   //
 
-  // Check that arg 3 is a 2 element vector
-  if (!((mxGetM(prhs[2])==2 && mxGetN(prhs[2])==1) || (mxGetM(prhs[2])==1 && mxGetN(prhs[2])==2)))
-    dream_err_msg("Argument 3 must be a vector of length 2!");
-
+  ap.check_sampling("scirc_sir", prhs, 2, 2);
   s_par = mxGetPr(prhs[2]);
   dt    = s_par[0];		// Temporal discretization size (= 1/sampling freq).
   nt    = (size_t) s_par[1];	// Length of SIR.
@@ -220,20 +208,14 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Start point of impulse response vector ([us]).
   //
 
-  // Check that arg 4 is a scalar.
-  if ( (mxGetM(prhs[3]) * mxGetN(prhs[3]) !=1) && ((mxGetM(prhs[3]) * mxGetN(prhs[3])) != no))
-    dream_err_msg("Argument 4 must be a scalar or a vector with a length equal to the number of observation points!");
-
+  ap.check_delay("scirc_sir", prhs, 3, no);
   delay = mxGetPr(prhs[3]);
 
   //
   // Material parameters
   //
 
-  // Check that arg 5 is a 2 element vector.
-  if (!((mxGetM(prhs[4])==2 && mxGetN(prhs[4])==1) || (mxGetM(prhs[4])==1 && mxGetN(prhs[4])==2)))
-    dream_err_msg("Argument 5 must be a vector of length 2!");
-
+  ap.check_material("scirc_sir", prhs, 4, 2);
   m_par = mxGetPr(prhs[4]);
   v     = m_par[0]; // Normal velocity of transducer surface.
   cp    = m_par[1]; // Sound speed.
@@ -248,9 +230,9 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
   int_len = (size_t) mxGetScalar(prhs[5]);
 
-  if (int_len < 1)
+  if (int_len < 1) {
     dream_err_msg("Number of intervals (argument 6) must be larger than one !");
-
+  }
 
   //
   // Number of threads
@@ -261,22 +243,26 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
   // Read DREAM_NUM_THREADS env var
   if(const char* env_p = std::getenv("DREAM_NUM_THREADS")) {
-    unsigned int dream_threads = std::stoul(env_p);
+    dream_idx_type dream_threads = std::stoul(env_p);
     if (dream_threads < nthreads) {
       nthreads = dream_threads;
     }
   }
 
   // nthreads can't be larger then the number of observation points.
-  if (nthreads > (unsigned int) no)
+  if (nthreads > no) {
     nthreads = no;
+  }
 
   //
   // Create an output matrix for the impulse response(s).
   //
 
-  plhs[0] = mxCreateDoubleMatrix(nt,no,mxREAL);
+  plhs[0] = mxCreateDoubleMatrix(nt, no, mxREAL);
   h = mxGetPr(plhs[0]);
+
+  SIRData hsir(h, nt, no);
+  hsir.clear();
 
   //
   // Register signal handlers.

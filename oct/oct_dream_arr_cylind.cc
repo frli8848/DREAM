@@ -354,11 +354,8 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
 @seealso {dream_arr_cylind_d, dreamcylind}\n\
 @end deftypefn")
 {
-  double *ro, *geom_par, *s_par, *m_par;
-  double a, b, Rcurv, dx, dy, dt;
-  dream_idx_type nt, no;
-  double apod_par=0.0, *delay, v=0.0, cp=0.0, alpha=0.0;
-  int    num_elements;
+  double *ro;
+  double apod_par=0.0, *delay;
   double *G;
   FocusMet foc_met=FocusMet::none;
   SteerMet steer_met=SteerMet::none;
@@ -396,7 +393,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
     return oct_retval;
   }
 
-  no = mxGetM(0); // Number of observation points.
+  dream_idx_type no = mxGetM(0); // Number of observation points.
   const Matrix tmp0 = args(0).matrix_value();
   ro = (double*) tmp0.fortran_vec();
 
@@ -404,15 +401,10 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   // Transducer geometry
   //
 
-  if (!ap.check_geometry("dream_arr_cylind", args, 1, 3)) {
+  double a=0.0, b=0.0, Rcurv=0.0;
+  if (!ap.parse_geometry("dream_arr_cylind", args, 1, 3, a, b, Rcurv)) {
     return oct_retval;
   }
-
-  const Matrix tmp1 = args(1).matrix_value();
-  geom_par = (double*) tmp1.fortran_vec();
-  a = geom_par[0];		// x-width of the transducer.
-  b = geom_par[1];		// y-width of the transducer.
-  Rcurv = geom_par[2];		// Radius of the cylinder.
 
   //
   // Grid function (position vectors of the elements).
@@ -422,7 +414,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
     return oct_retval;
   }
 
-  num_elements = (int) mxGetM(2); // Number of elementents in the array.
+  dream_idx_type num_elements = (dream_idx_type) mxGetM(2); // Number of elementents in the array.
 
   const Matrix tmp2 = args(2).matrix_value();
   G = (double*) tmp2.fortran_vec(); // First column in the matrix.
@@ -433,16 +425,11 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   // Temporal and spatial sampling parameters.
   //
 
-  if (!ap.check_sampling("dream_arr_cylind", args, 3, 4)) {
+  double dx=0.0, dy=0.0, dt=0.0;
+  dream_idx_type nt=0;
+  if (!ap.parse_sampling("dream_arr_cylind", args, 3, 4, dx, dy, dt, nt)) {
     return oct_retval;
   }
-
-  const Matrix tmp3 = args(3).matrix_value();
-  s_par = (double*) tmp3.fortran_vec();
-  dx    = s_par[0];		// Spatial x discretization size.
-  dy    = s_par[1];		// Spatial dy iscretization size.
-  dt    = s_par[2];		// Temporal discretization size (= 1/sampling freq).
-  nt    = (dream_idx_type) s_par[3];	// Length of SIR.
 
   //
   // Start point of impulse response vector ([us]).
@@ -459,15 +446,10 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   // Material parameters
   //
 
-  if (!ap.check_material("dream_arr_cylind", args, 5, 3)) {
+  double v=1.0, cp=1000.0, alpha=0.0;
+  if (!ap.parse_material("dream_arr_cylind", args, 5, v, cp, alpha)) {
     return oct_retval;
   }
-
-  const Matrix tmp5 = args(5).matrix_value();
-  m_par = (double*) tmp5.fortran_vec();
-  v     = m_par[0]; // Normal velocity of transducer surface.
-  cp    = m_par[1]; // Sound speed.
-  alpha  = m_par[2]; // Attenuation coefficient [dB/(cm MHz)].
 
   //
   // Focusing parameters.

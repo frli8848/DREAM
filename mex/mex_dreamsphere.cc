@@ -286,6 +286,9 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   plhs[0] = mxCreateDoubleMatrix(nt,no,mxREAL);
   h = mxGetPr(plhs[0]);
 
+  SIRData hsir(h, nt, no);
+  hsir.clear();
+
   //
   // Register signal handlers.
   //

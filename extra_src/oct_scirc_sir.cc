@@ -25,7 +25,7 @@
 #include <mutex>
 
 #include "scirc_sir.h"
-#include "dream_error.h"
+#include "arg_parser.h"
 
 //
 // Octave headers.
@@ -229,30 +229,29 @@ Copyright @copyright{} 2008-2019 Fredrik Lingvall.\n\
   DATA   *D;
   octave_idx_type start, stop;
   std::thread *threads;
-  unsigned int thread_n, nthreads;
+  dream_idx_type thread_n, nthreads;
   sighandler_t  old_handler, old_handler_abrt, old_handler_keyint;
   octave_value_list oct_retval;
+
   int nrhs = args.length ();
+
+  ArgParser ap;
 
   // Check for proper number of arguments
 
-  if (nrhs != 6) {
-    error("scirc_sir requires 6 input arguments!");
+  if (!ap.check_arg_in("scirc_sir", nrhs, 6, 6)) {
     return oct_retval;
   }
-  else
-    if (nlhs > 1) {
-      error("Too many output arguments for scirc_sir !");
-      return oct_retval;
-    }
+
+  if (!ap.check_arg_out("scirc_sir", nlhs, 0, 1)) {
+    return oct_retval;
+  }
 
   //
   // Observation point.
   //
 
-  // Check that arg (number of observation points) x 3 matrix
-  if (mxGetN(0) != 3) {
-    error("Argument 1 must be a (number of observation points) x 3 matrix!");
+  if (!ap.check_obs_points("scirc_sir", args, 0)) {
     return oct_retval;
   }
 
@@ -264,10 +263,7 @@ Copyright @copyright{} 2008-2019 Fredrik Lingvall.\n\
   // Transducer geometry
   //
 
-
-  // Check that arg 2 is a scalar.
-  if (!((mxGetM(1)==1 && mxGetN(1)==1))) {
-    error("Argument 2 must be a scalar!");
+  if (!ap.check_geometry("scirc_sir", args, 1, 1)) {
     return oct_retval;
   }
 
@@ -279,9 +275,7 @@ Copyright @copyright{} 2008-2019 Fredrik Lingvall.\n\
   // Temporal and spatial sampling parameters.
   //
 
-  // Check that arg 3 is a 2 element vector
-  if (!((mxGetM(2)==2 && mxGetN(2)==1) || (mxGetM(2)==1 && mxGetN(2)==2))) {
-    error("Argument 3 must be a vector of length 2!");
+  if (!ap.check_sampling("scirc_sir", args, 2, 2)) {
     return oct_retval;
   }
 
@@ -294,9 +288,7 @@ Copyright @copyright{} 2008-2019 Fredrik Lingvall.\n\
   // Start point of impulse response vector ([us]).
   //
 
-  // Check that arg 4 is a scalar (or vector).
-  if ( (mxGetM(3) * mxGetN(3) !=1) && ((mxGetM(3) * mxGetN(3)) != no)) {
-    error("Argument 4 must be a scalar or a vector with a length equal to the number of observation points!");
+  if (!ap.check_delay("scirc_sir", args, 3, no)) {
     return oct_retval;
   }
 
@@ -307,9 +299,7 @@ Copyright @copyright{} 2008-2019 Fredrik Lingvall.\n\
   // Material parameters
   //
 
-  // Check that arg 5 is a 2 element vectora
-  if (!((mxGetM(4)==2 && mxGetN(4)==1) || (mxGetM(4)==1 && mxGetN(4)==2))) {
-    error("Argument 5 must be a vector of length 2!");
+  if (!ap.check_material("scirc_sir", args, 4, 2)) {
     return oct_retval;
   }
 
@@ -322,7 +312,7 @@ Copyright @copyright{} 2008-2019 Fredrik Lingvall.\n\
   // Intergration interval
   //
 
- // Check that arg 6 is a scalar (or vector).
+  // Check that arg 6 is a scalar (or vector).
   if ( mxGetM(5) * mxGetN(5) !=1) {
     error("Argument 6 must be a scalar!");
     return oct_retval;
@@ -344,8 +334,9 @@ Copyright @copyright{} 2008-2019 Fredrik Lingvall.\n\
   nthreads = std::thread::hardware_concurrency();
 
   // nthreads can't be larger then the number of observation points.
-  if (nthreads > (unsigned int) no)
+  if (nthreads > no) {
     nthreads = no;
+  }
 
   //
   // Create an output matrix for the impulse response(s).
@@ -353,6 +344,9 @@ Copyright @copyright{} 2008-2019 Fredrik Lingvall.\n\
 
   Matrix h_mat(nt, no);
   h = h_mat.fortran_vec();
+
+  SIRData hsir(h, nt, no);
+  hsir.clear();
 
   //
   // Register signal handlers.
@@ -369,7 +363,6 @@ Copyright @copyright{} 2008-2019 Fredrik Lingvall.\n\
   if (( old_handler_keyint=signal(SIGINT, &sighandler)) == SIG_ERR) {
     printf("Couldn't register SIGINT signal handler.\n");
   }
-
 
   //
   // Call the sampled analytic SIR subroutine.
@@ -398,10 +391,11 @@ Copyright @copyright{} 2008-2019 Fredrik Lingvall.\n\
     D[thread_n].dt = dt;
     D[thread_n].nt = nt;
 
-    if (mxGetM(3) * mxGetN(3) == 1)
+    if (mxGetM(3) * mxGetN(3) == 1) {
       D[thread_n].delay_type = DelayType::single; // delay is a scalar.
-    else
+    } else {
       D[thread_n].delay_type = DelayType::multiple; // delay is a vector.
+    }
 
     D[thread_n].delay = delay;
     D[thread_n].v = v;

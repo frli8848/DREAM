@@ -319,11 +319,8 @@ dream_arr_annu is an oct-function that is a part of the DREAM Toolbox available 
 Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
 @end deftypefn")
 {
-  double *ro, *s_par, *m_par;
-  double dx, dy, dt;
-  dream_idx_type nt, no;
-  double apod_par=0.0, *delay, v, cp, alpha;
-  dream_idx_type num_radii=0;
+  double *ro;
+  double apod_par=0.0, *delay;
   double *gr;
   FocusMet foc_met=FocusMet::none;
   bool    do_apod=false;
@@ -359,7 +356,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
     return oct_retval;
   }
 
-  no = mxGetM(0); // Number of observation points.
+  dream_idx_type no = mxGetM(0); // Number of observation points.
   const Matrix tmp0 = args(0).matrix_value();
   ro = (double*) tmp0.fortran_vec();
 
@@ -376,7 +373,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
     return oct_retval;
   }
 
-  num_radii = (int) mxGetM(1)*mxGetN(1); // Number of elementents in the array.
+  dream_idx_type num_radii = (dream_idx_type) mxGetM(1)*mxGetN(1);
   dream_idx_type num_elements = (num_radii+1)/2;
   const Matrix tmp1 = args(1).matrix_value();
   gr = (double*) tmp1.fortran_vec(); // Vector of annular radi.
@@ -385,16 +382,11 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   // Temporal and spatial sampling parameters.
   //
 
-  if (!ap.check_sampling("dream_arr_annu", args, 2, 4)) {
+  double dx=0.0, dy=0.0, dt=0.0;
+  dream_idx_type nt=0;
+  if (!ap.parse_sampling("dream_arr_annu", args, 2, 4, dx, dy, dt, nt)) {
     return oct_retval;
   }
-
-  const Matrix tmp2 = args(2).matrix_value();
-  s_par = (double*) tmp2.fortran_vec();
-  dx    = s_par[0];		// Spatial x discretization size.
-  dy    = s_par[1];		// Spatial dy iscretization size.
-  dt    = s_par[2];		// Temporal discretization size (= 1/sampling freq).
-  nt    = (dream_idx_type) s_par[3];	// Length of SIR.
 
   //
   // Start point of impulse response vector ([us]).
@@ -411,15 +403,10 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   // Material parameters
   //
 
-  if (!ap.check_material("dream_arr_annu", args, 4, 3)) {
+  double v=1.0, cp=1000.0, alpha=0.0;
+  if (!ap.parse_material("dream_arr_annu", args, 4, v, cp,  alpha)) {
     return oct_retval;
   }
-
-  const Matrix tmp4 = args(4).matrix_value();
-  m_par = (double*) tmp4.fortran_vec();
-  v     = m_par[0]; // Normal velocity of transducer surface.
-  cp    = m_par[1]; // Sound speed.
-  alpha = m_par[2]; // Attenuation coefficient [dB/(cm MHz)].
 
   //
   // Focusing parameters.

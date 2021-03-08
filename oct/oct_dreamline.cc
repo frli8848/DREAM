@@ -239,15 +239,13 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
 @seealso {dreamline}\n\
 @end deftypefn")
 {
-  double *ro,*geom_par,*s_par,*m_par;
-  double a,dx,dy,dt;
-  octave_idx_type nt, no;
-  double *delay,v,cp,alpha, *h, *err_p;
+  double *ro;
+  double *delay, *h, *err_p;
   ErrorLevel err_level=ErrorLevel::stop;
   DATA   *D;
   octave_idx_type start, stop;
   std::thread *threads;
-  unsigned int thread_n, nthreads;
+  dream_idx_type thread_n, nthreads;
   sighandler_t old_handler, old_handler_abrt, old_handler_keyint;
   octave_value_list oct_retval;
 
@@ -273,7 +271,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
     return oct_retval;
   }
 
-  no = mxGetM(0); // Number of observation points.
+  dream_idx_type no = mxGetM(0); // Number of observation points.
   const Matrix tmp0 = args(0).matrix_value();
   ro = (double*) tmp0.fortran_vec();
 
@@ -281,28 +279,20 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   // Transducer geometry
   //
 
-  if (!ap.check_geometry("dreamline", args, 1, 1)) {
+  double a=0.0, dummy1=0.0, dummy2=0.0;
+  if (!ap.parse_geometry("dreamline", args, 1, 1, a, dummy1, dummy2)) {
     return oct_retval;
   }
-
-  const Matrix tmp1 = args(1).matrix_value();
-  geom_par = (double*) tmp1.fortran_vec();
-  a = geom_par[0];		// Radius of the transducer.
 
   //
   // Temporal and spatial sampling parameters.
   //
 
-  if (!ap.check_sampling("dreamline", args, 2, 4)) {
+  double dx=0.0, dy=0.0, dt=0.0;
+  dream_idx_type nt=0;
+  if (!ap.parse_sampling("dreamline", args, 2, 4, dx, dy, dt, nt)) {
     return oct_retval;
   }
-
-  const Matrix tmp2 = args(2).matrix_value();
-  s_par = (double*) tmp2.fortran_vec();
-  dx    = s_par[0];		// Spatial x-direction discretization size.
-  dy    = s_par[1];		// Spatial y-direction discretization size.
-  dt    = s_par[2];		// Temporal discretization size (= 1/sampling freq).
-  nt    = (octave_idx_type) s_par[3];	// Length of SIR.
 
   //
   // Start point of impulse response vector ([us]).
@@ -319,15 +309,10 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   // Material parameters
   //
 
-  if (!ap.check_material("dreamline", args, 4, 3)) {
+  double v=1.0, cp=1000.0, alpha=0.0;
+  if (!ap.parse_material("dreamline", args, 4, v, cp, alpha)) {
     return oct_retval;
   }
-
-  const Matrix tmp4 = args(4).matrix_value();
-  m_par = (double*) tmp4.fortran_vec();
-  v     = m_par[0]; // Normal velocity of transducer surface.
-  cp    = m_par[1]; // Sound speed.
-  alpha = m_par[2]; // Attenuation coefficient [dB/(cm MHz)].
 
   //
   // Number of threads.
@@ -338,14 +323,14 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
 
   // Read DREAM_NUM_THREADS env var
   if(const char* env_p = std::getenv("DREAM_NUM_THREADS")) {
-    unsigned int dream_threads = std::stoul(env_p);
+    dream_idx_type dream_threads = std::stoul(env_p);
     if (dream_threads < nthreads) {
       nthreads = dream_threads;
     }
   }
 
   // nthreads can't be larger then the number of observation points.
-  if (nthreads > (unsigned int) no) {
+  if (nthreads > no) {
     nthreads = no;
   }
 
@@ -364,6 +349,9 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   // Create an output matrix for the impulse response
   Matrix h_mat(nt, no);
   h = h_mat.fortran_vec();
+
+  SIRData hsir(h, nt, no);
+  hsir.clear();
 
   //
   // Register signal handlers.

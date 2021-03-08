@@ -24,7 +24,6 @@
 #include <cmath>
 
 #include "scirc_sir.h"
-#include "dream_error.h"
 
 //
 // Function prototypes.
@@ -61,8 +60,6 @@ void scirc_sir(double xo_i,
   dream_idx_type    it;
   double t1, t2, r_cyl, xo, yo, zo, r;
   double R, Rprim;
-  double pi;
-  pi = std::atan( (double) 1.0) * 4.0;
 
   // Convert to [m].
   xo = xo_i / 1000.0;
@@ -112,7 +109,7 @@ void scirc_sir(double xo_i,
         h[it] += v * cp * (Rprim - zo)/cp;
 
         if (R > Rprim)
-          h[it] += v * cp/pi * trapets_int(Rprim/cp, t2, zo, r, r_cyl, cp,int_len);
+          h[it] += v * cp/M_PI * trapets_int(Rprim/cp, t2, zo, r, r_cyl, cp,int_len);
 
       }
       else if ( (cp*t1 < zo) && (cp*t2 >= R) ) {
@@ -122,7 +119,7 @@ void scirc_sir(double xo_i,
         h[it] = v * cp * (Rprim - zo)/cp;
 
         if (R > Rprim)
-          h[it] += v * cp/pi * trapets_int(Rprim/cp, R/cp, zo, r, r_cyl, cp,int_len);
+          h[it] += v * cp/M_PI * trapets_int(Rprim/cp, R/cp, zo, r, r_cyl, cp,int_len);
 
       } // **********************************
       else if ( (cp*t1 >= zo ) && (cp*t2 < Rprim) ) {
@@ -139,7 +136,7 @@ void scirc_sir(double xo_i,
         h[it] = v * cp * (Rprim/cp - t1);
 
         if (R > Rprim)
-          h[it] += v * cp/pi * trapets_int(Rprim/cp, t2, zo, r, r_cyl, cp,int_len);
+          h[it] += v * cp/M_PI * trapets_int(Rprim/cp, t2, zo, r, r_cyl, cp,int_len);
 
       }
       else if ( (cp*t1 >= zo) && (cp*t1 < Rprim) && (cp*t2 >= R) ) {
@@ -149,7 +146,7 @@ void scirc_sir(double xo_i,
         h[it] = v * cp * (Rprim/cp - t1);
 
         if (R > Rprim)
-          h[it] += v * cp/pi * trapets_int(Rprim/cp, R/cp, zo, r, r_cyl, cp,int_len);
+          h[it] += v * cp/M_PI * trapets_int(Rprim/cp, R/cp, zo, r, r_cyl, cp,int_len);
 
       } // **********************************
       else if ( (cp*t1 >= Rprim) && (cp*t2 < R) ) {
@@ -158,7 +155,7 @@ void scirc_sir(double xo_i,
         //
 
         if (R > Rprim)
-          h[it] += v * cp/pi * trapets_int(t1, t2, zo, r, r_cyl, cp,int_len);
+          h[it] += v * cp/M_PI * trapets_int(t1, t2, zo, r, r_cyl, cp,int_len);
 
       }
       else if ( (cp*t1 >= Rprim) &&  (cp*t1 < R) && (cp*t2 >= R) ) {
@@ -166,7 +163,7 @@ void scirc_sir(double xo_i,
         // t1 in [Rprim/cp,R/cp) and t2 > R/cp.
         //
         if (R > Rprim)
-          h[it] += v * cp/pi * trapets_int(t1, R/cp, zo, r, r_cyl, cp,int_len);
+          h[it] += v * cp/M_PI * trapets_int(t1, R/cp, zo, r, r_cyl, cp,int_len);
 
       } // **********************************
       else if (cp*t1 > R) {
@@ -195,7 +192,7 @@ void scirc_sir(double xo_i,
         //
 
         if (R > Rprim)
-          h[it] += v * cp/pi * trapets_int(Rprim/cp, t2, zo, r, r_cyl, cp,int_len);
+          h[it] += v * cp/M_PI * trapets_int(Rprim/cp, t2, zo, r, r_cyl, cp,int_len);
 
       }
       else if ( (cp*t1 < Rprim) && (cp*t2 >= R) ) {
@@ -204,7 +201,7 @@ void scirc_sir(double xo_i,
         //
 
         if (R > Rprim)
-          h[it] += v * cp/pi * trapets_int(Rprim/cp, R/cp, zo, r, r_cyl, cp,int_len);
+          h[it] += v * cp/M_PI * trapets_int(Rprim/cp, R/cp, zo, r, r_cyl, cp,int_len);
 
       } // **********************************
       else if ( (cp*t1 >= Rprim) && (cp*t2 < R) ) {
@@ -213,7 +210,7 @@ void scirc_sir(double xo_i,
         //
 
         if (R > Rprim)
-          h[it] += v * cp/pi * trapets_int(t1, t2, zo, r, r_cyl, cp,int_len);
+          h[it] += v * cp/M_PI * trapets_int(t1, t2, zo, r, r_cyl, cp,int_len);
 
       }
       else if ( (cp*t1 >= Rprim) && (cp*t1 < R) && (cp*t2 >= R) ) {
@@ -222,7 +219,7 @@ void scirc_sir(double xo_i,
         //
 
         if (R > Rprim)
-          h[it] += v * cp/pi * trapets_int(t1, R/cp, zo, r, r_cyl, cp,int_len);
+          h[it] += v * cp/M_PI * trapets_int(t1, R/cp, zo, r, r_cyl, cp,int_len);
 
       }
       else if (cp*t1 >= R) {
@@ -249,13 +246,12 @@ void scirc_sir(double xo_i,
 double acos_acos(double c1,double c2)
 {
   double ac1=0.0, ac2=0.0;
-  double pi = std::atan( (double) 1.0) * 4.0;
 
   if (c1 >= -1.0 && c1 <= 1.0) {
     ac1 = std::acos(c1);
   }
   else if (c1 < -1.0) {
-    ac1 = pi;
+    ac1 = M_PI;
   }
   else if (c1 > 1.0) {
     ac1 = 0.0;
@@ -265,7 +261,7 @@ double acos_acos(double c1,double c2)
     ac2 = std::acos(c2);
   }
   else if (c2 < -1.0) {
-    ac2 = pi;
+    ac2 = M_PI;
   }
   else if (c2 > 1.0) {
     ac2 = 0.0;

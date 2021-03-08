@@ -549,6 +549,9 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   Matrix h_mat(nt, no);
   h = h_mat.fortran_vec();
 
+  SIRData hsir(h, nt, no);
+  hsir.clear();
+
   //
   // Register signal handlers.
   //

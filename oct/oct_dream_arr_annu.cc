@@ -49,20 +49,20 @@ int running;
 
 typedef struct
 {
-  octave_idx_type no;
-  octave_idx_type start;
-  octave_idx_type stop;
+  dream_idx_type no;
+  dream_idx_type start;
+  dream_idx_type stop;
   double *ro;
   double dx;
   double dy;
   double dt;
-  octave_idx_type nt;
+  dream_idx_type nt;
   DelayType delay_type;
   double *delay;
   double v;
   double cp;
   Attenuation *att;
-  int num_radii;
+  dream_idx_type num_radii;
   double *gr;
   FocusMet foc_met;
   bool do_apod;
@@ -98,16 +98,16 @@ void* smp_dream_arr_annu(void *arg)
   double xo, yo, zo;
   double *h = D.h;
   double dx=D.dx, dy=D.dy, dt=D.dt;
-  octave_idx_type n, no=D.no, nt=D.nt;
+  dream_idx_type no=D.no, nt=D.nt;
   ErrorLevel tmp_lev=ErrorLevel::none, err_level=D.err_level;
   double *delay=D.delay, *ro=D.ro, v=D.v, cp=D.cp;
-  Attenuation *att = D.att;
-  octave_idx_type start=D.start, stop=D.stop;
+  Attenuation *att=D.att;
+  dream_idx_type start=D.start, stop=D.stop;
   FocusMet foc_met=D.foc_met;
+  bool do_apod=D.do_apod;
   ApodMet apod_met=D.apod_met;
-  bool   do_apod=D.do_apod;
   double *focal=D.focal, *apod=D.apod, apod_par=D.apod_par;
-  int    num_radii = D.num_radii;
+  dream_idx_type num_radii=D.num_radii;
 
   double *gr=D.gr;
 
@@ -126,7 +126,7 @@ void* smp_dream_arr_annu(void *arg)
     tmp_lev = err_level;
   }
 
-  for (n=start; n<stop; n++) {
+  for (dream_idx_type n=start; n<stop; n++) {
     xo = ro[n];
     yo = ro[n+1*no];
     zo = ro[n+2*no];
@@ -165,7 +165,7 @@ void* smp_dream_arr_annu(void *arg)
     }
 
     if (!running) {
-      octave_stdout << "Thread for observation points " << start+1 << " -> " << stop << " bailing out!\n";
+      std::cout << "Thread for observation points " << start+1 << " -> " << stop << " bailing out!" << std::endl;
       return(NULL);
     }
 
@@ -205,9 +205,10 @@ void sig_keyint_handler(int signum) {
 
 /***
  *
- *  oct_dream_arr_annug.cc - Octave (oct) gateway function for parallel dreamrect.
+ *  Octave (oct) gateway function for dream_arr_annu
  *
  ***/
+
 DEFUN_DLD (dream_arr_annu, args, nlhs,
            "-*- texinfo -*-\n\
 @deftypefn {Loadable Function} {} [H,err] = dream_arr_annu(Ro,G,s_par,delay,m_par,foc_met,focal,...\n\
@@ -320,19 +321,19 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
 {
   double *ro, *s_par, *m_par;
   double dx, dy, dt;
-  octave_idx_type nt, no;
-  double apod_par=0,*delay, v, cp, alpha;
-  octave_idx_type num_radii=0;
+  dream_idx_type nt, no;
+  double apod_par=0.0, *delay, v, cp, alpha;
+  dream_idx_type num_radii=0;
   double *gr;
   FocusMet foc_met=FocusMet::none;
   bool    do_apod=false;
   ApodMet apod_met=ApodMet::gauss;
   double *h, *err_p;
   ErrorLevel err_level=ErrorLevel::stop;
-  DATA   *D;
-  octave_idx_type start, stop;
+  DATA *D;
+  dream_idx_type start, stop;
   std::thread *threads;
-  unsigned int thread_n, nthreads;
+  dream_idx_type thread_n, nthreads;
   sighandler_t old_handler, old_handler_abrt, old_handler_keyint;
   octave_value_list oct_retval;
 
@@ -340,7 +341,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
 
   ArgParser ap;
 
-  // Check for proper number of arguments
+  // Check for proper number of arguments.
 
   if (!ap.check_arg_in("dream_arr_annu", nrhs, 10, 11)) {
     return oct_retval;
@@ -393,7 +394,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   dx    = s_par[0];		// Spatial x discretization size.
   dy    = s_par[1];		// Spatial dy iscretization size.
   dt    = s_par[2];		// Temporal discretization size (= 1/sampling freq).
-  nt    = (octave_idx_type) s_par[3];	// Length of SIR.
+  nt    = (dream_idx_type) s_par[3];	// Length of SIR.
 
   //
   // Start point of impulse response vector ([us]).
@@ -460,14 +461,14 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
 
   // Read DREAM_NUM_THREADS env var
   if(const char* env_p = std::getenv("DREAM_NUM_THREADS")) {
-    unsigned int dream_threads = std::stoul(env_p);
+    dream_idx_type dream_threads = std::stoul(env_p);
     if (dream_threads < nthreads) {
       nthreads = dream_threads;
     }
   }
 
   // nthreads can't be larger then the number of observation points.
-  if (nthreads > (unsigned int) no) {
+  if (nthreads >  no) {
     nthreads = no;
   }
 
@@ -538,10 +539,11 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
     D[thread_n].dt = dt;
     D[thread_n].nt = nt;
 
-    if (mxGetM(3) * mxGetN(3) == 1)
+    if (mxGetM(3) * mxGetN(3) == 1) {
       D[thread_n].delay_type = DelayType::single; // delay is a scalar.
-    else
+    } else {
       D[thread_n].delay_type = DelayType::multiple; // delay is a vector.
+    }
 
     D[thread_n].delay = delay;
     D[thread_n].v = v;

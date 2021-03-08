@@ -41,7 +41,8 @@ ErrorLevel dreamcirc(double xo, double yo, double zo,
                      double delay,
                      double v, double cp,
                      double *h,
-                     ErrorLevel err_level)
+                     ErrorLevel err_level,
+                     double weight)
 {
   ErrorLevel err = ErrorLevel::none;
 
@@ -50,10 +51,6 @@ ErrorLevel dreamcirc(double xo, double yo, double zo,
   // y-dim integration bounds
   double ysmin = -R;
   double ysmax =  R;
-
-  for (dream_idx_type i = 0; i < nt; i++) {
-    h[i] = 0.0;
-  }
 
   double ys = ysmin + dy/2.0;
   while (ys <= ysmax) {
@@ -73,7 +70,7 @@ ErrorLevel dreamcirc(double xo, double yo, double zo,
       double rx = xo - xs;
       double r = std::sqrt(rx*rx + ry*ry + zo*zo);
 
-      double ai = v * ds / (2*M_PI * r);
+      double ai = weight * v * ds / (2*M_PI * r);
       ai /= dt;
       ai *= 1.0e3; // Convert to SI units.
 
@@ -114,7 +111,8 @@ ErrorLevel dreamcirc(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
                      double delay,
                      double v, double cp,
                      double *h,
-                     ErrorLevel err_level)
+                     ErrorLevel err_level,
+                     double weight)
 {
   ErrorLevel err = ErrorLevel::none;
 
@@ -123,10 +121,6 @@ ErrorLevel dreamcirc(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
   // y-dim integration bounds
   double ysmin = -R;
   double ysmax =  R;
-
-  for (dream_idx_type i = 0; i < nt; i++) {
-    h[i] = 0.0;
-  }
 
   double ys = ysmin + dy/2.0;
   while (ys <= ysmax) {
@@ -146,7 +140,7 @@ ErrorLevel dreamcirc(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
       double rx = xo - xs;
       double r = std::sqrt(rx*rx + ry*ry + zo*zo);
 
-      double ai = v * ds / (2*M_PI * r);
+      double ai = weight * v * ds / (2*M_PI * r);
       ai /= dt;
       ai *= 1.0e3; // Convert to SI units.
 

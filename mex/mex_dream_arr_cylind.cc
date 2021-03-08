@@ -374,6 +374,9 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   plhs[0] = mxCreateDoubleMatrix(nt,no,mxREAL);
   h = mxGetPr(plhs[0]);
 
+  SIRData hsir(h, nt, no);
+  hsir.clear();
+
   //
   // Register signal handlers.
   //
@@ -432,10 +435,11 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     D[thread_n].dt = dt;
     D[thread_n].nt = nt;
 
-    if (mxGetM(prhs[4]) * mxGetN(prhs[4]) == 1)
+    if (mxGetM(prhs[4]) * mxGetN(prhs[4]) == 1) {
       D[thread_n].delay_type = DelayType::single; // delay is a scalar.
-    else
+    } else {
       D[thread_n].delay_type = DelayType::multiple; // delay is a vector.
+    }
 
     D[thread_n].delay = delay;
     D[thread_n].v = v;

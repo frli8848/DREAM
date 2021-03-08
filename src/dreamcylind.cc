@@ -54,7 +54,6 @@ ErrorLevel dreamcylind(double xo, double yo, double zo,
                        ErrorLevel err_level,
                        double weight)
 {
-  dream_idx_type i, it;
   double t, xsmin, xsmax, ai, du, r;
   double phi, phi_min, phi_max;
   ErrorLevel err = ErrorLevel::none;
@@ -79,10 +78,6 @@ ErrorLevel dreamcylind(double xo, double yo, double zo,
   double ds = std::fabs(Rcurv) * dx * dphi;
   //ds = dx * dy; // Approx the same as  ds = Rcurv * dx * dphi.
 
-  for (i = 0; i < nt; i++) {
-    h[i] = (double) 0.0 ;
-  }
-
   phi = phi_min + dphi/2.0;
   double ys = std::fabs(Rcurv) * std::sin(phi);
   while (phi <= phi_max) {
@@ -103,17 +98,17 @@ ErrorLevel dreamcylind(double xo, double yo, double zo,
       ai *= 1.0e3;
       // Propagation delay in micro seconds.
       t = r * 1.0e3/cp;
-      it = (dream_idx_type) std::rint((t - delay)/dt);
+      dream_idx_type it = (dream_idx_type) std::rint((t - delay)/dt);
 
       // Check if index is out of bounds.
       if ((it < nt) && (it >= 0)) {
         h[it] += ai;
-      }
-      else  {
-        if  (it >= 0)
+      } else  {
+        if  (it >= 0) {
           err = dream_out_of_bounds_err("SIR out of bounds",it-nt+1,err_level);
-        else
+        } else {
           err = dream_out_of_bounds_err("SIR out of bounds",it,err_level);
+        }
 
         if ( (err_level == ErrorLevel::parallel_stop) || (err_level == ErrorLevel::stop) ) {
           return err; // Bail out.
@@ -163,10 +158,6 @@ ErrorLevel dreamcylind(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
   //dphi = dy/r;
   double ds = std::fabs(Rcurv) * dx * dphi;
   //ds = dx * dy; // Approx the same as  ds = Rcurv * dx * dphi.
-
-  for (i = 0; i < nt; i++) {
-    h[i] = 0.0;
-  }
 
   phi = phi_min + dphi/2.0;
   double ys = std::fabs(Rcurv) * std::sin(phi);

@@ -36,54 +36,43 @@
 
 ErrorLevel dream_arr_cylind(double xo, double yo, double zo,
                             double a, double b, double Rcurv,
-                            double dx, double dy, double dt, dream_idx_type nt,
+                            double dx, double dy, double dt,
+                            dream_idx_type nt,
                             double delay, double v, double cp,
                             dream_idx_type num_elements, double *gx, double *gy, double *gz,
                             FocusMet foc_met, double *focal,
                             SteerMet steer_met, double theta, double phi,
                             double *apod, bool do_apod, ApodMet apod_met, double apod_par,
-                            double *ha, ErrorLevel err_level)
+                            double *h, ErrorLevel err_level)
 {
-  dream_idx_type i;
-  double ramax, xamax, yamax;
-  //double xs, ys, zs;
   ErrorLevel err = ErrorLevel::none, out_err = ErrorLevel::none;
 
-  for (i=0; i<nt; i++) {
-    ha[i] = 0.0;
-  }
+  double r_max, x_max, y_max;
+  max_dim_arr(&x_max, &y_max, &r_max, gx, gy, gz, num_elements);
 
-  double foc_delay   = 0.0;
-  double steer_delay = 0.0;
-  double weight = 1.0;
+  for (dream_idx_type n=0; n<num_elements; n++) {
 
-  max_dim_arr(&xamax, &yamax, &ramax, gx, gy, gz, num_elements);
-
-  for (i=0; i<num_elements; i++) {
-
-    //center_pos(&xs, &ys, &zs, i, gx, gy, gz);
-    //focusing(foc_met, focal, xs, ys, xamax, yamax, ramax, cp, &retfoc);
-
+    double foc_delay = 0.0;
     if (foc_met != FocusMet::ud) {
-      focusing(foc_met, focal[0], gx[i], gy[i], xamax, yamax, ramax, cp, &foc_delay);
+      focusing(foc_met, focal[0], gx[n], gy[n], x_max, y_max, r_max, cp, &foc_delay);
     } else {
-      focusing(foc_met, focal[i], gx[i], gy[i], xamax, yamax, ramax, cp, &foc_delay);
+      focusing(foc_met, focal[n], gx[n], gy[n], x_max, y_max, r_max, cp, &foc_delay);
     }
 
-    //beamsteering(steer_met, theta, phi, xs, ys, xamax, yamax, ramax, cp, &retsteer);
-    beamsteering(steer_met, theta, phi, gx[i], gy[i], xamax, yamax, ramax, cp, &steer_delay);
+    double steer_delay = 0.0;
+    beamsteering(steer_met, theta, phi, gx[n], gy[n], x_max, y_max, r_max, cp, &steer_delay);
 
+    double weight = 1.0;
     if (do_apod) {
-      //apodization(apod_met, i, apod, &weight, xs, ys, ramax, apod_par);
-      apodization(apod_met, i, apod, &weight, gx[i], gy[i], ramax, apod_par);
+      apodization(apod_met, n, apod, &weight, gx[n], gy[n], r_max, apod_par);
     }
-    // Compute the response for the i:th element and add it to the impulse response vector ha.
-    //err = cylind_f(xo,yo,zo,xs,ys,zs,Rcurv,a,b,dx,dy,dt,nt,delay,retfoc,retsteer,v,cp,alpha,weight,ha,err_level);
-    err = dreamcylind(gx[i], gy[i], 0.0,
+
+    // Compute the response for the n:th element and add it to the impulse response vector h.
+    err = dreamcylind(xo - gx[n], yo - gy[n], zo - gz[n],
                       a, b, Rcurv,
                       dx, dy, dt, nt, delay - foc_delay - steer_delay,
                       v, cp,
-                      ha, err_level,
+                      h, err_level,
                       weight);
 
     if (err != ErrorLevel::none) {
@@ -97,55 +86,44 @@ ErrorLevel dream_arr_cylind(double xo, double yo, double zo,
 ErrorLevel dream_arr_cylind(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
                             double xo, double yo, double zo,
                             double a, double b, double Rcurv,
-                            double dx, double dy, double dt, dream_idx_type nt,
+                            double dx, double dy, double dt,
+                            dream_idx_type nt,
                             double delay, double v, double cp,
                             dream_idx_type num_elements, double *gx, double *gy, double *gz,
                             FocusMet foc_met, double *focal,
                             SteerMet steer_met, double theta, double phi,
                             double *apod, bool do_apod, ApodMet apod_met, double apod_par,
-                            double *ha, ErrorLevel err_level)
+                            double *h, ErrorLevel err_level)
 {
-  dream_idx_type i;
-  double ramax, xamax, yamax;
-  double xs, ys, zs;
   ErrorLevel err = ErrorLevel::none, out_err = ErrorLevel::none;
 
-  for (i=0; i<nt; i++) {
-    ha[i] = 0.0;
-  }
+  double r_max, x_max, y_max;
+  max_dim_arr(&x_max, &y_max, &r_max, gx, gy, gz, num_elements);
 
-  double foc_delay   = 0.0;
-  double steer_delay = 0.0;
-  double weight = 1.0;
+  for (dream_idx_type n=0; n<num_elements; n++) {
 
-  max_dim_arr(&xamax, &yamax, &ramax, gx, gy, gz, num_elements);
-
-  for (i=0; i<num_elements; i++) {
-
-    //center_pos(&xs, &ys, &zs, i, gx, gy, gz);
-    //focusing(foc_met, focal, xs, ys, xamax, yamax, ramax, cp, &retfoc);
-
+    double foc_delay = 0.0;
     if (foc_met != FocusMet::ud) {
-      focusing(foc_met, focal[0], gx[i], gy[i], xamax, yamax, ramax, cp, &foc_delay);
+      focusing(foc_met, focal[0], gx[n], gy[n], x_max, y_max, r_max, cp, &foc_delay);
     } else {
-      focusing(foc_met, focal[i], gx[i], gy[i], xamax, yamax, ramax, cp, &foc_delay);
+      focusing(foc_met, focal[n], gx[n], gy[n], x_max, y_max, r_max, cp, &foc_delay);
     }
 
-    //beamsteering(steer_met, theta, phi, xs, ys, xamax, yamax, ramax, cp, &retsteer);
-    beamsteering(steer_met, theta, phi, gx[i], gy[i], xamax, yamax, ramax, cp, &steer_delay);
+    double steer_delay = 0.0;
+    beamsteering(steer_met, theta, phi, gx[n], gy[n], x_max, y_max, r_max, cp, &steer_delay);
 
+    double weight = 1.0;
     if (do_apod) {
-      //apodization(apod_met, i, apod, &weight, xs, ys, ramax, apod_par);
-      apodization(apod_met, i, apod, &weight, gx[i], gy[i], ramax, apod_par);
+      apodization(apod_met, n, apod, &weight, gx[n], gy[n], r_max, apod_par);
     }
-    // Compute the response for the i:th element and add it to the impulse response vector ha.
-    //err = cylind_f(xo,yo,zo,xs,ys,zs,Rcurv,a,b,dx,dy,dt,nt,delay,retfoc,retsteer,v,cp,alpha,weight,ha,err_level);
+
+    // Compute the response for the n:th element and add it to the impulse response vector h.
     err = dreamcylind(att, xc_vec, x_vec,
-                      gx[i], gy[i], 0.0,
+                      xo - gx[n], yo - gy[n], zo - gz[n],
                       a, b, Rcurv,
                       dx, dy, dt, nt, delay - foc_delay - steer_delay,
                       v, cp,
-                      ha, err_level,
+                      h, err_level,
                       weight);
 
     if (err != ErrorLevel::none) {

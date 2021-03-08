@@ -570,6 +570,7 @@ if (OCTAVE_FOUND)
     src/affinity.cc
     src/arr_functions.cc
     src/dream_arr_rect.cc
+    src/dreamrect.cc
     src/dream_error.cc
     )
 
@@ -599,6 +600,7 @@ if (Matlab_FOUND)
     src/affinity.cc
     src/arr_functions.cc
     src/dream_arr_rect.cc
+    src/dreamrect.cc
     src/dream_error.cc
     )
 
@@ -632,6 +634,7 @@ if (OCTAVE_FOUND)
     src/affinity.cc
     src/arr_functions.cc
     src/dream_arr_circ.cc
+    src/dreamcirc.cc
     src/dream_error.cc
     )
 
@@ -661,6 +664,7 @@ if (Matlab_FOUND)
     src/affinity.cc
     src/arr_functions.cc
     src/dream_arr_circ.cc
+    src/dreamcirc.cc
     src/dream_error.cc
     )
 

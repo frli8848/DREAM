@@ -32,7 +32,8 @@ ErrorLevel dreamcirc(double xo, double yo, double zo,
                      double delay,
                      double v, double cp,
                      double *h,
-                     ErrorLevel err_level);
+                     ErrorLevel err_level,
+                     double weight=1.0);
 
 ErrorLevel dreamcirc(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
                      double xo, double yo, double zo,
@@ -42,7 +43,8 @@ ErrorLevel dreamcirc(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
                      double delay,
                      double v, double cp,
                      double *h,
-                     ErrorLevel err_level);
+                     ErrorLevel err_level,
+                     double weight=1.0);
 
 #ifdef USE_OPENCL
 int cl_dreamcirc(const double *Ro, int No,

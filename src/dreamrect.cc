@@ -39,48 +39,39 @@ ErrorLevel dreamrect(double xo, double yo, double zo,
                      double delay,
                      double v, double cp,
                      double *h,
-                     ErrorLevel err_level)
+                     ErrorLevel err_level,
+                     double weight)
 {
-  dream_idx_type i, it;
-  double t;
-  double ai;
-  double r;
-  double xsmin, xsmax, ysmin, ysmax;
   ErrorLevel err = ErrorLevel::none;
-  double rx, ry, rz;
 
-  xsmin = -a/2.0;
-  xsmax =  a/2.0;
-  ysmin = -b/2.0;
-  ysmax =  b/2.0;
+  double xsmin = -a/2.0;
+  double xsmax =  a/2.0;
+  double ysmin = -b/2.0;
+  double ysmax =  b/2.0;
 
   double ds = dx * dy;
 
-  for (i = 0; i < nt; i++) {
-    h[i] = (double) 0.0;
-  }
-
-  rz = zo;
+  double rz = zo;
 
   double ys = ysmin + dy / 2.0;
 
   while (ys <= ysmax) {
 
-    ry = yo - ys;
+    double ry = yo - ys;
 
     double xs = xsmin + dx / 2.0;
 
     while (xs <= xsmax) {
 
-      rx = xo - xs;
-      r = std::sqrt(rx*rx + ry*ry + rz*rz);
+      double rx = xo - xs;
+      double r = std::sqrt(rx*rx + ry*ry + rz*rz);
 
-      ai = v * ds / (2*M_PI * r);
+      double ai = weight * v * ds / (2*M_PI * r);
       ai /= dt;
       ai *= 1000.0;		// Convert to SI units.
 
-      t = r * 1000.0/cp;	// Propagation delay in micro seconds.
-      it = (dream_idx_type) std::rint((t - delay)/dt); // Sample index.
+      double t = r * 1000.0/cp;	// Propagation delay in micro seconds.
+      dream_idx_type it = (dream_idx_type) std::rint((t - delay)/dt); // Sample index.
 
       // Check if index is out of bounds.
       if ( (it < nt) && (it >= 0) ) {
@@ -113,47 +104,39 @@ ErrorLevel dreamrect(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
                      double delay,
                      double v, double cp,
                      double *h,
-                     ErrorLevel err_level)
+                     ErrorLevel err_level,
+                     double weight)
 {
-  dream_idx_type i, it;
-  double t;
-  double ai;
-  double r;
-  double xsmin, xsmax, ysmin, ysmax;
   ErrorLevel err = ErrorLevel::none;
-  double rx,ry,rz;
 
-  xsmin = -a/2.0;
-  xsmax =  a/2.0;
-  ysmin = -b/2.0;
-  ysmax =  b/2.0;
+
+  double xsmin = -a/2.0;
+  double xsmax =  a/2.0;
+  double ysmin = -b/2.0;
+  double ysmax =  b/2.0;
 
   double ds = dx * dy;
 
-  for (i = 0; i < nt; i++) {
-    h[i] = (double) 0.0;
-  }
-
-  rz = zo;
+  double rz = zo;
   double ys = ysmin + dy / 2.0;
 
   while (ys <= ysmax) {
 
-    ry = yo - ys;
+    double ry = yo - ys;
 
     double xs = xsmin + dx / 2.0;
 
     while (xs <= xsmax) {
 
-      rx = xo - xs;
-      r = std::sqrt(rx*rx + ry*ry + rz*rz);
+      double rx = xo - xs;
+      double r = std::sqrt(rx*rx + ry*ry + rz*rz);
 
-      ai = v * ds / (2*M_PI * r);
+      double ai = weight* v * ds / (2*M_PI * r);
       ai /= dt;
       ai *= 1000.0;		// Convert to SI units.
 
-      t = r * 1000.0/cp;	// Propagation delay in micro seconds.
-      it = (dream_idx_type) std::rint((t - delay)/dt); // Sample index.
+      double t = r * 1000.0/cp;	// Propagation delay in micro seconds.
+      dream_idx_type it = (dream_idx_type) std::rint((t - delay)/dt); // Sample index.
 
       // Check if index is out of bounds.
       if ( (it < nt) && (it >= 0) ) {

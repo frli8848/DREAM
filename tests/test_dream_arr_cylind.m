@@ -4,29 +4,26 @@
 
 setup_dream_parameters
 
-%% Focused/concave
-
 % Element size [mm].
-a = 1;
-b = 1;
-Rcurv = 100;
+a = 0.8;
+b = 20;
+Rcurv = 10;
 geom_par = [a b Rcurv];
 
 % Grid function (position vectors of the elements).
-x = -10:1:10;
-[gx,gy] = meshgrid(x);
+gx = -10:1:10;;
 gx = gx(:);
-gy = gy(:);
+gy = zeros(length(gx),1);
 gz = zeros(length(gx),1);
 G = [gx gy gz];
 
 %% Focusing parameters.
-foc_met = 'off';
-%foc_met = 'x';
+%foc_met = 'off';
+foc_met = 'x';
 %foc_met = 'y';
 %foc_met = 'xy';
 %foc_met = 'x+y';
-focal = 100;                    % Focus radius
+focal = 10;                     % Focus depth
 
 %% Beam steering.
 steer_met = 'off';
@@ -84,8 +81,8 @@ title(title_str)
 
 % Element size [mm].
 a = 1;
-b = 1;
-Rcurv = -100;
+b = 20;
+Rcurv = -10;
 geom_par = [a b Rcurv];
 
 [H,err] = dream_arr_cylind(Ro,geom_par,G,s_par,delay,...
@@ -112,3 +109,5 @@ else
   legend('Attenuation {\alpha} = 0 [dB/cm MHz]',...
          'Attenuation {\alpha} = 5 [dB/cm MHz]');
 end
+title_str = sprintf('Array with defocused cylindrical transducer at Rcurv=%1.1f [mm]',Rcurv);
+title(title_str)

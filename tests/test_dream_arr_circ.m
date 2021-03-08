@@ -5,24 +5,23 @@
 setup_dream_parameters
 
 % Element size [mm].
-R = 0.5;
+R = 0.4;
 geom_par = [R];
 
 % Grid function (position vectors of the elements).
-x = -10:1:10;
-[gx,gy] = meshgrid(x);
+gx = -10:1:10;;
 gx = gx(:);
-gy = gy(:);
+gy = zeros(length(gx),1);
 gz = zeros(length(gx),1);
 G = [gx gy gz];
 
 %% Focusing parameters.
-foc_met = 'off';
-%foc_met = 'x';
+%foc_met = 'off';
+foc_met = 'x';
 %foc_met = 'y';
 %foc_met = 'xy';
 %foc_met = 'x+y';
-focal = 25;                    % Focus radius
+focal = 10;                     % Focus radius
 
 %% Beam steering.
 steer_met = 'off';

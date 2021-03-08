@@ -24,41 +24,14 @@
 #include <cmath>
 
 #include "dream_arr_rect.h"
+#include "dreamrect.h"
 #include "arr_functions.h"
-
-//
-// Function prototypes
-//
-
-ErrorLevel rect_ab(double xo, double yo, double zo,
-                   double x, double y, double z,
-                   double a, double b,
-                   double dx, double dy, double dt,
-                   dream_idx_type nt,
-                   double delay, double foc_delay, double steer_delay,
-                   double v, double cp, double weight,
-                   double *h, ErrorLevel err_level);
-
-ErrorLevel rect_ab(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
-                   double xo, double yo, double zo,
-                   double x, double y, double z,
-                   double a, double b,
-                   double dx, double dy, double dt,
-                   dream_idx_type nt,
-                   double delay, double foc_delay, double steer_delay,
-                   double v, double cp, double weight,
-                   double *h, ErrorLevel err_level);
-
-/***
- *
- * dream_arr_rect
- *
- ***/
 
 ErrorLevel dream_arr_rect(double xo, double yo, double zo,
                           double a, double b,
                           double dx, double dy, double dt,
-                          dream_idx_type nt, double delay, double v, double cp,
+                          dream_idx_type nt,
+                          double delay, double v, double cp,
                           dream_idx_type num_elements, double *gx, double *gy, double *gz,
                           FocusMet foc_met, double *focal,
                           SteerMet steer_met, double theta, double phi,
@@ -67,31 +40,34 @@ ErrorLevel dream_arr_rect(double xo, double yo, double zo,
 {
   ErrorLevel err = ErrorLevel::none, out_err = ErrorLevel::none;
 
-  for (dream_idx_type i=0; i<nt; i++) {
-    h[i] = 0.0;
-  }
-
-  double foc_delay=0.0, steer_delay=0.0, weight=1.0;
-  double ramax, xamax, yamax;
-  max_dim_arr(&xamax, &yamax, &ramax, gx, gy, gz, num_elements);
+  double r_max, x_max, y_max;
+  max_dim_arr(&x_max, &y_max, &r_max, gx, gy, gz, num_elements);
 
   for (dream_idx_type n=0; n<num_elements; n++) {
 
+    double foc_delay = 0.0;
     if (foc_met != FocusMet::ud) {
-      focusing(foc_met, focal[0], gx[n], gy[n], xamax, yamax, ramax, cp, &foc_delay);
+      focusing(foc_met, focal[0], gx[n], gy[n], x_max, y_max, r_max, cp, &foc_delay);
     } else {
-      focusing(foc_met, focal[n], gx[n], gy[n], xamax, yamax, ramax, cp, &foc_delay);
+      focusing(foc_met, focal[n], gx[n], gy[n], x_max, y_max, r_max, cp, &foc_delay);
     }
 
-    beamsteering(steer_met, theta, phi, gx[n], gy[n], xamax, yamax, ramax, cp, &steer_delay);
+    double steer_delay = 0.0;
+    beamsteering(steer_met, theta, phi, gx[n], gy[n], x_max, y_max, r_max, cp, &steer_delay);
 
+    double weight = 1.0;
     if (do_apod) {
-      apodization(apod_met, n, apod, &weight, gx[n], gy[n], ramax, apod_par);
+      apodization(apod_met, n, apod, &weight, gx[n], gy[n], r_max, apod_par);
     }
 
-    // Compute the response for the n:th elemen and add it to the impulse response vector ha.
-    err = rect_ab(xo, yo, zo, gx[n], gy[n], gz[n], a, b, dx, dy, dt, nt,
-                  delay, foc_delay, steer_delay, v, cp, weight, h, err_level);
+    // Compute the response for the n:th elemen and add it to the impulse response vector h.
+    err = dreamrect(xo - gx[n], yo - gy[n], zo - gz[n],
+                    a, b, dx, dy, dt, nt,
+                    delay - foc_delay - steer_delay,
+                    v, cp,
+                    h,
+                    err_level,
+                    weight);
 
     if (err != ErrorLevel::none) {
       out_err = err;
@@ -119,165 +95,39 @@ ErrorLevel dream_arr_rect(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
   }
 
 
-  double foc_delay=0.0, steer_delay=0.0, weight=1.0;
-  double ramax, xamax, yamax;
-  max_dim_arr(&xamax, &yamax, &ramax, gx, gy, gz, num_elements);
+  double r_max, x_max, y_max;
+  max_dim_arr(&x_max, &y_max, &r_max, gx, gy, gz, num_elements);
 
   for (dream_idx_type n=0; n<num_elements; n++) {
 
+    double foc_delay = 0.0;
     if (foc_met != FocusMet::ud) {
-      focusing(foc_met, focal[0], gx[n], gy[n], xamax, yamax, ramax, cp, &foc_delay);
+      focusing(foc_met, focal[0], gx[n], gy[n], x_max, y_max, r_max, cp, &foc_delay);
     } else {
-      focusing(foc_met, focal[n], gx[n], gy[n], xamax, yamax, ramax, cp, &foc_delay);
+      focusing(foc_met, focal[n], gx[n], gy[n], x_max, y_max, r_max, cp, &foc_delay);
     }
 
-    beamsteering(steer_met, theta, phi, gx[n], gy[n], xamax, yamax, ramax, cp, &steer_delay);
+    double steer_delay = 0.0;
+    beamsteering(steer_met, theta, phi, gx[n], gy[n], x_max, y_max, r_max, cp, &steer_delay);
 
+    double weight = 1.0;
     if (do_apod) {
-      apodization(apod_met, n, apod, &weight, gx[n], gy[n], ramax, apod_par);
+      apodization(apod_met, n, apod, &weight, gx[n], gy[n], r_max, apod_par);
     }
 
-    // Compute the response for the n:th elemen and add it to the impulse response vector ha.
-    err = rect_ab(att, xc_vec, x_vec,
-                  xo, yo, zo, gx[n], gy[n], gz[n], a, b, dx, dy, dt, nt,
-                  delay, foc_delay, steer_delay, v, cp, weight, h, err_level);
-
+    // Compute the response for the n:th elemen and add it to the impulse response vector h.
+    err = dreamrect(att, xc_vec, x_vec,
+                    xo - gx[n], yo - gy[n], zo - gz[n],
+                    a, b, dx, dy, dt, nt,
+                    delay - foc_delay - steer_delay,
+                    v, cp,
+                    h,
+                    err_level,
+                    weight);
     if (err != ErrorLevel::none) {
       out_err = err;
     }
   }
 
   return out_err;
-}
-
-/***
- *
- * rect_ab
- *
- * Computes the impulse respone of one rectangular element for use within an array.
- *
- * NB. We add (superimpose) the response to impulse response vector h!
- *
- ***/
-
-ErrorLevel rect_ab(double xo, double yo, double zo,
-                   double x, double y, double z, // Element center position
-                   double a, double b,
-                   double dx, double dy, double dt,
-                   dream_idx_type nt,
-                   double delay, double foc_delay, double steer_delay,
-                   double v, double cp, double weight,
-                   double *h, ErrorLevel err_level)
-{
-   ErrorLevel err = ErrorLevel::none;
-
-  double ds = dx * dy;
-
-  double xsmin = x - a/2;
-  double xsmax = x + a/2;
-
-  double ysmin = y - b/2;
-  double ysmax = y + b/2;
-
-  double zs = 0.0;
-
-  // Loop over all surface elements (xs, ys)
-
-  double ys = ysmin + dy/2.0;
-  while (ys <= ysmax) {
-
-    double xs = xsmin + dx/2.0;
-    while (xs <= xsmax) {
-
-      double r;
-      distance(xo, yo, zo, xs, ys, zs, &r);
-      double t = r * 1.0e3/cp; // Propagation delay in micro seconds.
-      dream_idx_type it = (dream_idx_type) std::rint((t - delay + foc_delay + steer_delay)/dt);
-
-      if ((it < nt) && (it >= 0)) {
-
-        double ai = weight * v * ds / (2*M_PI*r);
-        ai /= dt;
-        ai *= 1.0e3;            // Convert to SI units.
-        h[it] += ai;
-
-      } else {
-
-        if  (it >= 0)
-          err = dream_out_of_bounds_err("SIR out of bounds",it-nt+1,err_level);
-        else
-          err = dream_out_of_bounds_err("SIR out of bounds",it,err_level);
-
-        if ( (err_level == ErrorLevel::parallel_stop) || (err_level == ErrorLevel::stop) )
-          return err; // Bail out.
-      }
-
-      xs += dx;
-    }
-    ys += dy;
-  }
-
-  return err;
-}
-
-
-ErrorLevel rect_ab(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
-                   double xo, double yo, double zo,
-                   double x, double y, double z,
-                   double a, double b,
-                   double dx, double dy, double dt,
-                   dream_idx_type nt,
-                   double delay, double foc_delay, double steer_delay,
-                   double v, double cp, double weight,
-                   double *h, ErrorLevel err_level)
-{
-  ErrorLevel err = ErrorLevel::none;
-
-  double ds = dx * dy;
-
-  double xsmin = x - a/2;
-  double xsmax = x + a/2;
-
-  double ysmin = y - b/2;
-  double ysmax = y + b/2;
-
-  double zs = 0.0;
-
-  double ys = ysmin + dy/2.0;
-  while (ys <= ysmax) {
-
-    double xs = xsmin + dx/2.0;
-    while (xs <= xsmax) {
-
-      double r;
-      distance(xo, yo, zo, xs, ys, zs, &r);
-      double t = r * 1.0e3/cp; // Propagation delay in micro seconds.
-      dream_idx_type it = (dream_idx_type) std::rint((t - delay + foc_delay + steer_delay)/dt);
-
-      if ((it < nt) && (it >= 0)) {
-
-        double ai = weight * v * ds / (2*M_PI*r);
-        ai /= dt;
-        ai *= 1.0e3;            // Convert to SI units.
-
-        att.att(xc_vec, x_vec, r, it, h, ai);
-
-      } else {
-
-        if  (it >= 0)
-          err = dream_out_of_bounds_err("SIR out of bounds",it-nt+1,err_level);
-        else
-          err = dream_out_of_bounds_err("SIR out of bounds",it,err_level);
-
-        if ( (err_level == ErrorLevel::parallel_stop) || (err_level == ErrorLevel::stop) ) {
-          return err; // Bail out.
-        }
-      }
-
-      xs += dx;
-    }
-    ys += dy;
-  }
-
-  return err;
 }

@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2003,2005,2006,2007,2008,2009,2014,2015,2019 Fredrik Lingvall
+* Copyright (C) 2003,2005,2006,2007,2008,2009,2014,2015,2019,2021 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -90,7 +90,6 @@ void sig_keyint_handler(int signum);
 void* smp_dream_arr_annu(void *arg)
 {
   ErrorLevel tmp_err=ErrorLevel::none, err=ErrorLevel::none;
-  dream_idx_type n;
   DATA D = *(DATA *)arg;
   double xo, yo, zo;
   double *h = D.h;
@@ -98,13 +97,13 @@ void* smp_dream_arr_annu(void *arg)
   dream_idx_type no=D.no, nt=D.nt;
   ErrorLevel tmp_lev=ErrorLevel::none, err_level=D.err_level;
   double *delay=D.delay, *ro=D.ro, v=D.v, cp=D.cp;
-  Attenuation *att = D.att;
+  Attenuation *att=D.att;
   dream_idx_type start=D.start, stop=D.stop;
   FocusMet foc_met=D.foc_met;
-  int do_apod = D.do_apod;
+  bool do_apod=D.do_apod;
   ApodMet apod_met=D.apod_met;
   double *focal=D.focal, *apod=D.apod, apod_par=D.apod_par;
-  dream_idx_type  num_radii = D.num_radii;
+  dream_idx_type num_radii=D.num_radii;
 
   double *gr=D.gr;
 
@@ -123,7 +122,7 @@ void* smp_dream_arr_annu(void *arg)
     tmp_lev = err_level;
   }
 
-  for (n=start; n<stop; n++) {
+  for (dream_idx_type n=start; n<stop; n++) {
     xo = ro[n];
     yo = ro[n+1*no];
     zo = ro[n+2*no];
@@ -138,7 +137,7 @@ void* smp_dream_arr_annu(void *arg)
     if (att == nullptr) {
       err = dream_arr_annu(xo, yo, zo,
                            dx, dy, dt, nt,
-                           dlay, v,cp,
+                           dlay, v, cp,
                            num_radii,gr,
                            foc_met, focal,
                            apod, do_apod, apod_met, apod_par,
@@ -147,8 +146,8 @@ void* smp_dream_arr_annu(void *arg)
       err = dream_arr_annu(*att, *xc_vec, *x_vec,
                            xo, yo, zo,
                            dx, dy, dt, nt,
-                           dlay, v,cp,
-                           num_radii,gr,
+                           dlay, v, cp,
+                           num_radii, gr,
                            foc_met, focal,
                            apod, do_apod, apod_met, apod_par,
                            &h[n*nt], tmp_lev);
@@ -224,7 +223,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   DATA *D;
   dream_idx_type start, stop;
   std::thread *threads;
-  unsigned int thread_n, nthreads;
+  dream_idx_type thread_n, nthreads;
   sighandler_t old_handler, old_handler_abrt, old_handler_keyint;
 
   ArgParser ap;
@@ -278,7 +277,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   m_par = mxGetPr(prhs[4]);
   v     = m_par[0]; // Normal velocity of transducer surface.
   cp    = m_par[1]; // Sound speed.
-  alpha = m_par[2]; // Attenuation coefficient [dB/(cm MHz)],
+  alpha = m_par[2]; // Attenuation coefficient [dB/(cm MHz)].
 
   //
   // Focusing parameters.
@@ -396,11 +395,11 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     D[thread_n].dt = dt;
     D[thread_n].nt = nt;
 
-    if (mxGetM(prhs[3]) * mxGetN(prhs[3]) == 1)
+    if (mxGetM(prhs[3]) * mxGetN(prhs[3]) == 1) {
       D[thread_n].delay_type = DelayType::single; // delay is a scalar.
-    else
+    } else {
       D[thread_n].delay_type = DelayType::multiple; // delay is a vector.
-
+    }
     D[thread_n].delay = delay;
     D[thread_n].v = v;
     D[thread_n].cp = cp;

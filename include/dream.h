@@ -64,11 +64,62 @@ typedef octave_idx_type dream_idx_type;
 #define mxIsChar(N) args(N).is_string()
 
 #else
-
-#include <stdlib.h>
-// Matlab use this
-typedef size_t dream_idx_type;
-
+#include "mex.h"
+typedef mwSize dream_idx_type;
 #endif
+
+
+/***
+ *
+ * Class for spatial impulse response (SIR) data
+ *
+ ***/
+
+class SIRData
+{
+ public:
+
+  SIRData(double *h, dream_idx_type len) {
+    m_h = h;
+    m_size = len;
+    m_len = len;
+    m_no = 1;
+  }
+
+  SIRData(double *h, dream_idx_type len, dream_idx_type no) {
+    m_h = h;
+    m_size = len*no;
+    m_len = len;
+    m_no = no;
+  }
+
+  ~SIRData() = default;
+
+  void clear() {
+    for (dream_idx_type it=0; it<m_size; it++) {
+      m_h[it] = 0.0;
+    };
+  };
+
+  double* get() {
+    return m_h;
+  };
+
+  dream_idx_type get_len() {
+    return m_len;
+  };
+
+  dream_idx_type get_no() {
+    return m_no;
+  };
+
+ private:
+
+  double *m_h;
+  dream_idx_type m_size;
+  dream_idx_type m_len;
+  dream_idx_type m_no;
+
+};
 
 #endif // __DREAM__

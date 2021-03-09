@@ -49,16 +49,16 @@ int running;
 
 typedef struct
 {
-  octave_idx_type no;
-  octave_idx_type start;
-  octave_idx_type stop;
+  dream_idx_type no;
+  dream_idx_type start;
+  dream_idx_type stop;
   double *ro;
   double a;
   double b;
   double dx;
   double dy;
   double dt;
-  octave_idx_type nt;
+  dream_idx_type nt;
   DelayType delay_type;
   double *delay;
   double v;
@@ -91,11 +91,11 @@ void* smp_dream_rect(void *arg)
   double xo, yo, zo;
   double *h = D.h;
   double a=D.a, b=D.b, dx=D.dx, dy=D.dy, dt=D.dt;
-  octave_idx_type n, no=D.no, nt=D.nt;
+  dream_idx_type n, no=D.no, nt=D.nt;
   ErrorLevel tmp_lev=ErrorLevel::none, err_level=D.err_level;
   double *delay=D.delay, *ro=D.ro, v=D.v, cp=D.cp;
   Attenuation *att = D.att;
-  octave_idx_type start=D.start, stop=D.stop;
+  dream_idx_type start=D.start, stop=D.stop;
 
   // Buffers for the FFTs in the Attenuation
   std::unique_ptr<FFTCVec> xc_vec;
@@ -106,11 +106,11 @@ void* smp_dream_rect(void *arg)
   }
 
   // Let the thread finish and then catch the error.
-  if (err_level == ErrorLevel::stop)
+  if (err_level == ErrorLevel::stop) {
     tmp_lev = ErrorLevel::parallel_stop;
-  else
+  } else {
     tmp_lev = err_level;
-
+  }
 
   for (n=start; n<stop; n++) {
     xo = ro[n];
@@ -268,7 +268,7 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
   double *delay, *h, *err_p;
   ErrorLevel err_level=ErrorLevel::stop;
   DATA   *D;
-  octave_idx_type start, stop;
+  dream_idx_type start, stop;
   std::thread *threads;
   unsigned int thread_n, nthreads;
   sighandler_t  old_handler, old_handler_abrt, old_handler_keyint;
@@ -304,6 +304,7 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
   //
   // Transducer geometry
   //
+
   double a=0.0, b=0.0, dummy=0.0;
   if (!ap.parse_geometry("dreamrect", args, 1, 2, a, b, dummy)) {
     return oct_retval;
@@ -314,7 +315,7 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
   //
 
   double dx=0.0, dy=0.0, dt=0.0;
-  octave_idx_type nt=0;
+  dream_idx_type nt=0;
   if (!ap.parse_sampling("dreamrect", args, 2, 4, dx, dy, dt, nt)) {
     return oct_retval;
   }

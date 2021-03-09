@@ -189,15 +189,7 @@ extern void _main();
 
 void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
-  double *ro, *geom_par, *s_par, *m_par;
-  double  R, Rcurv, dx, dy, dt;
-  size_t  nt, no;
-  double *delay, v, cp, alpha, *h, *err_p;
-  ErrorLevel err_level=ErrorLevel::stop;
-  DATA  *D;
-  size_t start, stop;
   std::thread *threads;
-  unsigned int thread_n, nthreads;
   sighandler_t old_handler, old_handler_abrt, old_handler_keyint;
 
   ArgParser ap;
@@ -212,52 +204,44 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   //
 
   ap.check_obs_points("dreamsphere", prhs, 0);
-  no = mxGetM(prhs[0]); // Number of observation points.
-  ro = mxGetPr(prhs[0]);
+  dream_idx_type no = mxGetM(prhs[0]); // Number of observation points.
+  double *ro = mxGetPr(prhs[0]);
 
   //
   // Transducer geometry
   //
 
-  ap.check_geometry("dreamsphere", prhs, 1, 2);
-  geom_par = mxGetPr(prhs[1]);
-  R     = geom_par[0];		// Radius of the transducer.
-  Rcurv = geom_par[1];		// Curvature radius of the transducer.
+  double R=0.0, Rcurv=0.0, dummy=0.0;
+  ap.parse_geometry("dreamsphere", prhs, 1, 2, R, Rcurv, dummy);
 
   //
   // Temporal and spatial sampling parameters.
   //
 
-  ap.check_sampling("dreamsphere", prhs, 2, 4);
-  s_par = mxGetPr(prhs[2]);
-  dx    = s_par[0];		// Spatial x discretization size.
-  dy    = s_par[1];		// Spatial dy iscretization size.
-  dt    = s_par[2];		// Temporal discretization size (= 1/sampling freq).
-  nt    = (dream_idx_type) s_par[3];	// Length of SIR.
+  double dx=0.0, dy=0.0, dt=0.0;
+  dream_idx_type nt=0;
+  ap.parse_sampling("dreamsphere", prhs, 2, 4, dx, dy, dt, nt);
 
   //
   // Start point of impulse response vector ([us]).
   //
 
   ap.check_delay("dreamsphere", prhs, 3, no);
-  delay = mxGetPr(prhs[3]);
+  double *delay = mxGetPr(prhs[3]);
 
   //
   // Material parameters
   //
 
-  ap.check_material("dreamsphere", prhs, 4, 3);
-  m_par = mxGetPr(prhs[4]);
-  v     = m_par[0]; // Normal velocity of transducer surface.
-  cp    = m_par[1]; // Sound speed.
-  alpha  = m_par[2]; // Attenuation coefficient [dB/(cm MHz)].
+  double v=1.0, cp=1000.0, alpha=0.0;
+  ap.parse_material("dreamsphere", prhs, 4, v, cp, alpha);
 
   //
   // Number of threads.
   //
 
   // Get number of CPU cores (including hypethreading, C++11)
-  nthreads = std::thread::hardware_concurrency();
+ dream_idx_type nthreads = std::thread::hardware_concurrency();
 
   // Read DREAM_NUM_THREADS env var
   if(const char* env_p = std::getenv("DREAM_NUM_THREADS")) {
@@ -276,6 +260,8 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Error reporting.
   //
 
+  ErrorLevel err_level=ErrorLevel::stop;
+
   if (nrhs == 6) {
     ap.parse_error_arg("dreamsphere", prhs, 5, err_level);
   } else {
@@ -284,7 +270,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
   // Create an output matrix for the impulse response
   plhs[0] = mxCreateDoubleMatrix(nt,no,mxREAL);
-  h = mxGetPr(plhs[0]);
+  double *h = mxGetPr(plhs[0]);
 
   SIRData hsir(h, nt, no);
   hsir.clear();
@@ -324,15 +310,15 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   }
 
   // Allocate local data.
-  D = (DATA*) malloc(nthreads*sizeof(DATA));
+  DATA *D = (DATA*) malloc(nthreads*sizeof(DATA));
 
   // Allocate mem for the threads.
   threads = new std::thread[nthreads]; // Init thread data.
 
-  for (thread_n = 0; thread_n < nthreads; thread_n++) {
+  for (dream_idx_type thread_n=0; thread_n < nthreads; thread_n++) {
 
-    start = thread_n * no/nthreads;
-    stop =  (thread_n+1) * no/nthreads;
+    dream_idx_type start = thread_n * no/nthreads;
+    dream_idx_type stop = (thread_n+1) * no/nthreads;
 
     // Init local data.
     D[thread_n].start = start; // Local start index;
@@ -346,10 +332,11 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     D[thread_n].dt = dt;
     D[thread_n].nt = nt;
 
-    if (mxGetM(prhs[3]) * mxGetN(prhs[3]) == 1)
+    if (mxGetM(prhs[3]) * mxGetN(prhs[3]) == 1) {
       D[thread_n].delay_type = DelayType::single; // delay is a scalar.
-    else
+    } else {
       D[thread_n].delay_type = DelayType::multiple; // delay is a vector.
+    }
 
     D[thread_n].delay = delay;
     D[thread_n].v = v;
@@ -370,7 +357,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
   // Wait for all threads to finish.
   if (nthreads > 1) {
-    for (thread_n = 0; thread_n < nthreads; thread_n++) {
+    for (dream_idx_type thread_n=0; thread_n < nthreads; thread_n++) {
       threads[thread_n].join();
     }
   }
@@ -412,7 +399,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
   if (nlhs == 2) {
     plhs[1] = mxCreateDoubleMatrix(1,1,mxREAL);
-    err_p =  mxGetPr(plhs[1]);
+    double *err_p =  mxGetPr(plhs[1]);
     err_p[0] = (double) out_err;
   }
 

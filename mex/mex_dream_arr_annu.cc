@@ -209,21 +209,7 @@ extern void _main();
 
 void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
-  double *ro, *s_par,*m_par;
-  double dx,dy,dt;
-  dream_idx_type nt, no;
-  double apod_par=0.0, *delay, v, cp, alpha;
-  dream_idx_type num_radii=0;
-  double *gr;
-  FocusMet foc_met=FocusMet::none;
-  bool    do_apod=false;
-  ApodMet apod_met=ApodMet::gauss;
-  double *h, *err_p;
-  ErrorLevel err_level=ErrorLevel::stop;
-  DATA *D;
-  dream_idx_type start, stop;
   std::thread *threads;
-  dream_idx_type thread_n, nthreads;
   sighandler_t old_handler, old_handler_abrt, old_handler_keyint;
 
   ArgParser ap;
@@ -238,46 +224,39 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   //
 
   ap.check_obs_points("dream_arr_annu", prhs, 0);
-  no = mxGetM(prhs[0]); // Number of observation points.
-  ro = mxGetPr(prhs[0]);
+  dream_idx_type no = mxGetM(prhs[0]); // Number of observation points.
+  double *ro = mxGetPr(prhs[0]);
 
   //
   // Grid function (position vectors of the elements).
   //
 
   ap.check_array_annu("dream_arr_annu", prhs, 1);
-
-  num_radii = (dream_idx_type) mxGetM(prhs[1])*mxGetN(prhs[1]); // Number of elementents in the array.
-  dream_idx_type num_elements = (num_radii+1)/2;
-  gr = mxGetPr(prhs[1]);	// Vector of annular radi,
+  dream_idx_type num_radii = mxGetM(prhs[1])*mxGetN(prhs[1]); // Center radius + inner and outer radii for each element.
+  dream_idx_type num_elements = (num_radii+1)/2; // Number of elementents in the array.
+  double *gr = mxGetPr(prhs[1]);	// Vector of annular radi,
 
   //
   // Temporal and spatial sampling parameters.
   //
 
-  ap.check_sampling("dream_arr_annu", prhs, 2, 4);
-  s_par = mxGetPr(prhs[2]);
-  dx    = s_par[0];		// Spatial x discretization size.
-  dy    = s_par[1];		// Spatial dy iscretization size.
-  dt    = s_par[2]; // Temporal discretization size (= 1/sampling freq).
-  nt    = (dream_idx_type) s_par[3]; // Length of SIR.
+  double dx=0.0, dy=0.0, dt=0.0;
+  dream_idx_type nt=0;
+  ap.parse_sampling("dream_arr_annu", prhs, 2, 4, dx, dy, dt, nt);
 
   //
   // Start point of impulse response vector ([us]).
   //
 
   ap.check_delay("dream_arr_annu", prhs, 3, no);
-  delay = mxGetPr(prhs[3]);
+  double *delay = mxGetPr(prhs[3]);
 
   //
   // Material parameters
   //
 
-  ap.check_material("dream_arr_annu", prhs, 4, 3);
-  m_par = mxGetPr(prhs[4]);
-  v     = m_par[0]; // Normal velocity of transducer surface.
-  cp    = m_par[1]; // Sound speed.
-  alpha = m_par[2]; // Attenuation coefficient [dB/(cm MHz)].
+  double v=1.0, cp=1000.0, alpha=0.0;
+  ap.parse_material("dream_arr_annu", prhs, 4, v, cp, alpha);
 
   //
   // Focusing parameters.
@@ -286,6 +265,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Allocate space for the user defined focusing delays
   std::unique_ptr<double[]> focal = std::make_unique<double[]>(num_elements);
 
+  FocusMet foc_met=FocusMet::none;
   if (nrhs >= 6) {
     ap.parse_focus_args("dream_arr_annu", prhs, 5, foc_met, focal.get());
   } else {
@@ -299,6 +279,9 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Allocate memory for the user defined apodization weights.
   std::unique_ptr<double[]> apod = std::make_unique<double[]>(num_elements);
 
+  double apod_par=0.0;
+  bool do_apod=false;
+  ApodMet apod_met=ApodMet::gauss;
   if (nrhs >= 8) {
     ap.parse_apod_args("dream_arr_annu", prhs, 7, num_elements,
                        do_apod, apod.get(), apod_met, apod_par);
@@ -311,7 +294,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   //
 
   // Get number of CPU cores (including hypethreading, C++11)
-  nthreads = std::thread::hardware_concurrency();
+  dream_idx_type nthreads = std::thread::hardware_concurrency();
 
   // Read DREAM_NUM_THREADS env var
   if(const char* env_p = std::getenv("DREAM_NUM_THREADS")) {
@@ -330,6 +313,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Error Reporting.
   //
 
+  ErrorLevel err_level=ErrorLevel::stop;
   if (nrhs == 11) {
     ap.parse_error_arg("dream_arr_annu", prhs, 10, err_level);
   } else {
@@ -338,7 +322,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
   // Create an output matrix for the impulse response
   plhs[0] = mxCreateDoubleMatrix(nt,no,mxREAL);
-  h = mxGetPr(plhs[0]);
+  double *h = mxGetPr(plhs[0]);
 
   SIRData hsir(h, nt, no);
   hsir.clear();
@@ -377,16 +361,16 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     nthreads = 1;
   }
 
-  // Allocate local data.
-  D = (DATA*) malloc(nthreads*sizeof(DATA));
+  // Allocate thread data.
+  DATA *D = (DATA*) malloc(nthreads*sizeof(DATA));
 
-  // Allocate mem for the threads.
-  threads = new std::thread[nthreads]; // Init thread data.
+  // Init thread data.
+  threads = new std::thread[nthreads];
 
-  for (thread_n = 0; thread_n < nthreads; thread_n++) {
+  for (dream_idx_type thread_n=0; thread_n < nthreads; thread_n++) {
 
-    start = thread_n * no/nthreads;
-    stop =  (thread_n+1) * no/nthreads;
+    dream_idx_type start = thread_n * no/nthreads;
+    dream_idx_type stop = (thread_n+1) * no/nthreads;
 
     // Init local data.
     D[thread_n].start = start; // Local start index;
@@ -430,7 +414,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
   // Wait for all threads to finish.
   if (nthreads > 1) {
-    for (thread_n = 0; thread_n < nthreads; thread_n++) {
+    for (dream_idx_type thread_n = 0; thread_n < nthreads; thread_n++) {
       threads[thread_n].join();
     }
   }
@@ -471,7 +455,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   //
   if (nlhs == 2) {
     plhs[1] = mxCreateDoubleMatrix(1,1,mxREAL);
-    err_p =  mxGetPr(plhs[1]);
+    double *err_p =  mxGetPr(plhs[1]);
     err_p[0] = (double) out_err;
   }
 

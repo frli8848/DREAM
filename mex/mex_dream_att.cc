@@ -24,7 +24,7 @@
 #include <cmath>
 
 #include "attenuation.h"
-#include "dream_error.h"
+#include "arg_parser.h"
 
 #include "mex.h"
 
@@ -36,33 +36,20 @@
 
 void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
-  double *ro, *s_par, *m_par;
-  int    it, nt, no, n;
-  double xo, yo, zo, dt;
-  double *delay, cp, alpha, r;
-  double *h;
+  ArgParser ap;
 
   // Check for proper number of arguments
 
-  if (nrhs != 4) {
-    dream_err_msg("dream_att requires 4 input arguments!");
-  } else {
-    if (nlhs > 1) {
-      dream_err_msg("dream_att requires one output argument!");
-    }
-  }
+  ap.check_arg_in("dream_att", nrhs, 4, 4);
+  ap.check_arg_out("dream_att", nlhs, 0, 1);
 
   //
   // Observation point.
   //
 
-  // Check that arg (number of observation points) x 3 matrix
-  if (!mxGetN(prhs[0])==3) {
-    dream_err_msg("Argument 1 must be a (number of observation points) x 3 matrix!");
-  }
-
-  no = mxGetM(prhs[0]); // Number of observation points.
-  ro = mxGetPr(prhs[0]);
+  ap.check_obs_points("dream_att", prhs, 0);
+  dream_idx_type no = mxGetM(prhs[0]); // Number of observation points.
+  double *ro = mxGetPr(prhs[0]);
 
   //
   // Temporal and spatial sampling parameters.
@@ -73,20 +60,16 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     dream_err_msg("Argument 2 must be a vector of length 2!");
   }
 
-  s_par = mxGetPr(prhs[1]);
-  dt    = s_par[0];		// Temporal discretization size (= 1/sampling freq).
-  nt    = (dream_idx_type) s_par[1];	// Length of SIR.
+  double *s_par = mxGetPr(prhs[1]);
+  double dt = s_par[0];		// Temporal discretization size (= 1/sampling freq).
+  dream_idx_type nt = (dream_idx_type) s_par[1];	// Length of SIR.
 
   //
   // Start point of impulse response vector ([us]).
   //
 
-  // Check that arg 3 is a scalar (or vector).
-  if ( (mxGetM(prhs[2]) * mxGetN(prhs[2]) !=1) && ((mxGetM(prhs[2]) * mxGetN(prhs[2])) != no)) {
-    dream_err_msg("Argument 3 must be a scalar or a vector with a length equal to the number of observation points!");
-  }
-
-  delay = mxGetPr(prhs[2]);
+  ap.check_delay("dream_att", prhs, 3, no);
+  double *delay = mxGetPr(prhs[2]);
 
   //
   // Material parameters
@@ -97,15 +80,16 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     dream_err_msg("Argument 4 must be a vector of length 2!");
   }
 
-  m_par = mxGetPr(prhs[3]);
-  cp    = m_par[0]; // Sound speed.
-  alpha  = m_par[1]; // Attenuation coefficient [dB/(cm MHz)].
+  double *m_par = mxGetPr(prhs[3]);
+  double cp    = m_par[0]; // Sound speed.
+  double alpha = m_par[1]; // Attenuation coefficient [dB/(cm MHz)].
 
   //
   // Create an output matrix for the impulse response
   //
+
   plhs[0] = mxCreateDoubleMatrix(nt,no,mxREAL);
-  h = mxGetPr(plhs[0]);
+  double *h = mxGetPr(plhs[0]);
 
   SIRData hsir(h, nt, no);
   hsir.clear();
@@ -119,23 +103,23 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   FFTVec x(nt);
 
   if (mxGetM(prhs[2]) * mxGetN(prhs[2]) == 1) {
-    for (n=0; n<no; n++) {
-      xo = ro[n];
-      yo = ro[n+1*no];
-      zo = ro[n+2*no];
+    for (dream_idx_type n=0; n<no; n++) {
+      double xo = ro[n];
+      double yo = ro[n+1*no];
+      double zo = ro[n+2*no];
 
-      r = std::sqrt(xo*xo + yo*yo + zo*zo);
-      it = (dream_idx_type) ( (r * 1.0e3/cp - delay[0])/dt + 1);
+      double r = std::sqrt(xo*xo + yo*yo + zo*zo);
+      dream_idx_type it = (dream_idx_type) ( (r * 1.0e3/cp - delay[0])/dt + 1);
       att.att(xc, x, r, it, &h[n*nt], 1.0);
     }
   } else {
-    for (n=0; n<no; n++) {
-      xo = ro[n];
-      yo = ro[n+1*no];
-      zo = ro[n+2*no];
+    for (dream_idx_type n=0; n<no; n++) {
+      double xo = ro[n];
+      double yo = ro[n+1*no];
+      double zo = ro[n+2*no];
 
-      r = std::sqrt(xo*xo + yo*yo + zo*zo);
-      it = (dream_idx_type) ( (r * 1.0e3/cp - delay[n])/dt + 1);
+      double r = std::sqrt(xo*xo + yo*yo + zo*zo);
+      dream_idx_type it = (dream_idx_type) ( (r * 1.0e3/cp - delay[n])/dt + 1);
       att.att(xc, x, r, it, &h[n*nt], 1.0);
     }
   }

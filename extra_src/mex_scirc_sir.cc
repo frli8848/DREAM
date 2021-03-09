@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2003,2004,2006,2007,2008,2009,2014,2015,2016 Fredrik Lingvall
+* Copyright (C) 2003,2004,2006,2007,2008,2009,2014,2015,2016,2021 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -178,7 +178,6 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   ap.check_arg_in("scirc_sir", nrhs, 6, 6);
   ap.check_arg_out("scirc_sir", nlhs, 0, 1);
 
-
   //
   // Observation point.
   //
@@ -307,10 +306,11 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     D[thread_n].dt = dt;
     D[thread_n].nt = nt;
 
-    if (mxGetM(prhs[3]) * mxGetN(prhs[3]) == 1)
+    if (mxGetM(prhs[3]) * mxGetN(prhs[3]) == 1) {
       D[thread_n].delay_type = DelayType::single; // delay is a scalar.
-    else
+    } else{
       D[thread_n].delay_type = DelayType::multiple; // delay is a vector.
+    }
 
     D[thread_n].delay = delay;
     D[thread_n].v = v;

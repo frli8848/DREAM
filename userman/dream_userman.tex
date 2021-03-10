@@ -1269,7 +1269,7 @@ an attenuation free medium ($\alpha = 0$) and a unit normal velocity:
 % Material parameters.
 v     = 1.0;                            % Normal velocity.
 cp    = 1500;                           % Sound speed.
-alpha  = 0;                              % Absorbtion [dB/(cm MHz)].
+alpha  = 0;                             % Absorbtion [dB/(cm MHz)].
 m_par = [v cp alpha];
 \end{verbatim}
 \normalsize
@@ -1326,15 +1326,12 @@ loops extensively. An overview of the transducer functions can be found in Table
     Focused rectangular transducer & \texttt{dreamrect\_f}\\
     Circular transducer & \texttt{dreamcirc} \\
     Focused circular transducer & \texttt{dreamcirc\_f}\\
-    Spherical concave transducer (focused) & \texttt{dreamsphere\_f}\\
-    Spherical convex transducer (defocused) & \texttt{dreamsphere\_d}\\
-    Cylindrical concave transducer (focused) & \texttt{dreamcylind\_f}\\
-    Cylindrical convex transducer (defocused) & \texttt{dreamcylind\_d}\\
+    Spherical concave/convex transducer (defocused/defocused) & \texttt{dreamsphere}\\
+    Cylindrical concave/convex transducer (focused/defocused) & \texttt{dreamcylind}\\
     \hline
     Array with rectangular elements & \texttt{dream\_arr\_rect}\\
     Array with circular elements & \texttt{dream\_arr\_circ}\\
-    Array with cylindrical concave elements (focused) & \texttt{dream\_arr\_cylind\_f}\\
-    Array with cylindrical convex elements (defocused) & \texttt{dream\_arr\_cylind\_d}\\
+    Array with cylindrical concave/convex elements (focused/defocused) & \texttt{dream\_arr\_cylind}\\
     Annular array & \texttt{dream\_arr\_annu}\\
     \hline
     \hline
@@ -1343,9 +1340,6 @@ loops extensively. An overview of the transducer functions can be found in Table
     \label{tab:overview}}
 \end{table}
 %
-By convention, a transducer function name ending with ``\texttt{\_f}'' is a focused transducer (or has
-focused transducer elements) and a transducer function name ending with ``\texttt{\_d}'' is defocused
-(convex) transducer.
 
 The transducer functions can be divided in two groups, \emph{single transducer functions} and \emph{array
 functions}. The names of both groups starts with ``\texttt{dream}'' and the array functions are distinguished
@@ -1560,7 +1554,6 @@ the focusing is described in Section~\ref{sec:focus}.
     a [mm] - x-size.
     b [mm] - y-size.
 \end{verbatim}
-
 
 \subsubsection{Circular Transducer}
 

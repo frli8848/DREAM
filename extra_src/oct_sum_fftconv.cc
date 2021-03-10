@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2006,2007,2008,2009,2014,2015,2016,2019 Fredrik Lingvall
+* Copyright (C) 2006,2007,2008,2009,2014,2015,2016,2021 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -416,7 +416,7 @@ in Y2 unless Y2 is changed before the sum_fftconv call).\n\
 sum_fftconv is a part of the DREAM Toolbox available at\n\
 @url{http://www.signal.uu.se/Toolbox/dream/}.\n\
 \n\
-Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
+Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
 @seealso {fftconv, conv, fftconv, conv, fftw_wisdom}\n\
 @end deftypefn")
 {

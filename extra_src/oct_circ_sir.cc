@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2008,2009,2015,2016,2019 Fredrik Lingvall
+* Copyright (C) 2008,2009,2015,2016,2021 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -212,7 +212,7 @@ Sound velocity [m/s].\n\
 circ_sir is an oct-function that is a part of the DREAM Toolbox available at\n\
 @url{http://www.signal.uu.se/Toolbox/dream/}.\n\
 \n\
-Copyright @copyright{} 2008-2019 Fredrik Lingvall.\n\
+Copyright @copyright{} 2008-2021 Fredrik Lingvall.\n\
 @seealso {dreamcirc, scirc_sir}\n\
 @end deftypefn")
 {

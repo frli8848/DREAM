@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2006,2007,2008,2009,2011,2012,2015,2016,2019 Fredrik Lingvall
+* Copyright (C) 2006,2007,2008,2009,2011,2012,2015,2016,2021 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -156,7 +156,7 @@ There are no output arguments for @code{copy_p}.\n\
 \n\
 @code{copy_p} is an oct-function that is a part of the DREAM Toolbox available at @url{http://www.signal.uu.se/Toolbox/dream/}.\n\
 \n\
-Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
+Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
 @end deftypefn")
 {
   double         *A,*B;

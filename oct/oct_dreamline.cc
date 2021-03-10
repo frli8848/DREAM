@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2006,2007,2008,2009,2012,2016,2019,2021 Fredrik Lingvall
+* Copyright (C) 2006,2007,2008,2009,2012,2016,2021,2021 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -235,7 +235,7 @@ An error message is printed and the program is stopped.\n\
 dreamline is an oct-function that is a part of the DREAM Toolbox available at\n\
 @url{http://www.signal.uu.se/Toolbox/dream/}.\n\
 \n\
-Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
+Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
 @seealso {dreamline}\n\
 @end deftypefn")
 {

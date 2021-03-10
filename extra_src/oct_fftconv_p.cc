@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2006,2007,2008,2009,2010,2012,2014,2016,2019,2021 Fredrik Lingvall
+* Copyright (C) 2006,2007,2008,2009,2010,2012,2014,2016,2021,2021 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -257,7 +257,7 @@ NOTE: fftconv_p requires the FFTW library version 3 @url{http://www.fftw.org}.\n
 fftconv_p is a part of the DREAM Toolbox available at\n\
 @url{http://www.signal.uu.se/Toolbox/dream/}.\n\
 \n\
-Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
+Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
 @seealso {conv_p, fftconv, conv, fftw_wisdom}\n\
 @end deftypefn")
 {

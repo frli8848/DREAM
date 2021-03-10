@@ -347,7 +347,7 @@ NOTE: fftconv_ola requires the FFTW library version 3 @url{http://www.fftw.org}.
 fftconv_ola is a part of the DREAM Toolbox available at\n\
 @url{http://www.signal.uu.se/Toolbox/dream/}.\n\
 \n\
-Copyright @copyright{} 2010-2019 Fredrik Lingvall.\n\
+Copyright @copyright{} 2010-2021 Fredrik Lingvall.\n\
 @seealso {conv_p, fftconv_p, fftconv, conv, fftw_wisdom}\n\
 @end deftypefn")
 {

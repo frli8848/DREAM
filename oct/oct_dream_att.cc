@@ -82,7 +82,7 @@ Attenuation coefficient [dB/(cm MHz)] .\n\
 dream_att is an oct-function that is a part of the DREAM Toolbox available at\n\
 @url{http://www.signal.uu.se/Toolbox/dream/}.\n\
 \n\
-Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
+Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
 @seealso {all transducer functions: dreamline, dreamrect, dreamcirc, etc}\n\
 @end deftypefn")
 {

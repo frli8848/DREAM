@@ -315,7 +315,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
   case 3:
     {
-      mexErrMsgTxt("FFTW support is currentøy disabled!");
+      mexErrMsgTxt("FFTW support is currently disabled!");
       /*
       if (mxIsChar(prhs[2])) { // 3rd arg is a string.
         buflen = mxGetM(prhs[2])*mxGetN(prhs[3])+1;

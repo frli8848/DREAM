@@ -51,7 +51,7 @@ std::mutex print_mutex;         // Debug print mutex (C++11)
 
 #include "dream.h"
 #include "affinity.h"
-#include "fft.h"
+#include "fftconv.h"
 
 /***
  *
@@ -65,7 +65,6 @@ std::mutex print_mutex;         // Debug print mutex (C++11)
 
 volatile int running;
 volatile int in_place;
-int mode = EQU;
 
 //
 // typedef:s
@@ -83,6 +82,7 @@ typedef struct
   octave_idx_type B_N;
   double *Y;
   FFT *fft;
+  ConvMode conv_mode;
 } DATA;
 
 typedef void (*sighandler_t)(int);
@@ -95,11 +95,6 @@ void* smp_dream_fftconv(void *arg);
 void sighandler(int signum);
 void sig_abrt_handler(int signum);
 void sig_keyint_handler(int signum);
-
-void fftconv(FFT &fft,
-             double *xr, octave_idx_type nx, double *yr, octave_idx_type ny, double *zr,
-             double      *a,  double *b, double *c,
-             std::complex<double> *af, std::complex<double> *bf, std::complex<double> *cf);
 
 /***
  *
@@ -114,7 +109,7 @@ void* smp_dream_fftconv(void *arg)
   double *A = D.A, *B = D.B, *Y = D.Y;
   octave_idx_type A_M = D.A_M, B_M = D.B_M, B_N = D.B_N;
   FFT fft = *D.fft;
-
+  ConvMode conv_mode = D.conv_mode;
   dream_idx_type fft_len = A_M+B_M-1;
 
   // Input vectors.
@@ -133,8 +128,6 @@ void* smp_dream_fftconv(void *arg)
   // Do the convolution.
   //
 
-   size_t k = 0;
-
   if (B_N > 1) {// B is a matrix.
 
     n=col_start;
@@ -143,18 +136,17 @@ void* smp_dream_fftconv(void *arg)
     double *Yp = &Y[0+n*(A_M+B_M-1)];
     for (n=col_start; n<col_stop; n++) {
 
-      fftconv(fft, Ap, A_M, Bp, B_M, Yp, a,b,c,af,bf,cf);
+      fftconv(fft, Ap, A_M, Bp, B_M, Yp,
+              a, b, c, af, bf, cf, conv_mode);
 
       Ap += A_M;
       Bp += B_M;
-      Yp += (A_M+B_M-1);
+      Yp += fft_len;
 
       if (running==false) {
         octave_stdout << "fftconv_p: thread for column " << col_start+1 << " -> " << col_stop << " bailing out!\n";
         break;
       }
-
-      k++;
 
     } // end-for
   } else { // B is a vector.
@@ -164,17 +156,15 @@ void* smp_dream_fftconv(void *arg)
     double *Yp = &Y[0+n*(A_M+B_M-1)];
     for (n=col_start; n<col_stop; n++) {
 
-      fftconv(fft, Ap, A_M, B, B_M, Yp, a,b,c,af,bf,cf);
+      fftconv(fft, Ap, A_M, B, B_M, Yp, a,b,c,af,bf,cf,conv_mode);
 
       Ap += A_M;
-      Yp += (A_M+B_M-1);
+      Yp += fft_len;
 
       if (running==false) {
         octave_stdout << "fftconv_p: thread for column " << col_start+1 << " -> " << col_stop << " bailing out!\n";
         break;
       }
-
-      k++;
 
     } // end-for
   } // end-if
@@ -191,103 +181,6 @@ void* smp_dream_fftconv(void *arg)
 #endif
 
   return(NULL);
-}
-
-/***
- *
- * Convolution of two vectors.
- *
- ***/
-
-void fftconv(FFT &fft,
-             double *xr, octave_idx_type nx, double *yr, octave_idx_type ny, double *zr,
-             double      *a,  double *b, double *c,
-             std::complex<double> *af, std::complex<double> *bf, std::complex<double> *cf)
-{
-  octave_idx_type n, fft_len;
-
-  fft_len = nx+ny-1;
-
-  //
-  // Copy and zero-pad.
-  //
-  for (n=0; n < nx; n++) {
-    a[n] = xr[n];
-  }
-
-  for (n=nx; n < fft_len; n++)
-    a[n] = 0.0; // Zero-pad.
-
-  for (n=0; n < ny; n++)
-    b[n] = yr[n];
-  for (n=ny; n < fft_len; n++)
-    b[n] = 0.0; // Zero-pad.
-
-  // Fourier transform xr.
-  FFTVec a_v(fft_len, a);
-  FFTCVec af_v(fft_len, af);
-  fft.fft(a_v, af_v);
-
-  // Fourier transform yr.
-  FFTVec b_v(fft_len, b);
-  FFTCVec bf_v(fft_len, bf);
-  fft.fft(b_v, bf_v);
-
-  // Do the filtering.
-  for (n = 0; n < fft_len; n++) {
-    cf[n] = (af[n] * bf[n]);
-  }
-
-  //
-  // Compute the inverse DFT of the filtered data.
-  //
-
-  FFTCVec cf_v(fft_len, cf);
-  FFTVec c_v(fft_len, c);
-  fft.ifft(cf_v, c_v);
-
-  // Copy data to output matrix.
-  if (in_place == false) {
-
-    //for (n = 0; n < fft_len; n++)
-    //  zr[n] = c[n];
-    memcpy(zr,c,fft_len*sizeof(double));
-
-  } else { // in-place
-
-    switch (mode) {
-
-    case EQU:
-      // in-place '=' operation.
-      //for (n = 0; n < fft_len; n++) {
-      //zr[n] = c[n];
-      //}
-      memcpy(zr,c,fft_len*sizeof(double));
-      break;
-
-    case SUM:
-      // in-place '+=' operation.
-      for (n = 0; n < fft_len; n++) {
-        zr[n] += c[n];
-      }
-      break;
-
-    case NEG:
-      // in-place '-=' operation.
-      for (n = 0; n < fft_len; n++) {
-        zr[n] -= c[n];
-      }
-      break;
-
-    default:
-      // in-place '=' operation.
-      //for (n = 0; n < fft_len; n++) {
-      //zr[n] = c[n];
-      //}
-      memcpy(zr,c,fft_len*sizeof(double));
-      break;
-    }
-  }
 }
 
 /***
@@ -378,6 +271,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   octave_idx_type fft_len, return_wisdom = false, load_wisdom = false;
   char *the_str = NULL;
   int buflen, is_set = false;
+  ConvMode conv_mode=ConvMode::equ;
   octave_value_list oct_retval;
 
   in_place = false;
@@ -464,17 +358,17 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
       is_set = false;
 
       if (strncmp(the_str,"=",1) == 0) {
-        mode = EQU;
+        conv_mode=ConvMode::equ;
         is_set = true;
       }
 
       if (strncmp(the_str,"+=",2) == 0) {
-        mode = SUM;
+        conv_mode=ConvMode::sum;
         is_set = true;
       }
 
       if (strncmp(the_str,"-=",2) == 0) {
-        mode = NEG;
+        conv_mode=ConvMode::neg;
         is_set = true;
       }
 
@@ -590,6 +484,19 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
 
   fft_len = A_M+B_M-1;
 
+  //
+  // Init the FFTW plans.
+  //
+
+  if(load_wisdom) {
+
+    if (!fftw_import_wisdom_from_string(the_str)) {
+      error("Failed to load fftw wisdom!");
+      return oct_retval;
+    } else
+      free(the_str); // Clean up.
+  }
+
   FFTVec a_v(fft_len);
   FFTVec b_v(fft_len);
   FFTVec c_v(fft_len);
@@ -607,19 +514,6 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
   // so no need to lock it with a mutex
   FFT fft(fft_len, nullptr, plan_method);
 
-  //
-  // Init the FFTW plans.
-  //
-
-  if(load_wisdom) {
-
-    if (!fftw_import_wisdom_from_string(the_str)) {
-      error("Failed to load fftw wisdom!");
-      return oct_retval;
-    } else
-      free(the_str); // Clean up.
-  }
-
   if (nrhs == 2 || (nrhs == 3 && load_wisdom)) { // Normal mode.
 
     in_place = false;
@@ -630,6 +524,9 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
 
     Matrix Ymat(A_M+B_M-1, A_N);
     Y = Ymat.fortran_vec();
+
+    SIRData ymat(Y, A_M+B_M-1, A_N);
+    ymat.clear();
 
     //
     // Call the CONV subroutine.
@@ -800,6 +697,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
         D[thread_n].B_N = B_N;
         D[thread_n].Y = Y;
         D[thread_n].fft = &fft;
+        D[thread_n].conv_mode = conv_mode;
 
         // Start the threads.
         threads[thread_n] = std::thread(smp_dream_fftconv, &D[thread_n]);
@@ -822,7 +720,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
         for (n=0; n<A_N; n++) {
 
           fftconv(fft, &A[0+n*A_M], A_M, &B[0+n*B_M], B_M, &Y[0+n*(A_M+B_M-1)],
-                  a,b,c,af,bf,cf);
+                  a,b,c,af,bf,cf, conv_mode);
 
           if (running==false) {
             printf("fftconv_p: bailing out!\n");
@@ -835,7 +733,7 @@ Copyright @copyright{} 2006-2019 Fredrik Lingvall.\n\
         for (n=0; n<A_N; n++) {
 
           fftconv(fft, &A[0+n*A_M], A_M, B, B_M, &Y[0+n*(A_M+B_M-1)],
-                   a,b,c,af,bf,cf);
+                  a,b,c,af,bf,cf,conv_mode);
 
           if (running==false) {
             printf("fftconv_p: bailing out!\n");

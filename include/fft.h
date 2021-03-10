@@ -48,9 +48,9 @@ class FFTVec
     m_len = len;
 
 #if defined DREAM_OCTAVE || defined HAVE_FFTW
-    m_v = (double*) fftw_malloc(sizeof(double)*len);
+    m_v = (double*) fftw_malloc(sizeof(double)*m_len);
 #else
-    m_v = new double[len];
+    m_v = new double[m_len];
 #endif
 
     m_is_allocated = true;

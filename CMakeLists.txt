@@ -1345,6 +1345,7 @@ if (OCTAVE_FOUND)
 
   set (oct_fftconv_p_SOURCE_FILES
     extra_src/oct_fftconv_p.cc
+    extra_src/fftconv.cc
     src/affinity.cc
     src/dream_error.cc
     )
@@ -1457,6 +1458,7 @@ if (OCTAVE_FOUND)
 
   set (oct_fftconv_ola_SOURCE_FILES
     extra_src/oct_fftconv_ola.cc
+    extra_src/fftconv.cc
     src/affinity.cc
     src/dream_error.cc
     )

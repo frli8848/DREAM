@@ -44,11 +44,6 @@
 #define SINGLE_PRECISION 0
 #define DOUBLE_PRECISION 1
 
-// TODO: Add check if input pars have zero length
-// TODO: Add help text for in-place mode.
-// We pobably need fftw >= 3.2.x to handle 64-bit array indexing.
-// TODO: If we have fftw 3.2.x we can use fftw_plan_dft_r2c_1d_64 etc.
-
 #include "dream.h"
 
 /***
@@ -120,13 +115,9 @@ void fftconv(const double *xr, dream_idx_type nx, const double *yr, dream_idx_ty
              double      *a,  double *b, double *c,
              std::complex<double> *af, std::complex<double> *bf, std::complex<double> *cf);
 
-void sfftconv(const float *xr, dream_idx_type nx, const float *yr, dream_idx_type ny, float *zr,
-             float      *a,  float *b, float *c,
-             std::complex<float> *af, std::complex<float> *bf, std::complex<float> *cf);
-
 /***
  *
- * Thread function (double precision).
+ * Thread function
  *
  ***/
 
@@ -140,11 +131,11 @@ void* smp_dream_fftconv_ola(void *arg)
   dream_idx_type l,k, block_len = D.block_len;
 
   // Input vectors.
-  double *a  = NULL, *b  = NULL;
-  double *c  = NULL;
+  double *a  = nullptr, *b  = nullptr;
+  double *c  = nullptr;
 
   // Fourier Coefficients.
-  std::complex<double> *af  = NULL, *bf  = NULL, *cf  = NULL;
+  std::complex<double> *af  = nullptr, *bf  = nullptr, *cf  = nullptr;
   dream_idx_type fft_len;
 
   // Allocate space for input vectors.
@@ -344,226 +335,7 @@ void* smp_dream_fftconv_ola(void *arg)
 
 /***
  *
- * Thread function (single precision).
- *
- ***/
-
-void* smp_dream_s_process(void *arg)
-{
-  S_DATA D = *(S_DATA *)arg;
-  dream_idx_type    line_start=D.line_start, line_stop=D.line_stop, n;
-  const float *A = D.A, *B = D.B;
-  float *Y = D.Y;
-  dream_idx_type A_M = D.A_M, B_M = D.B_M, B_N = D.B_N;
-  dream_idx_type l,k, block_len = D.block_len;
-
-  // Input vectors.
-  float *a  = NULL, *b  = NULL;
-  float *c  = NULL;
-
-  // Fourier Coefficients.
-  std::complex<float> *af  = NULL, *bf  = NULL, *cf  = NULL;
-  dream_idx_type fft_len;
-
-  // Allocate space for input vectors.
-
-  //fft_len = A_M+B_M-1;
-  fft_len = block_len+B_M-1;
-
-  //
-  // fftw_malloc may not be thread safe! Check this!!!
-  //
-
-  a = (float*) fftw_malloc(sizeof(float)*2*(fft_len/2+1));
-  //af = (fftw_complex*) fftw_malloc(sizeof(fftw_complex)*2*(fft_len/2+1));
-  af = (std::complex<float>*) fftw_malloc(sizeof(fftw_complex)*2*(fft_len/2+1));
-
-  b = (float*) fftw_malloc(sizeof(float)*2*(fft_len/2+1));
-  bf = (std::complex<float>*) fftw_malloc(sizeof(fftw_complex)*2*(fft_len/2+1));
-
-  // Allocate space for output vector.
-
-  c = (float*) fftw_malloc(sizeof(float)*2*(fft_len/2+1));
-  //cf = (fftw_complex*) fftw_malloc(sizeof(fftw_complex)*2*(fft_len/2+1));
-  cf = (std::complex<float>*) fftw_malloc(sizeof(fftw_complex)*2*(fft_len/2+1));
-
-  float *y = c; // We use the same data space here.
-  float *a_block = (float*) fftw_malloc(block_len*sizeof(float));
-
-  // First clear the output vector since the overlap-and-add
-  // method don't overwrite data - it just adds results to the existing array.
-  memset(Y,0,(line_stop-line_start+1)*(A_M+B_M-1)*sizeof(float));
-
-  //
-  // Do the convolution.
-  //
-
-  if (B_N > 1) {// B is a matrix.
-
-    for (n=line_start; n<line_stop; n++) {
-
-      //
-      // The overlap-and-add algorithm.
-      //
-
-      k = 0;
-      while (k < A_M ) {
-
-        // Convolve one block
-        if (k+block_len < A_M)
-
-          sfftconv( &A[k+n*A_M], block_len, &B[0+n*B_M], B_M, y, a,b,c,af,bf,cf);
-
-        else {
-
-          // We must do the convolution (eg. the FFT) of the same lenght here (=fft_len) but the first
-          // arg is now shorter than above so copy and zero-pad the first arg to fftconv.
-
-          // Copy.
-          //for (l=0; l<A_M-k; l++)
-          //  a_block[l] = A[k+l + n*A_M];
-          memcpy(a_block,&A[k + n*A_M],(A_M-k)*sizeof(float));
-
-          // Zero-pad.
-          //for (l=A_M-k; l<block_len; l++)
-          //  a_block[l] = 0.0; // Zero-pad.
-          memset(&a_block[A_M-k],0,(block_len-(A_M-k))*sizeof(float));
-
-          sfftconv( a_block, block_len, &B[0+n*B_M], B_M, y, a,b,c,af,bf,cf);
-        }
-
-        // Add the overlap.
-        if (k+fft_len <  A_M+B_M-1) {
-          for (l=0; l<fft_len; l++)
-            Y[k+l + n*(A_M+B_M-1)] += y[l];
-        } else {
-          for (l=0; l<(A_M+B_M-1)-k; l++)
-            Y[k+l + n*(A_M+B_M-1)] += y[l];
-        }
-
-        k += block_len;
-      } // while
-
-      if (running==false) {
-        octave_stdout << "fftconv_ola: thread for column " << line_start+1 << " -> " <<
-          line_stop << " bailing out at column = " << n <<"!\n";
-        break;
-      }
-
-    } // end-for
-  } else { // B is a vector.
-
-    for (n=line_start; n<line_stop; n++) {
-
-      //
-      // The overlap-and-add algorithm.
-      //
-
-      k = 0;
-      while (k < A_M ) {
-
-        // Convolve one block
-        if (k+block_len < A_M)
-
-          sfftconv( &A[k+n*A_M], block_len, B, B_M, y, a,b,c,af,bf,cf);
-
-        else {
-
-          // We must do the convolution (eg. the FFT) of the same lenght here (=fft_len) but the first
-          // arg is now shorter than above so copy and zero-pad the first arg to fftconv.
-
-          // Copy.
-          //for (l=0; l<(A_M-k); l++)
-          //  a_block[l] = A[k+l + n*A_M];
-          memcpy(a_block,&A[k + n*A_M],(A_M-k)*sizeof(float));
-
-          // Zero-pad.
-          //for (l=A_M-k; l<block_len; l++)
-          //  a_block[l] = 0.0; // Zero-pad.
-          memset(&a_block[A_M-k],0,(block_len-(A_M-k))*sizeof(float));
-
-          sfftconv( a_block, block_len, B, B_M, y, a,b,c,af,bf,cf);
-
-        }
-
-        // Add the overlap.
-        if (k+fft_len < A_M+B_M-1) {
-
-          for (l=0; l<fft_len; l++)
-            Y[k+l + n*(A_M+B_M-1)] += y[l];
-
-        } else {
-
-          for (l=0; l<(A_M+B_M-1)-k; l++)
-            Y[k+l + n*(A_M+B_M-1)] += y[l];
-
-        }
-
-        k += block_len;
-      } // while
-
-      if (running==false) {
-        octave_stdout << "fftconv_ola: thread for column " << line_start+1 << " -> " <<
-          line_stop << " bailing out at column = " << n <<"!\n";
-        break;
-      }
-
-    } // for
-  } // if
-
-  //
-  //  Cleanup
-  //
-
-  // Free buffer memory.
-  if (a_block)
-    fftw_free(a_block);
-  else
-    error("smp_dream_s_process a_block memory free failed in fftconv_ola thread!!");
-
-  if (a)
-    fftw_free(a);
-  else {
-    error("smp_dream_s_process a memory free failed in fftconv_ola thread!!");
-  }
-
-  if(af)
-    fftw_free(af);
-  else {
-    error("smp_dream_s_process af memory free failed in fftconv_ola thread!!");
-  }
-
-  if(b)
-    fftw_free(b);
-  else {
-    error("smp_dream_s_process b memory free failed in fftconv_ola thread!!");
-  }
-
-  if (bf)
-    fftw_free(bf);
-  else {
-    error("smp_dream_s_process bf memory free failed in fftconv_ola thread!!");
-  }
-
-  if (c)
-    fftw_free(c);
-  else {
-    error("smp_dream_s_process c memory free failed in fftconv_ola thread!!");
-  }
-
-  if (cf)
-    fftw_free(cf);
-  else {
-    error("smp_dream_s_process a_block memory free failed in fftconv_ola thread!!");
-  }
-
-  return(NULL);
-}
-
-
-/***
- *
- * Convolution of two (double precision) vectors.
+ * Convolution of two vectors.
  *
  ***/
 
@@ -668,114 +440,6 @@ void fftconv(const double *xr, dream_idx_type nx, const double *yr, dream_idx_ty
   } // if (mode != OLA)
 }
 
-
-/***
- *
- * Convolution of two single precision vectors.
- *
- ***/
-
-void sfftconv(const float *xr, dream_idx_type nx, const float *yr, dream_idx_type ny, float *zr,
-             float      *a,  float *b, float *c,
-             std::complex<float> *af, std::complex<float> *bf, std::complex<float> *cf)
-{
-  dream_idx_type n, fft_len;
-
-  fft_len = nx+ny-1;
-
-  //
-  // Copy and zero-pad.
-  //
-
-  //for (n=0; n < nx; n++)
-  //  a[n] = xr[n];
-  memcpy(a,xr,nx*sizeof(float));
-  //for (n=nx; n < fft_len; n++)
-  //  a[n] = 0.0; // Zero-pad.
-  memset(&a[nx],0,(fft_len-nx+1)*sizeof(float));
-
-  //for (n=0; n < ny; n++)
-  //  b[n] = yr[n];
-  memcpy(b,yr,ny*sizeof(float));
-  //for (n=ny; n < fft_len; n++)
-  //  b[n] = 0.0; // Zero-pad.
-  memset(&b[ny],0,(fft_len-ny+1)*sizeof(float));
-
-  //
-  // Do the forward FFT transforms.
-  //
-
-  // Fourier transform xr (single precision).
-  fftwf_execute_dft_r2c(sp_forward,a,reinterpret_cast<fftwf_complex*>(af));
-
-  // Fourier transform yr (single precision).
-  fftwf_execute_dft_r2c(sp_forward,b,reinterpret_cast<fftwf_complex*>(bf));
-
-  //
-  // Do the filtering.
-  //
-
-  for (n = 0; n < fft_len; n++) {
-    cf[n] = (af[n] * bf[n])  / ((float) (fft_len));
-  }
-
-  //
-  // Compute the inverse (single precision) DFT of the filtered data.
-  //
-
-  fftwf_execute_dft_c2r(sp_backward,reinterpret_cast<fftwf_complex*>(cf),c);
-
-  if (mode != OLA) {
-
-    // Copy data to output matrix.
-    if (in_place == false) {
-
-      //for (n = 0; n < fft_len; n++)
-      //  zr[n] = c[n];
-      memcpy(zr,c,fft_len*sizeof(float));
-
-    } else { // in-place
-
-      switch (mode) {
-
-      case EQU:
-        // in-place '=' operation.
-        //for (n = 0; n < fft_len; n++) {
-        //zr[n] = c[n];
-        //}
-        memcpy(zr,c,fft_len*sizeof(float));
-        break;
-
-      case SUM:
-        // in-place '+=' operation.
-        for (n = 0; n < fft_len; n++) {
-          zr[n] += c[n];
-        }
-        break;
-
-      case NEG:
-        // in-place '-=' operation.
-        for (n = 0; n < fft_len; n++) {
-          zr[n] -= c[n];
-        }
-        break;
-
-        // case OLA:
-        // Do nothing since the copy is made in the overlap update.
-        //break;
-
-      default:
-        // in-place '=' operation.
-        //for (n = 0; n < fft_len; n++) {
-        //zr[n] = c[n];
-        //}
-        memcpy(zr,c,fft_len*sizeof(float));
-        break;
-      }
-    }
-  } // if (mode != OLA)
-}
-
 /***
  *
  * Signal handlers.
@@ -857,31 +521,25 @@ Copyright @copyright{} 2010-2019 Fredrik Lingvall.\n\
 {
   int data_format;
 
-  const double *A=NULL,*B=NULL;	// Double precision.
-  double *Y=NULL, *a_block=NULL;
-  const float *sA=NULL,*sB=NULL; // Single precision.
-  float *sY=NULL, *s_a_block=NULL;
+  const double *A=nullptr,*B=nullptr;	// Double precision.
+  double *Y=nullptr, *a_block=nullptr;
   dream_idx_type line_start, line_stop, A_M=0, A_N=0, B_M=0, B_N=0, n;
   sighandler_t   old_handler, old_handler_abrt, old_handler_keyint;
   std::thread     *threads;
   octave_idx_type  thread_n, nthreads;
-  DATA    *D=NULL;		// Double precision.
-  S_DATA *sD=NULL;		// Single precision.
+  DATA *D=nullptr;
 
   // Input vectors (only used for creating fftw plans).
-  double *a=NULL, *b=NULL;	// Double precision.
-  double *c=NULL;
-  float *sa=NULL, *sb=NULL;	// Single precision.
-  float *sc=NULL;
+  double *a=nullptr, *b=nullptr;	// Double precision.
+  double *c=nullptr;
 
   // Fourier Coefficients (only used for creating fftw plans).
-  //fftw_complex *af=NULL, *bf=NULL, *cf=NULL;
-  //fftwf_complex *af=NULL, *bf=NULL, *cf=NULL;
-  std::complex<double> *af=NULL, *bf=NULL, *cf=NULL;
-  std::complex<float> *saf=NULL, *sbf=NULL, *scf=NULL;
+  //fftw_complex *af=nullptr, *bf=nullptr, *cf=nullptr;
+  //fftwf_complex *af=nullptr, *bf=nullptr, *cf=nullptr;
+  std::complex<double> *af=nullptr, *bf=nullptr, *cf=nullptr;
 
   dream_idx_type fft_len, return_wisdom = false, load_wisdom = false;
-  char *the_str = NULL;
+  char *the_str = nullptr;
   int buflen, is_set = false;
   dream_idx_type l, k, block_len;
   octave_value_list oct_retval;
@@ -1113,7 +771,7 @@ Copyright @copyright{} 2010-2019 Fredrik Lingvall.\n\
 
   // Read DREAM_NUM_THREADS env var
   if(const char* env_p = std::getenv("DREAM_NUM_THREADS")) {
-    unsigned int dream_threads = std::stoul(env_p);
+    dream_idx_type dream_threads = std::stoul(env_p);
     if (dream_threads < nthreads) {
       nthreads = dream_threads;
     }
@@ -1176,1215 +834,591 @@ Copyright @copyright{} 2010-2019 Fredrik Lingvall.\n\
   //fft_len = A_M+B_M-1;
   fft_len = block_len+B_M-1;
 
-  if (data_format == DOUBLE_PRECISION) {
+  a = (double*) fftw_malloc(sizeof(double)*2*(fft_len/2+1));
+  //af = (fftw_complex*) fftw_malloc(sizeof(fftw_complex)*2*(fft_len/2+1));
+  af = (std::complex<double>*) fftw_malloc(sizeof(fftw_complex)*2*(fft_len/2+1));
 
-    a = (double*) fftw_malloc(sizeof(double)*2*(fft_len/2+1));
-    //af = (fftw_complex*) fftw_malloc(sizeof(fftw_complex)*2*(fft_len/2+1));
-    af = (std::complex<double>*) fftw_malloc(sizeof(fftw_complex)*2*(fft_len/2+1));
+  b = (double*) fftw_malloc(sizeof(double)*2*(fft_len/2+1));
+  //bf = (fftw_complex*) fftw_malloc(sizeof(fftw_complex)*2*(fft_len/2+1));
+  bf = (std::complex<double>*) fftw_malloc(sizeof(fftw_complex)*2*(fft_len/2+1));
 
-    b = (double*) fftw_malloc(sizeof(double)*2*(fft_len/2+1));
-    //bf = (fftw_complex*) fftw_malloc(sizeof(fftw_complex)*2*(fft_len/2+1));
-    bf = (std::complex<double>*) fftw_malloc(sizeof(fftw_complex)*2*(fft_len/2+1));
-
-    c = (double*) fftw_malloc(sizeof(double)*2*(fft_len/2+1));
+  c = (double*) fftw_malloc(sizeof(double)*2*(fft_len/2+1));
     //cf = (fftw_complex*) fftw_malloc(sizeof(fftw_complex)*2*(fft_len/2+1));
-    cf = (std::complex<double>*) fftw_malloc(sizeof(fftw_complex)*2*(fft_len/2+1));
+  cf = (std::complex<double>*) fftw_malloc(sizeof(fftw_complex)*2*(fft_len/2+1));
 
 
-    // 1) Very slow
-    if (plan_method == 1) {
+  // 1) Very slow
+  if (plan_method == 1) {
       p_forward = fftw_plan_dft_r2c_1d(fft_len, a, reinterpret_cast<fftw_complex*>(af), FFTW_EXHAUSTIVE);
       p_backward = fftw_plan_dft_c2r_1d(fft_len, reinterpret_cast<fftw_complex*>(cf), c, FFTW_EXHAUSTIVE);
-    }
-
-    // 2) Slow
-    if (plan_method == 2) {
-      p_forward = fftw_plan_dft_r2c_1d(fft_len, a, reinterpret_cast<fftw_complex*>(af), FFTW_PATIENT);
-      p_backward = fftw_plan_dft_c2r_1d(fft_len, reinterpret_cast<fftw_complex*>(cf), c, FFTW_PATIENT);
-    }
-
-    // 3) Too slow on long FFTs.
-    if (plan_method == 3) {
-      p_forward = fftw_plan_dft_r2c_1d(fft_len, a, reinterpret_cast<fftw_complex*>(af), FFTW_MEASURE);
-      p_backward = fftw_plan_dft_c2r_1d(fft_len, reinterpret_cast<fftw_complex*>(cf), c, FFTW_MEASURE);
-    }
-
-    // 4)
-    if (plan_method == 4) {
-      p_forward = fftw_plan_dft_r2c_1d(fft_len, a, reinterpret_cast<fftw_complex*>(af),  FFTW_ESTIMATE);
-      p_backward = fftw_plan_dft_c2r_1d(fft_len, reinterpret_cast<fftw_complex*>(cf), c,  FFTW_ESTIMATE);
-    }
-
   }
 
-  if (data_format == SINGLE_PRECISION) {
-
-    sa = (float*) fftw_malloc(sizeof(float)*2*(fft_len/2+1));
-    saf = (std::complex<float>*) fftw_malloc(sizeof(fftwf_complex)*2*(fft_len/2+1));
-
-    sb = (float*) fftw_malloc(sizeof(float)*2*(fft_len/2+1));
-    sbf = (std::complex<float>*) fftw_malloc(sizeof(fftwf_complex)*2*(fft_len/2+1));
-
-    sc = (float*) fftw_malloc(sizeof(float)*2*(fft_len/2+1));
-    scf = (std::complex<float>*) fftw_malloc(sizeof(fftwf_complex)*2*(fft_len/2+1));
-
-    // 1) Very slow
-    if (plan_method == 1) {
-      sp_forward = fftwf_plan_dft_r2c_1d(fft_len, sa, reinterpret_cast<fftwf_complex*>(saf), FFTW_EXHAUSTIVE);
-      sp_backward = fftwf_plan_dft_c2r_1d(fft_len, reinterpret_cast<fftwf_complex*>(scf), sc, FFTW_EXHAUSTIVE);
-    }
-
-    // 2) Slow
-    if (plan_method == 2) {
-      sp_forward = fftwf_plan_dft_r2c_1d(fft_len, sa, reinterpret_cast<fftwf_complex*>(saf), FFTW_PATIENT);
-      sp_backward = fftwf_plan_dft_c2r_1d(fft_len, reinterpret_cast<fftwf_complex*>(scf), sc, FFTW_PATIENT);
-    }
-
-    // 3) Too slow on long FFTs.
-    if (plan_method == 3) {
-      sp_forward = fftwf_plan_dft_r2c_1d(fft_len, sa, reinterpret_cast<fftwf_complex*>(saf), FFTW_MEASURE);
-      sp_backward = fftwf_plan_dft_c2r_1d(fft_len, reinterpret_cast<fftwf_complex*>(scf), sc, FFTW_MEASURE);
-    }
-
-    // 4)
-    if (plan_method == 4) {
-      sp_forward = fftwf_plan_dft_r2c_1d(fft_len, sa, reinterpret_cast<fftwf_complex*>(saf),  FFTW_ESTIMATE);
-      sp_backward = fftwf_plan_dft_c2r_1d(fft_len, reinterpret_cast<fftwf_complex*>(scf), sc,  FFTW_ESTIMATE);
-    }
-
+  // 2) Slow
+  if (plan_method == 2) {
+    p_forward = fftw_plan_dft_r2c_1d(fft_len, a, reinterpret_cast<fftw_complex*>(af), FFTW_PATIENT);
+    p_backward = fftw_plan_dft_c2r_1d(fft_len, reinterpret_cast<fftw_complex*>(cf), c, FFTW_PATIENT);
   }
 
+  // 3) Too slow on long FFTs.
+  if (plan_method == 3) {
+    p_forward = fftw_plan_dft_r2c_1d(fft_len, a, reinterpret_cast<fftw_complex*>(af), FFTW_MEASURE);
+    p_backward = fftw_plan_dft_c2r_1d(fft_len, reinterpret_cast<fftw_complex*>(cf), c, FFTW_MEASURE);
+  }
 
-  // ********************************************
-  //
-  // Double Precision
-  //
-  // ********************************************
+  // 4)
+  if (plan_method == 4) {
+    p_forward = fftw_plan_dft_r2c_1d(fft_len, a, reinterpret_cast<fftw_complex*>(af),  FFTW_ESTIMATE);
+    p_backward = fftw_plan_dft_c2r_1d(fft_len, reinterpret_cast<fftw_complex*>(cf), c,  FFTW_ESTIMATE);
+  }
 
-  if (data_format == DOUBLE_PRECISION) {
+  // Get pointers to input data.
+  const Matrix tmp0 = args(0).matrix_value();
+  const Matrix tmp1 = args(1).matrix_value();
+  A = tmp0.data();
+  B = tmp1.data();
 
-    // Get pointers to input data.
-    const Matrix tmp0 = args(0).matrix_value();
-    const Matrix tmp1 = args(1).matrix_value();
-    A = tmp0.data();
-    B = tmp1.data();
+  if (nrhs == 3 || (nrhs == 4 && load_wisdom)) { // Normal mode.
 
-    if (nrhs == 3 || (nrhs == 4 && load_wisdom)) { // Normal mode.
+    //
+    //
+    // Normal (non in-place) mode.
+    //
+    //
 
-      //
-      //
-      // Normal (non in-place) mode.
-      //
-      //
+    in_place = false;
 
-      in_place = false;
+    running = true;
 
-      running = true;
+    // Allocate mamory for the output matrix.
+    Matrix Ymat(A_M+B_M-1, A_N);
+    Y = Ymat.fortran_vec();
 
-      // Allocate mamory for the output matrix.
-      Matrix Ymat(A_M+B_M-1, A_N);
-      Y = Ymat.fortran_vec();
+    if (nthreads>1) { // Use threads
 
-      if (nthreads>1) { // Use threads
-
-        // Allocate mem for the threads.
-        threads = new std::thread[nthreads]; // Init thread data.
-        if (!threads) {
-          error("Failed to allocate memory for threads!");
-          return oct_retval;
-        }
-
-        // Allocate local data.
-        D = (DATA*) malloc(nthreads*sizeof(DATA));
-        if (!D) {
-          error("Failed to allocate memory for thread data!");
-          return oct_retval;
-        }
-
-        for (thread_n = 0; thread_n < nthreads; thread_n++) {
-
-          line_start = thread_n * A_N/nthreads;
-          line_stop =  (thread_n+1) * A_N/nthreads;
-
-          // Init local data.
-          D[thread_n].line_start = line_start; // Local start index;
-          D[thread_n].line_stop = line_stop; // Local stop index;
-          D[thread_n].A = A;
-          D[thread_n].A_M = A_M;
-          D[thread_n].A_N = A_N;
-          D[thread_n].B = B;
-          D[thread_n].B_M = B_M;
-          D[thread_n].B_N = B_N;
-          D[thread_n].block_len = block_len;
-          D[thread_n].Y = Y;
-
-          // Start the threads.
-          threads[thread_n] = std::thread(smp_dream_fftconv_ola, &D[thread_n]);
-
-        } // for (thread_n = 0; thread_n < nthreads; thread_n++)
-
-        //
-        // Wait for all threads to finish.
-        //
-
-        for (thread_n = 0; thread_n < nthreads; thread_n++)
-          threads[thread_n].join();
-
-        // Free memory.
-        if (D)
-          free((void*) D);
-
-      } else { // Do not use threads.
-
-        double *y = c; // We use the same data space here.
-        a_block = (double*) fftw_malloc(block_len*sizeof(double));
-
-        if (B_N > 1) {// B is a matrix.
-
-          for (n=0; n<A_N; n++) {
-
-            //
-            // The overlap-and-add algorithm.
-            //
-
-            k = 0;
-            while (k < A_M ) {
-
-              // Convolve one block
-              if (k+block_len < A_M)
-
-                fftconv( &A[k+n*A_M], block_len, &B[0+n*B_M], B_M, y, a,b,c,af,bf,cf);
-
-              else {
-
-                // We must do the convolution (eg. the FFT) of the same lenght here (=fft_len) but the first
-                // arg is now shorter than above so copy and zero-pad the first arg to fftconv.
-
-                // Copy.
-                //for (l=0; l<(A_M-k); l++)
-                // a_block[l] = A[k+l + n*A_M];
-                memcpy(a_block,&A[k + n*A_M],(A_M-k)*sizeof(double));
-
-                // Zero-pad.
-                //for (l=A_M-k; l<block_len; l++)
-                // a_block[l] = 0.0; // Zero-pad.
-                memset(&a_block[A_M-k],0,(block_len-(A_M-k))*sizeof(double));
-
-                fftconv( a_block, block_len, &B[0+n*B_M], B_M, y, a,b,c,af,bf,cf);
-              }
-
-              // Add the overlap.
-              if (k+fft_len <  A_M+B_M-1) {
-                for (l=0; l<fft_len; l++)
-                  Y[k+l + n*(A_M+B_M-1)] += y[l];
-              } else {
-                for (l=0; l<(A_M+B_M-1)-k; l++)
-                  Y[k+l + n*(A_M+B_M-1)] += y[l];
-              }
-
-              k += block_len;
-            } // while
-
-            if (running==false) {
-              printf("fftconv_ola: bailing out!\n");
-              break;
-            }
-
-          } // end-for
-
-        } else { // B is a vector.
-
-          for (n=0; n<A_N; n++) {
-
-            //
-            // The overlap-and-add algorithm.
-            //
-
-            k = 0;
-            while (k < A_M ) {
-
-              // Convolve one block
-              if (k+block_len < A_M)
-
-                fftconv( &A[k+n*A_M], block_len, B, B_M, y, a,b,c,af,bf,cf);
-
-              else {
-
-                // We must do the convolution (eg. the FFT) of the same lenght here (=fft_len) but the first
-                // arg is now shorter than above so copy and zero-pad the first arg to fftconv.
-
-                // Copy.
-                //for (l=0; l<(k+block_len)-A_M; l++)
-                // a_block[l] = A[k+l + n*A_M];
-                memcpy(a_block,&A[k + n*A_M],(A_M-k)*sizeof(double));
-
-                // Zero-pad.
-                //for (l=A_M-k; l<block_len; l++)
-                // a_block[l] = 0.0; // Zero-pad.
-                memset(&a_block[A_M-k],0,(block_len-(A_M-k))*sizeof(double));
-
-                fftconv( a_block, block_len, B, B_M, y, a,b,c,af,bf,cf);
-              }
-
-              // Add the overlap.
-              if (k+fft_len <  A_M+B_M-1) {
-                for (l=0; l<fft_len; l++)
-                  Y[k+l + n*(A_M+B_M-1)] += y[l];
-              } else {
-                for (l=0; l<(A_M+B_M-1)-k; l++)
-                  Y[k+l + n*(A_M+B_M-1)] += y[l];
-              }
-
-              k += block_len;
-            } // while
-
-            if (running==false) {
-              printf("fftconv_ola: bailing out!\n");
-              break;
-            }
-
-          } // end-for
-        } // end-if
-
-        // Free buffer memory.
-        if (a_block)
-          fftw_free(a_block);
-        else
-          error("a_block memory free in fftconv_ola failed!");
-
-      }
-
-      //
-      // Restore old signal handlers.
-      //
-
-      if (std::signal(SIGTERM, old_handler) == SIG_ERR) {
-        std::cerr << "Couldn't register old SIGTERM signal handler!" << std::endl;
-      }
-
-      if (std::signal(SIGABRT, old_handler_abrt) == SIG_ERR) {
-        std::cerr << "Couldn't register old SIGABRT signal handler!" << std::endl;
-      }
-
-      if (std::signal(SIGINT, old_handler_keyint) == SIG_ERR) {
-        std::cerr << "Couldn't register old SIGINT signal handler!" << std::endl;
-      }
-
-      if (!running) {
-        error("CTRL-C pressed!\n"); // Bail out.
+      // Allocate mem for the threads.
+      threads = new std::thread[nthreads]; // Init thread data.
+      if (!threads) {
+        error("Failed to allocate memory for threads!");
         return oct_retval;
       }
 
-      // 1st output arg.
-      oct_retval.append(Ymat);
-
-      // Return the FFTW Wisdom so that the plans can be re-used.
-      if (return_wisdom) {
-        the_str = fftw_export_wisdom_to_string();
-        buflen = strlen(the_str);
-
-        std::string cmout( buflen, ' ' );
-        cmout.insert( buflen, (const char*) the_str);
-
-        // Add to output args.
-        oct_retval.append( cmout);
-
-        fftw_free(the_str);
+      // Allocate local data.
+      D = (DATA*) malloc(nthreads*sizeof(DATA));
+      if (!D) {
+        error("Failed to allocate memory for thread data!");
+        return oct_retval;
       }
 
-      // Clear temp vectors used for the FFTW plans.
-      if (a)
-        fftw_free(a);
+      for (thread_n = 0; thread_n < nthreads; thread_n++) {
+
+        line_start = thread_n * A_N/nthreads;
+        line_stop =  (thread_n+1) * A_N/nthreads;
+
+        // Init local data.
+        D[thread_n].line_start = line_start; // Local start index;
+        D[thread_n].line_stop = line_stop; // Local stop index;
+        D[thread_n].A = A;
+        D[thread_n].A_M = A_M;
+        D[thread_n].A_N = A_N;
+        D[thread_n].B = B;
+        D[thread_n].B_M = B_M;
+        D[thread_n].B_N = B_N;
+        D[thread_n].block_len = block_len;
+        D[thread_n].Y = Y;
+
+        // Start the threads.
+        threads[thread_n] = std::thread(smp_dream_fftconv_ola, &D[thread_n]);
+
+      } // for (thread_n = 0; thread_n < nthreads; thread_n++)
+
+      //
+      // Wait for all threads to finish.
+      //
+
+      for (thread_n = 0; thread_n < nthreads; thread_n++)
+        threads[thread_n].join();
+
+      // Free memory.
+      if (D)
+        free((void*) D);
+
+    } else { // Do not use threads.
+
+      double *y = c; // We use the same data space here.
+      a_block = (double*) fftw_malloc(block_len*sizeof(double));
+
+      if (B_N > 1) {// B is a matrix.
+
+        for (n=0; n<A_N; n++) {
+
+          //
+          // The overlap-and-add algorithm.
+          //
+
+          k = 0;
+          while (k < A_M ) {
+
+            // Convolve one block
+            if (k+block_len < A_M)
+
+              fftconv( &A[k+n*A_M], block_len, &B[0+n*B_M], B_M, y, a,b,c,af,bf,cf);
+
+            else {
+
+              // We must do the convolution (eg. the FFT) of the same lenght here (=fft_len) but the first
+              // arg is now shorter than above so copy and zero-pad the first arg to fftconv.
+
+              // Copy.
+              //for (l=0; l<(A_M-k); l++)
+              // a_block[l] = A[k+l + n*A_M];
+              memcpy(a_block,&A[k + n*A_M],(A_M-k)*sizeof(double));
+
+              // Zero-pad.
+              //for (l=A_M-k; l<block_len; l++)
+              // a_block[l] = 0.0; // Zero-pad.
+              memset(&a_block[A_M-k],0,(block_len-(A_M-k))*sizeof(double));
+
+              fftconv( a_block, block_len, &B[0+n*B_M], B_M, y, a,b,c,af,bf,cf);
+            }
+
+            // Add the overlap.
+            if (k+fft_len <  A_M+B_M-1) {
+              for (l=0; l<fft_len; l++)
+                Y[k+l + n*(A_M+B_M-1)] += y[l];
+            } else {
+              for (l=0; l<(A_M+B_M-1)-k; l++)
+                Y[k+l + n*(A_M+B_M-1)] += y[l];
+            }
+
+            k += block_len;
+          } // while
+
+          if (running==false) {
+            printf("fftconv_ola: bailing out!\n");
+            break;
+          }
+
+        } // end-for
+
+      } else { // B is a vector.
+
+        for (n=0; n<A_N; n++) {
+
+        //
+        // The overlap-and-add algorithm.
+        //
+
+        k = 0;
+        while (k < A_M ) {
+
+          // Convolve one block
+          if (k+block_len < A_M)
+
+            fftconv( &A[k+n*A_M], block_len, B, B_M, y, a,b,c,af,bf,cf);
+
+          else {
+
+            // We must do the convolution (eg. the FFT) of the same lenght here (=fft_len) but the first
+            // arg is now shorter than above so copy and zero-pad the first arg to fftconv.
+
+            // Copy.
+            //for (l=0; l<(k+block_len)-A_M; l++)
+            // a_block[l] = A[k+l + n*A_M];
+            memcpy(a_block,&A[k + n*A_M],(A_M-k)*sizeof(double));
+
+            // Zero-pad.
+            //for (l=A_M-k; l<block_len; l++)
+            // a_block[l] = 0.0; // Zero-pad.
+            memset(&a_block[A_M-k],0,(block_len-(A_M-k))*sizeof(double));
+
+            fftconv( a_block, block_len, B, B_M, y, a,b,c,af,bf,cf);
+          }
+
+          // Add the overlap.
+          if (k+fft_len <  A_M+B_M-1) {
+            for (l=0; l<fft_len; l++)
+              Y[k+l + n*(A_M+B_M-1)] += y[l];
+          } else {
+            for (l=0; l<(A_M+B_M-1)-k; l++)
+              Y[k+l + n*(A_M+B_M-1)] += y[l];
+          }
+
+          k += block_len;
+        } // while
+
+        if (running==false) {
+          printf("fftconv_ola: bailing out!\n");
+          break;
+        }
+
+        } // end-for
+      } // end-if
+
+      // Free buffer memory.
+      if (a_block)
+        fftw_free(a_block);
       else
-        error("a memory free failed in fftconv_ola!");
-
-      if (af)
-        fftw_free(af);
-      else
-        error("af memory free failed in fftconv_ola!");
-
-      if (b)
-        fftw_free(b);
-      else
-        error("b memory free failed in fftconv_ola!");
-
-      if (bf)
-        fftw_free(bf);
-      else
-        error("bf memory free failed in fftconv_ola!");
-
-      if (c)
-        fftw_free(c);
-      else
-        error("c memory free failed in fftconv_ola!");
-
-      if (cf)
-        fftw_free(cf);
-      else
-        error("cf memory free failed in fftconv_ola!");
-
-      // Cleanup the plans.
-      fftw_destroy_plan(p_forward);
-      fftw_destroy_plan(p_backward);
-
-      // Clean up FFTW
-      //fftw_cleanup(); This seems to put Octave in an unstable state. Calling fftconv will crash Octave.
-
-      return oct_retval;
+        error("a_block memory free in fftconv_ola failed!");
 
     }
 
-
-    if ( (nrhs == 4 && !load_wisdom) || nrhs == 5 || nrhs == 6) { // In-place mode.
-
-      in_place = true;
-
-      //
-      //
-      // In-place mode.
-      //
-      //
-
-      if (args(3).matrix_value().rows() != A_M+B_M-1) {
-        error("Wrong number of rows in argument 5!");
-        return oct_retval;
-      }
-
-      if (args(3).matrix_value().cols() != A_N) {
-        error("Wrong number of columns in argument 5!");
-        return oct_retval;
-      }
-
-      // Check datatype of (in-place) output arg.
-      if (!args(3).is_double_type()) {
-        error("The output matrix (4th arg) must ba a double precision matrix when the input matricies are double precision!");
-        return oct_retval; // FIXME : Do we need to clear memory here?
-      }
-
-      const Matrix Ytmp = args(3).matrix_value();
-      Y = (double*) Ytmp.data();
-
-      //
-      // Call the CONV subroutine.
-      //
-
-      running = true;
-
-      if (nthreads>1) { // Use threads
-
-        // Allocate mem for the threads.
-        threads = new std::thread[nthreads]; // Init thread data.
-        if (!threads) {
-          error("Failed to allocate memory for threads!");
-          return oct_retval;
-        }
-
-        //
-        // Double precision
-        //
-
-
-        // Allocate local data.
-        D = (DATA*) malloc(nthreads*sizeof(DATA));
-        if (!D) {
-          error("Failed to allocate memory for thread data!");
-          return oct_retval;
-        }
-
-        for (thread_n = 0; thread_n < nthreads; thread_n++) {
-
-          line_start = thread_n * A_N/nthreads;
-          line_stop =  (thread_n+1) * A_N/nthreads;
-
-          // Init local data.
-          D[thread_n].line_start = line_start; // Local start index;
-          D[thread_n].line_stop = line_stop; // Local stop index;
-          D[thread_n].A = A;
-          D[thread_n].A_M = A_M;
-          D[thread_n].A_N = A_N;
-          D[thread_n].B = B;
-          D[thread_n].B_M = B_M;
-          D[thread_n].B_N = B_N;
-          D[thread_n].block_len = block_len;
-          D[thread_n].Y = Y;
-
-          // Start the threads.
-          threads[thread_n] = std::thread(smp_dream_fftconv_ola, &D[thread_n]);
-
-        } // for (thread_n = 0; thread_n < nthreads; thread_n++)
-
-        // Wait for all threads to finish.
-        for (thread_n = 0; thread_n < nthreads; thread_n++)
-          threads[thread_n].join();
-
-        // Free memory.
-        if (D)
-          free((void*) D);
-
-      } else { // Do not use threads.
-
-        double *y = c; // We use the same data space here.
-        a_block = (double*) fftw_malloc(block_len*sizeof(double));
-
-        if (B_N > 1) {// B is a matrix.
-
-          for (n=0; n<A_N; n++) {
-
-            //
-            // The overlap-and-add algorithm.
-            //
-
-            k = 0;
-            while (k < A_M ) {
-
-              // Convolve one block
-              if (k+block_len < A_M)
-
-                fftconv( &A[k+n*A_M], block_len, &B[0+n*B_M], B_M, y, a,b,c,af,bf,cf);
-
-              else {
-
-                // We must do the convolution (eg. the FFT) of the same lenght here (=fft_len) but the first
-                // arg is now shorter than above so copy and zero-pad the first arg to fftconv.
-
-                // Copy.
-                //for (l=0; l<(A_M-k); l++)
-                //  a_block[l] = A[k+l + n*A_M];
-                memcpy(a_block,&A[k + n*A_M],(A_M-k)*sizeof(double));
-
-                // Zero-pad.
-                //for (l=A_M-k; l<block_len; l++)
-                // a_block[l] = 0.0; // Zero-pad.
-                memset(&a_block[A_M-k],0,(block_len-(A_M-k))*sizeof(double));
-
-                fftconv( a_block, block_len, &B[0+n*B_M], B_M, y, a,b,c,af,bf,cf);
-              }
-
-              // Add the overlap.
-              if (k+fft_len <  A_M+B_M-1) {
-                for (l=0; l<fft_len; l++)
-                  Y[k+l + n*(A_M+B_M-1)] += y[l];
-              } else {
-                for (l=0; l<(A_M+B_M-1)-k; l++)
-                  Y[k+l + n*(A_M+B_M-1)] += y[l];
-              }
-
-              k += block_len;
-            } // while
-
-            if (running==false) {
-              printf("fftconv_ola: bailing out!\n");
-              break;
-            }
-
-          } // end-for
-        } else { // B is a vector.
-
-          for (n=0; n<A_N; n++) {
-
-            //
-            // The overlap-and-add algorithm.
-            //
-
-            k = 0;
-            while (k < A_M ) {
-
-              // Convolve one block
-              if (k+block_len < A_M)
-
-                fftconv( &A[k+n*A_M], block_len, B, B_M, y, a,b,c,af,bf,cf);
-
-              else {
-
-                // We must do the convolution (eg. the FFT) of the same lenght here (=fft_len) but the first
-                // arg is now shorter than above so copy and zero-pad the first arg to fftconv.
-
-                // Copy.
-                //for (l=0; l<(A_M-k); l++)
-                // a_block[l] = A[k+l + n*A_M];
-                memcpy(a_block,&A[k + n*A_M],(A_M-k)*sizeof(double));
-
-                // Zero-pad.
-                //for (l=0; l<(A_M-k); l++)
-                // a_block[l] = 0.0; // Zero-pad.
-                memset(&a_block[A_M-k],0,(block_len-(A_M-k))*sizeof(double));
-
-                fftconv( a_block, block_len, B, B_M, y, a,b,c,af,bf,cf);
-              }
-
-              // Add the overlap.
-              if (k+fft_len <  A_M+B_M-1) {
-                for (l=0; l<fft_len; l++)
-                  Y[k+l + n*(A_M+B_M-1)] += y[l];
-              } else {
-                for (l=0; l<(A_M+B_M-1)-k; l++)
-                  Y[k+l + n*(A_M+B_M-1)] += y[l];
-              }
-
-              k += block_len;
-            } // while
-
-            if (running==false) {
-              printf("fftconv_ola: bailing out!\n");
-              break;
-            }
-
-          } // end-for
-        } // end-if
-
-
-        // Free buffer memory.
-        if (a_block)
-          fftw_free(a_block);
-        else
-          error("a_block memory free failed in fftconv_ola!");
-
-      }
-
-      //
-      // Restore old signal handlers.
-      //
-
-      if (std::signal(SIGTERM, old_handler) == SIG_ERR) {
-        std::cerr << "Couldn't register old SIGTERM signal handler!" << std::endl;
-      }
-
-      if (std::signal(SIGABRT, old_handler_abrt) == SIG_ERR) {
-        std::cerr << "Couldn't register old SIGABRT signal handler!" << std::endl;
-      }
-
-      if (std::signal(SIGINT, old_handler_keyint) == SIG_ERR) {
-        std::cerr << "Couldn't register old SIGINT signal handler!" << std::endl;
-      }
-
-      if (!running) {
-        error("CTRL-C pressed!\n"); // Bail out.
-        return oct_retval;
-      }
-
-      // Return the FFTW Wisdom so that the plans can be re-used.
-      if (return_wisdom) {
-        the_str = fftw_export_wisdom_to_string();
-        buflen = strlen(the_str);
-
-        std::string cmout( buflen, ' ' );
-        cmout.insert( buflen, (const char*) the_str);
-
-        // Add to output args.
-        oct_retval.append( cmout);
-
-        fftw_free(the_str);
-      }
-
-      // Clear temp vectors used for the FFTW plans.
-
-      if(a)
-        fftw_free(a);
-      else
-        error("a memory free failed in fftconv_ola!");
-
-      if (af)
-        fftw_free(af);
-      else
-        error("af memory free failed in fftconv_ola!");
-
-      if (b)
-        fftw_free(b);
-      else
-        error("b memory free failed in fftconv_ola!");
-
-      if (bf)
-        fftw_free(bf);
-      else
-        error("bf memory free failed in fftconv_ola!");
-
-      if (c)
-        fftw_free(c);
-      else
-        error("c memory free failed in fftconv_ola!");
-
-      if (cf)
-        fftw_free(cf);
-      else
-        error("cf memory free failed in fftconv_ola!");
-
-      // Cleanup the plans.
-      fftw_destroy_plan(p_forward);
-      fftw_destroy_plan(p_backward);
-
-      // Clean up FFTW
-      //fftw_cleanup(); This seems to put Octave in an unstable state. Calling fftconv will crash Octave.
-
+    //
+    // Restore old signal handlers.
+    //
+
+    if (std::signal(SIGTERM, old_handler) == SIG_ERR) {
+      std::cerr << "Couldn't register old SIGTERM signal handler!" << std::endl;
+    }
+
+    if (std::signal(SIGABRT, old_handler_abrt) == SIG_ERR) {
+      std::cerr << "Couldn't register old SIGABRT signal handler!" << std::endl;
+    }
+
+    if (std::signal(SIGINT, old_handler_keyint) == SIG_ERR) {
+      std::cerr << "Couldn't register old SIGINT signal handler!" << std::endl;
+    }
+
+    if (!running) {
+      error("CTRL-C pressed!\n"); // Bail out.
       return oct_retval;
     }
+
+    // 1st output arg.
+    oct_retval.append(Ymat);
+
+    // Return the FFTW Wisdom so that the plans can be re-used.
+    if (return_wisdom) {
+      the_str = fftw_export_wisdom_to_string();
+      buflen = strlen(the_str);
+
+      std::string cmout( buflen, ' ' );
+      cmout.insert( buflen, (const char*) the_str);
+
+      // Add to output args.
+      oct_retval.append( cmout);
+
+      fftw_free(the_str);
+    }
+
+    // Clear temp vectors used for the FFTW plans.
+    if (a)
+      fftw_free(a);
+    else
+      error("a memory free failed in fftconv_ola!");
+
+    if (af)
+      fftw_free(af);
+    else
+      error("af memory free failed in fftconv_ola!");
+
+    if (b)
+      fftw_free(b);
+    else
+      error("b memory free failed in fftconv_ola!");
+
+    if (bf)
+      fftw_free(bf);
+    else
+      error("bf memory free failed in fftconv_ola!");
+
+    if (c)
+      fftw_free(c);
+    else
+      error("c memory free failed in fftconv_ola!");
+
+    if (cf)
+      fftw_free(cf);
+    else
+      error("cf memory free failed in fftconv_ola!");
+
+    // Cleanup the plans.
+    fftw_destroy_plan(p_forward);
+    fftw_destroy_plan(p_backward);
+
+    // Clean up FFTW
+    //fftw_cleanup(); This seems to put Octave in an unstable state. Calling fftconv will crash Octave.
+
+    return oct_retval;
 
   }
 
 
-  // ********************************************
-  //
-  // Single Precision
-  //
-  // ********************************************
+  if ( (nrhs == 4 && !load_wisdom) || nrhs == 5 || nrhs == 6) { // In-place mode.
 
-  if (data_format == SINGLE_PRECISION) {
+    in_place = true;
 
-    // Get pointers to input data.
-    const FloatMatrix tmp0 = args(0).float_matrix_value();
-    const FloatMatrix tmp1 = args(1).float_matrix_value();
-    sA = tmp0.data();
-    sB = tmp1.data();
+    //
+    //
+    // In-place mode.
+    //
+    //
 
-    if (nrhs == 4 || (nrhs == 5 && load_wisdom)) { // Normal mode.
-
-      //
-      //
-      // Normal (non in-place) mode.
-      //
-      //
-
-      in_place = false;
-
-      running = true;
-
-      // Allocate memory for the single precision
-      // output matrix.
-      FloatMatrix Ymat(A_M+B_M-1, A_N);
-      sY = Ymat.fortran_vec();
-
-      if (nthreads>1) { // Use threads
-
-        // Allocate mem for the threads.
-        threads = new std::thread[nthreads]; // Init thread data.
-        if (!threads) {
-          error("Failed to allocate memory for threads!");
-          return oct_retval;
-        }
-
-        // Allocate local data.
-        sD = (S_DATA*) malloc(nthreads*sizeof(S_DATA));
-        if (!sD) {
-          error("Failed to allocate memory for thread data!");
-          return oct_retval;
-        }
-
-        for (thread_n = 0; thread_n < nthreads; thread_n++) {
-
-          line_start = thread_n * A_N/nthreads;
-          line_stop =  (thread_n+1) * A_N/nthreads;
-
-          // Init local data.
-          sD[thread_n].line_start = line_start; // Local start index;
-          sD[thread_n].line_stop = line_stop; // Local stop index;
-          sD[thread_n].A = sA;
-          sD[thread_n].A_M = A_M;
-          sD[thread_n].A_N = A_N;
-          sD[thread_n].B = sB;
-          sD[thread_n].B_M = B_M;
-          sD[thread_n].B_N = B_N;
-          sD[thread_n].block_len = block_len;
-          sD[thread_n].Y = sY;
-
-          // Start the threads.
-          threads[thread_n] = std::thread(smp_dream_fftconv_ola, &D[thread_n]);
-
-        } // for (thread_n = 0; thread_n < nthreads; thread_n++)
-
-        //
-        // Wait for all threads to finish.
-        //
-
-        for (thread_n = 0; thread_n < nthreads; thread_n++)
-          threads[thread_n].join();
-
-        // Free memory.
-        if (sD)
-          free((void*) sD);
-
-      } else { // Do not use threads.
-
-        float *y = sc; // We use the same data space here.
-        s_a_block = (float*) fftw_malloc(block_len*sizeof(float));
-
-        if (B_N > 1) {// B is a matrix.
-
-          for (n=0; n<A_N; n++) {
-
-            //
-            // The overlap-and-add algorithm.
-            //
-
-            k = 0;
-            while (k < A_M ) {
-
-              // Convolve one block
-              if (k+block_len < A_M)
-
-                sfftconv( &sA[k+n*A_M], block_len, &sB[0+n*B_M], B_M, y, sa,sb,sc,saf,sbf,scf);
-
-              else {
-
-                // We must do the convolution (eg. the FFT) of the same lenght here (=fft_len) but the first
-                // arg is now shorter than above so copy and zero-pad the first arg to fftconv.
-
-                // Copy.
-                //for (l=0; l<(A_M-k); l++)
-                // a_block[l] = A[k+l + n*A_M];
-                memcpy(s_a_block,&sA[k + n*A_M],(A_M-k)*sizeof(float));
-
-                // Zero-pad.
-                //for (l=A_M-k; l<block_len; l++)
-                // a_block[l] = 0.0; // Zero-pad.
-                memset(&a_block[A_M-k],0,(block_len-(A_M-k))*sizeof(float));
-
-                sfftconv( s_a_block, block_len, &sB[0+n*B_M], B_M, y, sa,sb,sc,saf,sbf,scf);
-              }
-
-              // Add the overlap.
-              if (k+fft_len <  A_M+B_M-1) {
-                for (l=0; l<fft_len; l++)
-                  sY[k+l + n*(A_M+B_M-1)] += y[l];
-              } else {
-                for (l=0; l<(A_M+B_M-1)-k; l++)
-                  sY[k+l + n*(A_M+B_M-1)] += y[l];
-              }
-
-              k += block_len;
-            } // while
-
-            if (running==false) {
-              printf("fftconv_ola: bailing out!\n");
-              break;
-            }
-
-          } // end-for
-
-        } else { // B is a vector.
-
-          for (n=0; n<A_N; n++) {
-
-            //
-            // The overlap-and-add algorithm.
-            //
-
-            k = 0;
-            while (k < A_M ) {
-
-              // Convolve one block
-              if (k+block_len < A_M)
-
-                sfftconv( &sA[k+n*A_M], block_len, sB, B_M, y, sa,sb,sc,saf,sbf,scf);
-
-              else {
-
-                // We must do the convolution (eg. the FFT) of the same lenght here (=fft_len) but the first
-                // arg is now shorter than above so copy and zero-pad the first arg to fftconv.
-
-                // Copy.
-                //for (l=0; l<(k+block_len)-A_M; l++)
-                // a_block[l] = A[k+l + n*A_M];
-                memcpy(s_a_block,&sA[k + n*A_M],(A_M-k)*sizeof(float));
-
-                // Zero-pad.
-                //for (l=A_M-k; l<block_len; l++)
-                // a_block[l] = 0.0; // Zero-pad.
-                memset(&s_a_block[A_M-k],0,(block_len-(A_M-k))*sizeof(float));
-
-                sfftconv( s_a_block, block_len, sB, B_M, y, sa,sb,sc,saf,sbf,scf);
-              }
-
-              // Add the overlap.
-              if (k+fft_len <  A_M+B_M-1) {
-                for (l=0; l<fft_len; l++)
-                  sY[k+l + n*(A_M+B_M-1)] += y[l];
-              } else {
-                for (l=0; l<(A_M+B_M-1)-k; l++)
-                  sY[k+l + n*(A_M+B_M-1)] += y[l];
-              }
-
-              k += block_len;
-            } // while
-
-            if (running==false) {
-              printf("fftconv_ola: bailing out!\n");
-              break;
-            }
-
-          } // end-for
-        } // end-if
-
-        // Free buffer memory.
-        if (s_a_block)
-          fftw_free(s_a_block);
-        else
-          error("s_a_block memory free failed in fftconv_ola!");
-
-      }
-
-      //
-      // Restore old signal handlers.
-      //
-
-      if (std::signal(SIGTERM, old_handler) == SIG_ERR) {
-        std::cerr << "Couldn't register old SIGTERM signal handler!" << std::endl;
-      }
-
-      if (std::signal(SIGABRT, old_handler_abrt) == SIG_ERR) {
-        std::cerr << "Couldn't register old SIGABRT signal handler!" << std::endl;
-      }
-
-      if (std::signal(SIGINT, old_handler_keyint) == SIG_ERR) {
-        std::cerr << "Couldn't register old SIGINT signal handler!" << std::endl;
-      }
-
-      if (!running) {
-        error("CTRL-C pressed!\n"); // Bail out.
-        return oct_retval;
-      }
-
-      // 1st output arg.
-      oct_retval.append(Ymat);
-
-      // Return the FFTW Wisdom so that the plans can be re-used.
-      if (return_wisdom) {
-        the_str = fftwf_export_wisdom_to_string();
-        buflen = strlen(the_str);
-
-        std::string cmout( buflen, ' ' );
-        cmout.insert( buflen, (const char*) the_str);
-
-        // Add to output args.
-        oct_retval.append( cmout);
-
-        fftw_free(the_str);
-      }
-
-      // Clear temp vectors used for the FFTW plans.
-
-      if (sa)
-        fftw_free(sa);
-      else
-        error("sa memory free failed in fftconv_ola!");
-
-      if (saf)
-        fftw_free(saf);
-      else
-        error("saf memory free failed in fftconv_ola!");
-
-      if (sb)
-        fftw_free(sb);
-      else
-        error("sb memory free failed in fftconv_ola!");
-
-      if (sbf)
-        fftw_free(sbf);
-      else
-        error("sbf memory free failed in fftconv_ola!");
-
-      if (sc)
-        fftw_free(sc);
-      else
-        error("sc memory free failed in fftconv_ola!");
-
-      if (scf)
-        fftw_free(scf);
-      else
-        error("scf memory free failed in fftconv_ola!");
-
-      // Cleanup the plans.
-      fftwf_destroy_plan(sp_forward);
-      fftwf_destroy_plan(sp_backward);
-
-      // Clean up FFTW
-      //fftw_cleanup(); This seems to put Octave in an unstable state. Calling fftconv will crash Octave.
-
-      return oct_retval;
-
-    }
-
-
-    if ( (nrhs == 4 && !load_wisdom) || nrhs == 5 || nrhs == 6) { // In-place mode.
-
-      in_place = true;
-
-      //
-      //
-      // In-place mode.
-      //
-      //
-
-      if (  args(3).matrix_value().rows() != A_M+B_M-1) {
-        error("Wrong number of rows in argument 4!");
-        return oct_retval;
-      }
-
-      if (  args(3).matrix_value().cols() != A_N) {
-        error("Wrong number of columns in argument 4!");
-        return oct_retval;
-      }
-
-      // Check datatype of (iun-place) output arg.
-      if (!args(3).is_single_type()) {
-        error("The output matrix (4th arg) must be single precision matrix when the input matrcies are single precision!");
-        return oct_retval; // FIXME : Do we need to clear memory here?
-      }
-
-      const FloatMatrix Ytmp = args(3).matrix_value();
-      sY = (float*) Ytmp.data();
-
-      //
-      // Call the CONV subroutine.
-      //
-
-      running = true;
-
-      if (nthreads>1) { // Use threads
-
-        // Allocate mem for the threads.
-        threads = new std::thread[nthreads]; // Init thread data.
-        if (!threads) {
-          error("Failed to allocate memory for threads!");
-          return oct_retval;
-        }
-
-        //
-        // Double precision
-        //
-
-        // Allocate local data.
-        sD = (S_DATA*) malloc(nthreads*sizeof(S_DATA));
-        if (!sD) {
-          error("Failed to allocate memory for thread data!");
-          return oct_retval;
-        }
-
-        for (thread_n = 0; thread_n < nthreads; thread_n++) {
-
-          line_start = thread_n * A_N/nthreads;
-          line_stop =  (thread_n+1) * A_N/nthreads;
-
-          // Init local data.
-          sD[thread_n].line_start = line_start; // Local start index;
-          sD[thread_n].line_stop = line_stop; // Local stop index;
-          sD[thread_n].A = sA;
-          sD[thread_n].A_M = A_M;
-          sD[thread_n].A_N = A_N;
-          sD[thread_n].B = sB;
-          sD[thread_n].B_M = B_M;
-          sD[thread_n].B_N = B_N;
-          sD[thread_n].block_len = block_len;
-          sD[thread_n].Y = sY;
-
-          // Start the threads.
-          threads[thread_n] = std::thread(smp_dream_fftconv_ola, &D[thread_n]);
-
-        }  // for (thread_n = 0; thread_n < nthreads; thread_n++)
-
-        // Wait for all threads to finish.
-        for (thread_n = 0; thread_n < nthreads; thread_n++)
-          threads[thread_n].join();
-
-        // Free memory.
-        if (sD)
-          free((void*) sD);
-
-      } else { // Do not use threads.
-
-        float *y = sc; // We use the same data space here.
-        s_a_block = (float*) fftw_malloc(block_len*sizeof(float));
-
-        if (B_N > 1) {// B is a matrix.
-
-          for (n=0; n<A_N; n++) {
-
-            //
-            // The overlap-and-add algorithm.
-            //
-
-            k = 0;
-            while (k < A_M ) {
-
-              // Convolve one block
-              if (k+block_len < A_M)
-
-                sfftconv( &sA[k+n*A_M], block_len, &sB[0+n*B_M], B_M, y, sa,sb,sc,saf,sbf,scf);
-
-              else {
-
-                // We must do the convolution (eg. the FFT) of the same lenght here (=fft_len) but the first
-                // arg is now shorter than above so copy and zero-pad the first arg to fftconv.
-
-                // Copy.
-                //for (l=0; l<(A_M-k); l++)
-                //  a_block[l] = A[k+l + n*A_M];
-                memcpy(s_a_block,&sA[k + n*A_M],(A_M-k)*sizeof(float));
-
-                // Zero-pad.
-                //for (l=A_M-k; l<block_len; l++)
-                // a_block[l] = 0.0; // Zero-pad.
-                memset(&s_a_block[A_M-k],0,(block_len-(A_M-k))*sizeof(float));
-
-                sfftconv( s_a_block, block_len, &sB[0+n*B_M], B_M, y, sa,sb,sc,saf,sbf,scf);
-              }
-
-              // Add the overlap.
-              if (k+fft_len <  A_M+B_M-1) {
-                for (l=0; l<fft_len; l++)
-                  sY[k+l + n*(A_M+B_M-1)] += y[l];
-              } else {
-                for (l=0; l<(A_M+B_M-1)-k; l++)
-                  sY[k+l + n*(A_M+B_M-1)] += y[l];
-              }
-
-              k += block_len;
-            } // while
-
-            if (running==false) {
-              printf("fftconv_ola: bailing out!\n");
-              break;
-            }
-
-          } // end-for
-        } else { // B is a vector.
-
-          for (n=0; n<A_N; n++) {
-
-            //
-            // The overlap-and-add algorithm.
-            //
-
-            k = 0;
-            while (k < A_M ) {
-
-              // Convolve one block
-              if (k+block_len < A_M)
-
-                sfftconv( &sA[k+n*A_M], block_len, sB, B_M, y, sa,sb,sc,saf,sbf,scf);
-
-              else {
-
-                // We must do the convolution (eg. the FFT) of the same lenght here (=fft_len) but the first
-                // arg is now shorter than above so copy and zero-pad the first arg to fftconv.
-
-                // Copy.
-                //for (l=0; l<(A_M-k); l++)
-                // a_block[l] = A[k+l + n*A_M];
-                memcpy(s_a_block,&sA[k + n*A_M],(A_M-k)*sizeof(float));
-
-                // Zero-pad.
-                //for (l=0; l<(A_M-k); l++)
-                // a_block[l] = 0.0; // Zero-pad.
-                memset(&s_a_block[A_M-k],0,(block_len-(A_M-k))*sizeof(float));
-
-                sfftconv( s_a_block, block_len, sB, B_M, y, sa,sb,sc,saf,sbf,scf);
-              }
-
-              // Add the overlap.
-              if (k+fft_len <  A_M+B_M-1) {
-                for (l=0; l<fft_len; l++)
-                  sY[k+l + n*(A_M+B_M-1)] += y[l];
-              } else {
-                for (l=0; l<(A_M+B_M-1)-k; l++)
-                  sY[k+l + n*(A_M+B_M-1)] += y[l];
-              }
-
-              k += block_len;
-            } // while
-
-            if (running==false) {
-              printf("fftconv_ola: bailing out!\n");
-              break;
-            }
-
-          } // end-for
-        } // end-if
-
-
-        // Free buffer memory.
-        if (s_a_block)
-          fftw_free(s_a_block);
-        else
-          error("s_a_block memory free failed in fftconv_ola!");
-
-      }
-
-      //
-      // Restore old signal handlers.
-      //
-
-      if (std::signal(SIGTERM, old_handler) == SIG_ERR) {
-        std::cerr << "Couldn't register old SIGTERM signal handler!" << std::endl;
-      }
-
-      if (std::signal(SIGABRT, old_handler_abrt) == SIG_ERR) {
-        std::cerr << "Couldn't register old SIGABRT signal handler!" << std::endl;
-      }
-
-      if (std::signal(SIGINT, old_handler_keyint) == SIG_ERR) {
-        std::cerr << "Couldn't register old SIGINT signal handler!" << std::endl;
-      }
-
-      if (!running) {
-        error("CTRL-C pressed!\n"); // Bail out.
-        return oct_retval;
-      }
-
-      // Return the FFTW Wisdom so that the plans can be re-used.
-      if (return_wisdom) {
-        the_str = fftw_export_wisdom_to_string();
-        buflen = strlen(the_str);
-
-        std::string cmout( buflen, ' ' );
-        cmout.insert( buflen, (const char*) the_str);
-
-        // Add to output args.
-        oct_retval.append( cmout);
-
-        fftw_free(the_str);
-      }
-
-      // Clear temp vectors used for the FFTW plans.
-
-      if (sa)
-        fftw_free(sa);
-      else
-        error("sa memory free failed in fftconv_ola!");
-
-      if (saf)
-        fftw_free(saf);
-      else
-        error("saf memory free failed in fftconv_ola!");
-
-      if (sb)
-        fftw_free(sb);
-      else
-        error("sb memory free failed in fftconv_ola!");
-
-      if (sbf)
-        fftw_free(sbf);
-      else
-        error("sbf memory free failed in fftconv_ola!");
-
-      if (sc)
-        fftw_free(sc);
-      else
-        error("sc memory free failed in fftconv_ola!");
-
-      if (scf)
-        fftw_free(scf);
-      else
-        error("scf memory free failed in fftconv_ola!");
-
-      // Cleanup the (single precision) plans.
-      fftwf_destroy_plan(sp_forward);
-      fftwf_destroy_plan(sp_backward);
-
-      // Clean up FFTW
-      fftw_cleanup();
-
+    if (args(3).matrix_value().rows() != A_M+B_M-1) {
+      error("Wrong number of rows in argument 5!");
       return oct_retval;
     }
 
+    if (args(3).matrix_value().cols() != A_N) {
+      error("Wrong number of columns in argument 5!");
+      return oct_retval;
+    }
+
+    // Check datatype of (in-place) output arg.
+    if (!args(3).is_double_type()) {
+      error("The output matrix (4th arg) must ba a double precision matrix when the input matricies are double precision!");
+      return oct_retval; // FIXME : Do we need to clear memory here?
+    }
+
+    const Matrix Ytmp = args(3).matrix_value();
+    Y = (double*) Ytmp.data();
+
+    //
+    // Call the CONV subroutine.
+    //
+
+    running = true;
+
+    if (nthreads>1) { // Use threads
+
+      // Allocate mem for the threads.
+      threads = new std::thread[nthreads]; // Init thread data.
+      if (!threads) {
+        error("Failed to allocate memory for threads!");
+        return oct_retval;
+      }
+
+      // Allocate local data.
+      D = (DATA*) malloc(nthreads*sizeof(DATA));
+      if (!D) {
+        error("Failed to allocate memory for thread data!");
+        return oct_retval;
+      }
+
+      for (thread_n = 0; thread_n < nthreads; thread_n++) {
+
+        line_start = thread_n * A_N/nthreads;
+        line_stop =  (thread_n+1) * A_N/nthreads;
+
+        // Init local data.
+        D[thread_n].line_start = line_start; // Local start index;
+        D[thread_n].line_stop = line_stop; // Local stop index;
+        D[thread_n].A = A;
+        D[thread_n].A_M = A_M;
+        D[thread_n].A_N = A_N;
+        D[thread_n].B = B;
+        D[thread_n].B_M = B_M;
+        D[thread_n].B_N = B_N;
+        D[thread_n].block_len = block_len;
+        D[thread_n].Y = Y;
+
+        // Start the threads.
+        threads[thread_n] = std::thread(smp_dream_fftconv_ola, &D[thread_n]);
+
+      } // for (thread_n = 0; thread_n < nthreads; thread_n++)
+
+      // Wait for all threads to finish.
+      for (thread_n = 0; thread_n < nthreads; thread_n++)
+        threads[thread_n].join();
+
+      // Free memory.
+      if (D)
+        free((void*) D);
+
+    } else { // Do not use threads.
+
+      double *y = c; // We use the same data space here.
+      a_block = (double*) fftw_malloc(block_len*sizeof(double));
+
+      if (B_N > 1) {// B is a matrix.
+
+        for (n=0; n<A_N; n++) {
+
+          //
+          // The overlap-and-add algorithm.
+          //
+
+          k = 0;
+          while (k < A_M ) {
+
+            // Convolve one block
+            if (k+block_len < A_M)
+
+              fftconv( &A[k+n*A_M], block_len, &B[0+n*B_M], B_M, y, a,b,c,af,bf,cf);
+
+            else {
+
+              // We must do the convolution (eg. the FFT) of the same lenght here (=fft_len) but the first
+              // arg is now shorter than above so copy and zero-pad the first arg to fftconv.
+
+              // Copy.
+              //for (l=0; l<(A_M-k); l++)
+              //  a_block[l] = A[k+l + n*A_M];
+              memcpy(a_block,&A[k + n*A_M],(A_M-k)*sizeof(double));
+
+              // Zero-pad.
+              //for (l=A_M-k; l<block_len; l++)
+              // a_block[l] = 0.0; // Zero-pad.
+              memset(&a_block[A_M-k],0,(block_len-(A_M-k))*sizeof(double));
+
+              fftconv( a_block, block_len, &B[0+n*B_M], B_M, y, a,b,c,af,bf,cf);
+            }
+
+            // Add the overlap.
+            if (k+fft_len <  A_M+B_M-1) {
+              for (l=0; l<fft_len; l++)
+                Y[k+l + n*(A_M+B_M-1)] += y[l];
+            } else {
+              for (l=0; l<(A_M+B_M-1)-k; l++)
+                Y[k+l + n*(A_M+B_M-1)] += y[l];
+            }
+
+            k += block_len;
+          } // while
+
+          if (running==false) {
+            printf("fftconv_ola: bailing out!\n");
+            break;
+          }
+
+        } // end-for
+      } else { // B is a vector.
+
+        for (n=0; n<A_N; n++) {
+
+          //
+          // The overlap-and-add algorithm.
+          //
+
+          k = 0;
+          while (k < A_M ) {
+
+            // Convolve one block
+            if (k+block_len < A_M)
+
+              fftconv( &A[k+n*A_M], block_len, B, B_M, y, a,b,c,af,bf,cf);
+
+            else {
+
+              // We must do the convolution (eg. the FFT) of the same lenght here (=fft_len) but the first
+              // arg is now shorter than above so copy and zero-pad the first arg to fftconv.
+
+              // Copy.
+              //for (l=0; l<(A_M-k); l++)
+              // a_block[l] = A[k+l + n*A_M];
+              memcpy(a_block,&A[k + n*A_M],(A_M-k)*sizeof(double));
+
+              // Zero-pad.
+              //for (l=0; l<(A_M-k); l++)
+              // a_block[l] = 0.0; // Zero-pad.
+              memset(&a_block[A_M-k],0,(block_len-(A_M-k))*sizeof(double));
+
+              fftconv( a_block, block_len, B, B_M, y, a,b,c,af,bf,cf);
+            }
+
+            // Add the overlap.
+            if (k+fft_len <  A_M+B_M-1) {
+              for (l=0; l<fft_len; l++)
+                Y[k+l + n*(A_M+B_M-1)] += y[l];
+            } else {
+              for (l=0; l<(A_M+B_M-1)-k; l++)
+                Y[k+l + n*(A_M+B_M-1)] += y[l];
+            }
+
+            k += block_len;
+          } // while
+
+          if (running==false) {
+            printf("fftconv_ola: bailing out!\n");
+            break;
+          }
+
+        } // end-for
+      } // end-if
+
+
+      // Free buffer memory.
+      if (a_block)
+        fftw_free(a_block);
+      else
+        error("a_block memory free failed in fftconv_ola!");
+
+    }
+
+    //
+    // Restore old signal handlers.
+    //
+
+    if (std::signal(SIGTERM, old_handler) == SIG_ERR) {
+      std::cerr << "Couldn't register old SIGTERM signal handler!" << std::endl;
+    }
+
+    if (std::signal(SIGABRT, old_handler_abrt) == SIG_ERR) {
+      std::cerr << "Couldn't register old SIGABRT signal handler!" << std::endl;
+    }
+
+    if (std::signal(SIGINT, old_handler_keyint) == SIG_ERR) {
+      std::cerr << "Couldn't register old SIGINT signal handler!" << std::endl;
+    }
+
+    if (!running) {
+      error("CTRL-C pressed!\n"); // Bail out.
+      return oct_retval;
+    }
+
+    // Return the FFTW Wisdom so that the plans can be re-used.
+    if (return_wisdom) {
+      the_str = fftw_export_wisdom_to_string();
+      buflen = strlen(the_str);
+
+      std::string cmout( buflen, ' ' );
+      cmout.insert( buflen, (const char*) the_str);
+
+      // Add to output args.
+      oct_retval.append( cmout);
+
+      fftw_free(the_str);
+    }
+
+    // Clear temp vectors used for the FFTW plans.
+
+    if(a)
+      fftw_free(a);
+    else
+      error("a memory free failed in fftconv_ola!");
+
+    if (af)
+      fftw_free(af);
+    else
+      error("af memory free failed in fftconv_ola!");
+
+    if (b)
+      fftw_free(b);
+    else
+      error("b memory free failed in fftconv_ola!");
+
+    if (bf)
+      fftw_free(bf);
+    else
+      error("bf memory free failed in fftconv_ola!");
+
+    if (c)
+      fftw_free(c);
+    else
+      error("c memory free failed in fftconv_ola!");
+
+    if (cf)
+      fftw_free(cf);
+    else
+      error("cf memory free failed in fftconv_ola!");
+
+    // Cleanup the plans.
+    fftw_destroy_plan(p_forward);
+    fftw_destroy_plan(p_backward);
+
+    // Clean up FFTW
+    //fftw_cleanup(); This seems to put Octave in an unstable state. Calling fftconv will crash Octave.
+
+    return oct_retval;
   }
 
   return oct_retval;

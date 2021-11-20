@@ -164,7 +164,7 @@ void sig_keyint_handler(int signum) {
 
 DEFUN_DLD (rect_sir, args, nlhs,
            "-*- texinfo -*-\n\
-@deftypefn {Loadable Function} {}  [Y] = rect_sir(Ro,geom_par,delay,s_par,m_par,device).\n \
+@deftypefn {Loadable Function} {}  [Y] = rect_sir(Ro,geom_par,s_par,delay,m_par,device).\n \
 \n\
 RECT_SIR Computes the time-continous (analytic) spatial impulse response(s) for a\n\
 rectangular transducer.\n\

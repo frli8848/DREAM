@@ -19,6 +19,32 @@ option(BUILD_OCT "Enable building of the oct-files." ON)
 option(BUILD_USERMAN "Enable building of the user manual." OFF)
 option(USE_OPENCL "Enable OpenCL support." OFF) # Experimental
 
+if (UNIX AND NOT DARWIN)
+
+  # Detect which Linux distro were running on
+  if(EXISTS /etc/gentoo-release)
+    set(LINUX_DISTRO "GENTOO" CACHE STRING "Unix OS (options: UBUNTU/ubuntu or GENTOO/gentoo).")
+    execute_process (COMMAND bash -c "cat /etc/gentoo-release | awk \'{ print $5 }\' | tr -d \'\n\'"
+      OUTPUT_VARIABLE LINUX_DISTRO_VERSION
+      )
+  elseif(EXISTS /usr/bin/lsb_release)
+    set(LINUX_DISTRO "UBUNTU" CACHE STRING "Unix OS (options: UBUNTU/ubuntu or GENTOO/gentoo).")
+    execute_process (COMMAND bash -c "lsb_release -r | awk \'{ print $2 }\' | tr -d \'\n\'"
+      OUTPUT_VARIABLE LINUX_DISTRO_VERSION
+      )
+  else()
+    set(LINUX_DISTRO "Unknown" CACHE STRING "Unix OS (options: UBUNTU/ubuntu or GENTOO/gentoo).")
+    message(WARNING "Unknown/non-supported Linux distrubution!")
+  endif()
+
+  message(STATUS " ")
+  message(STATUS "****************************")
+  message(STATUS "Octave bindings: ${LINUX_DISTRO} ${LINUX_DISTRO_VERSION} Linux detected!")
+  message(STATUS "****************************")
+  message(STATUS " ")
+
+endif (UNIX AND NOT DARWIN)
+
 if (USE_OPENCL)
 
   find_package (OpenCL 1.2)
@@ -1402,6 +1428,7 @@ if (OCTAVE_FOUND)
 
   set (oct_sum_fftconv_SOURCE_FILES
     extra_src/oct_sum_fftconv.cc
+    extra_src/fftconv.cc
     src/affinity.cc
     src/dream_error.cc
     )

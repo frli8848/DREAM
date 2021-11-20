@@ -26,6 +26,12 @@ ELSE()
     set(OCTAVE_BIN $ENV{OCTAVE_ROOT}/bin)
 ENDIF()
 
+# Ubuntu have the Octave libs at two locations
+if ("${LINUX_DISTRO}" STREQUAL "UBUNTU")
+  set (UBUNTU_LDIRS "/usr/lib/x86_64-linux-gnu/")
+else ("${LINUX_DISTRO}" STREQUAL "UBUNTU")
+  set (UBUNTU_LDIRS "")
+endif ("${LINUX_DISTRO}" STREQUAL "UBUNTU")
 
 # use octave_config
 set(OCTAVE_CONFIG_EXECUTABLE OCTAVE_CONFIG_EXECUTABLE-NOTFOUND)
@@ -107,6 +113,7 @@ if(MKOCTFILE_EXECUTABLE)
   endif ("${OCTAVE_VERSION}" VERSION_LESS 5)
   string(REGEX REPLACE "[\r\n]" " " _mkoctfile_ldirs "${_mkoctfile_ldirs}")
   string(REGEX REPLACE "-L" "" _mkoctfile_ldirs "${_mkoctfile_ldirs}")
+  set(_mkoctfile_ldirs "${_mkoctfile_ldirs} ${UBUNTU_LDIRS}")
 
   separate_arguments(_mkoctfile_ldirs)
 

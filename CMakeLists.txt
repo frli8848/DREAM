@@ -1516,6 +1516,37 @@ if (Matlab_FOUND)
 endif (Matlab_FOUND)
 
 #
+# Add
+#
+
+if (OCTAVE_FOUND)
+
+  set (oct_add_p_SOURCE_FILES
+    extra_src/oct_add_p.cc
+    src/affinity.cc
+    src/dream_error.cc
+    )
+
+  add_library (oct_add_p MODULE
+    ${oct_add_p_SOURCE_FILES}
+    )
+
+  target_link_libraries (oct_add_p
+    ${OCTAVE_LIBRARIES}
+    )
+
+  set_target_properties (oct_add_p PROPERTIES
+    CXX_STANDARD 14
+    COMPILE_FLAGS "${DREAM_OCT_FLAGS}"
+    INCLUDE_DIRECTORIES "${DREAM_OCT_INCLUDE_DIRS}"
+    LINK_FLAGS ${OCT_LD_FLAGS}
+    SUFFIX ".oct" PREFIX "" OUTPUT_NAME "add_p")
+
+endif (OCTAVE_FOUND)
+
+# No mex file yet
+
+#
 # Copy
 #
 

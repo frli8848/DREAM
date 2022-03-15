@@ -48,6 +48,10 @@ jobs:
 
     runs-on: ubuntu-latest
 
+    - run: |
+        sudo apt -yq update
+        sudo apt install -yq --no-install-recommends libfftw3-dev
+
     steps:
     - uses: actions/checkout@v2
 

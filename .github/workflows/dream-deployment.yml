@@ -36,12 +36,13 @@ jobs:
 
     - name: Upload DREAM Matlab Linux
 
-      uses: actions/upload-release-asset@v1.0.1
+      uses: actions/upload-release-asset@v1.0.2
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       with:
-        upload_url: ${{ github.event.release.upload_url }}
+        #upload_url: ${{ github.event.release.upload_url }}
+        upload_url: ${{ steps.get_release.outputs.upload_url }}
         asset_path: ${{github.workspace}}/build/*.mexa64
         asset_name: oq-${{ github.event.release.tag_name }}-matlab-linux-x86_64
         asset_content_type: binary/octet-stream

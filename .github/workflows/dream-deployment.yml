@@ -53,7 +53,7 @@ jobs:
     - name: Create zip file
       run: |
         mkdir ${{ github.event.release.tag_name }}-matlab-linux-x86_64
-        cp ${{github.workspace}}/build/*.mexa64 ${{ github.event.release.tag_name }}-matlab-linux-x86_64
+        cp -v ${{github.workspace}}/build/*.mexa64 ${{ github.event.release.tag_name }}-matlab-linux-x86_64/
         zip --junk-paths ${{ github.event.release.tag_name }}-matlab-linux-x86_64 ${{ github.event.release.tag_name }}-matlab-linux-x86_64
 
     #- name: Upload DREAM Matlab Linux

@@ -43,3 +43,23 @@ jobs:
     ##  # Execute tests defined by the CMake configuration.
      # # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
      # run: ctest -C ${{env.BUILD_TYPE}}
+
+
+jobs:
+  linux-matlab:
+
+  runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+     # Sets up MATLAB on the GitHub Actions runner
+     - name: Setup MATLAB
+       uses: matlab-actions/setup-matlab@v1
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DBUILD_MEX=on
+
+    - name: Build
+      # Build your program with the given configuration
+      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}

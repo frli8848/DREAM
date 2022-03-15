@@ -17,15 +17,15 @@ jobs:
 
     runs-on: ubuntu-latest
 
-    outputs:
-      version: ${{ steps.step_version.outputs.version }}
-      upload_url: ${{ steps.step_upload_url.outputs.upload_url }}
+    #outputs:
+    #  version: ${{ steps.step_version.outputs.version }}
+    #  upload_url: ${{ steps.step_upload_url.outputs.upload_url }}
 
-      - id: step_version
-        run: echo "::set-output name=version::${{ steps.package_version.outputs.version }}"
+    #  - id: step_version
+    #    run: echo "::set-output name=version::${{ steps.package_version.outputs.version }}"
 
-      - id: step_upload_url
-        run: echo "::set-output name=upload_url::${{ steps.create_release.outputs.upload_url }}"
+    #  - id: step_upload_url
+    #    run: echo "::set-output name=upload_url::${{ steps.create_release.outputs.upload_url }}"
 
     steps:
     - uses: actions/checkout@v2
@@ -45,15 +45,23 @@ jobs:
       run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
 
     - name: Upload DREAM Matlab Linux
+      id: create_release
+      uses: shogo82148/actions-create-release@v1
 
-      uses: actions/upload-release-asset@v1.0.2
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
+    - uses: shogo82148/actions-upload-release-asset@v1
       with:
-        #upload_url: ${{ github.event.release.upload_url }}
-        upload_url: ${{ needs.deploy-linux-matlab.outputs.upload_url }}
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: ${{github.workspace}}/build/*.mexa64
-        #asset_name: oq-${{ github.event.release.tag_name }}-matlab-linux-x86_64
-        asset_name: ${{ needs.deploy-linux-matlab.outputs.version }}-matlab-linux-x86_64
-        asset_content_type: binary/octet-stream
+        asset_name: ${{ github.event.release.tag_name }}-matlab-linux-x86_64
+
+     #   uses: actions/upload-release-asset@v1.0.2
+     # env:
+     #   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+     # with:
+     #   #upload_url: ${{ github.event.release.upload_url }}
+     #   upload_url: ${{ needs.deploy-linux-matlab.outputs.upload_url }}
+     #   asset_path: ${{github.workspace}}/build/*.mexa64
+     #   #asset_name: oq-${{ github.event.release.tag_name }}-matlab-linux-x86_64
+     #   asset_name: ${{ needs.deploy-linux-matlab.outputs.version }}-matlab-linux-x86_64
+     #   asset_content_type: binary/octet-stream

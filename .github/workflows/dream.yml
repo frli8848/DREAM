@@ -48,12 +48,12 @@ jobs:
 
     runs-on: ubuntu-latest
 
+    steps:
+    - uses: actions/checkout@v2
+
     - run: |
         sudo apt -yq update
         sudo apt install -yq --no-install-recommends libfftw3-dev
-
-    steps:
-    - uses: actions/checkout@v2
 
     # Sets up MATLAB on the GitHub Actions runner
     - name: Setup MATLAB

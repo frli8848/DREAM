@@ -50,6 +50,12 @@ jobs:
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
 
+    - name: Create zip file
+      run: |
+        mkdir ${{ github.event.release.tag_name }}-matlab-linux-x86_64
+        cp ${{github.workspace}}/build/*.mexa64 ${{ github.event.release.tag_name }}-matlab-linux-x86_64
+        zip --junk-paths ${{ github.event.release.tag_name }}-matlab-linux-x86_64 ${{ github.event.release.tag_name }}-matlab-linux-x86_64
+
     #- name: Upload DREAM Matlab Linux
     #  id: create_release
     #  uses: shogo82148/actions-create-release@v1
@@ -67,6 +73,6 @@ jobs:
       with:
         #upload_url: ${{ github.event.release.upload_url }}
         upload_url: ${{ steps.get_release.outputs.upload_url }}
-        asset_path: ${{github.workspace}}/build/*.mexa64
-        asset_name: ${{ github.event.release.tag_name }}-matlab-linux-x86_64
+        asset_path: ${{github.workspace}}/${{ github.event.release.tag_name }}-matlab-linux-x86_64.zip
+        asset_name: ${{ github.event.release.tag_name }}-matlab-linux-x86_64.zip
         asset_content_type: binary/octet-stream

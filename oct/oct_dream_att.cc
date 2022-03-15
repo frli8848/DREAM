@@ -24,7 +24,7 @@
 #include <cmath>
 
 #include "attenuation.h"
-#include "dream_error.h"
+#include "arg_parser.h"
 
 //
 // Octave headers.
@@ -95,27 +95,26 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
 
   int nrhs = args.length ();
 
+  ArgParser ap;
+
   // Check for proper number of arguments
 
-  if (nrhs != 4) {
-    error("dream_att requires 4 input arguments!");
+  if (!ap.check_arg_in("dream_att", nrhs, 4, 4)) {
     return oct_retval;
-  } else {
-    if (nlhs > 1) {
-      error("dream_att requires one output argument!");
-      return oct_retval;
-    }
+  }
+
+  if (!ap.check_arg_out("dream_att", nlhs, 0, 1)) {
+    return oct_retval;
   }
 
   //
   // Observation point.
   //
 
-  // Check that arg (number of observation points) x 3 matrix
-  if ( mxGetN(0) != 3) {
-    dream_err_msg("Argument 1 must be a (number of observation points) x 3 matrix!");
+  if (!ap.check_obs_points("dream_att", args, 0)) {
     return oct_retval;
   }
+
   no = mxGetM(0); // Number of observation points.
   const Matrix tmp0 = args(0).matrix_value();
   ro = (double*) tmp0.fortran_vec();
@@ -123,7 +122,6 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
   //
   // Temporal and spatial sampling parameters.
   //
-
 
   if (!((mxGetM(1)==2 && mxGetN(1)==1) || (mxGetM(1)==1 && mxGetN(1)==2))) {
     error("Argument 2 must be a vector of length 2!");
@@ -138,11 +136,10 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
   // Start point of impulse response vector ([us]).
   //
 
-  // Check that arg 3 is a scalar (or vector).
-  if ( (mxGetM(2) * mxGetN(2) !=1) && ((mxGetM(2) * mxGetN(2)) != no)) {
-    error("Argument 3 must be a scalar or a vector with a length equal to the number of observation points!");
+  if (!ap.check_delay("dream_att", args, 2, no)) {
     return oct_retval;
   }
+
   const Matrix tmp2 = args(2).matrix_value();
   delay = (double*) tmp2.fortran_vec();
 
@@ -151,7 +148,7 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
   //
 
   // Check that arg 4 is a 2 element vector.
- if (!((mxGetM(3)==2 && mxGetN(3)==1) || (mxGetM(3)==1 && mxGetN(3)==2))) {
+  if (!((mxGetM(3)==2 && mxGetN(3)==1) || (mxGetM(3)==1 && mxGetN(3)==2))) {
     error("Argument 4 must be a vector of length 2!");
     return oct_retval;
   }

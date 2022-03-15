@@ -68,7 +68,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Start point of impulse response vector ([us]).
   //
 
-  ap.check_delay("dream_att", prhs, 3, no);
+  ap.check_delay("dream_att", prhs, 2, no);
   double *delay = mxGetPr(prhs[2]);
 
   //

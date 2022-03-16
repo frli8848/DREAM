@@ -76,10 +76,10 @@ jobs:
     - name: Setup MATLAB
       uses: matlab-actions/setup-matlab@v1
 
+      #sudo "/Applications/CMake.app/Contents/bin/cmake-gui" --install
+
     - name: Configure CMake
-      run: |
-        sudo "/Applications/CMake.app/Contents/bin/cmake-gui" --install
-        cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DBUILD_MEX=on -DBUILD_OCT=off
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DBUILD_MEX=on -DBUILD_OCT=off
 
     - name: Build
       # Build your program with the given configuration

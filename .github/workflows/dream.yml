@@ -65,3 +65,22 @@ jobs:
     - name: Build
       # Build your program with the given configuration
       run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+
+  macos-matlab:
+
+    runs-on: macos-11
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Setup MATLAB
+      uses: matlab-actions/setup-matlab@v1
+
+    - name: Configure CMake
+      run: |
+        sudo "/Applications/CMake.app/Contents/bin/cmake-gui" --install
+        cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DBUILD_MEX=on -DBUILD_OCT=off
+
+    - name: Build
+      # Build your program with the given configuration
+      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}

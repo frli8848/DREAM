@@ -2,11 +2,14 @@
 # FFTW_LIBRARIES = libfftw3.a
 # FFTW_FOUND = true if FFTW3 is found
 
-
 if (WIN32)
   set(CMAKE_PREFIX_PATH "C:/FFTW64")
   #set(CMAKE_PREFIX_PATH "C:/FFTW")
 endif(WIN32)
+
+if (MACOSX)
+  set(CMAKE_PREFIX_PATH "/opt/miniconda3")
+endif(MACOSX)
 
 find_path (FFTW_INCLUDE_DIR fftw3.h PATHS include)
 if (NOT FFTW_INCLUDE_DIR)

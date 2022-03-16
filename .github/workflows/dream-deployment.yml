@@ -70,6 +70,12 @@ jobs:
     - name: Setup MATLAB
       uses: matlab-actions/setup-matlab@v1
 
+    - name: Get release
+      id: get_release
+      uses: bruceadams/get-release@v1.2.3
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+
     - name: Configure CMake
       run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_CXX_FLAGS="-O3" -DBUILD_MEX=on -DBUILD_OCT=off
 

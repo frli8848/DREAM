@@ -23,7 +23,8 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - run: |
+    - name: Install deps
+      run: |
         sudo apt -yq update
         sudo add-apt-repository ppa:devacom/science
         sudo apt install -yq --no-install-recommends octave
@@ -51,7 +52,8 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - run: |
+    - name: Install deps
+      run: |
         sudo apt -yq update
         sudo apt install -yq --no-install-recommends libfftw3-dev
 
@@ -72,6 +74,10 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+
+    - name: Install deps
+      run: |
+        sudo conda install -c conda-forge fftw
 
     - name: Setup MATLAB
       uses: matlab-actions/setup-matlab@v1

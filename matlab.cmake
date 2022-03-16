@@ -4,8 +4,11 @@
 
 find_package (Matlab)
 message (STATUS "Matlab_MEX_EXTENSION = ${Matlab_MEX_EXTENSION}")
-#message (STATUS "MATLAB_INCLUDE_DIR = ${MATLAB_INCLUDE_DIR}")
-#message (STATUS "MATLAB_LIBARARIES = ${MATLAB_LIBRARIES}")
+
+# Build without FFTW support on macOS for now.
+if (MACOSX)
+  unset (FFTW_FOUND)
+endif (MACOSX)
 
 if (Matlab_FOUND)
 
@@ -49,7 +52,7 @@ if (Matlab_FOUND)
     )
 
   target_link_libraries (mex_dreamline
-    ${MATLAB_LIBRARIES}
+    ${Matlab_LIBRARIES}
     ${FFTW_LIBRARIES}
     )
 
@@ -78,7 +81,7 @@ if (Matlab_FOUND)
     )
 
   target_link_libraries (mex_dreamrect
-    ${MATLAB_LIBRARIES}
+    ${Matlab_LIBRARIES}
     ${FFTW_LIBRARIES}
     )
 
@@ -106,7 +109,7 @@ if (Matlab_FOUND)
     )
 
   target_link_libraries (mex_dreamrect_f
-    ${MATLAB_LIBRARIES}
+    ${Matlab_LIBRARIES}
     ${FFTW_LIBRARIES}
     )
 
@@ -135,7 +138,7 @@ if (Matlab_FOUND)
     )
 
   target_link_libraries (mex_dreamcirc
-    ${MATLAB_LIBRARIES}
+    ${Matlab_LIBRARIES}
     ${FFTW_LIBRARIES}
     )
 
@@ -164,7 +167,7 @@ if (Matlab_FOUND)
     )
 
   target_link_libraries (mex_dreamcirc_f
-    ${MATLAB_LIBRARIES}
+    ${Matlab_LIBRARIES}
     ${FFTW_LIBRARIES}
     )
 
@@ -193,7 +196,7 @@ if (Matlab_FOUND)
     )
 
   target_link_libraries (mex_dreamsphere
-    ${MATLAB_LIBRARIES}
+    ${Matlab_LIBRARIES}
     ${FFTW_LIBRARIES}
     )
 
@@ -222,7 +225,7 @@ if (Matlab_FOUND)
     )
 
   target_link_libraries (mex_dreamcylind
-    ${MATLAB_LIBRARIES}
+    ${Matlab_LIBRARIES}
     ${FFTW_LIBRARIES}
     )
 
@@ -253,7 +256,7 @@ if (Matlab_FOUND)
     )
 
   target_link_libraries (mex_dream_arr_rect
-    ${MATLAB_LIBRARIES}
+    ${Matlab_LIBRARIES}
     ${FFTW_LIBRARIES}
     )
 
@@ -283,7 +286,7 @@ if (Matlab_FOUND)
     )
 
   target_link_libraries (mex_dream_arr_circ
-    ${MATLAB_LIBRARIES}
+    ${Matlab_LIBRARIES}
     ${FFTW_LIBRARIES}
     )
 
@@ -314,7 +317,7 @@ if (Matlab_FOUND)
     )
 
   target_link_libraries (mex_dream_arr_cylind
-    ${MATLAB_LIBRARIES}
+    ${Matlab_LIBRARIES}
     ${FFTW_LIBRARIES}
     )
 
@@ -345,7 +348,7 @@ if (Matlab_FOUND)
     )
 
   target_link_libraries (mex_dream_arr_annu
-    ${MATLAB_LIBRARIES}
+    ${Matlab_LIBRARIES}
     ${FFTW_LIBRARIES}
     )
 
@@ -378,7 +381,7 @@ if (Matlab_FOUND)
     )
 
   target_link_libraries (mex_dream_apodwin
-    ${MATLAB_LIBRARIES}
+    ${Matlab_LIBRARIES}
     ${FFTW_LIBRARIES}
     )
 
@@ -406,7 +409,7 @@ if (Matlab_FOUND)
     )
 
   target_link_libraries (mex_dream_att
-    ${MATLAB_LIBRARIES}
+    ${Matlab_LIBRARIES}
     ${FFTW_LIBRARIES}
     )
 
@@ -436,7 +439,7 @@ if (Matlab_FOUND)
     )
 
   target_link_libraries (mex_circ_sir
-    ${MATLAB_LIBRARIES}
+    ${Matlab_LIBRARIES}
     )
 
   set_target_properties (mex_circ_sir PROPERTIES
@@ -460,7 +463,7 @@ if (Matlab_FOUND)
     )
 
   target_link_libraries (mex_scirc_sir
-    ${MATLAB_LIBRARIES}
+    ${Matlab_LIBRARIES}
     )
 
   set_target_properties (mex_scirc_sir PROPERTIES
@@ -485,7 +488,7 @@ if (Matlab_FOUND)
     )
 
   target_link_libraries (mex_rect_sir
-    ${MATLAB_LIBRARIES}
+    ${Matlab_LIBRARIES}
     )
 
   set_target_properties (mex_rect_sir PROPERTIES
@@ -513,7 +516,7 @@ if (Matlab_FOUND)
     )
 
   target_link_libraries (mex_das
-    ${MATLAB_LIBRARIES}
+    ${Matlab_LIBRARIES}
     ${FFTW_LIBRARIES}
     )
 
@@ -525,7 +528,7 @@ if (Matlab_FOUND)
     LINK_FLAGS ${MEX_LD_FLAGS}
     SUFFIX ".${Matlab_MEX_EXTENSION}" PREFIX "" OUTPUT_NAME "das")
 
-  # das_err
+  # das_arr
 
   set (mex_das_arr_SOURCE_FILES
     extra_src/mex_das_arr.cc
@@ -539,7 +542,7 @@ if (Matlab_FOUND)
     )
 
   target_link_libraries (mex_das_arr
-    ${MATLAB_LIBRARIES}
+    ${Matlab_LIBRARIES}
     ${FFTW_LIBRARIES}
     )
 
@@ -557,6 +560,7 @@ if (Matlab_FOUND)
 
   set (mex_saft_SOURCE_FILES
     extra_src/mex_saft.cc
+    src/affinity.cc
     src/dream_error.cc
     )
 
@@ -565,7 +569,7 @@ if (Matlab_FOUND)
     )
 
   target_link_libraries (mex_saft
-    ${MATLAB_LIBRARIES}
+    ${Matlab_LIBRARIES}
     )
 
   set_target_properties (mex_saft PROPERTIES
@@ -594,7 +598,7 @@ if (Matlab_FOUND)
     )
 
   target_link_libraries (mex_conv_p
-    ${MATLAB_LIBRARIES}
+    ${Matlab_LIBRARIES}
     )
 
   set_target_properties (mex_conv_p PROPERTIES
@@ -618,7 +622,7 @@ if (Matlab_FOUND)
     )
 
   target_link_libraries (mex_fftconv_p
-    ${MATLAB_LIBRARIES}
+    ${Matlab_LIBRARIES}
     ${FFTW_LIBRARIES}
     )
 
@@ -643,7 +647,7 @@ if (Matlab_FOUND)
     )
 
   target_link_libraries (mex_sum_fftconv
-    ${MATLAB_LIBRARIES}
+    ${Matlab_LIBRARIES}
     ${FFTW_LIBRARIES}
     )
 
@@ -671,6 +675,7 @@ if (Matlab_FOUND)
 
   set (mex_copy_p_SOURCE_FILES
     extra_src/mex_copy_p.cc
+    src/affinity.cc
     src/dream_error.cc
     )
 
@@ -679,7 +684,7 @@ if (Matlab_FOUND)
     )
 
   target_link_libraries (mex_copy_p
-    ${MATLAB_LIBRARIES}
+    ${Matlab_LIBRARIES}
     )
 
   set_target_properties (mex_copy_p PROPERTIES

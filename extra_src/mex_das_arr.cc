@@ -84,10 +84,10 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   double *steer_par;
   char   apod_str[50],foc_str[50],steer_str[50];
   int    buflen;
-  double xo,yo,zo,dt;
-  size_t nt,no,n;
+  double xo, yo, zo, dt;
+  dream_idx_type nt, no, n;
   double param=0,*delay,cp;
-  int    isize=0;
+  int    num_elements=0;
   double *gx, *gy, *gz;
   FocusMet foc_met=FocusMet::none;
   double *focal=nullptr;
@@ -126,13 +126,13 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Grid function (position vectors of the elements).
   //
 
-  isize = (int) mxGetM(prhs[1]); // Number of elementents in the array.
+  num_elements = (int) mxGetM(prhs[1]); // Number of elementents in the array.
   if (mxGetN(prhs[1]) !=3 )
     dream_err_msg("Argument 2 must a (number of array elements) x 3 matrix!");
 
   gx    = mxGetPr(prhs[1]);	// First column in the matrix.
-  gy    = gx + isize;		// Second column in the matrix.
-  gz    = gy + isize;		// Third column in the matrix.
+  gy    = gx + num_elements;    // Second column in the matrix.
+  gz    = gy + num_elements;    // Third column in the matrix.
 
   //
   // Temporal and spatial sampling parameters.
@@ -144,7 +144,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
   s_par = mxGetPr(prhs[2]);
   dt    = s_par[0];		// Temporal discretization size (= 1/sampling freq).
-  nt    = (size_t) s_par[1];	// Length of SIR.
+  nt    = (dream_idx_type) s_par[1];	// Length of SIR.
 
   //
   // Start point of impulse response vector ([us]).
@@ -220,7 +220,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       foc_met = FocusMet::ud;
       is_set = true;
 
-      if (mxGetM(prhs[6]) * mxGetN(prhs[6]) != isize ) {
+      if (mxGetM(prhs[6]) * mxGetN(prhs[6]) != num_elements ) {
         dream_err_msg("The time delay vector (argument 7) for user defined ('ud') focusing\n delays must have the same length as the number of array elements.!");
       }
       focal = mxGetPr(prhs[6]);
@@ -321,7 +321,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       is_set = true;
 
       // Vector of apodization weights.
-      if (mxGetM(prhs[10]) * mxGetN(prhs[10]) != isize)
+      if (mxGetM(prhs[10]) * mxGetN(prhs[10]) != num_elements)
         dream_err_msg("The length of argument 11 (apodization vector) must be the same as the number of array elements!");
 
       apod = mxGetPr(prhs[10]);
@@ -449,12 +449,12 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
                   dt, nt,
                   dlay,
                   cp,
-                  isize,
+                  num_elements,
                   gx, gy, gz,
                   foc_met, focal,
                   steer_met, theta, phi,
                   apod, do_apod, apod_met, param,
-                  &h[n*nt],err_level);
+                  &h[n*nt], err_level);
 
     if (err != ErrorLevel::none) {
       out_err = err;

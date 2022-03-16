@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2003,2004,2006,2008,2009,2012,2016,2021 Fredrik Lingvall
+* Copyright (C) 2003,2004,2006,2008,2009,2012,2016,2021,2022 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -28,7 +28,6 @@
 #endif
 
 #ifdef DREAM_MATLAB
-#include <uchar.h>
 #include "mex.h"
 #endif
 

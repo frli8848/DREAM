@@ -14,13 +14,19 @@ set (DREAM_VERSION_MAJOR 3)
 set (DREAM_VERSION_MINOR 0)
 set (DREAM_VERSION_PATCH 0)
 
+message (STATUS "CMake system name: ${CMAKE_SYSTEM_NAME}")
+
 option(BUILD_MEX "Enable building of the mex-files." OFF)
 option(BUILD_OCT "Enable building of the oct-files." ON)
 option(BUILD_PYTHON "Enable building of the Python binings." OFF) # Work in progess
 option(BUILD_USERMAN "Enable building of the user manual." OFF)
 option(USE_OPENCL "Enable OpenCL support." OFF) # Experimental
 
-if (UNIX AND NOT DARWIN)
+if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+  set(MACOSX TRUE)
+endif()
+
+if (UNIX AND NOT MACOSX)
 
   # Detect which Linux distro were running on
   if(EXISTS /etc/gentoo-release)
@@ -44,7 +50,7 @@ if (UNIX AND NOT DARWIN)
   message(STATUS "****************************")
   message(STATUS " ")
 
-endif (UNIX AND NOT DARWIN)
+endif (UNIX AND NOT MACOSX)
 
 if (USE_OPENCL)
 

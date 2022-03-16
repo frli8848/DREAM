@@ -223,7 +223,7 @@ class FFT
 #else
     double *yr= mxGetPr(Y), *yi= mxGetPr(Y);
     std::complex<double>* yc_p = yc.get();
-    for (dream_idx_typyn=0; n<fft_len; n++) {
+    for (dream_idx_type n=0; n<fft_len; n++) {
       yc_p[n] = std::complex<double>(yr[n], yi[n]);
     }
 #endif
@@ -264,7 +264,7 @@ class FFT
 #else
     double *xr= mxGetPr(X), *xi= mxGetPr(X);
     std::complex<double>* xc_p = xc.get();
-    for (dream_idx_typyn=0; n<fft_len; n++) {
+    for (dream_idx_type n=0; n<fft_len; n++) {
       xr[n] = real(xc_p[n]);
       xi[n] = imag(xc_p[n]);
     }

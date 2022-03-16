@@ -18,7 +18,7 @@ message (STATUS "CMake system name: ${CMAKE_SYSTEM_NAME}")
 
 option(BUILD_MEX "Enable building of the mex-files." OFF)
 option(BUILD_OCT "Enable building of the oct-files." ON)
-option(BUILD_PYTHON "Enable building of the Python binings." OFF) # Work in progess
+option(BUILD_PYTHON "Enable building of the Python bindings." OFF) # Work in progess
 option(BUILD_USERMAN "Enable building of the user manual." OFF)
 option(USE_OPENCL "Enable OpenCL support." OFF) # Experimental
 

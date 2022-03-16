@@ -530,29 +530,34 @@ if (Matlab_FOUND)
 
   # das_arr
 
-  set (mex_das_arr_SOURCE_FILES
-    extra_src/mex_das_arr.cc
-    extra_src/das_arr.cc
-    src/arr_functions.cc
-    src/dream_error.cc
-    )
+  # This one fails on macOS
+  if(NOT MACOSX)
 
-  add_library (mex_das_arr MODULE
-    ${mex_das_arr_SOURCE_FILES}
-    )
+    set (mex_das_arr_SOURCE_FILES
+      extra_src/mex_das_arr.cc
+      extra_src/das_arr.cc
+      src/arr_functions.cc
+      src/dream_error.cc
+      )
 
-  target_link_libraries (mex_das_arr
-    ${Matlab_LIBRARIES}
-    ${FFTW_LIBRARIES}
-    )
+    add_library (mex_das_arr MODULE
+      ${mex_das_arr_SOURCE_FILES}
+      )
 
-  set_target_properties (mex_das_arr PROPERTIES
-    CXX_STANDARD 14
-    COMPILE_FLAGS "${DREAM_MEX_FLAGS}"
-    INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
+    target_link_libraries (mex_das_arr
+      ${Matlab_LIBRARIES}
+      ${FFTW_LIBRARIES}
+      )
 
-    LINK_FLAGS ${MEX_LD_FLAGS}
-    SUFFIX ".${Matlab_MEX_EXTENSION}" PREFIX "" OUTPUT_NAME "das_arr")
+    set_target_properties (mex_das_arr PROPERTIES
+      CXX_STANDARD 14
+      COMPILE_FLAGS "${DREAM_MEX_FLAGS}"
+      INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
+
+      LINK_FLAGS ${MEX_LD_FLAGS}
+      SUFFIX ".${Matlab_MEX_EXTENSION}" PREFIX "" OUTPUT_NAME "das_arr")
+
+  endif(NOT MACOSX)
 
   #
   # SAFT

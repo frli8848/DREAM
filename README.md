@@ -1,7 +1,7 @@
 # Introduction
 
 The DREAM (Discrete REpresentation Array Modeling) toolbox is a free open source toolbox,
-for both Matlab and Octave ,for simulating acoustic fields radiated from common ultrasonic
+for both Matlab and Octave, for simulating acoustic fields radiated from common ultrasonic
 transducer types and arbitrarily complicated ultrasonic transducers arrays. The DREAM toolbox
 enables analysis of beam-steering, beam-focusing, and apodization for wideband (pulse) excitation
 both in near and far fields.
@@ -10,7 +10,10 @@ The DREAM toolbox can be used to, for example, simulate and evaluate array desig
 methods etc. An example is shown in Figure 1 below where the wavefield of an (undersampled)
 32 element linear array has been simulated.
 
-![Simulated wave field snapshot](./front.png)
+<p align="center">
+<img src="front.png">
+</p>
+
 _Figure 1. Simulated wavefield snapshot for a 32 element linear array._
 
 The toolbox consists of a set of routines for computing (discrete) spatial impulse responses (SIRs)
@@ -32,15 +35,15 @@ concept [1,2] which is a method based on the general approach of the spatial imp
 
 ## References
 
-[1] B.Piwakowski and B. Delannoy. "Method for Computing Spatial Pulse Response: Time-domain Approach", Journal of the Acoustical
+<a id="1">[1]</a> B.Piwakowski and B. Delannoy. "Method for Computing Spatial Pulse Response: Time-domain Approach", Journal of the Acoustical
 Society of America, vol. 86, no. 6, pp. 2422--32, Dec. 1989.
 
-[2] B. Piwakowski and K. Sbai. "A New Approach to Calculate the Field Radiated from Arbitrarily Structured Transducer Arrays",
+<a id="2">[2]</a> B. Piwakowski and K. Sbai. "A New Approach to Calculate the Field Radiated from Arbitrarily Structured Transducer Arrays",
 IEEE Transactions on Ultrasonics, Ferroelectrics and Frequency Control, vol. 46, no. 2, pp. 422--40, March 1999.
 
-[3] G. E. Tupholme, "Generation of acoustic pulses by baffled plane pistons", Mathematika, vol 16, pp. 209--224, 1969.
+<a id="3">[3]</a> G. E. Tupholme, "Generation of acoustic pulses by baffled plane pistons", Mathematika, vol 16, pp. 209--224, 1969.
 
-[4] P.R. Stepanishen. "Transient radiation from pistons in an infinite planar baffle", Journal of the Acoustical Society of America,
+<a id="4>[4]</a> P.R. Stepanishen. "Transient radiation from pistons in an infinite planar baffle", Journal of the Acoustical Society of America,
 vol 49, pp. 1629--38, 1971.
 
 # Installation
@@ -83,10 +86,10 @@ There is also (experimental) binaries of the Matlab mex-files for Linux and macO
 After building the mex-files and/or oct-files add the build folder to the Matlab/Octave path. That is, for Octave
 add
 ```
-addpath('/<YOUR-HOME-DIR>/<PATH-TO-DREAM-SOIRCES>/DREAM/build')
+addpath('/<YOUR-HOME-DIR>/<PATH-TO-DREAM-SOURCES>/DREAM/build')
 ```
 to the `~/.octaverc` file, and for Matlab add
 ```
-addpath('/<YOUR-HOME-DIR>/<PATH-TO-DREAM-SOIRCES>/DREAM/build')
+addpath('/<YOUR-HOME-DIR>/<PATH-TO-DREAM-SOURCES>/DREAM/build')
 ```
 to the `~/Documents/MATLAB/startup.m` file.

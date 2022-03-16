@@ -309,8 +309,9 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   //
 
   // Check that arg 6 is a (number of observation points) x 3 matrix.
-  if (!mxGetN(prhs[5])==3)
+  if (!(mxGetN(prhs[5])==3)) {
     dream_err_msg("Argument 6 must be a (number of observation points) x 3 matrix!");
+  }
 
   no = mxGetM(prhs[5]); // Number of observation points.
   ro = mxGetPr(prhs[5]);

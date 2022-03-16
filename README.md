@@ -24,7 +24,7 @@ ultrasonic measurement systems for many configurations including phased arrays a
 in lossy media.
 
 The DREAM toolbox uses a numerical procedure based on based on the discrete representation (DR) computational
-concept [1,2] which is a method based on the general approach of the spatial impulse responses [3,4].
+concept [[[1]](#1),[[2]](#2)] which is a method based on the general approach of the spatial impulse responses [[[3]](#3),[[4]](#4)].
 
 ## Features
 
@@ -43,7 +43,7 @@ IEEE Transactions on Ultrasonics, Ferroelectrics and Frequency Control, vol. 46,
 
 <a id="3">[3]</a> G. E. Tupholme, "Generation of acoustic pulses by baffled plane pistons", Mathematika, vol 16, pp. 209--224, 1969.
 
-<a id="4>[4]</a> P.R. Stepanishen. "Transient radiation from pistons in an infinite planar baffle", Journal of the Acoustical Society of America,
+<a id="4">[4]</a> P.R. Stepanishen. "Transient radiation from pistons in an infinite planar baffle", Journal of the Acoustical Society of America,
 vol 49, pp. 1629--38, 1971.
 
 # Installation
@@ -83,7 +83,17 @@ if you have both Matlab and Octave installed.
 
 There is also (experimental) binaries of the Matlab mex-files for Linux and macOS here: https://github.com/frli8848/DREAM/releases
 
-After building the mex-files and/or oct-files add the build folder to the Matlab/Octave path. That is, for Octave
+Note: For macOS the GitHub CI/CD build puts `conda` packages in `/usr/local/miniconda` where as the Miniconda installer available here:
+
+https://conda.io/projects/conda/en/latest/user-guide/install/macos.html
+
+puts the `conda` packages in `/opt/miniconda3` and one will get a "Library not loaded" error if one uses the GitHub builds on a standard
+Miniconda install. One can fix this with a simple symlink:
+```
+ $ sudo ln -s /opt/miniconda3 /usr/local/miniconda
+```
+
+After building/installing the mex-files and/or oct-files add the build folder to the Matlab/Octave path. That is, for Octave
 add
 ```
 addpath('/<YOUR-HOME-DIR>/<PATH-TO-DREAM-SOURCES>/DREAM/build')

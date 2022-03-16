@@ -9,6 +9,7 @@ endif(WIN32)
 
 if (MACOSX)
   set(CMAKE_PREFIX_PATH "/opt/miniconda3")
+  set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH};/usr/local/miniconda")
 endif(MACOSX)
 
 find_path (FFTW_INCLUDE_DIR fftw3.h PATHS include)

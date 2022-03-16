@@ -641,28 +641,33 @@ if (Matlab_FOUND)
 
   # sum_fftconv
 
-  set (mex_sum_fftconv_SOURCE_FILES
-    extra_src/mex_sum_fftconv.cc
-    src/affinity.cc
-    src/dream_error.cc
-    )
+  # This one fails on macOS
+  if(NOT MACOSX)
 
-  add_library (mex_sum_fftconv MODULE
-    ${mex_sum_fftconv_SOURCE_FILES}
-    )
+    set (mex_sum_fftconv_SOURCE_FILES
+      extra_src/mex_sum_fftconv.cc
+      src/affinity.cc
+      src/dream_error.cc
+      )
 
-  target_link_libraries (mex_sum_fftconv
-    ${Matlab_LIBRARIES}
-    ${FFTW_LIBRARIES}
-    )
+    add_library (mex_sum_fftconv MODULE
+      ${mex_sum_fftconv_SOURCE_FILES}
+      )
 
-  set_target_properties (mex_sum_fftconv PROPERTIES
-    CXX_STANDARD 14
-    COMPILE_FLAGS "${DREAM_MEX_FLAGS}"
-    INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
+    target_link_libraries (mex_sum_fftconv
+      ${Matlab_LIBRARIES}
+      ${FFTW_LIBRARIES}
+      )
 
-    LINK_FLAGS ${MEX_LD_FLAGS}
-    SUFFIX ".${Matlab_MEX_EXTENSION}" PREFIX "" OUTPUT_NAME "sum_fftconv")
+    set_target_properties (mex_sum_fftconv PROPERTIES
+      CXX_STANDARD 14
+      COMPILE_FLAGS "${DREAM_MEX_FLAGS}"
+      INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
+
+      LINK_FLAGS ${MEX_LD_FLAGS}
+      SUFFIX ".${Matlab_MEX_EXTENSION}" PREFIX "" OUTPUT_NAME "sum_fftconv")
+
+  endif(NOT MACOSX)
 
   # fftconv_ola
 

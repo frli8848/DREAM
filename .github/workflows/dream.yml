@@ -30,12 +30,12 @@ jobs:
         sudo apt install -yq --no-install-recommends octave
         sudo apt install -yq --no-install-recommends liboctave-dev
 
-    - name: Configure CMake
+    - name: CMake Configure
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DBUILD_OCT=on
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DBUILD_MEX=off -DBUILD_OCT=on
 
-    - name: Build
+    - name: CMake Build
       # Build your program with the given configuration
       run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
 
@@ -61,11 +61,28 @@ jobs:
     - name: Setup MATLAB
       uses: matlab-actions/setup-matlab@v1
 
-    - name: Configure CMake
+    - name: CMake Configure
       run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DBUILD_MEX=on -DBUILD_OCT=off
 
     - name: Build
       # Build your program with the given configuration
+      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+
+  macos-octave:
+
+    runs-on: macos-11
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install deps
+      run: |
+        sudo conda install -c conda-forge octave
+
+    - name: CMake Configure
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DBUILD_MEX=off -DBUILD_OCT=on
+
+    - name: CMake Build
       run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
 
   macos-matlab:
@@ -82,7 +99,7 @@ jobs:
     - name: Setup MATLAB
       uses: matlab-actions/setup-matlab@v1
 
-    - name: Configure CMake
+    - name: CMake Configure
       run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DBUILD_MEX=on -DBUILD_OCT=off
 
     - name: CMake Build

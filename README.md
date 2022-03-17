@@ -79,7 +79,7 @@ DREAM $ mkdir build && cd build
 DREAM/build $ cmake -DCMAKE_C_FLAGS="-O3 -march=native"  -DCMAKE_CXX_FLAGS="-O3 -march=native" -DBUILD_OCT=on -DBUILD_MEX=on ..
 DREAM/build $ make -j8
 ```
-if you have both Matlab and Octave installed.
+if you have both Matlab (`-DBUILD_MEX=on`) and Octave (`-DBUILD_OCT=on`) installed.
 
 There is also (experimental) binaries of the Matlab mex-files for Linux and macOS here: https://github.com/frli8848/DREAM/releases
 
@@ -98,8 +98,4 @@ add
 ```
 addpath('/<YOUR-HOME-DIR>/<PATH-TO-DREAM-SOURCES>/DREAM/build')
 ```
-to the `~/.octaverc` file, and for Matlab add
-```
-addpath('/<YOUR-HOME-DIR>/<PATH-TO-DREAM-SOURCES>/DREAM/build')
-```
-to the `~/Documents/MATLAB/startup.m` file.
+to the `~/.octaverc` file, and for Matlab add it to the `~/Documents/MATLAB/startup.m` file.

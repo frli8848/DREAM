@@ -526,27 +526,32 @@ if (OCTAVE_FOUND)
 
   # das_err
 
-  set (oct_das_arr_SOURCE_FILES
-    extra_src/oct_das_arr.cc
-    extra_src/das_arr.cc
-    src/arr_functions.cc
-    src/dream_error.cc
-    )
+  # This one fails on macOS
+  if(NOT MACOSX)
 
-  add_library (oct_das_arr MODULE
-    ${oct_das_arr_SOURCE_FILES}
-    )
+    set (oct_das_arr_SOURCE_FILES
+      extra_src/oct_das_arr.cc
+      extra_src/das_arr.cc
+      src/arr_functions.cc
+      src/dream_error.cc
+      )
 
-  target_link_libraries (oct_das_arr
-    ${OCTAVE_LIBRARIES}
-    )
+    add_library (oct_das_arr MODULE
+      ${oct_das_arr_SOURCE_FILES}
+      )
 
-  set_target_properties (oct_das_arr PROPERTIES
-    CXX_STANDARD 14
-    COMPILE_FLAGS "${DREAM_OCT_FLAGS}"
-    INCLUDE_DIRECTORIES "${DREAM_OCT_INCLUDE_DIRS}"
-    LINK_FLAGS ${OCT_LD_FLAGS}
-    SUFFIX ".oct" PREFIX "" OUTPUT_NAME "das_arr")
+    target_link_libraries (oct_das_arr
+      ${OCTAVE_LIBRARIES}
+      )
+
+    set_target_properties (oct_das_arr PROPERTIES
+      CXX_STANDARD 14
+      COMPILE_FLAGS "${DREAM_OCT_FLAGS}"
+      INCLUDE_DIRECTORIES "${DREAM_OCT_INCLUDE_DIRS}"
+      LINK_FLAGS ${OCT_LD_FLAGS}
+      SUFFIX ".oct" PREFIX "" OUTPUT_NAME "das_arr")
+
+  endif(NOT MACOSX)
 
   #
   # SAFT
@@ -630,28 +635,33 @@ if (OCTAVE_FOUND)
 
   # sum_fftconv
 
-  set (oct_sum_fftconv_SOURCE_FILES
-    extra_src/oct_sum_fftconv.cc
-    extra_src/fftconv.cc
-    src/affinity.cc
-    src/dream_error.cc
-    )
+  # This one fails on macOS
+  if(NOT MACOSX)
 
-  add_library (oct_sum_fftconv MODULE
-    ${oct_sum_fftconv_SOURCE_FILES}
-    )
+    set (oct_sum_fftconv_SOURCE_FILES
+      extra_src/oct_sum_fftconv.cc
+      extra_src/fftconv.cc
+      src/affinity.cc
+      src/dream_error.cc
+      )
 
-  target_link_libraries (oct_sum_fftconv
-    ${OCTAVE_LIBRARIES}
-    ${FFTW_LIBRARIES}
-    )
+    add_library (oct_sum_fftconv MODULE
+      ${oct_sum_fftconv_SOURCE_FILES}
+      )
 
-  set_target_properties (oct_sum_fftconv PROPERTIES
-    CXX_STANDARD 14
-    COMPILE_FLAGS "${DREAM_OCT_FLAGS}"
-    INCLUDE_DIRECTORIES "${DREAM_OCT_INCLUDE_DIRS}"
-    LINK_FLAGS ${OCT_LD_FLAGS}
-    SUFFIX ".oct" PREFIX "" OUTPUT_NAME "sum_fftconv")
+    target_link_libraries (oct_sum_fftconv
+      ${OCTAVE_LIBRARIES}
+      ${FFTW_LIBRARIES}
+      )
+
+    set_target_properties (oct_sum_fftconv PROPERTIES
+      CXX_STANDARD 14
+      COMPILE_FLAGS "${DREAM_OCT_FLAGS}"
+      INCLUDE_DIRECTORIES "${DREAM_OCT_INCLUDE_DIRS}"
+      LINK_FLAGS ${OCT_LD_FLAGS}
+      SUFFIX ".oct" PREFIX "" OUTPUT_NAME "sum_fftconv")
+
+  endif(NOT MACOSX)
 
   # fftconv_ola
 

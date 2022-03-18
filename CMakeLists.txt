@@ -9,10 +9,22 @@ cmake_minimum_required(VERSION 3.10)
 # Add path to the various cmake files to detect Matlab, Octave, FTTW, etc.
 set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 
+include(GetGitRevision)
+git_version("DREAM")
+
+message(STATUS "DREAM_VERSION_MAJOR: ${DREAM_VERSION_MAJOR}")
+message(STATUS "DREAM_VERSION_MINOR: ${DREAM_VERSION_MINOR}")
+message(STATUS "DREAM_VERSION_PATCH: ${DREAM_VERSION_PATCH}")
+message(STATUS "DREAM_VERSION_COMMIT: ${DREAM_VERSION_COMMIT}")
+message(STATUS "DREAM_VERSION_SHORT: ${DREAM_VERSION_SHORT}")
+message(STATUS "DREAM_VERSION_LONG: ${DREAM_VERSION_LONG}")
+message(STATUS "DREAM_VERSION_SHA1: ${DREAM_VERSION_SHA1}")
+message(STATUS "DREAM_VERSION: ${DREAM_VERSION}")
+
 # Version number.
-set (DREAM_VERSION_MAJOR 3)
-set (DREAM_VERSION_MINOR 0)
-set (DREAM_VERSION_PATCH 0)
+#set (DREAM_VERSION_MAJOR 3)
+#set (DREAM_VERSION_MINOR 0)
+#set (DREAM_VERSION_PATCH 0)
 
 message (STATUS "CMake system name: ${CMAKE_SYSTEM_NAME}")
 
@@ -112,8 +124,12 @@ if (BUILD_USERMAN)
     OUTPUT_VARIABLE SVNVER
     OUTPUT_STRIP_TRAILING_WHITESPACE
     )
-  file(WRITE  "${CMAKE_CURRENT_BINARY_DIR}/version.tex" "\\newcommand{\\version}{${DREAM_VERSION_MAJOR}.${DREAM_VERSION_MINOR}.${DREAM_VERSION_PATCH}\\xspace}\r")
-  file(WRITE  "${CMAKE_CURRENT_BINARY_DIR}/revision.tex" "\\rhead{\\date Revision ${SVNVER} }\r")
+
+  file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/version.tex" "\\newcommand{\\version}{${DREAM_VERSION_SHA1}\\xspace}\r")
+  file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/revision.tex" "\\rhead{\\date ${DREAM_VERSION_SHA1} }\r")
+
+  #file(WRITE  "${CMAKE_CURRENT_BINARY_DIR}/version.tex" "\\newcommand{\\version}{${DREAM_VERSION_MAJOR}.${DREAM_VERSION_MINOR}.${DREAM_VERSION_PATCH}\\xspace}\r")
+  #file(WRITE  "${CMAKE_CURRENT_BINARY_DIR}/revision.tex" "\\rhead{\\date Revision ${SVNVER} }\r")
 
   include (userman/UseLATEX.cmake)
 

@@ -97,3 +97,40 @@ jobs:
         asset_path: ${{github.workspace}}/dream-${{ github.event.release.tag_name }}-matlab-macos-x86_64.zip
         asset_name: dream-${{ github.event.release.tag_name }}-matlab-macos-x86_64.zip
         asset_content_type: binary/octet-stream
+
+  linux-user-manual:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install LaTeX
+      run: |
+        sudo apt -yq update
+        sudo apt install texlive-full
+
+    - name: Get release
+      id: get_release
+      uses: bruceadams/get-release@v1.2.3
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+
+    - name: CMake Configure
+      # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
+      # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DBUILD_MEX=off -DBUILD_OCT=off -DBUILD_USERMAN=on
+
+    - name: CMake Build
+      # Build your program with the given configuration
+      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+
+    - name: Upload DREAM user manual
+      uses: actions/upload-release-asset@v1.0.2
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.get_release.outputs.upload_url }}
+        asset_path: ${{github.workspace}}/build/dream_userman.pdf
+        asset_name: dream-${{ github.event.release.tag_name }}-dream_userman.pdf
+        asset_content_type: binary/octet-stream

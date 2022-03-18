@@ -27,7 +27,7 @@
   and
   \href{http://www.octave.org}{\textsc{GNU Octave}}}
 
-\author{Fredrik Lingvall\footnote{E-mail:\texttt{Fredrik.Lingvall@gmail.com}}}
+\author{Fredrik Lingvall\footnote{\texttt{https://github.com/frli8848/DREAM}}}
 
 %\usepackage[colorlinks=true,linkcolor=blue,tex4ht]{hyperref}
 %\newcommand{\url}[1]{(\ensuremath{\texttt{#1}})}
@@ -319,12 +319,14 @@ redistributable under the terms of the GNU General Public License (GPL)
 as published by the Free Software Foundation (\url{http://www.gnu.org}).
 See also the file \texttt{COPYING} which is distributed with the DREAM Toolbox.
 
-The DREAM Toolbox can be downloaded at:
+% TODO: update the webpage at http://www.signal.uu.se with current info
 %
-\url{http://www.signal.uu.se/Toolbox/dream/}.
-%
-At this website you can also find information how to contact the authors and report
-bugs etc.
+% The DREAM Toolbox can be downloaded at:
+% %
+% \url{http://www.signal.uu.se/Toolbox/dream/}.
+% %
+% At this website you can also find information how to contact the authors and report
+% bugs etc.
 
 \subsection{Disclaimer}
 
@@ -344,426 +346,58 @@ be useful but WITHOUT ANY WARRANTY. More specifically:
   SOFTWARE.
 \end{quote}
 
-\section{System Requirements}
+% TODO
+% \section{System Requirements}
 
-\begin{enumerate}
+% \begin{enumerate}
 
-\item \Matlab\ $\ge$ 7.1  or,
+% \item \Matlab\ $\ge$ 7.1  or,
 
-\item \href{http://www.octave.org}{Octave} $\ge$ 3.8 recommended.
+% \item \href{http://www.octave.org}{Octave} $\ge$ 3.8 recommended.
 
-\item \href{http://www.fftw.org}{FFTW} $\ge$ 3.0.1 (optional).\footnote{The attenuation code in DREAM makes heavily
-    use of FFTs. If the optimized \href{http://www.fftw.org}{FFTW} is installed then DREAM can be configured to use
-    this lib.} %Also, the \texttt{fftconv\_p} and \texttt{sum\_fftconv\_p} functions needs the FFTW3 library.}
+% \item \href{http://www.fftw.org}{FFTW} $\ge$ 3.0.1 (optional).\footnote{The attenuation code in DREAM makes heavily
+%     use of FFTs. If the optimized \href{http://www.fftw.org}{FFTW} is installed then DREAM can be configured to use
+%     this lib.} %Also, the \texttt{fftconv\_p} and \texttt{sum\_fftconv\_p} functions needs the FFTW3 library.}
 
-\item Pthread.\footnote{If you want to use the parallel (threaded) DREAM functions in Windows you need to install
-  the Pthreads-Win32 library.}
+% \item Pthread.\footnote{If you want to use the parallel (threaded) DREAM functions in Windows you need to install
+%   the Pthreads-Win32 library.}
 
-\end{enumerate}
+% \end{enumerate}
 
 \section{Installation}
 
 \PARstart{T}{he} DREAM Toolbox can be installed both using pre-compiled binaries and from source code. Binaries are
-currently available for Linux (i686 [32-bit], x86\_64 [64-bit]), Windows (i686 [32-bit], x86\_64 [64-bit]), and for
-Intel Macs (Mac OS X). The binaries are compiled using generic compiler flags and without support for the FFTW
-library (for the transducer functions) and should, therefore, run on most setups.
-
-If you want higher performance then it is recommended that you compile DREAM from source. From DREAM version $\ge$ 3.x
-we have added support for the cross-platform \href{http://www.cmake.org/}{\emph{CMake}} build system (to replace the
-bash-script and Unix Makefiles that was previously used).
-
-There is
-a bash script and m-files included in the source distribution to facilitate building the toolbox and,
-furthermore, the \texttt{Makefile}s used in build process can easily be edited for further fine tuning of the
-performance.
-
-\subsection{Binary Installation (Matlab only)}
-
-\begin{enumerate}
-
-  \item Download the \texttt{dream-xxx-{\version}.tgz} file, or \texttt{dream-xxx-{\version}.zip} file, using your favorite browser
-    (where \texttt{xxx} replaced by the hardware architecture (\texttt{unix} [32/64], \texttt{win} [32/64], or \texttt{maci}).
-
-  \item Copy the file to a suitable directory on your disk and uncompress the file:
-    \begin{description}
-    \item[Windows:] Use \texttt{Winzip} or \texttt{Winrar}.
-    \item[Linux:] Type \texttt{tar xvzf dream-xxx-{\version}.tgz}  (or \texttt{gunzip dream-xxx-{\version}.zip}).
-    \end{description}
-
-    \item Add the new directory into the \Matlab\ path. This can be performed by choosing the
-      \emph{Set Path} command from the \textbf{File menu} (\Matlab\ only) or using the \texttt{addpath} command.
-      On Linux you can add the line
-      \texttt{addpath('/}\emph{your\_installation\_dir}\texttt{/)'}
-      to your \texttt{startup.m} file.
-\end{enumerate}
-
-Note: since the oct-API often changes between releases of Octave the binaries will probably only work for
-the version of Octave that they were compiled for. For this reason binaries for Octave are no longer
-available and you need to install the toolbox from source which easily can be done with the Octave
-\texttt{pkg} command (see Section~\ref{sec:oct-install}).
-
-\subsection{Windows Specific Installation Notes}
-\label{sec:win-install}
-
-If you want to use the parallel (threaded) DREAM functions you need to install the
-Pthreads-Win32 library. Download the library from:
+currently available for Linux (x86\_64), Windows (x86\_64), and for macOS (Intel Macs). The binaries are compiled
+using generic compiler flags and should, therefore, run on most setups.
 %
-%\begin{verbatim}
-     \url{http://sourceware.org/pthreads-win32/}
-%\end{verbatim}
-%
-and put the \\ \href{ftp://sourceware.org/pub/pthreads-win32/dll-latest/lib/pthreadGC2.dll}{pthreadGC2.dll}
-file in a suitable directory, such as, \texttt{C:{$\backslash$}WINDOWS{$\backslash$}System32}; this file is
-now also available on the DREAM web page. If you want to build the Pthreads library for Windows from source
-then you can find instructions in Appendix~\ref{sec:build_pthreads-windows}.
+If you want higher performance then it is recommended that you compile DREAM from source.
 
+For more information see: \url{https://github.com/frli8848/DREAM#installation}
 
-The \texttt{fftconv\_p} and \texttt{sum\_fftconv\_p} use the FFTW3 library (see Section~\ref{sec:misc-conv}).
-A Windows version of this library can be found at:
-%%
-%\begin{verbatim}
-     \url{http://www.fftw.org/install/windows.html}
-%\end{verbatim}
-%
-but it is now also available on the DREAM web page.
-%Rename the \texttt{libfftw3-3.dll} file to
-%\texttt{fftw3.dll} and
-Copy the \texttt{libfftw3-3.dll} file to \texttt{C:{$\backslash$}WINDOWS{$\backslash$}System32}.
-If you want to build the FFTW library for Windows from source
-then you can find instructions in Appendix~\ref{sec:build_fftw-windows}.
+% TODO:
+% \subsection{Octave Specific Installation Notes}
+% \label{sec:oct-install}
 
-To install DREAM for Octave on Windows see Sections~\ref{sec:win_octave_mingw}.
+% As mentioned above, the DREAM Toolbox must be installed from sources for Octave. Recent versions of
+% Octave have a package manager tool (\texttt{pkg}) for that purpose. Given that you have the developer tools
+% for your system installed (for Windows see Sections~\ref{sec:win_octave_mingw}) you should be able to
+% install DREAM by,
+% \begin{enumerate}
 
-\subsection{MacOS X Specific Installation Notes}
-\label{sec:mac-install}
+% \item Download the special DREAM source code file for the Octave package manager,
 
-The \texttt{fftconv\_p} and \texttt{sum\_fftconv} functions use the FFTW3 library
-(see Section~\ref{sec:misc-conv}). Instructions for installing FFTW on MacOS X can be found at:
+% \item type: \texttt{pkg install dream-{\version}.tar.gz} at the Octave command
+%   line.\footnote{Note: this will not build the documentation.}
 
-\url{http://www.fftw.org/install/mac.html}
+% \end{enumerate}
+% %
+% You should now be able to see the DREAM packege by typing:
+% \begin{verbatim}
+%   pkg list
+% \end{verbatim}
+% %
+% at the Octave command line.
 
-\noindent If Octave is installed using, for example MacPorts, then the FFTW library should already be installed.
-
-%\section{User Functions}
-%\label{sec:userfunctions}
-
-\subsection{Octave Specific Installation Notes}
-\label{sec:oct-install}
-
-As mentioned above, the DREAM Toolbox must be installed from sources for Octave. Recent versions of
-Octave have a package manager tool (\texttt{pkg}) for that purpose. Given that you have the developer tools
-for your system installed (for Windows see Sections~\ref{sec:win_octave_mingw}) you should be able to
-install DREAM by,
-\begin{enumerate}
-
-\item Download the special DREAM source code file for the Octave package manager,
-
-\item type: \texttt{pkg install dream-{\version}.tar.gz} at the Octave command
-  line.\footnote{Note: this will not build the documentation.}
-
-\end{enumerate}
-%
-You should now be able to see the DREAM packege by typing:
-\begin{verbatim}
-  pkg list
-\end{verbatim}
-%
-at the Octave command line.
-
-\subsection{Installation from Source}
-\label{sec:source-install}
-
-To build the DREAM Toolbox from sources you need to have developer tools installed for your
-system (compiler, linker, etc.).
-%
-Start with downloading (and uncompressing) the (full) source \texttt{DREAM-{\version}.tgz} file.
-This file contains the source code, the documentation (the user manual), and the html code
-for the web pages. The build process is based on Makefiles both for C/C++ code and for
-building the (\LaTeX) user manual and html documentation.
-%
-Therefore, to build the documentation you need to have \TeX/\LaTeX\ installed and, furthermore,
-to build the html documentation you also need the
-\href{http://www.cse.ohio-state.edu/~gurari/TeX4ht/mn.html}{tex4ht} and
-\href{http://www.andre-simon.de/}{highlight} tools.\footnote{The build of the
-documentation has only been tested on Linux based systems.}
-
-\subsubsection{Build DREAM for Linux/Unix}
-\label{sec:linux-build}
-
-There are three methods that can be used to build the DREAM Toolbox on unix from sources. The first, and simplest,
-is to use the m-script \texttt{build\_mexfiles\_unix.m}, the second is to use the bash script
-\texttt{build\_dream} and the third is to manually edit the build configuration file \texttt{Make.inc}
-and then compile the sources.
-
-\noindent\emph{Method 1:} Using the \texttt{build\_mexfiles\_unix.m} script.
-
-This is the simplest method but there is no optimization for the used architecture and the attenuation code
-is build without FFTW support (see Section~\ref{sec:fftw}). This will also only build the mex-files
-(not the oct-files).
-
-\begin{enumerate}
-
-\item Install \href{http://www.fftw.org}{FFTW} (if it is not already installed).
-
-\item Start \Matlab\ and select compiler (gcc is recommended) with \texttt{mex -setup} (if you have not already done so).
-\item Remove the \texttt{-ansi} flag from your
-\begin{verbatim}
-~/.matlab/R20XXx/mexopts.sh
-\end{verbatim}
-  file (the DREAM sources contain C++ style comments and they will not compile with \texttt{-ansi}).
-
-\item Add \texttt{-std=c++11} to the CXXFLAGS in your
-\begin{verbatim}
-~/.matlab/R20XXx/mexopts.sh
-\end{verbatim}
-  file (the DREAM sources uses C++11 threads).
-
-\item Run the m-script: \texttt{build\_mexfiles\_unix}
-
-\item Copy the files in the \texttt{gui} and \texttt{help\_m\_files} directories to your
-  DREAM install directory.
-
-\item Add your DREAM install directory to the \Matlab\ path. That is, add\\
-  \texttt{addpath('/}\emph{your\_installation\_dir}\texttt{/')}to your \texttt{matlab/startup.m} file.
-
-\end{enumerate}
-%
-%Note: if you want fftw support for all transducer functions you can add the \texttt{-DUSE\_FFTW} option to each
-%mex call in \texttt{build\_mexfiles\_unix.m}.
-
-
-\noindent\emph{Method 2:} Build using CMake.
-%
-\begin{enumerate}
-
-\item Install CMake (if not already done).
-
-\item Create a build folder:\\
-  \texttt{dream-src \$ mkdir build}\\
-  \texttt{dream-src \$ cd build}
-
-\item Configure the build:\\
-  \texttt{build \$ cmake -DBUILD\_USERMAN=on -DCMAKE\_C\_FLAGS="-O2 -march=native" -DCMAKE\_CXX\_FLAGS="-O2 -march=native" -DCMAKE\_BUILD\_TYPE=Release ..}
-
-\end{enumerate}
-
-\noindent\emph{Method 3:} Using the \texttt{build\_dream} bash script. TODO: remove this!
-
-The bash script \texttt{build\_dream} will probe the machine for cpu, architecture (32 or 64 bits)
-and then use a pre-defined set of compiler flags for the machine (currently only x86 is supported).
-This script will both build the mex-/oct-interfaces and the documentation for DREAM. It is assumed that \Matlab\
-is installed in \texttt{/usr/local/matlab}. If you have installed \matlab\ somewhere else then you can create a symbolic
-link to the \texttt{/usr/local/matlab} dir. The \texttt{build\_dream} script takes a few flags, use \texttt{-h} to
-to display the help text:
-%
-\begin{verbatim}
- # ./build_dream -h
-
-./build_dream usage:
-
-./build_dream [-native,-n|-auto,-a|-coppermine|-northwood|-prescott
-        |-banias|-penryn|-nahelem|-westmere]
-
- builds the DREAM mex-files, oct-files, and documentation
- for a cpu architecture given by the 1st input argument.
-
- ./build_dream -native will build with -march=native and
- ./build_dream -auto will try to auto-detect the cpu arch.
- The other flags uses a pre-defined set of flags for the
- corresponding arch.
-
- If the second argument is -a or -affinity then DREAM will be
- build with CPU affinity control support.
-
-\end{verbatim}
-
-The \texttt{-native/-n} flag will build all sources with the (ggc) flags \texttt{-02 -march=native}, that is,
-it lets \texttt{gcc} probe/detect the hardware and builds all DREAM sources optimized for the current hardware.
-%
-When \texttt{-auto/-a} flag is used the build script uses DREAM's own (somewhat outdated) detection code to select compiler flags.
-One can also use pre-defined sets of flags for a few architecture, which currently are: \texttt{-coppermine},  \texttt{-northwood},
-\texttt{-prescott}, \texttt{-banias}, \texttt{-penryn}, \texttt{-nahelem}, and  \texttt{-westmere}, repectively.
-
-One can also use a second flag \texttt{-affinity/-a} which builds DREAM with experimental affinity control support. This is only
-available for a few functions and has only been tested on Linux. When enabled one can select which cpu/core a thread should run on.
-
-After the \texttt{build\_dream} script is done building the code and documantation add your DREAM install directory to
-the \Matlab/Octave path(s). That is, add \texttt{addpath('/}\emph{your\_installation\_dir}\texttt{/')} to your
-\texttt{matlab/startup.m} file and/or \texttt{.octaverc} file.
-
-\noindent\emph{Method 3:} Manual configuration.
-%
-\begin{enumerate}
-
-\item Copy \texttt{Make.default} to \texttt{Make.inc}, and open the \texttt{Make.inc} file with a
-  text-editor.
-
-\item Change the paths for Matlab and/or Octave in \texttt{Make.inc} to fit your installation.
-
-\item Change \texttt{INSTALL\_DIR}, \texttt{MEX\_EXT} (if you use \Matlab),
-  \texttt{CFLAGS}, and \texttt{OCTVER} (if you use Octave) in \texttt{Make.inc} to fit your architecture.
-
-\item If you don't have both Matlab and Octave then open the \texttt{Makefile} and remove the corresponding software on
-  the line ``\texttt{all: matlab octave doc}'' that you don't use.
-
-\item Type \texttt{make}
-
-\item Add your DREAM install dir to the \Matlab/Octave path(s). That is, add\\
-  \texttt{addpath('/}\emph{your\_installation\_dir}\texttt{/')} to your \texttt{matlab/startup.m} file
-  and/or \texttt{.octaverc} file.
-\end{enumerate}
-
-
-\subsubsection{Build the DREAM mex-files for MacOS X (Intel Macs)}
-
-There is currently only one method to build the DREAM mex-files for MacOS X and that is to use
-the \texttt{build\_mexfiles\_unix.m} script (the \texttt{Makefile}s do not currently
-work under Mac OS X).
-
-\begin{enumerate}
-
-\item Install \href{http://www.fftw.org/install/mac.html}{FFTW} (if it is not already installed).
-
-\item Start \Matlab\ and select compiler (gcc is recommended) with \texttt{mex -setup} (if you have not already done so).
-
-\item Remove the \texttt{-ansi} flag from your
-\begin{verbatim}
-~/.matlab/R20XXx/mexopts.sh
-\end{verbatim}
-  file (the DREAM sources contain C++ style comments which will not compile with \texttt{-ansi}).
-
-\item Run the m-script: \texttt{build\_mexfiles\_unix}
-
-\item Copy the files in the \texttt{gui} and \texttt{help\_m\_files} directories to your
-  DREAM install directory.
-
-\item Add your DREAM install directory to your \Matlab\ path. That is, add \\
-  \texttt{addpath('/}\emph{your\_installation\_dir} to your \texttt{matlab/startup.m} file
-  (or use the menu in the \Matlab\ GUI).
-
-\end{enumerate}
-%
-%Note: if you want fftw support for all transducer functions you can add the \texttt{-DUSE\_FFTW} option to each
-%mex call in \texttt{build\_mexfiles\_unix.m}. Need to att -lfftw3 too.
-
-\subsubsection{Build the DREAM Matlab 32-bit \texttt{mex}-files for Windows}
-
-\noindent\emph{Method 1:} Using the MinGW/Gnumex Tools.
-
-%MinGW is a iso C99 compiler which
-
-\begin{enumerate}
-
-\item \href{http://www.signal.uu.se/Toolbox/dream/download.shtml}{Download} the DREAM Toolbox full
-  source package and uncompress it.
-
-\item Download the MinGW-w64 compiler for your architecture (i686 [32-bit] or x86\_64 [64-bit]), see \url{http://mingw-w64.sourceforge.net/}).
-
-\item Uncompress the corresponding zip-file, create the folder \texttt{C:\\MinGW-w32}, and copy all files to that folder.
-
-\item Get the \texttt{phreadGC2.dll} and  \texttt{libfftw3-3.dll} (for your corresponding architecture) from the DREAM web-page.
-
-\item Copy the \texttt{phreadGC2.dll} and  \texttt{libfftw3-3.dll} to the \texttt{windows/dll}/\texttt{windows/dll\_64}
-  (depending on your architecture) folder.
-
-\item Also, copy the headerfiles: \texttt{phread.h}, \texttt{shed.h}, and \texttt{semaphore.h}, and  \texttt{fftw3.h}, to the
-  \texttt{windows/dll}/\texttt{windows/dll\_64}
-
-\item Start Matlab and cd to the \texttt{windows} folder.
-
-\item Run\\
-\begin{verbatim}
-   >> build_mexfiles_mingw
-\end{verbatim}
-  or
-\begin{verbatim}
-   >> build_mexfiles_mingw_64
-\end{verbatim}
- This will build all mex-files and copy them, some help files, the GUI files, and the pthread and FFTW libraries,
- to an installation folder which is printed when the script is done.
-
-\item Add your DREAM install directory to your \Matlab\ path. That is, add \\
-  \texttt{addpath('/}\emph{your\_installation\_dir} \texttt{')} to your \texttt{matlab/startup.m} file
-  (or use the menu in the \Matlab\ GUI).
-
-\end{enumerate}
-
-%Note: if you want fftw support for all transducer functions you can add the \texttt{-DUSE\_FFTW} option to each
-%mex call in \texttt{build\_mexfiles\_unix.m}. Need to att -lfftw3 too.
-
-\subsubsection{Build the DREAM Octave 32-bit \texttt{oct}-files for Windows using the MinGW Compiler}
-\label{sec:win_octave_mingw}
-
-The pkg source can be build also on Windows with resent versions of Octave (tested with Octave 3.2.3
-[MinGW 4.4.0]). To do this, using the native Windows Octave from \href{http://octave.sourceforge.net}{octave-forge},
-you only need to install Octave since FFTW, the MinGW compiler, and  the pthread libs
-are included in the Octave package).
-%
-\begin{enumerate}
-
-\item \href{http://www.signal.uu.se/Toolbox/dream/download.shtml}{Download}
-  the DREAM Toolbox \texttt{pkg} source package (i.e., the file \texttt{dream-{\version}.tar.gz}).
-
-\item  Download the Windows \href{http://octave.sourceforge.net}{Octave} installer.
-
-\item Install Octave in \texttt{C:$\backslash$Octave}; do not install in
-  \texttt{C:$\backslash$Program Files$\backslash$Octave} since the
-  \texttt{mkoctfile} script that is used to compile the C++ code in the DREAM toolbox do work well
-  with white spaces in the path (the default install location should be OK).
-
-  % \item Get the \texttt{fftw3.h} file (for version 3.1.3) from \url{http://www.fftw.org}, or from
-  %   \href{http://www.signal.uu.se/Toolbox/dream/download.shtml}{DREAM web page}, and copy it to
-  %   \texttt{C:$\backslash$Octave$\backslash$include$\backslash$}; you don't need to install the fftw3 \texttt{dll}
-  %   file since it is already included in the Windows package of Octave.
-
-  % \item Get the \texttt{phread.h}, \texttt{shed.h}, and \texttt{semaphore.h} files from
-  %   \url{http://sourceware.org/pthreads-win32/} (version 2.8.0), or from
-  %   the \href{http://www.signal.uu.se/Toolbox/dream/download.shtml}{DREAM web page}, and copy them to
-  %   \texttt{C:$\backslash$Octave$\backslash$include$\backslash$}
-
-  % \item Get the \texttt{phreadGC2.lib} file from \url{http://sourceware.org/pthreads-win32/},
-  %   or from the\\ \href{http://www.signal.uu.se/Toolbox/dream/download.shtml}{DREAM web page},
-  %   copy it to \texttt{C:$\backslash$Octave$\backslash$lib$\backslash$}, and
-  %   rename it to \texttt{phread.lib}; the Unix style Makefile which is used to build the toolbox
-  %   expects this name of the lib file.
-
-\item Build and install the DREAM Toolbox with: \texttt{pkg install dream-{\version}.tar.gz}.
-
-  % \item Get the \texttt{pthreadGC2.dll} file (for gcc) from
-  %   \url{http://sourceware.org/pthreads-win32/} (version 2.8.0), or from
-  %   the \href{http://www.signal.uu.se/Toolbox/dream/download.shtml}{DREAM web page}, and copy
-  %   it to \texttt{C:{$\backslash$}WINDOWS{$\backslash$}System32}.
-
-\end{enumerate}
-
-\subsubsection{Build the DREAM Octave \texttt{oct}-files for 64-bit Windows}
-\label{sec:oct_win_64}
-
-Currently there is no support for building 64-bit \texttt{oct}-files since there is no 64-bit version of
-Octave for Windows available (yet).
-
-\subsubsection{Compile with FFTW support for the Attenuation Code}
-\label{sec:fftw}
-
-The attenuation code in the DREAM Toolbox uses FFTs extensively. To speed up the FFT computations
-(by 10\% to 50\%) one can compile The DREAM Toolbox with FFTW support for the attenuation code. To
-do this you need to compile all functions with the flag \texttt{-DUSE\_FFTW} and link with
-\texttt{-lfftw3}. This can be accomplished by changing:
-%
-\begin{verbatim}
-ATT_FFTW       =
-FFW_LIB        =
-\end{verbatim}
-%
-to
-%
-\begin{verbatim}
-ATT_FFTW	= -DUSE_FFTW
-FFW_LIB		= -lfftw3
-\end{verbatim}
-%
-in the file \texttt{Make.default} before compiling the toolbox if you are using \emph{Method 3} described in
-Section~\ref{sec:linux-build} (the \texttt{build\_dream} uses FFTW by default).
 
 \section{An  Introduction to The Impulse Response Method}
 
@@ -1857,27 +1491,30 @@ The \texttt{apod\_met} parameter has the following entries for the annular array
 \label{sec:parallel}
 
 Since the SIR computation for two different observation points is independent one can easily
-divide the observation points in sets and let a different process handle each set.
+divide the observation points in sets and let a different process (thread) handle each set.
 On a multiprocessor machine, where each process (or thread) can run on a separate CPU core simultaneously
 this will speed up the computations. In the DREAM toolbox this is performed using threads and
 the SIRs for each observation point set is computed in its own thread.
 
-In DREAM version $<3$ Pthread was used and the DREAM functions had an extra parameter, \texttt{n\_cpus}, that was
-used to set the number of threads (all functions with thread support had a ``\texttt{\_p}'' in its function name). In
-DREAM version $\ge 3$ C++11 threads is used instead and the number of CPU cores is auto-detected to avoid the extra
-\texttt{n\_cpus} parameter. This reduces the number of DREAM functions and we don't need to build the Pthread lib
-on, for example, Windows platforms. One must however build DREAM with a C++ compiler that supports the C++11
-standard.\footnote{The \texttt{conv\_p} and \texttt{fftconv\_p} functions still uses the \texttt{\_p}
-naming scheme to avoid a conflict with the build-in \texttt{conv} (Octave, Matlab) and \texttt{fftconv} (Octave) functions.}
+In DREAM, C++11 threads is used and number of CPU cores is auto-detected to avoid and extra
+\texttt{n\_cpus} parameter which previously was used. One can, however, control the number of threads with
+the \texttt{NUM\_DREAM\_THREADS} environment variable and on Linux and macOS one can do this using
+\footnotesize
+\begin{verbatim}
+  $ export NUM_DREAM_THREADS=4
+\end{verbatim}
+\normalsize
+%
+for example.
 
 To see if multiple threads are running using Linux or MacOS X, first run a DREAM function on one terminal
 %
 \begin{verbatim}
-    >> H = dreamrect_p(Ro,geom_par,s_par,delay,m_par,'stop');
+    >> H = dreamrect(Ro,geom_par,s_par,delay,m_par,'stop');
 \end{verbatim}
 %
-and, second, open new terminal window and use the command \texttt{htop}.\footnote{On MacOS X \texttt{htop} can, for example, be installed
-using MacPorts.} One should see something like:
+and, second, open new terminal window and use, for example, the command \texttt{htop}.\footnote{On MacOS X \texttt{htop} can be installed
+using Miniconda or MacPorts etc.} One should see something like:
 %
 \footnotesize
 \begin{verbatim}
@@ -1889,11 +1526,11 @@ using MacPorts.} One should see something like:
   Swp[                                                                         0/0MB]
 
   PID USER      PRI  NI  VIRT   RES   SHR S CPU% MEM%   TIME+  Command
-26799 fl         20   0  798M 67020 35492 S 386.  0.8  9:14.40 /usr/bin/octave-cli-3.8.2
-26970 fl         20   0  798M 67020 35492 R 98.6  0.8  0:21.60 /usr/bin/octave-cli-3.8.2
-26969 fl         20   0  798M 67020 35492 R 97.2  0.8  0:21.32 /usr/bin/octave-cli-3.8.2
-26967 fl         20   0  798M 67020 35492 R 96.7  0.8  0:22.08 /usr/bin/octave-cli-3.8.2
-26968 fl         20   0  798M 67020 35492 R 94.8  0.8  0:21.58 /usr/bin/octave-cli-3.8.2
+26799 fl         20   0  798M 67020 35492 S 386.  0.8  9:14.40 /usr/libexec/octave/6.2.0/exec/x86_64_pc-linux-gnu/octave-gui
+26970 fl         20   0  798M 67020 35492 R 98.6  0.8  0:21.60 /usr/libexec/octave/6.2.0/exec/x86_64_pc-linux-gnu/octave-gui
+26969 fl         20   0  798M 67020 35492 R 97.2  0.8  0:21.32 /usr/libexec/octave/6.2.0/exec/x86_64_pc-linux-gnu/octave-gui
+26967 fl         20   0  798M 67020 35492 R 96.7  0.8  0:22.08 /usr/libexec/octave/6.2.0/exec/x86_64_pc-linux-gnu/octave-gui
+26968 fl         20   0  798M 67020 35492 R 94.8  0.8  0:21.58 /usr/libexec/octave/6.2.0/exec/x86_64_pc-linux-gnu/octave-gui
 
 -snip-
 \end{verbatim}
@@ -1973,12 +1610,12 @@ The input parameters for \texttt{dream\_att} are:
 \subsection{One Dimensional Matrix Convolution Functions}
 \label{sec:misc-conv}
 
-The \texttt{conv\_p} and \texttt{fftconv\_p} functions computes the
-one dimensional convolution of the columns in a matrix \texttt{A} and
+The \texttt{conv\_p}, \texttt{fftconv\_p}, and \texttt{fftconv\_ola} functions
+computes the one dimensional convolution of the columns in a matrix \texttt{A} and
 matrix (or vector) \texttt{B} using one or more threads. These functions
 are typically used to compute single-path or double-path (pulse-echo)
 responses for a large number of observation points and thus avoiding
-a slow \texttt{for}-loop using the \texttt{conv} function
+a slow \texttt{for}-loop using the build-in \texttt{conv} function
 (that only takes vector arguments).
 
 \noindent \textbf{Syntax}:
@@ -1987,17 +1624,25 @@ a slow \texttt{for}-loop using the \texttt{conv} function
         conv_p(A,B,Y);
         conv_p(A,B,Y,mode_string);
 \end{verbatim}
-%
-and
-%
+
 \begin{verbatim}
-  [Y] = fftconv_p(A,B)
-  [Y,wisdom_string] = fftconv_p(A,B);
-  [Y] = fftconv_p(A,Bwisdom_string);
-        fftconv_p(A,B,Y,wisdom_string);
-        fftconv_p(A,B,Y,mode_string);
-        fftconv_p(A,B,Y,mode_string,wisdom_string);
+  [Y] = fftconv_p(A, B)
+  [Y, wisdom_string] = fftconv_p(A, B);
+  [Y] = fftconv_p(A, B, wisdom_string);
+        fftconv_p(A, B, Y, wisdom_string);
+        fftconv_p(A, B, Y, mode_string);
+        fftconv_p(A, B, Y, mode_string, wisdom_string);
 \end{verbatim}
+
+\begin{verbatim}
+  [Y] = fftconv_ola(A, B, block_len)
+  [Y, wisdom_string] = fftconv_ola(A, B, block_len);
+  [Y] = fftconv_ola(A, B, block_len, wisdom_string);
+        fftconv_ola(A, B, block_len, Y, wisdom_string);
+        fftconv_ola(A, B, block_len, Y, mode_string);
+        fftconv_ola(A, B, block_len, Y, mode_string, wisdom_string);
+\end{verbatim}
+
 %
 where \texttt{A} is an $M\times N$ matrix, \texttt{B} is a $K\times N$
 matrix or a $K$-length vector, and \texttt{Y} is the $(M+K-1)\times N$
@@ -2348,211 +1993,8 @@ The input parameters,
 %
 are similar to the ones used in the transducer functions previously described.
 
-\subsection{Model Based Ultrasonic  Array Imaging}
-
-In this section a short introduction to model based ultrasonic imaging is presented. Model based ultrasonic array
-imaging~\cite{Stoughton1993,Lingvall2003,Lingvall2007} is different from delay-and-sum imaging in the sense that is
-based on optimal information processing  whereas delay-and-sum imaging is based on geometrical focusing. The idea is
-to use a (linear) model, taking into account the diffraction effects associated with each transmitter/receiver, the
-electrical characteristics for each transmitter/receiver, as well as the used input signal(s), and
-then estimate the parameters (the scattering strengths) of the model based on both data and prior
-information.
-%
-The DREAM toolbox can be used in this process for computing the SIRs for the model which can then be convolved
-with measured electrical impulse responses to obtain a model for a real measurement setup or using only simulated
-impulse responses to evaluate different array designs, for example.
-
-To obtain a linear mode we need to consider both the forward process and the backward process.
-As discussed in Section~\ref{sec:analythical} [Eq.~\eqref{eq:pressure_response}] the forward response can be
-divided in three parts: the input signal $u(t)$, the forward electro-acoustical response
-%
-\ifthenelse{\boolean{TEX4HT}}
-{
-  $h^{ef}(t)$,
-}{
-  $h^\text{ef}(t)$,
-}
-and the forward SIR
-\ifthenelse{\boolean{TEX4HT}}
-{
-  $h^{{f-}\smt{sir}}(\r,t)$.
-}{
-  $h^{\text{f-}\smt{sir}}(\r,t)$.
-}
-The backward response can similarly be divided in two parts: the
-backward acousto-electrical impulse
-response
-\ifthenelse{\boolean{TEX4HT}}
-{
-  $h^{eb}(t)$ and the backward SIR $h^{{b-}\smt{sir}}(\r,t)$.
-}{
-  $h^\text{eb}(t)$ and the backward SIR $h^{\text{b-}\smt{sir}}(\r,t)$.
-}
-Now, consider an array with $K$ transmit elements and $L$ receive elements and contributions from a single observation
-point, $\r = \begin{bmatrix} x &y & z\end{bmatrix}^T$, where ${}^T$ denotes the transpose operator.
-The received signal, $y_l(\r,t)$, from the $l$th receive element can be expressed
-%%
-\ifthenelse{\boolean{TEX4HT}}
-{
-  \begin{equation}
-    \begin{split}
-      y_l(\r,t) & =
-      \overset{{Forward impulse response (f)}}{\overbrace{\left( \sum_{k=0}^{K-1}
-            h^{{f-}\smt{sir}}_k(\r,t) * h_{k}^{ef}(t),
-            * u_k(t) \right)}} o(\r) * \\
-      & \overset{{Backward impulse response (b)}}{\overbrace{h^{{b-}\smt{sir}}_l(\r,t) *  h_{l}^{eb}(t)}} + e_l(t), \\
-      & = h^{f}(\r,t) * h_l^{b}(\r,t) o(\r) + e_l(t), \\
-      & = h_l(\r,t) o(\r) + e_l(t),
-    \end{split}
-    \label{eq:discrete_system_impulse_response}
-  \end{equation}
-}{
-  \begin{equation}
-    \begin{split}
-      y_l(\r,t) & =
-      \overset{\text{Forward impulse response (f)}}{\overbrace{\left( \sum_{k=0}^{K-1}
-            h^{\text{f-}\smt{sir}}_k(\r,t) * h_{k}^\text{ef}(t),
-            * u_k(t) \right)}} o(\r) * \\
-      & \overset{\text{Backward impulse response (b)}}{\overbrace{h^{\text{b-}\smt{sir}}_l(\r,t) *  h_{l}^\text{eb}(t)}} + e_l(t), \\
-      & = h^\text{f}(\r,t) * h_l^\text{b}(\r,t) o(\r) + e_l(t), \\
-      & = h_l(\r,t) o(\r) + e_l(t),
-    \end{split}
-    \label{eq:discrete_system_impulse_response}
-  \end{equation}
-}
-%%
-where $*$ denotes temporal convolution and $e_l(t)$ is the noise for the $l$th receive element.
-Note that the total forward impulse response is a superposition of the forward impulse responses
-corresponding to all transmit elements. The \emph{object function}
-$o(\r)$ is the scattering strength at the observation point $\r$,
-\ifthenelse{\boolean{TEX4HT}}
-{
-  $h_{k}^{ef}(t)$
-}{
-  $h_{k}^\text{ef}(t)$
-}
-is the forward electrical impulse response for the $k$th transmit element,
-\ifthenelse{\boolean{TEX4HT}}
-{
-  $h_{l}^{eb}(t)$
-}{
-  $h_{l}^\text{eb}(t)$
-}
-the backward electrical impulse response
-for the $l$th receive element, and $u_k(t)$ is the input signal for the $k$th transmit element.
-%Hereafter we will refer to the pulse-echo (double-path) impulse $h_l(\r,t)$ as the \emph{system}
-%impulse response.
-
-A discrete-time version of~\eqref{eq:system_impulse_response} is obtained by sampling the
-impulse responses and by using discrete-time convolutions. If we consider $N$ observation points
-then the received discrete waveform from a target at the $n$th observation point,
-$\r_n = (x_n,y_n,z_n)$, can be expressed as
-%%
-\begin{equation}
-  \y_l^{(n)} = \h_l^{(n)}(\o)_{n} + \e_l,
-  \label{eq:one-pt}
-\end{equation}
-%%
-where the column vector $\h_l^{(n)}$ is the discrete system impulse response for
-the $l$th receive element.\footnote{Here all vectors are by convention column vectors.} The vector $\o$
-represents the $N$ scattering amplitudes in the region-of-interest, and the notation $(\n)_{n}$ denotes the $n$th
-element in $\o$.\footnote{The vector $\o$ can easily be rearrange to form an image when two-dimensional imaging is
-  considered~\cite{Lingvall2004}.}
-%%
-
-To obtain the received signal for all observation points we need to perform a summation over $n$, which
-equivalently can be expressed as a matrix-vector multiplication, according to
-%%
-\begin{equation}
-  \begin{split}
-  \y_l = & \sum_{n}\h_l^{(n)}(\o)_{n} + \e_l,\\
-  = &\begin{bmatrix} \h_l^{(0)} &  \h_l^{(1)} & \cdots & \h_l^{(N-1)} \end{bmatrix}\o + \e_l,\\
-  = & \P_l\o + \e_l,\\
-  \end{split}
-  \label{eq:all-pts}
-\end{equation}
-%%
-which gives us a liner model for the data for one receive element.
-
-To obtain a model for all elements we can append all $L$ receive signals $\y_l$ into a single vector $\y$ and
-we finally have linear model for the total array setup
-%%
-\begin{equation}
-  \begin{split}
-    \y = & \begin{bmatrix} \y_{0} \\
-      \y_1 \\  \vdots \\
-      \y_{L-1}\\  \end{bmatrix}  = \begin{bmatrix} \P_{0} \\
-      \P_1 \\  \vdots \\
-      \P_{L-1}\\  \end{bmatrix}
-    \o +
-    \begin{bmatrix} \e_0 \\ \e_1 \\  \vdots \\ \e_{L-1} \\ \end{bmatrix} \\
-    = & \P \o + \e,
-  \end{split}
-  \label{eq:extended}
-\end{equation}
-%%
-for the total array imaging system~\cite{Lingvall2004}.
-%
-The \emph{propagation matrix}, $\P$, in~\eqref{eq:extended} now
-describes both the transmission and the reception process for an arbitrary focused
-array. Note that the position of the observation points, and the corresponding scattering amplitudes represented
-by the vector $\o$, is not restricted to a regular two-dimensional grid, which is often used in ultrasonic imaging.
-%
-Furthermore, the array elements can in fact, similar to the observation points , be positioned at arbitrary locations in
-tree-dimensional space space. Thus, the model~\eqref{eq:extended} can also
-be used to model two-dimensional arrays as well as to model array responses in tree-dimensional space.
-Also note that the ``noise'' vector $\e$ describes the \emph{uncertainty} of the model~\eqref{eq:extended}. The noise $\e$
-does not only model the measurement noise but also all other errors that we may have, such as: multiple scattering effects,
-cross talk between array elements, non-uniform sound speed in the media, etc.
-
-%The DREAM toolbox has a function \texttt{build\_propagation\_matrix} to facilitate computing the propagation
-%matrix for a linear array. The function uses a concave linear array transducer function but is should not
-%be too difficult for a user to adapt it to other transducer geometries as well.
-%After computing the propagation matrix the array system can be simulated by using Eq.~\eqref{eq:extended}.
-
-\subsubsection{The Matched Filter}
-
-The matched filter has the property of maximizing the signal-to-noise ratio (at a single point). The matched filter
-for each observation point is given by~\cite{Lingvall2003}
-%
-\begin{equation}
-  \hat{\o}= \P^T\y.
-  \label{eq:matched-filter}
-\end{equation}
-
-Note that the structure of the matched filter is similar to delay-and-sum processing which  also can be expressed
-as a matrix-vector multiplication (see the \texttt{model\_based\_example.m} on the DREAM website),
-\begin{equation}
-  \hat{\o}= \D^T\y
-  \label{eq:das}
-\end{equation}
-%
-where the delay matrix $\D$ has ones in the positions corresponding the the propagation delays and zeros otherwise.
-
-\subsubsection{The Optimal Linear  Estimator}
-
-The optimal linear estimator (or the Wiener filter) is given by~\cite{Stoughton1993,Lingvall2007}
-%
-\begin{equation}
-  \begin{split}
-    \hat{\o} & = \Co\P^T(\P\Co\P^T+\Ce)^{-1}\y\\
-    & = (\P^T\Ceinv\P+\Coinv)^{-1}\P^T\Ceinv\y,
-  \end{split}
-\label{eq:optimal}
-\end{equation}
-%
-where $\Co$ is the covariance matrix for $\o$ and $\Ce$ is the covariance matrix for $\e$, respectively.
-The estimator~\eqref{eq:optimal} has the property, not found for the matched filter or for delay-and-sum
-methods, namely that any beampattern can be compensated given that the signal-to-noise ratio is sufficient.
-
-As a final not on model based imaging is that the matrices involved normally become rather large. It is
-therefore highly recommended to used a tuned linear algebra library, such as
-\href{http://www.tacc.utexas.edu/resources/software/}{K. Goto's} BLAS library or
-the \href{http://math-atlas.sourceforge.net/}{ATLAS} library, for example. These libraries often have thread
-support so that all CPUs on the computer can be utilized.
-
-An example of model based (and matrix based delay-and-sum) imaging can be found on the DREAM website (see the
-\texttt{model\_base\_example.m} file on the examples page).
+% TODO: remove this section?
+%\input{model_based.tex}
 
 \section{The Graphical User Interface (Matlab only)}
 \label{sec:gui}
@@ -2586,52 +2028,53 @@ the \emph{Load} button.
 %, or read the
 %parameters and process SIR data in the \Matlab\ command window.
 
-\section{Known Issues}
+% TODO
+% \section{Known Issues}
 
-\begin{itemize}
+% \begin{itemize}
 
-\item On Linux, if one get the error\\
-  \texttt{Invalid MEX-file ... libstdc++.so.6: version `GLIBCXX\_3.4.17' not found}\\
-  or similar, then try to pre-load the \texttt{libstdc++.so.6} for the compiler used to build the mex-files. For example,\\
-  \texttt{\$ export LD\_PRELOAD="/usr/lib64/gcc/x86\_64-pc-linux-gnu/4.9.2/libstdc++.so.6"}\\
-  and then start Matlab from the same terminal.
+% \item On Linux, if one get the error\\
+%   \texttt{Invalid MEX-file ... libstdc++.so.6: version `GLIBCXX\_3.4.17' not found}\\
+%   or similar, then try to pre-load the \texttt{libstdc++.so.6} for the compiler used to build the mex-files. For example,\\
+%   \texttt{\$ export LD\_PRELOAD="/usr/lib64/gcc/x86\_64-pc-linux-gnu/4.9.2/libstdc++.so.6"}\\
+%   and then start Matlab from the same terminal.
 
-\item On Windows platforms the MEX-files can not be aborted by
-  pressing \texttt{CTRL-C} since Windows lacks real asynchronous signals, see:
-  %
-  % \begin{verbatim}
-  \url{http://www.mathworks.com/support/solutions/data/1-188VX.html}
-  % \end{verbatim}
-  %
-  Therefore, when \texttt{CTRL-C} is pressed, using Windows, the
-  operation is interrupted after the MEX-file has finished.
+% \item On Windows platforms the MEX-files can not be aborted by
+%   pressing \texttt{CTRL-C} since Windows lacks real asynchronous signals, see:
+%   %
+%   % \begin{verbatim}
+%   \url{http://www.mathworks.com/support/solutions/data/1-188VX.html}
+%   % \end{verbatim}
+%   %
+%   Therefore, when \texttt{CTRL-C} is pressed, using Windows, the
+%   operation is interrupted after the MEX-file has finished.
 
-\item On Linux x86 platforms the \Matlab\ release 14 library
-  \texttt{matlab/sys/os/glnx86/libgcc\_s.so} seems to be buggy causing
-  \matlab\ to abort when a \texttt{mexErrMsg} call is done within a
-  MEX-file. The threaded functions uses the \texttt{mexErrMsg}
-  function when \texttt{CTRL-C} is pressed. A work-around is to set the environment
-  variable \texttt{LD\_PRELOAD} to point to a working library. If you, for example, are using
-  gcc 3.4.4, then you can set
-  %
-\begin{verbatim}
-   export LD_PRELOAD=/usr/lib/gcc/i686-pc-linux-gnu/3.4.4/libgcc_s.so
-\end{verbatim}
-  %
-  or rename \texttt{matlab/sys/os/glnx86/libgcc\_s.so} and copy (or
-  link) a working \texttt{libgcc\_s.so} to the
-  \texttt{matlab/sys/os/glnx86/} directory.
+% \item On Linux x86 platforms the \Matlab\ release 14 library
+%   \texttt{matlab/sys/os/glnx86/libgcc\_s.so} seems to be buggy causing
+%   \matlab\ to abort when a \texttt{mexErrMsg} call is done within a
+%   MEX-file. The threaded functions uses the \texttt{mexErrMsg}
+%   function when \texttt{CTRL-C} is pressed. A work-around is to set the environment
+%   variable \texttt{LD\_PRELOAD} to point to a working library. If you, for example, are using
+%   gcc 3.4.4, then you can set
+%   %
+% \begin{verbatim}
+%    export LD_PRELOAD=/usr/lib/gcc/i686-pc-linux-gnu/3.4.4/libgcc_s.so
+% \end{verbatim}
+%   %
+%   or rename \texttt{matlab/sys/os/glnx86/libgcc\_s.so} and copy (or
+%   link) a working \texttt{libgcc\_s.so} to the
+%   \texttt{matlab/sys/os/glnx86/} directory.
 
-\item The file \texttt{mex\_sum\_fftconv\_p.c} do not compile unless \Matlab\ $\ge$ R2006b is installed. The problem
-  is that \texttt{mwSize} must be defined in \texttt{matlab/extern/include/matrix.h} (\texttt{sum\_fftconv\_p}
-  compiles for Octave).
+% \item The file \texttt{mex\_sum\_fftconv\_p.c} do not compile unless \Matlab\ $\ge$ R2006b is installed. The problem
+%   is that \texttt{mwSize} must be defined in \texttt{matlab/extern/include/matrix.h} (\texttt{sum\_fftconv\_p}
+%   compiles for Octave).
 
-\item The computation of responses for lossy media is rather time consuming; the computation time can be as
-  large as a factor of 1000 times longer than for loss-less media. This due to the fact that the frequency
-  domain attenuation response is computed, and an inverse FFT is performed, for every surface element,
-  \texttt{dx}$\times$\texttt{dy}, of the transducer surface.
+% \item The computation of responses for lossy media is rather time consuming; the computation time can be as
+%   large as a factor of 1000 times longer than for loss-less media. This due to the fact that the frequency
+%   domain attenuation response is computed, and an inverse FFT is performed, for every surface element,
+%   \texttt{dx}$\times$\texttt{dy}, of the transducer surface.
 
-\end{itemize}
+% \end{itemize}
 
 \newpage
 
@@ -2647,75 +2090,5 @@ the \emph{Load} button.
 %\bibliographystyle{unsrtnat.bst}
 
 \bibliography{userman/dream_userman}
-
-\newpage
-\appendix
-
-\section{Building the Pthreads Library for 32 and 64 bit Windows}
-\label{sec:build_pthreads-windows}
-
-The DREAM toolbox uses pthreads (POSIX threads) to run computations in parallel on several cores/cpus. To run the
-parallel functions on Windows the \emph{Pthreads-win32} library is used:\\ \url{http://sourceware.org/pthreads-win32/}.
-The most current version of the Pthreads-win32 library, which is the one used by DREAM, is version 2.8.0 (2006-12-22).
-A 32-bit binary version of the library can be found at: \url{ftp://sourceware.org/pub/pthreads-win32/}.
-%
-The \href{http://sourceforge.net/projects/mingw-w64/}{MinGW-w64} project has a patch to build the Pthreads-win32 lib
-for 64-bit Windows, and there are some more 64-bit patches at:\\ \url{http://www.cadforte.com/wiki/index.php/Pthreads}.
-
-To facilite building the lib we have included our own (experimental) patch, which is a combination of the patches
-above (with some minor changes), and the source code for the Pthreads-win32 lib in the source code package of the DREAM
-toolbox. There are also two (bash) build scripts which can be used for building the 32-bit and 64-bit libs,
-respectively. This is tested using the MinGW-w64 cross compiler tool chains on Linux. After uncompressing
-the DREAM source code packge you can find these files in the \texttt{windows} folder.
-
-Given that you have installed the MinGW-w64 i686 cross compiler you can
-build the 32-bit Pthreads-win32 with
-%
-\begin{verbatim}
-# ./build_pthreads_win32
-\end{verbatim}
-%
-This will (patch it for the MinGW-w64 compiler) build the \texttt{pthreadGC2.dll} file and copy it (the \texttt{pthread.def} file,
-and the header files \texttt{pthread.h}, \texttt{sched.h} and, \texttt{semaphore.h}) to  the \texttt{windows/dll} folder.
-
-For 64-bit windows you first need to install the MinGW-w64 x86\_64 cross compiler and then the script
-\begin{verbatim}
-# ./build_pthreads_win64
-\end{verbatim}
-%
-will copy the Pthreads-win32 sources, patch them for 64-bits support, and build the lib. The 64-bit lib (the
-\texttt{pthread.def} file, and the header files \texttt{pthread.h}, \texttt{sched.h} and,
-\texttt{semaphore.h}) will be installed in the  \texttt{windows/dll\_64} folder.
-
-%Note: if you intend to use these libs with one of the MSVC compilers then you also need the
-%corresponding \texttt{lib} files. These \texttt{lib} files can be generated using the windows
-%bat-files found in the \texttt{windows/dll} and  \texttt{windows/dll\_64} folders, respectively.
-
-
-\section{Building the FFTW Library for 32 and 64 bit Windows}
-\label{sec:build_fftw-windows}
-
-For conveniance we have also included scripts to build the FFTW library
-for both 32 and 64-bit Windows. The (bash) scripts uses MinGW-w64 (i686 and x86\_64) cross compiler
-tool chains, respectively. Change directory to the \texttt{windows} folder and run
-%
-\begin{verbatim}
-# ./BUILD-MINGW-FFTW
-\end{verbatim}
-%
-to build for 32-bit Windows or
-%
-\begin{verbatim}
-# ./BUILD-MINGW_64-FFTW
-\end{verbatim}
-%
-for 64-bit Windows. The two build scripts are based on the corresponding ones at the FFTW
-\href{http://www.fftw.org}{site} adapted for building DREAM on Windows. The scripts downloads the FFTW
-sources, builds and install the libraries in the \texttt{windows/dll} and  \texttt{windows/dll\_64} folders,
-respectively.
-
-%Similary to the Pthreads-win32 lib you need to build the \texttt{lib} files if you intend to use
-%these libs with one of the MSVC compilers. These \texttt{lib} files can be generated using the corresponding
-%windows bat-files found in the \texttt{windows/dll} and  \texttt{windows/dll\_64} folders, respectively.
 
 \end{document}

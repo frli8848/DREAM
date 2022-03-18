@@ -1,0 +1,205 @@
+\subsection{Model Based Ultrasonic  Array Imaging}
+
+In this section a short introduction to model based ultrasonic imaging is presented. Model based ultrasonic array
+imaging~\cite{Stoughton1993,Lingvall2003,Lingvall2007} is different from delay-and-sum imaging in the sense that is
+based on optimal information processing  whereas delay-and-sum imaging is based on geometrical focusing. The idea is
+to use a (linear) model, taking into account the diffraction effects associated with each transmitter/receiver, the
+electrical characteristics for each transmitter/receiver, as well as the used input signal(s), and
+then estimate the parameters (the scattering strengths) of the model based on both data and prior
+information.
+%
+The DREAM toolbox can be used in this process for computing the SIRs for the model which can then be convolved
+with measured electrical impulse responses to obtain a model for a real measurement setup or using only simulated
+impulse responses to evaluate different array designs, for example.
+
+To obtain a linear mode we need to consider both the forward process and the backward process.
+As discussed in Section~\ref{sec:analythical} [Eq.~\eqref{eq:pressure_response}] the forward response can be
+divided in three parts: the input signal $u(t)$, the forward electro-acoustical response
+%
+\ifthenelse{\boolean{TEX4HT}}
+{
+  $h^{ef}(t)$,
+}{
+  $h^\text{ef}(t)$,
+}
+and the forward SIR
+\ifthenelse{\boolean{TEX4HT}}
+{
+  $h^{{f-}\smt{sir}}(\r,t)$.
+}{
+  $h^{\text{f-}\smt{sir}}(\r,t)$.
+}
+The backward response can similarly be divided in two parts: the
+backward acousto-electrical impulse
+response
+\ifthenelse{\boolean{TEX4HT}}
+{
+  $h^{eb}(t)$ and the backward SIR $h^{{b-}\smt{sir}}(\r,t)$.
+}{
+  $h^\text{eb}(t)$ and the backward SIR $h^{\text{b-}\smt{sir}}(\r,t)$.
+}
+Now, consider an array with $K$ transmit elements and $L$ receive elements and contributions from a single observation
+point, $\r = \begin{bmatrix} x &y & z\end{bmatrix}^T$, where ${}^T$ denotes the transpose operator.
+The received signal, $y_l(\r,t)$, from the $l$th receive element can be expressed
+%%
+\ifthenelse{\boolean{TEX4HT}}
+{
+  \begin{equation}
+    \begin{split}
+      y_l(\r,t) & =
+      \overset{{Forward impulse response (f)}}{\overbrace{\left( \sum_{k=0}^{K-1}
+            h^{{f-}\smt{sir}}_k(\r,t) * h_{k}^{ef}(t),
+            * u_k(t) \right)}} o(\r) * \\
+      & \overset{{Backward impulse response (b)}}{\overbrace{h^{{b-}\smt{sir}}_l(\r,t) *  h_{l}^{eb}(t)}} + e_l(t), \\
+      & = h^{f}(\r,t) * h_l^{b}(\r,t) o(\r) + e_l(t), \\
+      & = h_l(\r,t) o(\r) + e_l(t),
+    \end{split}
+    \label{eq:discrete_system_impulse_response}
+  \end{equation}
+}{
+  \begin{equation}
+    \begin{split}
+      y_l(\r,t) & =
+      \overset{\text{Forward impulse response (f)}}{\overbrace{\left( \sum_{k=0}^{K-1}
+            h^{\text{f-}\smt{sir}}_k(\r,t) * h_{k}^\text{ef}(t),
+            * u_k(t) \right)}} o(\r) * \\
+      & \overset{\text{Backward impulse response (b)}}{\overbrace{h^{\text{b-}\smt{sir}}_l(\r,t) *  h_{l}^\text{eb}(t)}} + e_l(t), \\
+      & = h^\text{f}(\r,t) * h_l^\text{b}(\r,t) o(\r) + e_l(t), \\
+      & = h_l(\r,t) o(\r) + e_l(t),
+    \end{split}
+    \label{eq:discrete_system_impulse_response}
+  \end{equation}
+}
+%%
+where $*$ denotes temporal convolution and $e_l(t)$ is the noise for the $l$th receive element.
+Note that the total forward impulse response is a superposition of the forward impulse responses
+corresponding to all transmit elements. The \emph{object function}
+$o(\r)$ is the scattering strength at the observation point $\r$,
+\ifthenelse{\boolean{TEX4HT}}
+{
+  $h_{k}^{ef}(t)$
+}{
+  $h_{k}^\text{ef}(t)$
+}
+is the forward electrical impulse response for the $k$th transmit element,
+\ifthenelse{\boolean{TEX4HT}}
+{
+  $h_{l}^{eb}(t)$
+}{
+  $h_{l}^\text{eb}(t)$
+}
+the backward electrical impulse response
+for the $l$th receive element, and $u_k(t)$ is the input signal for the $k$th transmit element.
+%Hereafter we will refer to the pulse-echo (double-path) impulse $h_l(\r,t)$ as the \emph{system}
+%impulse response.
+
+A discrete-time version of~\eqref{eq:system_impulse_response} is obtained by sampling the
+impulse responses and by using discrete-time convolutions. If we consider $N$ observation points
+then the received discrete waveform from a target at the $n$th observation point,
+$\r_n = (x_n,y_n,z_n)$, can be expressed as
+%%
+\begin{equation}
+  \y_l^{(n)} = \h_l^{(n)}(\o)_{n} + \e_l,
+  \label{eq:one-pt}
+\end{equation}
+%%
+where the column vector $\h_l^{(n)}$ is the discrete system impulse response for
+the $l$th receive element.\footnote{Here all vectors are by convention column vectors.} The vector $\o$
+represents the $N$ scattering amplitudes in the region-of-interest, and the notation $(\n)_{n}$ denotes the $n$th
+element in $\o$.\footnote{The vector $\o$ can easily be rearrange to form an image when two-dimensional imaging is
+  considered~\cite{Lingvall2004}.}
+%%
+
+To obtain the received signal for all observation points we need to perform a summation over $n$, which
+equivalently can be expressed as a matrix-vector multiplication, according to
+%%
+\begin{equation}
+  \begin{split}
+  \y_l = & \sum_{n}\h_l^{(n)}(\o)_{n} + \e_l,\\
+  = &\begin{bmatrix} \h_l^{(0)} &  \h_l^{(1)} & \cdots & \h_l^{(N-1)} \end{bmatrix}\o + \e_l,\\
+  = & \P_l\o + \e_l,\\
+  \end{split}
+  \label{eq:all-pts}
+\end{equation}
+%%
+which gives us a liner model for the data for one receive element.
+
+To obtain a model for all elements we can append all $L$ receive signals $\y_l$ into a single vector $\y$ and
+we finally have linear model for the total array setup
+%%
+\begin{equation}
+  \begin{split}
+    \y = & \begin{bmatrix} \y_{0} \\
+      \y_1 \\  \vdots \\
+      \y_{L-1}\\  \end{bmatrix}  = \begin{bmatrix} \P_{0} \\
+      \P_1 \\  \vdots \\
+      \P_{L-1}\\  \end{bmatrix}
+    \o +
+    \begin{bmatrix} \e_0 \\ \e_1 \\  \vdots \\ \e_{L-1} \\ \end{bmatrix} \\
+    = & \P \o + \e,
+  \end{split}
+  \label{eq:extended}
+\end{equation}
+%%
+for the total array imaging system~\cite{Lingvall2004}.
+%
+The \emph{propagation matrix}, $\P$, in~\eqref{eq:extended} now
+describes both the transmission and the reception process for an arbitrary focused
+array. Note that the position of the observation points, and the corresponding scattering amplitudes represented
+by the vector $\o$, is not restricted to a regular two-dimensional grid, which is often used in ultrasonic imaging.
+%
+Furthermore, the array elements can in fact, similar to the observation points , be positioned at arbitrary locations in
+tree-dimensional space space. Thus, the model~\eqref{eq:extended} can also
+be used to model two-dimensional arrays as well as to model array responses in tree-dimensional space.
+Also note that the ``noise'' vector $\e$ describes the \emph{uncertainty} of the model~\eqref{eq:extended}. The noise $\e$
+does not only model the measurement noise but also all other errors that we may have, such as: multiple scattering effects,
+cross talk between array elements, non-uniform sound speed in the media, etc.
+
+%The DREAM toolbox has a function \texttt{build\_propagation\_matrix} to facilitate computing the propagation
+%matrix for a linear array. The function uses a concave linear array transducer function but is should not
+%be too difficult for a user to adapt it to other transducer geometries as well.
+%After computing the propagation matrix the array system can be simulated by using Eq.~\eqref{eq:extended}.
+
+\subsubsection{The Matched Filter}
+
+The matched filter has the property of maximizing the signal-to-noise ratio (at a single point). The matched filter
+for each observation point is given by~\cite{Lingvall2003}
+%
+\begin{equation}
+  \hat{\o}= \P^T\y.
+  \label{eq:matched-filter}
+\end{equation}
+
+Note that the structure of the matched filter is similar to delay-and-sum processing which  also can be expressed
+as a matrix-vector multiplication (see the \texttt{model\_based\_example.m} on the DREAM website),
+\begin{equation}
+  \hat{\o}= \D^T\y
+  \label{eq:das}
+\end{equation}
+%
+where the delay matrix $\D$ has ones in the positions corresponding the the propagation delays and zeros otherwise.
+
+\subsubsection{The Optimal Linear  Estimator}
+
+The optimal linear estimator (or the Wiener filter) is given by~\cite{Stoughton1993,Lingvall2007}
+%
+\begin{equation}
+  \begin{split}
+    \hat{\o} & = \Co\P^T(\P\Co\P^T+\Ce)^{-1}\y\\
+    & = (\P^T\Ceinv\P+\Coinv)^{-1}\P^T\Ceinv\y,
+  \end{split}
+\label{eq:optimal}
+\end{equation}
+%
+where $\Co$ is the covariance matrix for $\o$ and $\Ce$ is the covariance matrix for $\e$, respectively.
+The estimator~\eqref{eq:optimal} has the property, not found for the matched filter or for delay-and-sum
+methods, namely that any beampattern can be compensated given that the signal-to-noise ratio is sufficient.
+
+As a final not on model based imaging is that the matrices involved normally become rather large. It is
+therefore highly recommended to used a tuned linear algebra library, such as
+\href{http://www.tacc.utexas.edu/resources/software/}{K. Goto's} BLAS library or
+the \href{http://math-atlas.sourceforge.net/}{ATLAS} library, for example. These libraries often have thread
+support so that all CPUs on the computer can be utilized.
+
+An example of model based (and matrix based delay-and-sum) imaging can be found on the DREAM website (see the
+\texttt{model\_base\_example.m} file on the examples page).

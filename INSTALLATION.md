@@ -1,10 +1,10 @@
 # Introduction
 
 The DREAM Toolbox can be installed both using pre-compiled binaries and from source code. Binaries are
-currently available for Linux (x86_64) and for macOS (Intel x86_64 Macs). The binaries are compiled
+currently available for Linux (`x86_64`) and for macOS (Intel `x86_64` Macs). The binaries are compiled
 using generic compiler flags and should, therefore, run on most setups. If you want higher performance
 then it is recommended that you compile DREAM from source as
-described below
+described below.
 
 # Binary Installation
 
@@ -18,11 +18,11 @@ Nothing here yet.
 
 ## macOS Matlab Binaries
 
-We are using Miniconda pcakages when we build the macOS binaries so one first needs to install Miniconda from here:
+We are using Miniconda packages when we build the macOS binaries so one first needs to install Miniconda from here:
 
 https://conda.io/projects/conda/en/latest/user-guide/install/macos.html
 
-and then start anew Terminal (or Terminal tab) and install the FFTW lib:
+and then start a new Terminal (or Terminal tab) and install the FFTW lib:
 
 ```
 $ sudo conda install -c conda-forge fftw
@@ -41,7 +41,7 @@ Nothing here yet.
 
 # Building the DREAM Toolbox Source Code
 
-The  https://github.com/frli8848/DREAM.git repsitory contains the current development sources for the DREAM Toolbox.
+The  https://github.com/frli8848/DREAM.git repository contains the current development sources for the DREAM Toolbox.
 One can obtain the source code using:
 ```
  $ git clone https://github.com/frli8848/DREAM.git
@@ -55,7 +55,7 @@ The old legacy (and now obsolete) code can be
 found here: https://sourceforge.net/projects/dreamtoolbox/
 
 We aim to build the code and documentation on all platforms using `cmake` and one needs
-to install  a compiler tool chain and CMake for the corresponding platform.
+to install a compiler tool chain and CMake for the corresponding platform.
 
 The Matlab builds are enabled with `-DBUILD_MEX=on` CMake flag (defaults to `off`)
 and the Octave builds with`-DBUILD_OCT=on` flag (defaults to `on`).
@@ -63,10 +63,10 @@ and the Octave builds with`-DBUILD_OCT=on` flag (defaults to `on`).
 ## Linux
 
 We have currently build the DREAM Toolbox on two Linux distributions: Ubuntu 20.04 LTS
-and Gentoo Linux. We assume that a complier toolchain is already installed, such as, `gcc`
-ocr `clang`.
+and Gentoo Linux. We assume that a compiler tool chain is already installed, such as, `gcc`
+or `clang`.
 
-First install the FFTW library which can be done using:
+First install the FFTW library (not needed if Octave is installed) which can be done using:
 ```
  $ sudo apt -yq update
  $ sudo apt install libfftw3-dev
@@ -102,20 +102,30 @@ DREAM $ mkdir build && cd build
 DREAM/build $ cmake -DCMAKE_C_FLAGS="-O3 -march=native"  -DCMAKE_CXX_FLAGS="-O3 -march=native" -DBUILD_OCT=on -DBUILD_MEX=on ..
 DREAM/build $ make -j8
 ```
-which will build DREAM with bothe Matlab and Octave support.
-
+which will build DREAM with both Matlab and Octave support.
 
 ## macOS
 
-on macOS using the Miniconda package manager.
+On macOS, first install the macOS developer tools `Xcode` with the command line tools.
+This will install  the `clang` compilers, `git` and other tools. Next install CMake from here: https://cmake.org/install/
+and enable the command line tools from the Terminal:
+```
+$ sudo "/Applications/CMake.app/Contents/bin/cmake-gui" --install
+Linked: '/usr/local/bin/cmake' -> '/Applications/CMake.app/Contents/bin/cmake'
+Linked: '/usr/local/bin/ctest' -> '/Applications/CMake.app/Contents/bin/ctest'
+Linked: '/usr/local/bin/cpack' -> '/Applications/CMake.app/Contents/bin/cpack'
+Linked: '/usr/local/bin/cmake-gui' -> '/Applications/CMake.app/Contents/bin/cmake-gui'
+Linked: '/usr/local/bin/ccmake' -> '/Applications/CMake.app/Contents/bin/ccmake'
 
+```
+Now, install FFTW using the Miniconda package manager (needed for Matlab only builds)
 ```
  $ sudo conda install -c conda-forge fftw
 
 ```
 
-To build optimized binaries for macOS follow the same `git clone ...` and CMake build instructions
-in the Lnux build section above
+And finally, build the optimized binaries for macOS by following the `git clone ...` and CMake build instructions
+in the Linux build section above.
 
 ## Windows
 

@@ -238,12 +238,6 @@
 % Expectation
 \newcommand{\E}[1]{\ensuremath{\operatorname{E}\{#1\}}\xspace}
 
-%
-%
-%
-
-
-
 %\date{}
 
 \begin{document}
@@ -1491,21 +1485,24 @@ The \texttt{apod\_met} parameter has the following entries for the annular array
 \label{sec:parallel}
 
 Since the SIR computation for two different observation points is independent one can easily
-divide the observation points in sets and let a different process (thread) handle each set.
-On a multiprocessor machine, where each process (or thread) can run on a separate CPU core simultaneously
+divide the observation points in sets and let a different process (or thread) handle each set.
+On a multiprocessor machine, where each process (thread) can run on a separate CPU core simultaneously
 this will speed up the computations. In the DREAM toolbox this is performed using threads and
-the SIRs for each observation point set is computed in its own thread.
+the SIRs for each set of observation point set is computed in its own thread.
 
-In DREAM, C++11 threads is used and number of CPU cores is auto-detected to avoid and extra
-\texttt{n\_cpus} parameter which previously was used. One can, however, control the number of threads with
-the \texttt{NUM\_DREAM\_THREADS} environment variable and on Linux and macOS one can do this using
+In DREAM, \href{https://www.cplusplus.com/reference/thread/thread/}{C++11 threads} is used and the number
+of CPU cores on the machine is auto-detected to avoid and extra \texttt{n\_cpus} parameter that previously
+was used. One can, however, control the number of threads with the \texttt{DREAM\_NUM\_THREADS} environment
+variable and on Linux and macOS one can do this using
 \footnotesize
 \begin{verbatim}
-  $ export NUM_DREAM_THREADS=4
+  $ export DREAM_NUM_THREADS=4
 \end{verbatim}
 \normalsize
 %
-for example.
+for example.\footnote{It can also be useful to also adjust the \texttt{OMP\_NUM\_THREADS} and/or
+  \texttt{OPENBLAS\_NUM\_THREADS} environment variables which is used on some systems to
+  control the number of threads used in the linear algebra backends etc.}
 
 To see if multiple threads are running using Linux or MacOS X, first run a DREAM function on one terminal
 %
@@ -1516,7 +1513,7 @@ To see if multiple threads are running using Linux or MacOS X, first run a DREAM
 and, second, open new terminal window and use, for example, the command \texttt{htop}.\footnote{On MacOS X \texttt{htop} can be installed
 using Miniconda or MacPorts etc.} One should see something like:
 %
-\footnotesize
+\tiny
 \begin{verbatim}
   1  [||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||100.0%]     Tasks: 100, 249 thr; 6 running
   2  [||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||100.0%]     Load average: 4.66 2.10 1.04

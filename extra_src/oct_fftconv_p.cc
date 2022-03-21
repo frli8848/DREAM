@@ -64,7 +64,6 @@ std::mutex print_mutex;         // Debug print mutex (C++11)
 //
 
 volatile int running;
-volatile int in_place;
 
 //
 // typedef:s
@@ -252,13 +251,11 @@ fftconv_p(A,B,Y,mode,wisdom_str_in);\n\
 \n\
 where the 'mode' is a string which can be '=', '+=', or '-='.\n\
 \n\
-NOTE: fftconv_p requires the FFTW library version 3 @url{http://www.fftw.org}.\n\
-\n\
 fftconv_p is a part of the DREAM Toolbox available at\n\
 @url{http://www.signal.uu.se/Toolbox/dream/}.\n\
 \n\
 Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
-@seealso {conv_p, fftconv, conv, fftw_wisdom}\n\
+@seealso {conv, conv_p, fftconv, fftw_wisdom}\n\
 @end deftypefn")
 {
   double *A,*B, *Y;
@@ -273,8 +270,6 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
   int buflen, is_set = false;
   ConvMode conv_mode=ConvMode::equ;
   octave_value_list oct_retval;
-
-  in_place = false;
 
   int nrhs = args.length ();
 
@@ -445,7 +440,7 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
   nthreads = std::thread::hardware_concurrency();
 
   if (const char* env_p = std::getenv("DREAM_NUM_THREADS")) {
-    int dream_threads = std::stoul(env_p);
+    dream_idx_type dream_threads = std::stoul(env_p);
     if (dream_threads < nthreads) {
       nthreads = dream_threads;
     }
@@ -497,16 +492,6 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
       free(the_str); // Clean up.
   }
 
-  FFTVec a_v(fft_len);
-  FFTVec b_v(fft_len);
-  FFTVec c_v(fft_len);
-  double *a = a_v.get(), *b = b_v.get(), *c  = c_v.get();
-
-  FFTCVec af_v(fft_len);
-  FFTCVec bf_v(fft_len);
-  FFTCVec cf_v(fft_len);
-  std::complex<double> *af  = af_v.get(), *bf  = bf_v.get(), *cf  = cf_v.get();
-
   //std::mutex fft_mutex;
   //FFT fft(fft_len, &fft_mutex, plan_method);
   //
@@ -515,8 +500,6 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
   FFT fft(fft_len, nullptr, plan_method);
 
   if (nrhs == 2 || (nrhs == 3 && load_wisdom)) { // Normal mode.
-
-    in_place = false;
 
     //
     // Normal (non in-place) mode.
@@ -638,12 +621,8 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
 
   if ( (nrhs == 3 && !load_wisdom) || nrhs == 4 || nrhs == 5) { // In-place mode.
 
-    in_place = true;
-
-    //
     //
     // In-place mode.
-    //
     //
 
     if (  args(2).matrix_value().rows() != A_M+B_M-1) {
@@ -657,7 +636,7 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
     }
 
     const Matrix Ymat = args(2).matrix_value();
-    Y = (double*) Ymat.fortran_vec();
+    Y = (double*) Ymat.fortran_vec(); // NB. Do  not clear data here!
 
     //
     // Call the CONV subroutine.
@@ -665,84 +644,56 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
 
     running = true;
 
-    if (nthreads>1) { // Use threads
+    // Allocate local data.
+    D = (DATA*) malloc(nthreads*sizeof(DATA));
+    if (!D) {
+      error("Failed to allocate memory for thread data!");
+      return oct_retval;
+    }
 
-      // Allocate local data.
-      D = (DATA*) malloc(nthreads*sizeof(DATA));
-      if (!D) {
-        error("Failed to allocate memory for thread data!");
-        return oct_retval;
-      }
+    // Allocate mem for the threads.
+    threads = new std::thread[nthreads]; // Init thread data.
+    if (!threads) {
+      error("Failed to allocate memory for threads!");
+      return oct_retval;
+    }
 
-      // Allocate mem for the threads.
-      threads = new std::thread[nthreads]; // Init thread data.
-      if (!threads) {
-        error("Failed to allocate memory for threads!");
-        return oct_retval;
-      }
+    for (thread_n = 0; thread_n < nthreads; thread_n++) {
 
-      for (thread_n = 0; thread_n < nthreads; thread_n++) {
+      col_start = thread_n * A_N/nthreads;
+      col_stop =  (thread_n+1) * A_N/nthreads;
 
-        col_start = thread_n * A_N/nthreads;
-        col_stop =  (thread_n+1) * A_N/nthreads;
+      // Init local data.
+      D[thread_n].col_start = col_start; // Local start index;
+      D[thread_n].col_stop = col_stop;   // Local stop index;
+      D[thread_n].A = A;
+      D[thread_n].A_M = A_M;
+      D[thread_n].A_N = A_N;
+      D[thread_n].B = B;
+      D[thread_n].B_M = B_M;
+      D[thread_n].B_N = B_N;
+      D[thread_n].Y = Y;
+      D[thread_n].fft = &fft;
+      D[thread_n].conv_mode = conv_mode;
 
-        // Init local data.
-        D[thread_n].col_start = col_start; // Local start index;
-        D[thread_n].col_stop = col_stop;   // Local stop index;
-        D[thread_n].A = A;
-        D[thread_n].A_M = A_M;
-        D[thread_n].A_N = A_N;
-        D[thread_n].B = B;
-        D[thread_n].B_M = B_M;
-        D[thread_n].B_N = B_N;
-        D[thread_n].Y = Y;
-        D[thread_n].fft = &fft;
-        D[thread_n].conv_mode = conv_mode;
-
+      if (nthreads > 1) {
         // Start the threads.
         threads[thread_n] = std::thread(smp_dream_fftconv, &D[thread_n]);
-
-      } // for (thread_n = 0; thread_n < nthreads; thread_n++)
-
-      // Wait for all threads to finish.
-      for (thread_n = 0; thread_n < nthreads; thread_n++)
-        threads[thread_n].join();
-
-      // Free memory.
-      if (D) {
-        free((void*) D);
+      } else {
+        smp_dream_fftconv(&D[0]);
       }
+    } // for (thread_n = 0; thread_n < nthreads; thread_n++)
 
-    } else { // Do not use threads.
+    if (nthreads > 1) {
+      // Wait for all threads to finish.
+      for (thread_n = 0; thread_n < nthreads; thread_n++) {
+        threads[thread_n].join();
+      }
+    }
 
-      if (B_N > 1) {// B is a matrix.
-
-        for (n=0; n<A_N; n++) {
-
-          fftconv(fft, &A[0+n*A_M], A_M, &B[0+n*B_M], B_M, &Y[0+n*(A_M+B_M-1)],
-                  a,b,c,af,bf,cf, conv_mode);
-
-          if (running==false) {
-            printf("fftconv_p: bailing out!\n");
-            break;
-          }
-
-        } // end-for
-      } else { // B is a vector.
-
-        for (n=0; n<A_N; n++) {
-
-          fftconv(fft, &A[0+n*A_M], A_M, B, B_M, &Y[0+n*(A_M+B_M-1)],
-                  a,b,c,af,bf,cf,conv_mode);
-
-          if (running==false) {
-            printf("fftconv_p: bailing out!\n");
-            break;
-          }
-
-        } // end-for
-      } // end-if
-
+    // Free memory.
+    if (D) {
+      free((void*) D);
     }
 
     //

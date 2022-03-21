@@ -35,3 +35,12 @@ void fftconv(FFT &fft,
              double *a,  double *b, double *c,
              std::complex<double> *af, std::complex<double> *bf, std::complex<double> *cf,
              ConvMode conv_mode);
+
+void add_fftconv(FFT &fft,
+                 double **H, octave_idx_type L, octave_idx_type h_len, // 3D impulse response matrix.
+                 octave_idx_type n, // observation point index.
+                 double *U, octave_idx_type u_len, // Input signal matrix.
+                 double *z,                        // OUtput vector.
+                 double *a, double *b, double *c,
+                 std::complex<double> *af, std::complex<double> *bf, std::complex<double> *cf,
+                 ConvMode conv_mode);

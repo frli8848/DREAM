@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2006,2007,2008,2009,2012,2016,2019,2021 Fredrik Lingvall
+* Copyright (C) 2006,2007,2008,2009,2012,2016,2019,2021,2022 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -33,6 +33,7 @@
 
 #include "dream.h"
 #include "affinity.h"
+#include "fftconv.h"
 
 #include "mex.h"
 
@@ -46,14 +47,7 @@
 // Globals
 //
 volatile int running;
-volatile int in_place;
 int plan_method = 4; // Default to ESTIMATE method.
-
-// FFTW plans.
-//static  fftw_plan    p_forward   = NULL;
-//static  fftw_plan    p_backward  = NULL;
-fftw_plan    p_forward;
-fftw_plan    p_backward;
 
 //
 // typedef:s
@@ -64,14 +58,17 @@ typedef struct
   size_t line_start;
   size_t line_stop;
   int L;
-  double **A;
-  size_t A_M;
-  size_t A_N;
-  double *B;
-  size_t B_M;
-  size_t B_N;
+  double **H;
+  size_t H_M;
+  size_t H_N;
+  double *U;
+  size_t U_M;
+  size_t U_N;
   double *Y;
+  FFT *fft;
+  ConvMode conv_mode;
 } DATA;
+
 
 typedef void (*sighandler_t)(int);
 
@@ -83,10 +80,6 @@ void sighandler(int signum);
 void sig_abrt_handler(int signum);
 void sig_keyint_handler(int signum);
 
-void add_fftconv(double **xr, size_t nidx, size_t nx, double *yr, size_t ny, double *zr, size_t L,
-                 double      *a,  double *b, double *c,
-                 fftw_complex *af, fftw_complex *bf, fftw_complex *cf);
-
 /***
  *
  * Thread function.
@@ -96,199 +89,50 @@ void add_fftconv(double **xr, size_t nidx, size_t nx, double *yr, size_t ny, dou
 void* smp_dream_sum_fftconv(void *arg)
 {
   DATA D = *(DATA *)arg;
-  size_t    line_start=D.line_start, line_stop=D.line_stop, n;
-  double **A = D.A, *B = D.B, *Y = D.Y;
-  size_t A_M = D.A_M, B_M = D.B_M; //, B_N = D.B_N;
-  int L = D.L;
+  size_t line_start=D.line_start, line_stop=D.line_stop, n;
+  double **H = D.H, *U = D.U, *Y = D.Y;
+  size_t H_M = D.H_M, U_M = D.U_M; //, U_N = D.U_N;
+  size_t L = D.L;
+  FFT fft = *D.fft;
+  ConvMode conv_mode = D.conv_mode;
+
+  dream_idx_type fft_len = H_M + U_M - 1;
 
   // Input vectors.
-  double *a  = NULL, *b  = NULL;
-  double *c  = NULL;
+  FFTVec a_v(fft_len);
+  FFTVec b_v(fft_len);
+  FFTVec c_v(fft_len);
+  double *a = a_v.get(), *b = b_v.get(), *c  = c_v.get();
 
   // Fourier Coefficients.
-  fftw_complex *af  = NULL, *bf  = NULL, *cf  = NULL;
-  //std::complex<double> *af  = NULL, *bf  = NULL, *cf  = NULL;
-  int fft_len;
-
-  // Allocate space for input vectors.
-
-  fft_len = A_M+B_M-1;
-
-  a = (double*) fftw_malloc(sizeof(double)*2*(fft_len/2+1));
-  af = (fftw_complex*) fftw_malloc(sizeof(fftw_complex)*2*(fft_len/2+1));
-  //af = (std::complex<double>*) fftw_malloc(sizeof(fftw_complex)*2*(fft_len/2+1));
-
-  b = (double*) fftw_malloc(sizeof(double)*2*(fft_len/2+1));
-  bf = (fftw_complex*) fftw_malloc(sizeof(fftw_complex)*2*(fft_len/2+1));
-  //bf = (std::complex<double>*) fftw_malloc(sizeof(fftw_complex)*2*(fft_len/2+1));
-
-  // Allocate space for output vector.
-  c = (double*) fftw_malloc(sizeof(double)*2*(fft_len/2+1));
-  cf = (fftw_complex*) fftw_malloc(sizeof(fftw_complex)*2*(fft_len/2+1));
-  //cf = (std::complex<double>*) fftw_malloc(sizeof(fftw_complex)*2*(fft_len/2+1));
+  FFTCVec af_v(fft_len);
+  FFTCVec bf_v(fft_len);
+  FFTCVec cf_v(fft_len);
+  std::complex<double> *af  = af_v.get(), *bf  = bf_v.get(), *cf  = cf_v.get();
 
   //
   // Do the convolution.
   //
 
+  // NB. U is always a matrix here
+
   for (n=line_start; n<line_stop; n++) {
-    add_fftconv( A, n, A_M, B, B_M, &Y[0+n*(A_M+B_M-1)], L,
-                 a,b,c,af,bf,cf);
+
+    add_fftconv(fft,
+                H, L, H_M,
+                n,
+                U, U_M, // U must be U_M x L
+                &Y[0+n*(H_M+U_M-1)],
+                a, b, c, af, bf, cf,
+                conv_mode);
 
     if (running==false) {
-      mexPrintf("sum_fftconv: thread for column %d -> %d bailing out!\n",line_start+1,line_stop);
+      std::cout << "sum_fftconv: thread for column " << line_start+1 << " -> " << line_stop << " bailing out!\n";
       break;
     }
-  }
-
-  /***
-      if (B_N > 1) {// B is a matrix.
-
-      for (n=line_start; n<line_stop; n++) {
-
-      //add_fftconv( &A[0+n*A_M]), A_M, &B[0+n*B_M], B_M, &Y[0+n*(A_M+B_M-1)],
-      //	   a,b,c,af,bf,cf);
-
-      add_fftconv( A, n, A_M, &B[0+n*B_M], B_M, &Y[0+n*(A_M+B_M-1)], L,
-      a,b,c,af,bf,cf);
-
-      if (running==false) {
-      printf("sum_fftconv: thread for column %d -> %d bailing out!\n",line_start+1,line_stop);
-      break;
-      }
-
-      } // end-for
-      } else { // B is a vector.
-
-      for (n=line_start; n<line_stop; n++) {
-
-      add_fftconv( A, n, A_M, B, B_M, &Y[0+n*(A_M+B_M-1)], L,
-      a,b,c,af,bf,cf);
-
-      if (running==false) {
-      printf("sum_fftconv: thread for column %d -> %d bailing out!\n",line_start+1,line_stop);
-      break;
-      }
-
-      } // end-for
-
-      } // end.if
-  ***/
-
-  //
-  //  Cleanup
-  //
-
-  // Free buffer memory.
-  if (a)
-    fftw_free(a);
-  else {
-    mexErrMsgTxt("Error in freeing memory in sum_fftconv thread!!");
-  }
-
-  if(af)
-    fftw_free(af);
-  else {
-    mexErrMsgTxt("Error in freeing memory in  sum_fftconv thread!!");
-  }
-
-  if(b)
-    fftw_free(b);
-  else {
-    mexErrMsgTxt("Error in freeing memory in  sum_fftconv thread!!");
-  }
-
-  if (bf)
-    fftw_free(bf);
-  else {
-    mexErrMsgTxt("Error in freeing memory in  sum_fftconv thread!!");
-  }
-
-  if (c)
-    fftw_free(c);
-  else {
-    mexErrMsgTxt("Error in freeing memory in  sum_fftconv thread!!");
-  }
-
-  if (cf)
-    fftw_free(cf);
-  else {
-    mexErrMsgTxt("Error in freeing memory in  sum_fftconv thread!!");
   }
 
   return(NULL);
-}
-
-
-
-/***
- *
- * Convolution of two vectors and summation of the result.
- *
- ***/
-
-void add_fftconv(double **xr, size_t nidx, size_t nx, double *yr, size_t ny, double *zr, size_t L,
-                 double      *a,  double *b, double *c,
-                 std::complex<double> *af, std::complex<double> *bf, std::complex<double> *cf)
-{
-  size_t n, k, fft_len;
-
-  fft_len = nx+ny-1;
-
-  // Clear output Fourier coefficeints.
-  for (n=0; n < fft_len; n++)
-    cf[n] = 0.0;
-
-  // Loop aver all L inputs.
-  for (k=0; k<L; k++) {
-
-    // Copy and zero-pad arg 1.
-    for (n=0; n < nx; n++) {
-      a[n] = (xr[k])[n+nidx*nx];
-    }
-    for (n=nx; n < fft_len; n++)
-      a[n] = 0.0; // Zero-pad.
-
-    // Copy k:th column in arg 2 and zero-pad.
-    for (n=0; n < ny; n++)
-      b[n] = yr[n+k*ny];
-    for (n=ny; n < fft_len; n++)
-      b[n] = 0.0; // Zero-pad.
-
-    // Fourier transform xr.
-    fftw_execute_dft_r2c(p_forward,a,reinterpret_cast<fftw_complex*>(af));
-
-    // Fourier transform yr.
-    fftw_execute_dft_r2c(p_forward,b,reinterpret_cast<fftw_complex*>(bf));
-
-    // Do the filtering and add the results
-    for (n = 0; n < fft_len; n++) {
-      cf[n] += (af[n] * bf[n])  / ((double) (fft_len));
-    }
-  } // for - K
-
-  //
-  // Compute the inverse DFT of the summed and filtered data.
-  //
-
-  fftw_execute_dft_c2r(p_backward,reinterpret_cast<fftw_complex*>(cf),c);
-
-  // Copy data to output matrix.
-  if (in_place == false) {
-
-    //for (n = 0; n < fft_len; n++)
-    //  zr[n] = c[n];
-    memcpy(zr,c,fft_len*sizeof(double));
-
-  } else { // in-place add operation.
-
-    for (n = 0; n < fft_len; n++)
-      zr[n] += c[n];
-
-    // in-place '=' operation.
-    //for (n = 0; n < fft_len; n++)
-    //  zr[n] = c[n];
-  }
 }
 
 /***
@@ -320,9 +164,9 @@ extern void _main();
 
 void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
-  double **A,*B, *Y = NULL;
-  sighandler_t   old_handler, old_handler_abrt, old_handler_keyint;
-  size_t line_start, line_stop, A_M, A_N, A_L, B_M, B_N, n, k;
+  double *U, *Y = NULL;
+  sighandler_t  old_handler, old_handler_abrt, old_handler_keyint;
+  size_t line_start, line_stop, H_M, H_N, H_L, U_M, U_N, n, k;
   std::thread *threads;
   size_t      thread_n, nthreads;
   DATA   *D;
@@ -338,8 +182,6 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
                     // Needs Matlab R2006b (eg. R2006b's matlab/extern/include/matrix.h)
   //const long *dv; // This gives a runtime error.
   int dims;
-
-  in_place = false;
 
   //
   // Set the method which fftw computes plans
@@ -426,38 +268,28 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     mexErrMsgTxt("Argument 1 should be a 3D Matrix\n");
 
   dv = mxGetDimensions(prhs[0]);
-  A_M = dv[0];
-  A_N = dv[1];
-  A_L = dv[2];
+  H_M = dv[0];
+  H_N = dv[1];
+  H_L = dv[2];
 
   // Store pointers to the L A-matrices in a vector.
-  A = (double**) malloc(A_L*sizeof(double*));
+  double **H = (double**) malloc(H_L*sizeof(double*));
   double* tmp_p = mxGetPr(prhs[0]);
-  for (k=0; k<A_L; k++)
-    A[k] = &(tmp_p[A_M*A_N*k]);
+  for (size_t k=0; k<H_L; k++) {
+    H[k] = &(tmp_p[H_M*H_N*k]);
+  }
 
-  B_M = mxGetM(prhs[1]);
-  B_N = mxGetN(prhs[1]);
-  B = mxGetPr(prhs[1]);
+  U_M = mxGetM(prhs[1]);
+  U_N = mxGetN(prhs[1]);
+  U = mxGetPr(prhs[1]);
 
-  //printf(" A_M = %d, A_N = %d, A_L = %d, B_N = %d\n",  A_M,A_N,A_L,B_M);
-  //if (nrhs >= 4)
-  //  printf(" P_M = %d, P_N = %d\n", mxGetM(prhs[3]),mxGetN(prhs[3]));
-
-  //  printf(" A_M = %d, A_N = %d, A_L = %d\n", (mxGetDimensions(prhs[0]))[0],(mxGetDimensions(prhs[0]))[1],(mxGetDimensions(prhs[0]))[2]);
-
-  if (A_L != B_N)
+  if (H_L != U_N) {
     mexErrMsgTxt("3rd dimension of arg 1 must match the number of columns in arg 2\n");
+  }
 
-  // Check that arg 2.
-  //if ( B_M != 1 && B_N !=1 && B_N != A_N) {
-  //  mexErrMsgTxt("Argument 2 must be a vector or a matrix with the same number of rows as arg 1!");
-  //
-  //}
-
-  if (  B_M == 1 || B_N == 1 ) { // B is a vector.
-    B_M = B_M*B_N;
-    B_N = 1;
+  if (U_M == 1 || U_N == 1 ) { // U is a vector.
+    U_M = U_M*U_N;
+    U_N = 1;
   }
 
   //
@@ -476,8 +308,8 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   }
 
   // We cannot have more threads than the number of observation points.
-  if (nthreads > A_N)
-    nthreads = A_N;
+  if (nthreads > H_N)
+    nthreads = H_N;
 
   //
   // Register signal handlers.
@@ -495,19 +327,6 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     std::cerr << "Couldn't register SIGINT signal handler!" << std::endl;
   }
 
-  // Allocate space for (temp) input/output vectors (only used for creating plans).
-
-  fft_len = A_M+B_M-1;
-
-  a = (double*) fftw_malloc(sizeof(double)*2*(fft_len/2+1));
-  af = (std::complex<double>*) fftw_malloc(sizeof(std::complex<double>)*2*(fft_len/2+1));
-
-  b = (double*) fftw_malloc(sizeof(double)*2*(fft_len/2+1));
-  bf = (std::complex<double>*) fftw_malloc(sizeof(std::complex<double>)*2*(fft_len/2+1));
-
-  c = (double*) fftw_malloc(sizeof(double)*2*(fft_len/2+1));
-  cf = (std::complex<double>*) fftw_malloc(sizeof(std::complex<double>)*2*(fft_len/2+1));
-
   //
   // Init the FFTW plans.
   //
@@ -520,39 +339,9 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       fftw_free(wisdom_str); // Clean up.
   }
 
-  // 1)
-  if (plan_method == 1) {
-    p_forward = fftw_plan_dft_r2c_1d(fft_len, a, reinterpret_cast<fftw_complex*>(af), FFTW_EXHAUSTIVE);
-    p_backward = fftw_plan_dft_c2r_1d(fft_len, reinterpret_cast<fftw_complex*>(cf), c,FFTW_EXHAUSTIVE);
-  }
-
-  // 2)
-  if (plan_method == 2) {
-    p_forward = fftw_plan_dft_r2c_1d(fft_len, a, reinterpret_cast<fftw_complex*>(af), FFTW_PATIENT);
-    p_backward = fftw_plan_dft_c2r_1d(fft_len, reinterpret_cast<fftw_complex*>(cf), c, FFTW_PATIENT);
-  }
-
-  // 3)
-  if (plan_method == 3) {
-    p_forward = fftw_plan_dft_r2c_1d(fft_len, a, reinterpret_cast<fftw_complex*>(af), FFTW_MEASURE);
-    p_backward = fftw_plan_dft_c2r_1d(fft_len, reinterpret_cast<fftw_complex*>(cf), c, FFTW_MEASURE);
-  }
-
-  // 4)
-  if (plan_method == 4) {
-    p_forward = fftw_plan_dft_r2c_1d(fft_len, a, reinterpret_cast<fftw_complex*>(af),  FFTW_ESTIMATE);
-    p_backward = fftw_plan_dft_c2r_1d(fft_len, reinterpret_cast<fftw_complex*>(cf), c,  FFTW_ESTIMATE);
-  }
-
-  //
-  // Return the FFTW Wisdom so that the plans can be re-used.
-  //
-
-  if (return_wisdom) {
-    wisdom_str = fftw_export_wisdom_to_string();
-    plhs[1] = mxCreateString(wisdom_str);
-    fftw_free(wisdom_str);
-  }
+  // NB We call the FFTW planners only from the main thread once
+  // so no need to lock it with a mutex
+  FFT fft(fft_len, nullptr, plan_method);
 
   //
   // Normal (non in-place) mode.
@@ -560,9 +349,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
   if (nrhs == 2 || (nrhs == 3 && load_wisdom)) { // Normal mode.
 
-    in_place = false;
-
-    plhs[0] = mxCreateDoubleMatrix(A_M+B_M-1, A_N, mxREAL);
+    plhs[0] = mxCreateDoubleMatrix(H_M+U_M-1, H_N, mxREAL);
     Y = mxGetPr(plhs[0]);
   }
 
@@ -572,12 +359,10 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
   if ( (nrhs == 3 && !load_wisdom) || nrhs == 4 ) {
 
-    in_place = true;
-
-    if ( mxGetM(prhs[2]) != A_M+B_M-1)
+    if ( mxGetM(prhs[2]) != H_M+U_M-1)
       mexErrMsgTxt("Wrong number of rows in argument 4!");
 
-    if ( mxGetN(prhs[2]) != A_N)
+    if ( mxGetN(prhs[2]) != H_N)
       mexErrMsgTxt("Wrong number of columns in argument 4!");
 
     Y = mxGetPr(prhs[2]);
@@ -589,93 +374,45 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
   running = true;
 
-  if (nthreads>1) { // Use threads
+  // Allocate local data.
+  D = (DATA*) malloc(nthreads*sizeof(DATA));
+  if (!D) {
+    mexErrMsgTxt("Failed to allocate memory for thread data!");
+  }
 
-    // Allocate local data.
-    D = (DATA*) malloc(nthreads*sizeof(DATA));
-    if (!D) {
-      mexErrMsgTxt("Failed to allocate memory for thread data!");
+  // Allocate mem for the threads.
+  threads = new std::thread[nthreads]; // Init thread data.
+  if (!threads)
+    mexErrMsgTxt("Failed to allocate memory for threads!");
 
-    }
+  for (thread_n = 0; thread_n < nthreads; thread_n++) {
 
-    // Allocate mem for the threads.
-    threads = new std::thread[nthreads]; // Init thread data.
-    if (!threads)
-      mexErrMsgTxt("Failed to allocate memory for threads!");
+    line_start = thread_n * H_N/nthreads;
+    line_stop =  (thread_n+1) * H_N/nthreads;
 
-    for (thread_n = 0; thread_n < nthreads; thread_n++) {
+    // Init local data.
+    D[thread_n].line_start = line_start; // Local start index;
+    D[thread_n].line_stop  = line_stop;  // Local stop index;
+    D[thread_n].H = H;
+    D[thread_n].H_M = H_M;
+    D[thread_n].H_N = H_N;
+    D[thread_n].U = U;
+    D[thread_n].U_M = U_M;
+    D[thread_n].U_N = U_N;
+    D[thread_n].Y = Y;
+    D[thread_n].L = H_L;
 
-      line_start = thread_n * A_N/nthreads;
-      line_stop =  (thread_n+1) * A_N/nthreads;
-
-      // Init local data.
-      D[thread_n].line_start = line_start; // Local start index;
-      D[thread_n].line_stop  = line_stop;  // Local stop index;
-      D[thread_n].A = A;
-      D[thread_n].A_M = A_M;
-      D[thread_n].A_N = A_N;
-      D[thread_n].B = B;
-      D[thread_n].B_M = B_M;
-      D[thread_n].B_N = B_N;
-      D[thread_n].Y = Y;
-      D[thread_n].L = A_L;
-
+    if (nthreads > 1) {
       // Start the threads.
       threads[thread_n] = std::thread(smp_dream_sum_fftconv, &D[thread_n]);
-      set_dream_thread_affinity(thread_n, nthreads, threads);
+    } else {
+      smp_dream_sum_fftconv(&D[0]);
     }
+  }
 
-    // Wait for all threads to finish.
-    for (thread_n = 0; thread_n < nthreads; thread_n++)
-        threads[thread_n].join();
-
-    // Free memory.
-    if (D)
-      free((void*) D);
-
-  } else { // Do not use threads.
-
-    for (n=0; n<A_N; n++) {
-
-      add_fftconv( A,n, A_M, B, B_M, &Y[0+n*(A_M+B_M-1)], A_L,
-                   a,b,c,af,bf,cf);
-
-      if (running == false) {
-        mexPrintf("sum_fftconv: bailing out!\n");
-        break;
-      }
-    }
-
-    /***
-        if (B_N > 1) {// B is a matrix.
-
-        for (n=0; n<A_N; n++) {
-
-        add_fftconv( A,n, A_M, &B[0+n*B_M], B_M, &Y[0+n*(A_M+B_M-1)], A_L,
-        a,b,c,af,bf,cf);
-
-        if (running==false) {
-        printf("sum_fftconv: bailing out!\n");
-        break;
-        }
-
-        } // end-for
-        } else { // B is a vector.
-
-        for (n=0; n<A_N; n++) {
-
-        add_fftconv( A, n, A_M, B, B_M, &Y[0+n*(A_M+B_M-1)], A_L,
-        a,b,c,af,bf,cf);
-
-        if (running==false) {
-        printf("sum_fftconv: bailing out!\n");
-          break;
-          }
-
-          } // end-for
-
-          } // end.if
-      ***/
+  // Free memory.
+  if (D) {
+    free((void*) D);
   }
 
   //
@@ -698,27 +435,19 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     dream_err_msg("CTRL-C pressed!\n"); // Bail out.
   }
 
+  if (H) {
+    free(H);
+  }
 
-  free(A);
+  //
+  // Return the FFTW Wisdom so that the plans can be re-used.
+  //
 
-  // Clear temp vectors used for the FFTW plans.
-
-  fftw_free(a);
-  fftw_free(af);
-
-  fftw_free(b);
-  fftw_free(bf);
-
-  fftw_free(c);
-  fftw_free(cf);
-
-
-  // Cleanup the plans.
-  fftw_destroy_plan(p_forward);
-  fftw_destroy_plan(p_backward);
-
-  // Clean up FFTW
-  fftw_cleanup();
+  if (return_wisdom) {
+    wisdom_str = fftw_export_wisdom_to_string();
+    plhs[1] = mxCreateString(wisdom_str);
+    fftw_free(wisdom_str);
+  }
 
   return;
 }

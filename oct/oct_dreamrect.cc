@@ -201,7 +201,7 @@ for a rectangular transducer using parallel processing\n\
 An N x 3 matrix, Ro = [xo1 yo1 zo2; xo2 yo2 zo2; ... xoN yoN zoN]; where N is the number of observation points.\n\
 @end table\n\
 \n\
-Geometrical apod_pareters: geom_par = [a b];\n\
+Geometrical parameters: geom_par = [a b];\n\
 \n\
 @table @code\n\
 @item a\n\

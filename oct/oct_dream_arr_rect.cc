@@ -228,7 +228,7 @@ DEFUN_DLD (dream_arr_rect, args, nlhs,
                 focal,steer_met,steer_par,apod_met,apod,win_par,err_level);\n\
 \n\
 DREAM_ARR_RECT - Computes the spatial impulse response\n\
-for a rectangular transducer using parallel processing\n\
+for an array transducer with rectangular elements using parallel processing\n\
 (using threads).\n\
 \n\
 Observation point(s) ([mm]):\n\

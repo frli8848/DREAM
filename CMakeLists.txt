@@ -118,18 +118,8 @@ endif (BUILD_PYTHON)
 
 if (BUILD_USERMAN)
 
-  # Generate version files for the user manual.
-  execute_process(COMMAND svnversion
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-    OUTPUT_VARIABLE SVNVER
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-    )
-
-  file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/version.tex" "\\newcommand{\\version}{${DREAM_VERSION_SHA1}\\xspace}\r")
-  file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/revision.tex" "\\rhead{\\date ${DREAM_VERSION_SHA1} }\r")
-
-  #file(WRITE  "${CMAKE_CURRENT_BINARY_DIR}/version.tex" "\\newcommand{\\version}{${DREAM_VERSION_MAJOR}.${DREAM_VERSION_MINOR}.${DREAM_VERSION_PATCH}\\xspace}\r")
-  #file(WRITE  "${CMAKE_CURRENT_BINARY_DIR}/revision.tex" "\\rhead{\\date Revision ${SVNVER} }\r")
+  file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/version.tex" "\\newcommand{\\version}{\\texttt{${DREAM_VERSION}}\\xspace}\r")
+  file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/revision.tex" "\\rhead{\\date \\texttt{${DREAM_VERSION}} }\r")
 
   include (userman/UseLATEX.cmake)
 

@@ -310,6 +310,20 @@ class FFT
 
   void cc_ifft(const FFTCVec &xc, FFTCVec &yc);
 
+#if defined DREAM_OCTAVE || defined HAVE_FFTW
+
+  bool import_wisdom(char *str) {return fftw_import_wisdom_from_string(str);}
+  bool import_wisdom(std::string str) {return fftw_import_wisdom_from_string(str.c_str());}
+  void forget_wisdom() {fftw_forget_wisdom();}
+  bool is_wisdom(char *str) {return std::strcmp("fftw_wisdom",str);}
+  bool is_wisdom(std::string str) {return std::strcmp("fftw_wisdom",str.c_str());}
+  std::string get_wisdom() {
+    char *str = fftw_export_wisdom_to_string();
+    std::string w_str(str);
+    return w_str;
+  }
+#endif
+
  private:
 
   dream_idx_type m_fft_len;

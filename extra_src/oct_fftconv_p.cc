@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2006,2007,2008,2009,2010,2012,2014,2016,2021,2021 Fredrik Lingvall
+* Copyright (C) 2006,2007,2008,2009,2010,2012,2014,2016,2021,2022 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -35,15 +35,6 @@
 // Macros
 //
 
-#define EQU 0
-#define SUM 1
-#define NEG 2
-
-// ToDo: Add check if input pars have zero length
-// ToDo: Add help text for in-place mode.
-// We pobably need fftw >= 3.2.x to handle 64-bit array indexing.
-// ToDO If we have fftw 3.2.x we can use fftw_plan_dft_r2c_1d_64 etc.
-
 #ifdef DEBUG
 #include <mutex>
 std::mutex print_mutex;         // Debug print mutex (C++11)
@@ -55,7 +46,7 @@ std::mutex print_mutex;         // Debug print mutex (C++11)
 
 /***
  *
- *  Parallel (threaded) FFTW based convolution.
+ *  Parallel (threaded) FFT based convolution.
  *
  ***/
 
@@ -221,9 +212,9 @@ An M x N matrix.\n\
 @item B\n\
 A K x N matrix or a K-length vector. If B is a vector each column in A is convolved with the vector B.\n\
 @item wisdom_str_in\n\
-Optional parameter. If the wisdom_str_in parameter is not supplied then @code{fftconv_p} calls fftw wisdom plan\n\
+Optional parameter. If the wisdom_str_in parameter is not supplied then @code{fftconv_p} calls FFTW wisdom plan\n\
 functions before performing any frequency domain operations. This overhead can be avoided by supplying\n\
-a pre-computed fftw wisdom string wisdom_str_in. For more information see the fftw user manunal\n\
+a pre-computed FFTW wisdom string wisdom_str_in. For more information see the FFTW user manunal\n\
 available at @url{http://www.fftw.org}.\n\
 @end table\n\
 \n\
@@ -234,7 +225,7 @@ Output parameters:\n\
 The (M+K-1) x N output matrix.\n\
 @item wisdom_str_out\n\
 Optional parameter. If the wisdom_str_out output parameter is supplied then @code{fftconv_p}\n\
-will call fftw wisdom plan functions and return the wisdom string which then can be used to\n\
+will call FFTW wisdom plan functions and return the wisdom string which then can be used to\n\
 speed up subsequent calls to @code{fftconv_p} by suppying the string as the input argument\n\
 wisdom_str_in.\n\
 @end tabl\n\
@@ -254,7 +245,7 @@ where the 'mode' is a string which can be '=', '+=', or '-='.\n\
 fftconv_p is a part of the DREAM Toolbox available at\n\
 @url{http://www.signal.uu.se/Toolbox/dream/}.\n\
 \n\
-Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
+Copyright @copyright{} 2006-2022 Fredrik Lingvall.\n\
 @seealso {conv, conv_p, fftconv, fftw_wisdom}\n\
 @end deftypefn")
 {
@@ -266,7 +257,6 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
   DATA   *D;
   int plan_method = 4; // Default to FFTW_ESTIMATE
   octave_idx_type fft_len, return_wisdom = false, load_wisdom = false;
-  char *the_str = NULL;
   int buflen, is_set = false;
   ConvMode conv_mode=ConvMode::equ;
   octave_value_list oct_retval;
@@ -286,129 +276,21 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
   // Check for proper inputs arguments.
   //
 
-  switch (nrhs) {
-
-  case 0:
-  case 1:
+  // Num inputs
+  if ( (nrhs < 2) ||  (nrhs < 2) ) {
     error("fftconv_p requires 2 to 5 input arguments!");
     return oct_retval;
-    break;
+  }
 
-  case 2:
-    if (nlhs > 2) {
-      error("Too many output arguments for fftconv_p!");
-      return oct_retval;
-    }
-    if (nlhs == 2)
-      return_wisdom = true;
-
-    break;
-
-  case 3:
-    if ( args(2).is_string() ) { // 3rd arg is a fftw wisdom string.
-      std::string strin = args(2).string_value();
-      buflen = strin.length();
-
-      the_str = (char*) malloc(buflen * sizeof(char));
-      for ( n=0; n<buflen; n++ ) {
-        the_str[n] = strin[n];
-      }
-
-      //
-      // If 3rd arg is a string then only a wisdom string is valid..
-      //
-
-      if (!strcmp("fftw_wisdom",the_str)) {
-        error("The string in arg 3 do not seem to be in a fftw wisdom format!");
-        return oct_retval;
-      }
-      else {
-        load_wisdom = true;
-      }
-    } else { // 3rd arg not a string then assume in-place mode.
-      fftw_forget_wisdom(); // Clear wisdom history (a new wisdom will be created below).
-      if (nlhs > 0) {
-        error("3rd arg is not a fftw wisdom string and in-place mode is assumed. But then there should be no output args!");
-        return oct_retval;
-      }
-    }
-    break;
-
-  case 4:  // In-place mode if >= 4 args.
-    if ( args(3).is_string() ) { // 4th arg is a string ('=','+=','-=', or wisdom).
-
-      std::string strin = args(3).string_value();
-      buflen = strin.length();
-      the_str = (char*) malloc(buflen * sizeof(char));
-      for ( n=0; n<buflen; n++ ) {
-        the_str[n] = strin[n];
-      }
-
-      // Valid strings are:
-      //  '='  : In-place replace mode.
-      //  '+=' : In-place add mode.
-      //  '-=' : In-place sub mode.
-      //  wisdom string.
-
-      is_set = false;
-
-      if (strncmp(the_str,"=",1) == 0) {
-        conv_mode=ConvMode::equ;
-        is_set = true;
-      }
-
-      if (strncmp(the_str,"+=",2) == 0) {
-        conv_mode=ConvMode::sum;
-        is_set = true;
-      }
-
-      if (strncmp(the_str,"-=",2) == 0) {
-        conv_mode=ConvMode::neg;
-        is_set = true;
-      }
-
-      if (is_set == false) {
-        if (strcmp("fftw_wisdom",the_str) < 0 ) {
-          error("Non-valid string in arg 4!");
-          return oct_retval;
-        } else {
-          load_wisdom = true;
-        }
-      }
-    } else { // 4th arg not a string
-      error("Argument 4 is not a valid string format!");
-      return oct_retval;
-    }
-    break;
-
-
-  case 5: // In-place mode if input 5 args.
-    if ( args(4).is_string() ) { // 5:th arg is a string (fftw wisdom).
-
-      // Read the wisdom string.
-      std::string strin = args(4).string_value();
-      buflen = strin.length();
-      the_str = (char*) malloc(buflen * sizeof(char));
-      for ( n=0; n<buflen; n++ ) {
-        the_str[n] = strin[n];
-      }
-
-      if (strcmp("fftw_wisdom",the_str) < 0 ) {
-        error("The string in 5th arg do not seem to be in a fftw wisdom format!");
-        return oct_retval;
-      } else
-        load_wisdom = true;
-
-    } else { // 5th arg not a string
-      error("Argument 5 is not a valid string format!");
-      return oct_retval;
-    }
-    break;
-
-  default:
-    error("fftconv_p requires 2 to 5 input arguments!");
+  // Num outputs
+  if (nlhs > 2) {
+    error("Too many output arguments for fftconv_p!");
     return oct_retval;
-    break;
+  }
+
+  // 2nd output is wisdom string
+  if (nlhs == 2) {
+    return_wisdom = true;
   }
 
   const Matrix tmp0 = args(0).matrix_value();
@@ -432,6 +314,113 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
     B_N = 1;
   }
 
+  fft_len = A_M+B_M-1;
+
+  //std::mutex fft_mutex;
+  //FFT fft(fft_len, &fft_mutex, plan_method);
+  //
+  // NB We call the FFTW planners only from the main thread once
+  // so no need to lock it with a mutex
+  FFT fft(fft_len, nullptr, plan_method);
+
+  std::string wisdom_str ="";
+
+  switch (nrhs) {
+
+  case 2:
+    break;
+
+  case 3:
+    if ( args(2).is_string() ) { // 3rd arg is a FFTW wisdom string.
+      wisdom_str = args(2).string_value();
+
+      //
+      // If 3rd arg is a string then only a wisdom string is valid.
+      //
+
+      if (!fft.is_wisdom(wisdom_str)) {
+        error("The string in arg 3 do not seem to be in a FFTW wisdom format!");
+        return oct_retval;
+      }
+      else {
+        load_wisdom = true;
+      }
+    } else { // 3rd arg not a string then assume in-place mode.
+      fft.forget_wisdom(); // Clear wisdom history (a new wisdom will be created below).
+      if (nlhs > 0) {
+        error("3rd arg is not a FFTW wisdom string and in-place mode is assumed. But then there should be no output args!");
+        return oct_retval;
+      }
+    }
+    break;
+
+  case 4:  // In-place mode if >= 4 args.
+    if ( args(3).is_string() ) { // 4th arg is a string ('=','+=','-=', or wisdom).
+
+      std::string ip_mode = args(3).string_value();
+
+      // Valid strings are:
+      //  '='  : In-place replace mode.
+      //  '+=' : In-place add mode.
+      //  '-=' : In-place sub mode.
+      //  wisdom string.
+
+      is_set = false;
+
+      if (ip_mode.compare("=") == 0) {
+        conv_mode=ConvMode::equ;
+        is_set = true;
+      }
+
+      if (ip_mode.compare("+=") == 0) {
+        conv_mode=ConvMode::sum;
+        is_set = true;
+      }
+
+      if (ip_mode.compare("-=") == 0) {
+        conv_mode=ConvMode::neg;
+        is_set = true;
+      }
+
+      if (is_set == false) {
+        if (fft.is_wisdom(ip_mode) < 0 ) {
+          error("Non-valid string in arg 4!");
+          return oct_retval;
+        } else {
+          wisdom_str = ip_mode;
+          load_wisdom = true;
+        }
+      }
+    } else { // 4th arg not a string
+      error("Argument 4 is not a valid string format!");
+      return oct_retval;
+    }
+    break;
+
+  case 5: // In-place mode if input 5 args.
+    if ( args(4).is_string() ) { // 5:th arg is a string (FFTW wisdom).
+
+      // Read the wisdom string.
+      wisdom_str = args(4).string_value();
+
+      if (fft.is_wisdom(wisdom_str) < 0 ) {
+        error("The string in 5th arg do not seem to be in a FFTW wisdom format!");
+        return oct_retval;
+      } else
+        load_wisdom = true;
+
+    } else { // 5th arg not a string
+      error("Argument 5 is not a valid string format!");
+      return oct_retval;
+    }
+    break;
+
+  default:
+    error("fftconv_p requires 2 to 5 input arguments!");
+    return oct_retval;
+    break;
+  }
+
   //
   // Number of threads.
   //
@@ -451,16 +440,6 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
     nthreads = A_N;
   }
 
-#ifdef DEBUG
-  {
-    octave_stdout << "A_M: " <<  A_M
-                  << " A_N: " <<  A_N
-                  << " B_M: " <<  B_M
-                  << " A_N: " <<  A_N
-                  << " nthreads: "  << nthreads <<std::endl;
-  }
-#endif
-
   //
   // Register signal handlers.
   //
@@ -477,27 +456,17 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
     std::cerr << "Couldn't register SIGINT signal handler!" << std::endl;
   }
 
-  fft_len = A_M+B_M-1;
-
   //
   // Init the FFTW plans.
   //
 
   if(load_wisdom) {
 
-    if (!fftw_import_wisdom_from_string(the_str)) {
-      error("Failed to load fftw wisdom!");
+    if (!fft.import_wisdom(wisdom_str)) {
+      error("Failed to load FFTW wisdom!");
       return oct_retval;
-    } else
-      free(the_str); // Clean up.
+    }
   }
-
-  //std::mutex fft_mutex;
-  //FFT fft(fft_len, &fft_mutex, plan_method);
-  //
-  // NB We call the FFTW planners only from the main thread once
-  // so no need to lock it with a mutex
-  FFT fft(fft_len, nullptr, plan_method);
 
   if (nrhs == 2 || (nrhs == 3 && load_wisdom)) { // Normal mode.
 
@@ -604,16 +573,8 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
 
     // Return the FFTW Wisdom so that the plans can be re-used.
     if (return_wisdom) {
-      the_str = fftw_export_wisdom_to_string();
-      buflen = strlen(the_str);
-
-      std::string cmout( buflen, ' ' );
-      cmout.insert( buflen, (const char*) the_str);
-
-      // Add to output args.
-      oct_retval.append( cmout);
-
-      free(the_str);
+      std::string cmout = fft.get_wisdom();
+      oct_retval.append(cmout); // Add to output args.
     }
 
     return oct_retval;
@@ -719,16 +680,8 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
 
     // Return the FFTW Wisdom so that the plans can be re-used.
     if (return_wisdom) {
-      the_str = fftw_export_wisdom_to_string();
-      buflen = strlen(the_str);
-
-      std::string cmout( buflen, ' ' );
-      cmout.insert( buflen, (const char*) the_str);
-
-      // Add to output args.
-      oct_retval.append( cmout);
-
-      free(the_str);
+      std::string cmout = fft.get_wisdom();
+      oct_retval.append(cmout); // Add to output args.
     }
 
     return oct_retval;

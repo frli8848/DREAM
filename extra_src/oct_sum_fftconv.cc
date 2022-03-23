@@ -21,22 +21,15 @@
 *
 ***/
 
-#include <iostream>
 #include <csignal>
 #include <thread>
-#include <complex> // C++
+#include <complex>
 
-#include <fftw3.h>
+#include <octave/oct.h>
 
 #include "dream.h"
 #include "affinity.h"
 #include "fftconv.h"
-
-//
-// Octave headers.
-//
-
-#include <octave/oct.h>
 
 /***
  *
@@ -47,8 +40,8 @@
 //
 // Globals
 //
+
 volatile int running;
-int plan_method = 4; // Default to ESTIMATE method.
 
 //
 // typedef:s
@@ -56,15 +49,15 @@ int plan_method = 4; // Default to ESTIMATE method.
 
 typedef struct
 {
-  octave_idx_type line_start;
-  octave_idx_type line_stop;
+  dream_idx_type col_start;
+  dream_idx_type col_stop;
   int L;
   double **H;
-  octave_idx_type H_M;
-  octave_idx_type H_N;
+  dream_idx_type H_M;
+  dream_idx_type H_N;
   double *U;
-  octave_idx_type U_M;
-  octave_idx_type U_N;
+  dream_idx_type U_M;
+  dream_idx_type U_N;
   double *Y;
   FFT *fft;
   ConvMode conv_mode;
@@ -90,10 +83,10 @@ void sig_keyint_handler(int signum);
 void* smp_dream_sum_fftconv(void *arg)
 {
   DATA D = *(DATA *)arg;
-  octave_idx_type line_start=D.line_start, line_stop=D.line_stop, n;
+  dream_idx_type col_start=D.col_start, col_stop=D.col_stop, n;
   double **H = D.H, *U = D.U, *Y = D.Y;
-  octave_idx_type H_M = D.H_M, U_M = D.U_M; //, U_N = D.U_N;
-  octave_idx_type L = D.L;
+  dream_idx_type H_M = D.H_M, U_M = D.U_M; //, U_N = D.U_N;
+  dream_idx_type L = D.L;
   FFT fft = *D.fft;
   ConvMode conv_mode = D.conv_mode;
 
@@ -117,7 +110,7 @@ void* smp_dream_sum_fftconv(void *arg)
 
   // NB. U is always a matrix here
 
-  for (n=line_start; n<line_stop; n++) {
+  for (n=col_start; n<col_stop; n++) {
 
     add_fftconv(fft,
                 H, L, H_M,
@@ -128,7 +121,7 @@ void* smp_dream_sum_fftconv(void *arg)
                 conv_mode);
 
     if (running==false) {
-      octave_stdout << "sum_fftconv: thread for column " << line_start+1 << " -> " << line_stop << " bailing out!\n";
+      octave_stdout << "sum_fftconv: thread for column " << col_start+1 << " -> " << col_stop << " bailing out!\n";
       break;
     }
   }
@@ -266,14 +259,18 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
 @seealso {conv, conv_p, fftconv, fftconv_p, fftw_wisdom}")
 {
   sighandler_t old_handler, old_handler_abrt, old_handler_keyint;
+  dream_idx_type col_start, col_stop, H_M, H_N, H_L, U_M, U_N;
   std::thread  *threads;
-  octave_idx_type fft_len, return_wisdom = false, load_wisdom = false;
-  char *wisdom_str = NULL;
-  int buflen;
-  octave_value_list oct_retval;
+  dream_idx_type thread_n, nthreads;
+  DATA *D=nullptr;
+  int plan_method = 4; // Default to FFTW_ESTIMATE
+  dream_idx_type fft_len;
+  bool return_wisdom = false, load_wisdom = false;
   ConvMode conv_mode=ConvMode::equ;
 
-  int nrhs = args.length ();
+  octave_value_list oct_retval;
+
+  int nrhs = args.length();
 
   //
   // Set the method which fftw computes plans
@@ -285,50 +282,93 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
     plan_method = 3; // 3 = MEASURE.
   }
 
+  //
   // Check for proper inputs arguments.
+  //
+
+  // Num inputs
+  if ( (nrhs < 2) ||  (nrhs > 4) ) {
+    error("sum_fftconv requires 2 to 4 input arguments!");
+    return oct_retval;
+  }
+
+  // Num outputs
+  if (nlhs > 2) {
+    error("Too many output arguments for sum_fftconv!");
+    return oct_retval;
+  }
+
+  // 2nd output is wisdom string
+  if (nlhs == 2) {
+    return_wisdom = true;
+  }
+
+  const NDArray tmp0 = args(0).array_value();
+  dream_idx_type dims = args(0).ndims();
+  if (dims != 3) {
+    error("Argument 1 should be a 3D Matrix\n");
+    return oct_retval;
+  }
+
+  dim_vector dv = args(0).dims();
+  H_M = dv(0);
+  H_N = dv(1);
+  H_L = dv(2);
+
+  // Store pointers to the L A-matrices in a vector.
+  double **H = (double**) malloc(H_L*sizeof(double*));
+  for (dream_idx_type k=0; k<H_L; k++) {
+    H[k] = (double*) &(tmp0.fortran_vec()[H_M*H_N*k]);
+  }
+
+  const Matrix tmp1 = args(1).matrix_value();
+  U_M = tmp1.rows();
+  U_N = tmp1.cols();
+  double *U = (double*) tmp1.fortran_vec();
+
+  if (H_L != U_N) {
+    error("3rd dimension of arg 1 must match the number of columns in arg 2\n");
+    return oct_retval;
+  }
+
+  if (U_M == 1 || U_N == 1 ) { // U is a vector.
+    U_M = U_M*U_N;
+    U_N = 1;
+  }
+
+  fft_len = H_M+U_M-1;
+
+  // NB We call the FFTW planners only from the main thread once
+  // so no need to lock it with a mutex
+  FFT fft(fft_len, nullptr, plan_method);
+
+  std::string wisdom_str ="";
 
   switch (nrhs) {
 
-  case 0:
-  case 1:
-    error("sum_fftconv requires 2 to 4 input arguments!");
-    return oct_retval;
-    break;
-
   case 2:
-    if (nlhs > 1) {
-      error("Too many output arguments for sum_fftconv!");
-      return oct_retval;
-    }
-    if (nlhs == 2)
-      return_wisdom = true;
-
     break;
 
   case 3:
     if ( args(2).is_string() ) { // 3rd arg is a fftw wisdom string.
-      std::string strin = args(2).string_value();
 
-      buflen = strin.length();
+      wisdom_str = args(2).string_value();
 
-      //buflen = mxGetM(prhs[3])*mxGetN(prhs[3]);
-      wisdom_str = (char*) fftw_malloc(buflen * sizeof(char));
-      //mxGetString(prhs[3], wisdom_str, buflen); // Obsolete in Matlab 7.x
-      for (dream_idx_type n=0; n<buflen; n++ ) {
-        wisdom_str[n] = strin[n];
-      }
+      //
+      // If 3rd arg is a string then only a wisdom string is valid.
+      //
 
-      if (!strcmp("wisdom",wisdom_str)) {
-        error("The string in arg 4 do not seem to be in fftw wisdom format!");
+      if (!fft.is_wisdom(wisdom_str)) {
+        error("The string in arg 3 do not seem to be in a FFTW wisdom format!");
         return oct_retval;
       }
       else {
         load_wisdom = true;
       }
-    } else { // 4th arg not a string
-      fftw_forget_wisdom(); // Clear wisdom history (a new wisdom will be created below).
+    } else { // 3rd arg not a string then assume in-place mode.
+      fft.forget_wisdom(); // Clear wisdom history (a new wisdom will be created below).
       if (nlhs > 0) {
-        error("No output arguments required for sum_fftconv in in-place operating mode!");
+        error("3rd arg is not a FFTW wisdom string and in-place mode is assumed. But then there should be no output args!");
         return oct_retval;
       }
     }
@@ -337,14 +377,9 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
   case 4:
     if ( args(3).is_string() ) { // 4th arg is a fftw wisdom string.
 
-      std::string strin = args(3).string_value();
-      buflen = strin.length();
-      wisdom_str = (char*) fftw_malloc(buflen * sizeof(char));
-      for (dream_idx_type n=0; n<buflen; n++ ) {
-        wisdom_str[n] = strin[n];
-      }
+      wisdom_str = args(2).string_value();
 
-      if (!strcmp("wisdom",wisdom_str)) {
+      if (!fft.is_wisdom(wisdom_str)) {
         error("The string in arg 4 do not seem to be in fftw wisdom format!");
         return oct_retval;
       }
@@ -364,52 +399,12 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
     break;
   }
 
-  const NDArray tmp0 = args(0).array_value();
-  dream_idx_type dims = args(0).ndims();
-  if (dims != 3) {
-    error("Argument 1 should be a 3D Matrix\n");
-    return oct_retval;
-  }
-
-  dim_vector dv = args(0).dims();
-  octave_idx_type H_M = dv(0);
-  octave_idx_type H_N = dv(1);
-  octave_idx_type H_L = dv(2);
-
-  // Store pointers to the L A-matrices in a vector.
-  double **H = (double**) malloc(H_L*sizeof(double*));
-  for (octave_idx_type k=0; k<H_L; k++) {
-    H[k] = (double*) &(tmp0.fortran_vec()[H_M*H_N*k]);
-  }
-
-  const Matrix tmp1 = args(1).matrix_value();
-  octave_idx_type U_M = tmp1.rows();
-  octave_idx_type U_N = tmp1.cols();
-
-  double *U = (double*) tmp1.fortran_vec();
-
-  if (H_L != U_N) {
-    error("3rd dimension of arg 1 must match the number of columns in arg 2\n");
-    return oct_retval;
-  }
-
-  // Check that arg 2.
-  //if ( U_M != 1 && U_N !=1 && U_N != H_N) {
-  //  error("Argument 2 must be a vector or a matrix with the same number of rows as arg 1!");
-  //  return oct_retval;
-  //}
-
-  if (U_M == 1 || U_N == 1 ) { // U is a vector.
-    U_M = U_M*U_N;
-    U_N = 1;
-  }
-
   //
   // Number of threads.
   //
 
   // Get number of CPU cores (including hypethreading, C++11)
-  octave_idx_type nthreads = std::thread::hardware_concurrency();
+  nthreads = std::thread::hardware_concurrency();
 
   if (const char* env_p = std::getenv("DREAM_NUM_THREADS")) {
     dream_idx_type dream_threads = std::stoul(env_p);
@@ -446,29 +441,17 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
   //
 
   if(load_wisdom) {
-    if (!fftw_import_wisdom_from_string(wisdom_str)) {
-      error("Failed to load fftw wisdom!");
+    if (!fft.import_wisdom(wisdom_str)) {
+      error("Failed to load FFTW wisdom!");
       return oct_retval;
-    } else
-      fftw_free(wisdom_str); // Clean up.
+    }
   }
-
-  //std::mutex fft_mutex;
-  //FFT fft(fft_len, &fft_mutex, plan_method);
-  //
-  // NB We call the FFTW planners only from the main thread once
-  // so no need to lock it with a mutex
-  FFT fft(fft_len, nullptr, plan_method);
 
   //
   // Normal (non in-place) mode.
   //
 
   if (nrhs == 2 ||  (nrhs == 3 && load_wisdom)) {
-
-    //
-    // Normal (non in-place) mode.
-    //
 
     Matrix Ymat(H_M+U_M-1, H_N);
     double *Y = Ymat.fortran_vec();
@@ -484,7 +467,7 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
     running = true;
 
     // Allocate local data.
-    DATA *D = (DATA*) malloc(nthreads*sizeof(DATA));
+    D = (DATA*) malloc(nthreads*sizeof(DATA));
     if (!D) {
       error("Failed to allocate memory for thread data!");
       return oct_retval;
@@ -497,14 +480,14 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
       return oct_retval;
     }
 
-    for (octave_idx_type thread_n=0; thread_n < nthreads; thread_n++) {
+    for (thread_n=0; thread_n < nthreads; thread_n++) {
 
-      octave_idx_type line_start = thread_n * H_N/nthreads;
-      octave_idx_type line_stop = (thread_n+1) * H_N/nthreads;
+      col_start = thread_n * H_N/nthreads;
+      col_stop = (thread_n+1) * H_N/nthreads;
 
       // Init local data.
-      D[thread_n].line_start = line_start; // Local start index;
-      D[thread_n].line_stop = line_stop; // Local stop index;
+      D[thread_n].col_start = col_start; // Local start index;
+      D[thread_n].col_stop = col_stop; // Local stop index;
       D[thread_n].H = H;
       D[thread_n].H_M = H_M;
       D[thread_n].H_N = H_N;
@@ -591,7 +574,7 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
     running = true;
 
     // Allocate local data.
-    DATA *D = (DATA*) malloc(nthreads*sizeof(DATA));
+    D = (DATA*) malloc(nthreads*sizeof(DATA));
     if (!D) {
       error("Failed to allocate memory for thread data!");
       return oct_retval;
@@ -604,14 +587,14 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
         return oct_retval;
     }
 
-    for (octave_idx_type thread_n = 0; thread_n < nthreads; thread_n++) {
+    for (thread_n = 0; thread_n < nthreads; thread_n++) {
 
-      octave_idx_type line_start = thread_n * H_N/nthreads;
-      octave_idx_type line_stop = (thread_n+1) * H_N/nthreads;
+      col_start = thread_n * H_N/nthreads;
+      col_stop = (thread_n+1) * H_N/nthreads;
 
       // Init local data.
-      D[thread_n].line_start = line_start; // Local start index;
-      D[thread_n].line_stop = line_stop; // Local stop index;
+      D[thread_n].col_start = col_start; // Local start index;
+      D[thread_n].col_stop = col_stop; // Local stop index;
       D[thread_n].H = H;
       D[thread_n].H_M = H_M;
       D[thread_n].H_N = H_N;
@@ -666,20 +649,16 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
       return oct_retval;
     }
 
-    free(H);
+    if (H) {
+      free(H);
+    }
+
+    // FIXME: Should we really return this here?
 
     // Return the FFTW Wisdom so that the plans can be re-used.
     if (return_wisdom) {
-      wisdom_str = fftw_export_wisdom_to_string();
-      buflen = strlen(wisdom_str);
-
-      std::string cmout( buflen, ' ' );
-      cmout.insert( buflen, (const char*) wisdom_str);
-
-      // Add to output args.
-      oct_retval.append( cmout);
-
-      fftw_free(wisdom_str);
+      std::string cmout = fft.get_wisdom();
+      oct_retval.append(cmout); // Add to output args.
     }
 
     return oct_retval;

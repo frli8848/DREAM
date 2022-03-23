@@ -10,18 +10,34 @@ if (MACOSX)
   unset (FFTW_FOUND)
 endif (MACOSX)
 
+if (FFTW_FOUND)
+  add_definitions( -DHAVE_FFTW )	# Build with FFTW support
+endif (FFTW_FOUND)
+
 if (Matlab_FOUND)
 
-  set (DREAM_MEX_FLAGS "-DDREAM_MATLAB") # Make Matlab use its internal FFT:s
+  set (DREAM_MEX_FLAGS "-DDREAM_MATLAB")
 
   # mex libs
-  set (MEX_LD_FLAGS "${CMAKE_LD_FLAGS} ${MATLAB_MEX_LIBRARY} ${MATLAB_MX_LIBRARY} -lstdc++")
+  set (MEX_LD_FLAGS "${CMAKE_LD_FLAGS} ${Matlab_MEX_LIBRARY} ${Matlab_MX_LIBRARY} -lstdc++")
+  message (STATUS "Matlab_ROOT_DIR ${Matlab_ROOT_DIR}")
+  message (STATUS "Matlab_MAIN_PROGRAM ${Matlab_MAIN_PROGRAM}")
   message (STATUS "Matlab_INCLUDE_DIRS ${Matlab_INCLUDE_DIRS}")
   message (STATUS "Matlab_LIBRARIES  ${Matlab_LIBRARIES}")
+
+  #find_package (MWFFTW)
+  #if (MWFFTW_FOUND)
+  #  message (STATUS "MWFFTW_LIB_PATH: ${MWFFTW_LIB_PATH}")
+  #  message (STATUS "MWFFTW_LIBRARIES: ${MWFFTW_LIBRARIES}")
+  #  #set (MEX_LD_FLAGS "${MEX_LD_FLAGS} -L${MWFFTW_LIB_PATH} -lmwfftw3")
+  #  #set (MEX_LD_FLAGS "${MEX_LD_FLAGS} ${MWFFTW_LIBRARIES}")
+  #  #set (FFTW_LIBRARIES "${MWFFTW_LIBRARIES}") # Override the system FFTW lib
+  #endif (MWFFTW_FOUND)
+
+  # Try static FFTW lib to avoid Matlab FFTW crashes
+  #set (FFTW_LIBRARIES "${FFTW_STATIC_LIBRARIES}")
+
   message (STATUS "MEX_LD_FLAGS ${MEX_LD_FLAGS}")
-  if (FFTW_FOUND)
-    set (MEX_LD_FLAGS "${MEX_LD_FLAGS} -lfftw3")
-  endif (FFTW_FOUND)
 
   #
   # Include paths
@@ -62,7 +78,6 @@ if (Matlab_FOUND)
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
     LINK_FLAGS ${MEX_LD_FLAGS}
     SUFFIX ".${Matlab_MEX_EXTENSION}" PREFIX "" OUTPUT_NAME "dreamline")
-
 
   #
   # dreamrect
@@ -618,6 +633,7 @@ if (Matlab_FOUND)
 
   set (mex_fftconv_p_SOURCE_FILES
     extra_src/mex_fftconv_p.cc
+    extra_src/fftconv.cc
     src/affinity.cc
     src/dream_error.cc
     )

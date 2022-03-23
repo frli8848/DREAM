@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2006,2008,2009,2010,2012,2015,2016,2021 Fredrik Lingvall
+* Copyright (C) 2006,2008,2009,2010,2012,2015,2016,2021,2022 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -25,15 +25,16 @@
 #include <thread>
 #include <complex>
 
-#include "dream.h"
-#include "dream_error.h"
-#include "fft.h"
-
 #include "mex.h"
 
-#define EQU 0
-#define SUM 1
-#define NEG 2
+#include "dream.h"
+#include "affinity.h"
+#include "fftconv.h"
+
+#ifdef DEBUG
+#include <mutex>
+std::mutex print_mutex;         // Debug print mutex (C++11)
+#endif
 
 /***
  *
@@ -44,10 +45,8 @@
 //
 // Globals
 //
+
 volatile int running;
-volatile int in_place;
-int mode = EQU;
-int plan_method = 4; // Default to ESTIMATE method.
 
 //
 // typedef:s
@@ -55,16 +54,17 @@ int plan_method = 4; // Default to ESTIMATE method.
 
 typedef struct
 {
-  size_t line_start;
-  size_t line_stop;
+  dream_idx_type col_start;
+  dream_idx_type col_stop;
   double *A;
-  size_t A_M;
-  size_t A_N;
+  dream_idx_type A_M;
+  dream_idx_type A_N;
   double *B;
-  size_t B_M;
-  size_t B_N;
+  dream_idx_type B_M;
+  dream_idx_type B_N;
   double *Y;
   FFT *fft;
+  ConvMode conv_mode;
 } DATA;
 
 typedef void (*sighandler_t)(int);
@@ -73,15 +73,10 @@ typedef void (*sighandler_t)(int);
 // Function prototypes.
 //
 
-void* smp_dream_fftconv_p(void *arg);
+void* smp_dream_fftconv(void *arg);
 void sighandler(int signum);
 void sig_abrt_handler(int signum);
 void sig_keyint_handler(int signum);
-
-void fftconv(FFT &fft,
-             double *xr, size_t nx, double *yr, size_t ny, double *zr,
-             double *a, double *b, double *c,
-             std::complex<double> *af, std::complex<double> *bf, std::complex<double> *cf);
 
 /***
  *
@@ -89,14 +84,14 @@ void fftconv(FFT &fft,
  *
  ***/
 
-void* smp_dream_fftconv_p(void *arg)
+void* smp_dream_fftconv(void *arg)
 {
-  DATA D = *(DATA *)arg;
-  size_t    line_start=D.line_start, line_stop=D.line_stop, n;
+  DATA D = *(DATA*) arg;
+  dream_idx_type col_start=D.col_start, col_stop=D.col_stop, n;
   double *A = D.A, *B = D.B, *Y = D.Y;
-  size_t A_M = D.A_M, B_M = D.B_M, B_N = D.B_N;
+  dream_idx_type A_M = D.A_M, B_M = D.B_M, B_N = D.B_N;
   FFT fft = *D.fft;
-
+  ConvMode conv_mode = D.conv_mode;
   dream_idx_type fft_len = A_M+B_M-1;
 
   // Input vectors.
@@ -117,131 +112,57 @@ void* smp_dream_fftconv_p(void *arg)
 
   if (B_N > 1) {// B is a matrix.
 
-    for (n=line_start; n<line_stop; n++) {
+    n=col_start;
+    double *Ap = &A[0+n*A_M];
+    double *Bp = &B[0+n*B_M];
+    double *Yp = &Y[0+n*(A_M+B_M-1)];
+    for (n=col_start; n<col_stop; n++) {
 
-      fftconv(fft, &A[0+n*A_M], A_M, &B[0+n*B_M], B_M, &Y[0+n*(A_M+B_M-1)],
-               a,b,c,af,bf,cf);
+      fftconv(fft, Ap, A_M, Bp, B_M, Yp,
+              a, b, c, af, bf, cf, conv_mode);
+
+      Ap += A_M;
+      Bp += B_M;
+      Yp += fft_len;
 
       if (running==false) {
-        mexPrintf("fftconv_p: thread for column %d -> %d bailing out!\n",line_start+1,line_stop);
+        std::cout << "fftconv_p: thread for column " << col_start+1 << " -> " << col_stop << " bailing out!\n";
         break;
       }
 
     } // end-for
   } else { // B is a vector.
 
-    for (n=line_start; n<line_stop; n++) {
+    n=col_start;
+    double *Ap = &A[0+n*A_M];
+    double *Yp = &Y[0+n*(A_M+B_M-1)];
+    for (n=col_start; n<col_stop; n++) {
 
-      fftconv(fft, &A[0+n*A_M], A_M, B, B_M, &Y[0+n*(A_M+B_M-1)],
-               a,b,c,af,bf,cf);
+      fftconv(fft, Ap, A_M, B, B_M, Yp, a,b,c,af,bf,cf,conv_mode);
+
+      Ap += A_M;
+      Yp += fft_len;
 
       if (running==false) {
-        mexPrintf("fftconv_p: thread for column %d -> %d bailing out!\n",line_start+1,line_stop);
+        std::cout << "fftconv_p: thread for column " << col_start+1 << " -> " << col_stop << " bailing out!\n";
         break;
       }
 
     } // end-for
   } // end-if
 
+#ifdef DEBUG
+  {
+    std::lock_guard<std::mutex> lk(print_mutex);
+    std::cout << "col_start: " << col_start
+                  << " col_stop: " << col_stop
+                  << " k: " << k
+                  << std::endl;
+  }
+#endif
+
   return(NULL);
 }
-
-
-/***
- *
- * Convolution of two vectors.
- *
- ***/
-
-void fftconv(FFT &fft,
-             double *xr, size_t nx, double *yr, size_t ny, double *zr,
-             double *a, double *b, double *c,
-             std::complex<double> *af, std::complex<double> *bf, std::complex<double> *cf)
-{
-  size_t n, fft_len;
-
-  fft_len = nx+ny-1;
-
-  //
-  // Copy and zero-pad.
-  //
-  for (n=0; n < nx; n++)
-    a[n] = xr[n];
-  for (n=nx; n < fft_len; n++)
-    a[n] = 0.0; // Zero-pad.
-
-  for (n=0; n < ny; n++)
-    b[n] = yr[n];
-  for (n=ny; n < fft_len; n++)
-    b[n] = 0.0; // Zero-pad.
-
-  // Fourier transform xr.
-  FFTVec a_v(fft_len, a);
-  FFTCVec af_v(fft_len, af);
-  fft.fft(a_v, af_v);
-
-  // Fourier transform yr.
-  FFTVec b_v(fft_len, b);
-  FFTCVec bf_v(fft_len, bf);
-  fft.fft(b_v, bf_v);
-
-  // Do the filtering.
-  for (n = 0; n < fft_len; n++) {
-    cf[n] = (af[n] * bf[n]);
-  }
-
-  //
-  // Compute the inverse DFT of the filtered data.
-  //
-
-  FFTCVec cf_v(fft_len, cf);
-  FFTVec c_v(fft_len, c);
-  fft.ifft(cf_v, c_v);
-
-  // Copy data to output matrix.
-  if (in_place == false) {
-
-    //for (n = 0; n < fft_len; n++)
-    //  zr[n] = c[n];
-    memcpy(zr,c,fft_len*sizeof(double));
-
-  } else { // in-place
-
-    switch (mode) {
-
-    case EQU:
-      // in-place '=' operation.
-      //for (n = 0; n < fft_len; n++) {
-      //zr[n] = c[n];
-      //}
-      memcpy(zr,c,fft_len*sizeof(double));
-      break;
-
-    case SUM:
-      // in-place '+=' operation.
-      for (n = 0; n < fft_len; n++) {
-        zr[n] += c[n];
-      }
-      break;
-
-    case NEG:
-      // in-place '-=' operation.
-      for (n = 0; n < fft_len; n++) {
-        zr[n] -= c[n];
-      }
-      break;
-
-    default:
-      // in-place '=' operation.
-      //for (n = 0; n < fft_len; n++) {
-      //zr[n] = c[n];
-      //}
-      memcpy(zr,c,fft_len*sizeof(double));
-      break;
-    }
-  }
-}
-
 
 /***
  *
@@ -272,17 +193,17 @@ extern void _main();
 
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
-  double *A,*B, *Y = NULL;
+  double *A=nullptr,*B=nullptr, *Y=nullptr;
   sighandler_t   old_handler, old_handler_abrt, old_handler_keyint;
   std::thread     *threads;
-  size_t thread_n, nthreads;
-  size_t line_start, line_stop, A_M, A_N, B_M, B_N, n;
+  dream_idx_type thread_n, nthreads;
+  dream_idx_type col_start, col_stop, A_M, A_N, B_M, B_N, n;
   DATA   *D;
+  int plan_method = 4; // Default to FFTW_ESTIMATE
   dream_idx_type fft_len;
-  int  return_wisdom = false, load_wisdom = false;
-  char *the_str = NULL;
-  int  buflen, is_set = false;
-  in_place = false;
+  bool  return_wisdom = false, load_wisdom = false;
+  bool is_set = false;
+  ConvMode conv_mode=ConvMode::equ;
 
   //
   // Set the method which fftw computes plans
@@ -295,121 +216,23 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     //plan_method = 4; // 4 = ESTIMATE.
   }
 
+  //
   // Check for proper inputs arguments.
+  //
 
-  switch (nrhs) {
+  // Num inputs
+  if ( (nrhs < 2) ||  (nrhs < 2) ) {
+    dream_err_msg("fftconv_p requires 2 to 5 input arguments!");
+  }
 
-  case 0:
-  case 1:
-    mexErrMsgTxt("fftconv_p requires 2 to 5 input arguments!");
-    break;
+  // Num outputs
+  if (nlhs > 2) {
+    dream_err_msg("Too many output arguments for fftconv_p!");
+  }
 
-  case 2:
-    if (nlhs > 2) {
-      mexErrMsgTxt("Too many output arguments for fftconv_p!");
-    }
-    if (nlhs == 2) {
-      return_wisdom = true;
-    }
-    break;
-
-  case 3:
-    {
-      mexErrMsgTxt("FFTW support is currently disabled!");
-      /*
-      if (mxIsChar(prhs[2])) { // 3rd arg is a string.
-        buflen = mxGetM(prhs[2])*mxGetN(prhs[3])+1;
-        the_str = (char*) fftw_malloc(buflen * sizeof(char));
-        mxGetString(prhs[2], the_str, buflen); // Obsolete in Matlab 7.x
-
-        //
-        // If 3rd arg is a string then only a wisdom string is valid.
-        //
-
-        if (strcmp("fftw_wisdom",the_str) < 0) {
-          mexErrMsgTxt("The string in arg 3 do not seem to be in fftw wisdom format!");
-        }
-        else {
-          load_wisdom = true;
-        }
-      } else { // 3rd arg not a string then assume in-place mode.
-        fftw_forget_wisdom(); // Clear wisdom history (a new wisdom will be created below).
-        if (nlhs > 0) {
-          mexErrMsgTxt("3rd arg is not a fftw wisdom string and in-place mode is assumed. But then there should be no output args!");
-        }
-      }
-      */
-    }
-    break;
-
-  case 4: // In-place mode if >= 4 args.
-    if (mxIsChar(prhs[3])) { // 5th arg is a string (=,+=,-=,or wisdom).
-      //the_str = (char*) mxGetChars(prhs[4]);
-      buflen = mxGetM(prhs[3])*mxGetN(prhs[3])+1;
-      the_str = (char*) malloc(buflen * sizeof(char));
-      mxGetString(prhs[3], the_str, buflen); // Obsolete in Matlab 7.x ?
-
-      // Valid strings are:
-      //  '='  : In-place replace mode.
-      //  '+=' : In-place add mode.
-      //  '-=' : In-place sub mode.
-      //  wisdom string.
-
-      is_set = false;
-
-      if (strncmp(the_str,"=",1) == 0) {
-        mode = EQU;
-        is_set = true;
-      }
-
-      if (strncmp(the_str,"+=",2) == 0) {
-        mode = SUM;
-        is_set = true;
-      }
-
-      if (strncmp(the_str,"-=",2) == 0) {
-        mode = NEG;
-        is_set = true;
-      }
-
-      if (is_set == false) {
-        if (strcmp("fftw_wisdom",the_str) < 0 ) {
-          mexErrMsgTxt("Non-valid string in arg 5!");
-        }
-        else {
-          load_wisdom = true;
-        }
-      }
-    } else { // 4th arg not a string
-      mexErrMsgTxt("Argument 4 is not a valid string format!");
-    }
-    break;
-
-
-  case 5: // In-place mode if input 5 args.
-    {
-      if (mxIsChar(prhs[4])) { // 6th arg is a string (=,+=,or -=).
-
-        // Read the wisdom string.
-        //the_str = (char*) mxGetChars(prhs[4]);
-        buflen = mxGetM(prhs[4])*mxGetN(prhs[4])+1;
-        the_str = (char*) malloc(buflen * sizeof(char));
-        mxGetString(prhs[4], the_str, buflen); // Obsolete in Matlab 7.x ?
-
-        if (strcmp("fftw_wisdom",the_str) < 0 )
-          mexErrMsgTxt("The string in 5th arg do not seem to be in a fftw wisdom format!");
-        else
-          load_wisdom = true;
-      }
-      else { // 5th arg not a string
-        mexErrMsgTxt("Argument 5 is not a valid string format!");
-      }
-    }
-    break;
-
-  default:
-    mexErrMsgTxt("fftconv_p requires 2 to 5 input arguments!");
-    break;
+  // 2nd output is wisdom string
+  if (nlhs == 2) {
+    return_wisdom = true;
   }
 
   A_M = mxGetM(prhs[0]);
@@ -422,11 +245,119 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
   // Check that arg 2.
   if ( B_M != 1 && B_N !=1 && B_N != A_N)
-    mexErrMsgTxt("Argument 2 must be a vector or a matrix with the same number of rows as arg 1!");
+    dream_err_msg("Argument 2 must be a vector or a matrix with the same number of rows as arg 1!");
 
   if (  B_M == 1 || B_N == 1 ) { // B is a vector.
     B_M = B_M*B_N;
     B_N = 1;
+  }
+
+  fft_len = A_M+B_M-1;
+
+  // NB We call the FFTW planners only from the main thread once
+  // so no need to lock it with a mutex
+  FFT fft(fft_len, nullptr, plan_method);
+
+  std::string wisdom_str ="";
+
+  switch (nrhs) {
+
+  case 2:
+    break;
+
+  case 3:
+    {
+      mexErrMsgTxt("FFTW support is currently disabled!");
+
+      if (mxIsChar(prhs[2])) { // 3rd arg is a FFTW wisdom string.
+
+        char *str = mxArrayToString(prhs[2]);
+        wisdom_str += str;
+        mxFree(str);
+
+        //
+        // If 3rd arg is a string then only a wisdom string is valid.
+        //
+
+        if (!fft.is_wisdom(wisdom_str)) {
+          dream_err_msg("The string in arg 3 do not seem to be in a FFTW wisdom format!");
+        }
+        else {
+          load_wisdom = true;
+        }
+      } else { // 3rd arg not a string then assume in-place mode.
+        fft.forget_wisdom(); // Clear wisdom history (a new wisdom will be created below).
+        if (nlhs > 0) {
+          dream_err_msg("3rd arg is not a FFTW wisdom string and in-place mode is assumed. But then there should be no output args!");
+        }
+      }
+    }
+    break;
+
+  case 4: // In-place mode if >= 4 args.
+    if (mxIsChar(prhs[3])) { // 5th arg is a string (=,+=,-=,or wisdom).
+
+      char *str = mxArrayToString(prhs[2]);
+      std::string ip_mode(str);
+      mxFree(str);
+
+      // Valid strings are:
+      //  '='  : In-place replace mode.
+      //  '+=' : In-place add mode.
+      //  '-=' : In-place sub mode.
+      //  wisdom string.
+
+      is_set = false;
+
+      if (ip_mode.compare("=") == 0) {
+        conv_mode=ConvMode::equ;
+        is_set = true;
+      }
+
+      if (ip_mode.compare("+=") == 0) {
+        conv_mode=ConvMode::sum;
+        is_set = true;
+      }
+
+      if (ip_mode.compare("-=") == 0) {
+        conv_mode=ConvMode::neg;
+        is_set = true;
+      }
+
+      if (is_set == false) {
+        if (fft.is_wisdom(ip_mode) < 0 ) {
+          dream_err_msg("Non-valid string in arg 4!");
+        } else {
+          wisdom_str = ip_mode;
+          load_wisdom = true;
+        }
+      }
+    } else { // 4th arg not a string
+      dream_err_msg("Argument 4 is not a valid string format!");
+    }
+    break;
+
+  case 5: // In-place mode if input 5 args.
+    if (mxIsChar(prhs[4])) { // 6th arg is a string (=,+=,or -=).
+
+      char *str = mxArrayToString(prhs[4]);
+      wisdom_str += str;
+      mxFree(str);
+
+      if (fft.is_wisdom(wisdom_str) < 0 ) {
+        dream_err_msg("The string in 5th arg do not seem to be in a FFTW wisdom format!");
+      } else {
+        load_wisdom = true;
+      }
+
+    } else { // 5th arg not a string
+      dream_err_msg("Argument 5 is not a valid string format!");
+    }
+    break;
+
+  default:
+    dream_err_msg("fftconv_p requires 2 to 5 input arguments!");
+    break;
   }
 
   //
@@ -438,7 +369,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
   // Read DREAM_NUM_THREADS env var
   if(const char* env_p = std::getenv("DREAM_NUM_THREADS")) {
-    unsigned int dream_threads = std::stoul(env_p);
+    dream_idx_type dream_threads = std::stoul(env_p);
     if (dream_threads < nthreads) {
       nthreads = dream_threads;
     }
@@ -465,117 +396,51 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     std::cerr << "Couldn't register SIGINT signal handler!" << std::endl;
   }
 
-  // Allocate space for (temp) input/output vectors (only used for creating plans).
-
-  fft_len = A_M+B_M-1;
-
-  FFTVec a_v(fft_len);
-  FFTVec b_v(fft_len);
-  FFTVec c_v(fft_len);
-  double *a = a_v.get(), *b = b_v.get(), *c  = c_v.get();
-
-  FFTCVec af_v(fft_len);
-  FFTCVec bf_v(fft_len);
-  FFTCVec cf_v(fft_len);
-  std::complex<double> *af  = af_v.get(), *bf  = bf_v.get(), *cf  = cf_v.get();
-
   //
-  // Init the FFTW plans - currently disabled due to FFTW/Matlab issues.
+  // Init the FFTW plans.
   //
 
-  /*
   if(load_wisdom) {
-    if (!fftw_import_wisdom_from_string(the_str))
-      mexErrMsgTxt("Failed to load fftw wisdom!");
-    else
-      free(the_str); // Clean up.
+
+    if (!fft.import_wisdom(wisdom_str)) {
+      dream_err_msg("Failed to load FFTW wisdom!");
+    }
   }
-  */
 
-  //
-  // Return the FFTW Wisdom so that the plans can be re-used.
-  //
-
-  /*
-  if (return_wisdom) { // TODO move it down?
-    //if (the_str)
-    //  free(the_str);
-    //the_str = (char*) malloc(255*sizeof(char));
-    the_str = fftw_export_wisdom_to_string();
-    plhs[1] = mxCreateString(the_str);
-
-    // According to the FFTW documntation we should free the_str
-    // string but doing makes Matlab crash!?
-    //free(the_str);
-    //fftw_free(the_str);
-  }
-  */
-
-  //
-  // Normal (non in-place) mode.
-  //
-
-  if (nrhs == 2 ||  (nrhs == 3 && load_wisdom)) {
-
-    in_place = false;
+  if (nrhs == 2 ||  (nrhs == 3 && load_wisdom)) { // Normal mode.
 
     plhs[0] = mxCreateDoubleMatrix(A_M+B_M-1, A_N, mxREAL);
     Y = mxGetPr(plhs[0]);
-  }
 
-  //
-  // In-place mode.
-  //
+    SIRData ymat(Y, A_M+B_M-1, A_N);
+    ymat.clear();
 
-  if ( (nrhs == 4 && !load_wisdom) || nrhs == 5 || nrhs == 6) { // In-place mode.
+    //
+    // Call the CONV subroutine.
+    //
 
-    in_place = true;
-
-    if ( mxGetM(prhs[3]) != A_M+B_M-1)
-      mexErrMsgTxt("Wrong number of rows in argument 4!");
-
-    if ( mxGetN(prhs[3]) != A_N)
-      mexErrMsgTxt("Wrong number of columns in argument 4!");
-
-    Y = mxGetPr(prhs[3]);
-  }
-
-  //
-  // Call the CONV subroutine.
-  //
-
-  running = true;
-
-  //std::mutex fft_mutex;
-  //FFT fft(fft_len, &fft_mutex);
-  FFT fft(fft_len);
-
-  // This is a hack to avoid segfaults in Matlab since mexCallMatlab
-  // is not thread safe,
-#if defined DREAM_MATLAB && not defined HAVE_FFTW
-  nthreads = 1;
-#endif
-
-  if (nthreads>1) { // Use threads
+    running = true;
 
     // Allocate local data.
     D = (DATA*) malloc(nthreads*sizeof(DATA));
-    if (!D)
-      mexErrMsgTxt("Failed to allocate memory for thread data!");
+    if (!D) {
+      dream_err_msg("Failed to allocate memory for thread data!");
+    }
 
     // Allocate mem for the threads.
     threads = new std::thread[nthreads]; // Init thread data.
-    if (!threads)
-      mexErrMsgTxt("Failed to allocate memory for threads!");
+    if (!threads) {
+      dream_err_msg("Failed to allocate memory for threads!");
+    }
 
     for (thread_n = 0; thread_n < nthreads; thread_n++) {
 
-      line_start = thread_n * A_N/nthreads;
-      line_stop =  (thread_n+1) * A_N/nthreads;
+      col_start = thread_n * A_N/nthreads;
+      col_stop =  (thread_n+1) * A_N/nthreads;
 
       // Init local data.
-      D[thread_n].line_start = line_start; // Local start index;
-      D[thread_n].line_stop = line_stop; // Local stop index;
+      D[thread_n].col_start = col_start; // Local start index;
+      D[thread_n].col_stop = col_stop; // Local stop index;
       D[thread_n].A = A;
       D[thread_n].A_M = A_M;
       D[thread_n].A_N = A_N;
@@ -585,70 +450,164 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       D[thread_n].Y = Y;
       D[thread_n].fft = &fft;
 
-      // Start the threads.
-      threads[thread_n] = std::thread(smp_dream_fftconv_p, &D[thread_n]);
+#ifdef DEBUG
+      {
+        std::cout << "Init thread_n: "  << thread_n
+                  << " col_start: " << col_start
+                  << " col_stop: " << col_stop
+                  << " nthreads: " << nthreads
+                  << std::endl;
+      }
+#endif
+      if (nthreads > 1) {
+        // Start the threads.
+        threads[thread_n] = std::thread(smp_dream_fftconv, &D[thread_n]);
+        set_dream_thread_affinity(thread_n, nthreads, threads);
+      } else {
+        smp_dream_fftconv(&D[0]);
+      }
+    }
 
-    } // for (thread_n = 0; thread_n < nthreads; thread_n++)
-
-    // Wait for all threads to finish.
-    for (thread_n = 0; thread_n < nthreads; thread_n++)
-      threads[thread_n].join();
+    if (nthreads > 1) {
+      // Wait for all threads to finish.
+      for (thread_n = 0; thread_n < nthreads; thread_n++) {
+        threads[thread_n].join();
+      }
+    }
 
     // Free memory.
     if (D) {
       free((void*) D);
     }
 
-  } else { // Do not use threads.
+    //
+    // Restore old signal handlers.
+    //
 
-    if (B_N > 1) {// B is a matrix.
+    if (std::signal(SIGTERM, old_handler) == SIG_ERR) {
+      std::cerr << "Couldn't register old SIGTERM signal handler!" << std::endl;
+    }
 
-      for (n=0; n<A_N; n++) {
+    if (std::signal(SIGABRT, old_handler_abrt) == SIG_ERR) {
+      std::cerr << "Couldn't register old SIGABRT signal handler!" << std::endl;
+    }
 
-        fftconv(fft, &A[0+n*A_M], A_M, &B[0+n*B_M], B_M, &Y[0+n*(A_M+B_M-1)],
-                 a,b,c,af,bf,cf);
+    if (std::signal(SIGINT, old_handler_keyint) == SIG_ERR) {
+      std::cerr << "Couldn't register old SIGINT signal handler!" << std::endl;
+    }
 
-        if (running==false) {
-          printf("fftconv_p: bailing out!\n");
-          break;
-        }
+    if (!running) {
+      dream_err_msg("CTRL-C pressed!\n"); // Bail out.
+    }
 
-      } // end-for
-    } else { // B is a vector.
-
-      for (n=0; n<A_N; n++) {
-
-        fftconv(fft, &A[0+n*A_M], A_M, B, B_M, &Y[0+n*(A_M+B_M-1)],
-                 a,b,c,af,bf,cf);
-
-        if (running==false) {
-          printf("fftconv_p: bailing out!\n");
-          break;
-        }
-
-      } // end-for
-    } // end-if
+    // Return the FFTW Wisdom so that the plans can be re-used.
+    if (return_wisdom) {
+      std::string cmout = fft.get_wisdom();
+      plhs[1] = mxCreateString(cmout.c_str());
+    }
 
   }
 
-  //
-  // Restore old signal handlers.
-  //
+  if ( (nrhs == 3 && !load_wisdom) || nrhs == 4 || nrhs == 5) { // In-place mode.
 
-  if (std::signal(SIGTERM, old_handler) == SIG_ERR) {
-    std::cerr << "Couldn't register old SIGTERM signal handler!" << std::endl;
-  }
+    //
+    // In-place mode.
+    //
 
-  if (std::signal(SIGABRT, old_handler_abrt) == SIG_ERR) {
-    std::cerr << "Couldn't register old SIGABRT signal handler!" << std::endl;
-  }
+    if ( mxGetM(prhs[2]) != A_M+B_M-1) {
+      dream_err_msg("Wrong number of rows in argument 3!");
+    }
 
-  if (std::signal(SIGINT, old_handler_keyint) == SIG_ERR) {
-    std::cerr << "Couldn't register old SIGINT signal handler!" << std::endl;
-  }
+    if ( mxGetM(prhs[2]) != A_N) {
+      dream_err_msg("Wrong number of columns in argument 3!");
+    }
 
-  if (!running) {
-    dream_err_msg("CTRL-C pressed!\n"); // Bail out.
+    Y =  mxGetPr(prhs[2]);
+
+    //
+    // Call the CONV subroutine.
+    //
+
+    running = true;
+
+    // Allocate local data.
+    D = (DATA*) malloc(nthreads*sizeof(DATA));
+    if (!D) {
+      dream_err_msg("Failed to allocate memory for thread data!");
+    }
+
+    // Allocate mem for the threads.
+    threads = new std::thread[nthreads]; // Init thread data.
+    if (!threads) {
+      dream_err_msg("Failed to allocate memory for threads!");
+    }
+
+    for (thread_n = 0; thread_n < nthreads; thread_n++) {
+
+      col_start = thread_n * A_N/nthreads;
+      col_stop =  (thread_n+1) * A_N/nthreads;
+
+      // Init local data.
+      D[thread_n].col_start = col_start; // Local start index;
+      D[thread_n].col_stop = col_stop;   // Local stop index;
+      D[thread_n].A = A;
+      D[thread_n].A_M = A_M;
+      D[thread_n].A_N = A_N;
+      D[thread_n].B = B;
+      D[thread_n].B_M = B_M;
+      D[thread_n].B_N = B_N;
+      D[thread_n].Y = Y;
+      D[thread_n].fft = &fft;
+      D[thread_n].conv_mode = conv_mode;
+
+      if (nthreads > 1) {
+        // Start the threads.
+        threads[thread_n] = std::thread(smp_dream_fftconv, &D[thread_n]);
+      } else {
+        smp_dream_fftconv(&D[0]);
+      }
+    } // for (thread_n = 0; thread_n < nthreads; thread_n++)
+
+    if (nthreads > 1) {
+      // Wait for all threads to finish.
+      for (thread_n = 0; thread_n < nthreads; thread_n++) {
+        threads[thread_n].join();
+      }
+    }
+
+    // Free memory.
+    if (D) {
+      free((void*) D);
+    }
+
+    //
+    // Restore old signal handlers.
+    //
+
+    if (std::signal(SIGTERM, old_handler) == SIG_ERR) {
+      std::cerr << "Couldn't register old SIGTERM signal handler!" << std::endl;
+    }
+
+    if (std::signal(SIGABRT, old_handler_abrt) == SIG_ERR) {
+      std::cerr << "Couldn't register old SIGABRT signal handler!" << std::endl;
+    }
+
+    if (std::signal(SIGINT, old_handler_keyint) == SIG_ERR) {
+      std::cerr << "Couldn't register old SIGINT signal handler!" << std::endl;
+    }
+
+    if (!running) {
+      dream_err_msg("CTRL-C pressed!\n"); // Bail out.
+    }
+
+    // FIXME: Should we really return this here?
+
+    // Return the FFTW Wisdom so that the plans can be re-used.
+    if (return_wisdom) {
+      std::string cmout = fft.get_wisdom();
+      plhs[1] = mxCreateString(cmout.c_str());
+    }
+
   }
 
   return;

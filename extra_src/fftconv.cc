@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2021 Fredrik Lingvall
+* Copyright (C) 2021,2022 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -30,12 +30,12 @@
 #include "fftconv.h"
 
 void fftconv(FFT &fft,
-             double *xr, octave_idx_type nx, double *yr, octave_idx_type ny, double *zr,
+             double *xr, dream_idx_type nx, double *yr, dream_idx_type ny, double *zr,
              double *a,  double *b, double *c,
              std::complex<double> *af, std::complex<double> *bf, std::complex<double> *cf,
              ConvMode conv_mode)
 {
-  octave_idx_type n, fft_len;
+  dream_idx_type n, fft_len;
 
   fft_len = nx+ny-1;
 
@@ -43,18 +43,18 @@ void fftconv(FFT &fft,
   // Copy and zero-pad.
   //
 
-  for (octave_idx_type n=0; n < nx; n++) {
+  for (dream_idx_type n=0; n < nx; n++) {
     a[n] = xr[n];
   }
 
-  for (octave_idx_type n=nx; n < fft_len; n++)
+  for (dream_idx_type n=nx; n < fft_len; n++)
     a[n] = 0.0; // Zero-pad.
 
-  for (octave_idx_type n=0; n < ny; n++) {
+  for (dream_idx_type n=0; n < ny; n++) {
     b[n] = yr[n];
   }
 
-  for (octave_idx_type n=ny; n < fft_len; n++) {
+  for (dream_idx_type n=ny; n < fft_len; n++) {
     b[n] = 0.0; // Zero-pad.
   }
 
@@ -125,15 +125,15 @@ void fftconv(FFT &fft,
  ***/
 
 void add_fftconv(FFT &fft,
-                 double **H, octave_idx_type L, octave_idx_type h_len, // 3D impulse response matrix.
-                 octave_idx_type n, // observation point index.
-                 double *U, octave_idx_type u_len, // Input signal matrix.
+                 double **H, dream_idx_type L, dream_idx_type h_len, // 3D impulse response matrix.
+                 dream_idx_type n, // observation point index.
+                 double *U, dream_idx_type u_len, // Input signal matrix.
                  double *z,                        // OUtput vector.
                  double *a, double *b, double *c,
                  std::complex<double> *af, std::complex<double> *bf, std::complex<double> *cf,
                  ConvMode conv_mode)
 {
-  octave_idx_type fft_len = h_len+u_len-1;
+  dream_idx_type fft_len = h_len+u_len-1;
 
   // Clear output Fourier coefficeints.
   for (dream_idx_type it=0; it < fft_len; it++) {
@@ -141,23 +141,23 @@ void add_fftconv(FFT &fft,
   }
 
   // Loop aver all L inputs (array elements).
-  for (octave_idx_type l=0; l<L; l++) {
+  for (dream_idx_type l=0; l<L; l++) {
 
     // Copy and zero-pad l:th response vector for the n:th observation point.
-    for (octave_idx_type it=0; it<h_len; it++) {
+    for (dream_idx_type it=0; it<h_len; it++) {
       a[it] = (H[l])[it + n*h_len];
     }
 
-    for (octave_idx_type it=h_len; it<fft_len; it++) {
+    for (dream_idx_type it=h_len; it<fft_len; it++) {
       a[it] = 0.0; // Zero-pad.
     }
 
     // Copy l:th column (input signal) and zero-pad.
-    for (octave_idx_type it=0; it<u_len; it++) {
+    for (dream_idx_type it=0; it<u_len; it++) {
       b[it] = U[it + l*u_len];
     }
 
-    for (octave_idx_type it=u_len; it<fft_len; it++) {
+    for (dream_idx_type it=u_len; it<fft_len; it++) {
       b[it] = 0.0; // Zero-pad.
     }
 
@@ -172,7 +172,7 @@ void add_fftconv(FFT &fft,
     fft.fft(b_v, bf_v);
 
     // Do the filtering and add (accumulate) the results
-    for (octave_idx_type i_f=0; i_f < fft_len; i_f++) {
+    for (dream_idx_type i_f=0; i_f < fft_len; i_f++) {
       cf[i_f] += (af[i_f] * bf[i_f])  / double(fft_len);
     }
   }
@@ -192,7 +192,7 @@ void add_fftconv(FFT &fft,
   case ConvMode::sum:
     {
       // in-place '+=' operation.
-      for (octave_idx_type it = 0; it < fft_len; it++) {
+      for (dream_idx_type it = 0; it < fft_len; it++) {
         z[it] += c[it];
       }
     }

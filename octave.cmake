@@ -9,6 +9,7 @@ if (OCTAVE_FOUND)
 
   # Octave oct flags.
   set (DREAM_OCT_FLAGS "-DDREAM_OCTAVE") # So that octave_idx_type is used for matrix/vector indexing.
+
   if (UNIX)
     set (OCT_LD_FLAGS "${CMAKE_LD_FLAGS} ${OCTAVE_LINK_FLAGS} -pthread") # We need phread to use pthread_setaffinity_np.
   else (UNIX)

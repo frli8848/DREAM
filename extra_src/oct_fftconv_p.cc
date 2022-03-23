@@ -23,26 +23,18 @@
 
 #include <csignal>
 #include <thread>
-#include <complex> // C++
-
-//
-// Octave headers.
-//
+#include <complex>
 
 #include <octave/oct.h>
 
-//
-// Macros
-//
+#include "dream.h"
+#include "affinity.h"
+#include "fftconv.h"
 
 #ifdef DEBUG
 #include <mutex>
 std::mutex print_mutex;         // Debug print mutex (C++11)
 #endif
-
-#include "dream.h"
-#include "affinity.h"
-#include "fftconv.h"
 
 /***
  *
@@ -62,14 +54,14 @@ volatile int running;
 
 typedef struct
 {
-  octave_idx_type col_start;
-  octave_idx_type col_stop;
+  dream_idx_type col_start;
+  dream_idx_type col_stop;
   double *A;
-  octave_idx_type A_M;
-  octave_idx_type A_N;
+  dream_idx_type A_M;
+  dream_idx_type A_N;
   double *B;
-  octave_idx_type B_M;
-  octave_idx_type B_N;
+  dream_idx_type B_M;
+  dream_idx_type B_N;
   double *Y;
   FFT *fft;
   ConvMode conv_mode;
@@ -95,9 +87,9 @@ void sig_keyint_handler(int signum);
 void* smp_dream_fftconv(void *arg)
 {
   DATA D = *(DATA*) arg;
-  octave_idx_type col_start=D.col_start, col_stop=D.col_stop, n;
+  dream_idx_type col_start=D.col_start, col_stop=D.col_stop, n;
   double *A = D.A, *B = D.B, *Y = D.Y;
-  octave_idx_type A_M = D.A_M, B_M = D.B_M, B_N = D.B_N;
+  dream_idx_type A_M = D.A_M, B_M = D.B_M, B_N = D.B_N;
   FFT fft = *D.fft;
   ConvMode conv_mode = D.conv_mode;
   dream_idx_type fft_len = A_M+B_M-1;
@@ -166,7 +158,6 @@ void* smp_dream_fftconv(void *arg)
                   << " col_stop: " << col_stop
                   << " k: " << k
                   << std::endl;
-
   }
 #endif
 
@@ -249,15 +240,16 @@ Copyright @copyright{} 2006-2022 Fredrik Lingvall.\n\
 @seealso {conv, conv_p, fftconv, fftw_wisdom}\n\
 @end deftypefn")
 {
-  double *A,*B, *Y;
-  octave_idx_type col_start, col_stop, A_M, A_N, B_M, B_N, n;
+  double *A=nullptr,*B=nullptr, *Y=nullptr;
   sighandler_t    old_handler, old_handler_abrt, old_handler_keyint;
   std::thread     *threads;
-  octave_idx_type  thread_n, nthreads;
+  dream_idx_type  thread_n, nthreads;
+  dream_idx_type col_start, col_stop, A_M, A_N, B_M, B_N, n;
   DATA   *D;
   int plan_method = 4; // Default to FFTW_ESTIMATE
-  octave_idx_type fft_len, return_wisdom = false, load_wisdom = false;
-  int buflen, is_set = false;
+  dream_idx_type fft_len;
+  bool return_wisdom = false, load_wisdom = false;
+  bool is_set = false;
   ConvMode conv_mode=ConvMode::equ;
   octave_value_list oct_retval;
 
@@ -406,8 +398,9 @@ Copyright @copyright{} 2006-2022 Fredrik Lingvall.\n\
       if (fft.is_wisdom(wisdom_str) < 0 ) {
         error("The string in 5th arg do not seem to be in a FFTW wisdom format!");
         return oct_retval;
-      } else
+      } else {
         load_wisdom = true;
+      }
 
     } else { // 5th arg not a string
       error("Argument 5 is not a valid string format!");
@@ -428,6 +421,7 @@ Copyright @copyright{} 2006-2022 Fredrik Lingvall.\n\
   // Get number of CPU cores (including hypethreading, C++11)
   nthreads = std::thread::hardware_concurrency();
 
+  // Read DREAM_NUM_THREADS env var
   if (const char* env_p = std::getenv("DREAM_NUM_THREADS")) {
     dream_idx_type dream_threads = std::stoul(env_p);
     if (dream_threads < nthreads) {
@@ -677,6 +671,8 @@ Copyright @copyright{} 2006-2022 Fredrik Lingvall.\n\
       error("CTRL-C pressed!\n"); // Bail out.
       return oct_retval;
     }
+
+    // FIXME: Should we really return this here?
 
     // Return the FFTW Wisdom so that the plans can be re-used.
     if (return_wisdom) {

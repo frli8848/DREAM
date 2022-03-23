@@ -687,7 +687,29 @@ if (Matlab_FOUND)
 
   # fftconv_ola
 
-  # Not implemented yet.
+  set (mex_fftconv_ola_SOURCE_FILES
+    extra_src/mex_fftconv_ola.cc
+    extra_src/fftconv.cc
+    src/affinity.cc
+    src/dream_error.cc
+    )
+
+  add_library (mex_fftconv_ola MODULE
+    ${mex_fftconv_ola_SOURCE_FILES}
+    )
+
+  target_link_libraries (mex_fftconv_ola
+    ${Matlab_LIBRARIES}
+    ${FFTW_LIBRARIES}
+    )
+
+  set_target_properties (mex_fftconv_ola PROPERTIES
+    CXX_STANDARD 14
+    COMPILE_FLAGS "${DREAM_MEX_FLAGS}"
+    INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
+
+    LINK_FLAGS ${MEX_LD_FLAGS}
+    SUFFIX ".${Matlab_MEX_EXTENSION}" PREFIX "" OUTPUT_NAME "fftconv_ola")
 
   #
   # Add

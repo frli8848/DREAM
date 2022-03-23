@@ -295,7 +295,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   case 4: // In-place mode if >= 4 args.
     if (mxIsChar(prhs[3])) { // 5th arg is a string (=,+=,-=,or wisdom).
 
-      char *str = mxArrayToString(prhs[2]);
+      char *str = mxArrayToString(prhs[3]);
       std::string ip_mode(str);
       mxFree(str);
 
@@ -336,7 +336,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     break;
 
   case 5: // In-place mode if input 5 args.
-    if (mxIsChar(prhs[4])) { // 6th arg is a string (=,+=,or -=).
+    if (mxIsChar(prhs[4])) { // 5:th arg is a string (FFTW wisdom).
 
       char *str = mxArrayToString(prhs[4]);
       wisdom_str += str;

@@ -71,7 +71,7 @@ std::mutex **buffer_locks = NULL;
 
 void Attenuation::att(FFTCVec &xc_vec, FFTVec &x_vec, double r, dream_idx_type it, double *h, double ai, dream_idx_type element)
 {
-  double a0,a1,b;
+  double a1,b;
   dream_idx_type i, k;
   double b1, b2, x1;
   double dw;

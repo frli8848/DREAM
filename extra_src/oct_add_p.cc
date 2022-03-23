@@ -52,8 +52,8 @@ volatile int running;
 
 typedef struct
 {
-  octave_idx_type line_start;
-  octave_idx_type line_stop;
+  octave_idx_type col_start;
+  octave_idx_type col_stop;
   double *A;
   octave_idx_type A_M;
   octave_idx_type A_N;
@@ -85,18 +85,18 @@ void sig_keyint_handler(int signum);
 void* smp_dream_add_p(void *arg)
 {
   DATA D = *(DATA *)arg;
-  octave_idx_type    line_start=D.line_start, line_stop=D.line_stop, n;
+  octave_idx_type    col_start=D.col_start, col_stop=D.col_stop, n;
   double *A = (double*) D.A, *B = D.B;
   octave_idx_type A_M = D.A_M, B_M = D.B_M, r = D.r, k = D.k, len = D.len;
 
-  for (n=line_start; n<line_stop; n++) {
+  for (n=col_start; n<col_stop; n++) {
 
     for (octave_idx_type l=0; l<len; l++) {
       A[r+(k+n)*A_M + l] += B[l+n*B_M];
     }
 
     if (running==false) {
-      octave_stdout << "add_p: thread for column " << line_start+1 << " -> " << line_stop << " bailing out!\n";
+      octave_stdout << "add_p: thread for column " << col_start+1 << " -> " << col_stop << " bailing out!\n";
       break;
     }
 
@@ -163,11 +163,10 @@ Addright @addright{} 2006-2021 Fredrik Lingvall.\n\
 {
   double         *A,*B;
   sighandler_t   old_handler, old_handler_abrt, old_handler_keyint;
-  octave_idx_type line_start, line_stop, A_M, A_N, B_M, B_N;
+  octave_idx_type col_start, col_stop, A_M, A_N, B_M, B_N;
   octave_idx_type r_M, r_N, k_M, k_N;
   double         *r, *k;
-  void           *retval;
-  DATA           *D;
+  DATA           *D=nullptr;
   std::thread     *threads;
   octave_idx_type  thread_n, nthreads;
   octave_value_list oct_retval;
@@ -259,7 +258,7 @@ Addright @addright{} 2006-2021 Fredrik Lingvall.\n\
 
   // Read DREAM_NUM_THREADS env var
   if(const char* env_p = std::getenv("DREAM_NUM_THREADS")) {
-    unsigned int dream_threads = std::stoul(env_p);
+    dream_idx_type dream_threads = std::stoul(env_p);
     if (dream_threads < nthreads) {
       nthreads = dream_threads;
     }
@@ -307,12 +306,12 @@ Addright @addright{} 2006-2021 Fredrik Lingvall.\n\
 
   for (thread_n = 0; thread_n < nthreads; thread_n++) {
 
-    line_start = ((octave_idx_type) thread_n) * A_N/nthreads;
-    line_stop =  ((octave_idx_type) thread_n+1) * A_N/nthreads;
+    col_start = ((octave_idx_type) thread_n) * A_N/nthreads;
+    col_stop =  ((octave_idx_type) thread_n+1) * A_N/nthreads;
 
     // Init local data.
-    D[thread_n].line_start = line_start; // Local start index;
-    D[thread_n].line_stop = line_stop; // Local stop index;
+    D[thread_n].col_start = col_start; // Local start index;
+    D[thread_n].col_stop = col_stop; // Local stop index;
     D[thread_n].A = A;
     D[thread_n].A_M = A_M;
     D[thread_n].A_N = A_N;

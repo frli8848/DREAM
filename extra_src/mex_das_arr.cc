@@ -87,7 +87,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   double xo, yo, zo, dt;
   dream_idx_type nt, no, n;
   double param=0,*delay,cp;
-  int    num_elements=0;
+  dream_idx_type num_elements=0;
   double *gx, *gy, *gz;
   FocusMet foc_met=FocusMet::none;
   double *focal=nullptr;
@@ -126,9 +126,10 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Grid function (position vectors of the elements).
   //
 
-  num_elements = (int) mxGetM(prhs[1]); // Number of elementents in the array.
-  if (mxGetN(prhs[1]) !=3 )
+  num_elements = mxGetM(prhs[1]); // Number of elementents in the array.
+  if (mxGetN(prhs[1]) !=3 ) {
     dream_err_msg("Argument 2 must a (number of array elements) x 3 matrix!");
+  }
 
   gx    = mxGetPr(prhs[1]);	// First column in the matrix.
   gy    = gx + num_elements;    // Second column in the matrix.
@@ -139,8 +140,9 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   //
 
   // Check that arg 3 is a 2 element vector
-  if (!((mxGetM(prhs[2])==2 && mxGetN(prhs[2])==1) || (mxGetM(prhs[2])==1 && mxGetN(prhs[2])==2)))
+  if (!((mxGetM(prhs[2])==2 && mxGetN(prhs[2])==1) || (mxGetM(prhs[2])==1 && mxGetN(prhs[2])==2))) {
     dream_err_msg("Argument 3 must be a vector of length 2!");
+  }
 
   s_par = mxGetPr(prhs[2]);
   dt    = s_par[0];		// Temporal discretization size (= 1/sampling freq).

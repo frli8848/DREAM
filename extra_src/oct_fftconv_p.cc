@@ -244,7 +244,7 @@ Copyright @copyright{} 2006-2022 Fredrik Lingvall.\n\
   sighandler_t    old_handler, old_handler_abrt, old_handler_keyint;
   std::thread     *threads;
   dream_idx_type  thread_n, nthreads;
-  dream_idx_type col_start, col_stop, A_M, A_N, B_M, B_N, n;
+  dream_idx_type col_start, col_stop, A_M, A_N, B_M, B_N;
   DATA   *D;
   int plan_method = 4; // Default to FFTW_ESTIMATE
   dream_idx_type fft_len;
@@ -324,6 +324,7 @@ Copyright @copyright{} 2006-2022 Fredrik Lingvall.\n\
 
   case 3:
     if ( args(2).is_string() ) { // 3rd arg is a FFTW wisdom string.
+
       wisdom_str = args(2).string_value();
 
       //
@@ -375,7 +376,7 @@ Copyright @copyright{} 2006-2022 Fredrik Lingvall.\n\
       }
 
       if (is_set == false) {
-        if (fft.is_wisdom(ip_mode) < 0 ) {
+        if (!fft.is_wisdom(ip_mode)) {
           error("Non-valid string in arg 4!");
           return oct_retval;
         } else {
@@ -395,7 +396,7 @@ Copyright @copyright{} 2006-2022 Fredrik Lingvall.\n\
       // Read the wisdom string.
       wisdom_str = args(4).string_value();
 
-      if (fft.is_wisdom(wisdom_str) < 0 ) {
+      if (!fft.is_wisdom(wisdom_str)) {
         error("The string in 5th arg do not seem to be in a FFTW wisdom format!");
         return oct_retval;
       } else {
@@ -455,7 +456,6 @@ Copyright @copyright{} 2006-2022 Fredrik Lingvall.\n\
   //
 
   if(load_wisdom) {
-
     if (!fft.import_wisdom(wisdom_str)) {
       error("Failed to load FFTW wisdom!");
       return oct_retval;

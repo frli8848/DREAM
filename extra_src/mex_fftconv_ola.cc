@@ -346,11 +346,10 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
   // The segment length (block length).
 
-  if (mxGetM(prhs[2])*mxGetN(prhs[2]) == 1) {
-    block_len = (dream_idx_type) mxGetPr(prhs[2])[0]; // Get scalar
-  } else {
+  if (mxGetM(prhs[2])*mxGetN(prhs[2]) != 1) {
     dream_err_msg("Argument 3 must be a scalar!");
   }
+  block_len = (dream_idx_type) mxGetPr(prhs[2])[0]; // Get scalar
 
   if (block_len < 0 || block_len > A_M) {
     dream_err_msg("Argument 3 is out of bounds! Must be > 0 and less than number of rows of arg 1!");
@@ -429,7 +428,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       }
 
       if (is_set == false) {
-        if (fft.is_wisdom(ip_mode) < 0 ) {
+        if (!fft.is_wisdom(ip_mode)) {
           dream_err_msg("Non-valid string in arg 4!");
         } else {
           wisdom_str = ip_mode;
@@ -449,7 +448,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       wisdom_str += str;
       mxFree(str);
 
-      if (fft.is_wisdom(wisdom_str) < 0 ) {
+      if (!fft.is_wisdom(wisdom_str) ) {
         dream_err_msg("The string in 5th arg do not seem to be in a FFTW wisdom format!");
       } else {
         load_wisdom = true;

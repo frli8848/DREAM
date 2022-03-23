@@ -593,7 +593,7 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
   //
 
   if ( (err_level == ErrorLevel::stop) && (out_err != ErrorLevel::none)) {
-    error(""); // Bail out if error.
+    error("Error in dream_arr_annu"); // Bail out if error.
     return oct_retval;
   }
 

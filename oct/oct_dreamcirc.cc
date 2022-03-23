@@ -507,8 +507,10 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
   // Check for Error.
   //
 
-  if ( (err_level == ErrorLevel::stop) && (out_err != ErrorLevel::none))
-    dream_err_msg(""); // Bail out if error.
+  if ( (err_level == ErrorLevel::stop) && (out_err != ErrorLevel::none)) {
+    error("Error in dreamcirc"); // Bail out if error.
+    return oct_retval;
+  }
 
   oct_retval.append(h_mat);
 

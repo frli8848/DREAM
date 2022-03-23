@@ -134,7 +134,7 @@ ErrorLevel dreamcylind(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
                        ErrorLevel err_level,
                        double weight)
 {
-  dream_idx_type i, it;
+  dream_idx_type it;
   double t, xsmin, xsmax, ai, du, r;
   double phi, phi_min, phi_max;
   ErrorLevel err = ErrorLevel::none;

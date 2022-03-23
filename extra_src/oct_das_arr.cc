@@ -612,7 +612,7 @@ Copyright @copyright{} 2008-2021 Fredrik Lingvall.\n\
     if (err != ErrorLevel::none) {
       out_err = err;
       if (err == ErrorLevel::stop) {
-        error("");
+        error("Error in das_arr");
         return oct_retval;
       }
 

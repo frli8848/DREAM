@@ -163,9 +163,8 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
   sighandler_t   old_handler, old_handler_abrt, old_handler_keyint;
   octave_idx_type line_start, line_stop, A_M, A_N, B_M, B_N;
   octave_idx_type r_M, r_N, k_M, k_N;
-  double         *r, *k;
-  void           *retval;
-  DATA           *D;
+  double         *r=nullptr, *k=nullptr;
+  DATA           *D=nullptr;
   std::thread     *threads;
   octave_idx_type  thread_n, nthreads;
   octave_value_list oct_retval;
@@ -257,7 +256,7 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
 
   // Read DREAM_NUM_THREADS env var
   if(const char* env_p = std::getenv("DREAM_NUM_THREADS")) {
-    unsigned int dream_threads = std::stoul(env_p);
+    dream_idx_type dream_threads = std::stoul(env_p);
     if (dream_threads < nthreads) {
       nthreads = dream_threads;
     }

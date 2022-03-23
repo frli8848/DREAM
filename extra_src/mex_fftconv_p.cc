@@ -197,7 +197,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   sighandler_t   old_handler, old_handler_abrt, old_handler_keyint;
   std::thread     *threads;
   dream_idx_type thread_n, nthreads;
-  dream_idx_type col_start, col_stop, A_M, A_N, B_M, B_N, n;
+  dream_idx_type col_start, col_stop, A_M, A_N, B_M, B_N;
   DATA   *D;
   int plan_method = 4; // Default to FFTW_ESTIMATE
   dream_idx_type fft_len;
@@ -243,7 +243,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   B_N = mxGetN(prhs[1]);
   B = mxGetPr(prhs[1]);
 
-  // Check that arg 2.
+  // Check dims of arg 2.
   if ( B_M != 1 && B_N !=1 && B_N != A_N)
     dream_err_msg("Argument 2 must be a vector or a matrix with the same number of rows as arg 1!");
 
@@ -266,28 +266,26 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     break;
 
   case 3:
-    {
-      if (mxIsChar(prhs[2])) { // 3rd arg is a FFTW wisdom string.
+    if (mxIsChar(prhs[2])) { // 3rd arg is a FFTW wisdom string.
 
-        char *str = mxArrayToString(prhs[2]);
-        wisdom_str += str;
-        mxFree(str);
+      char *str = mxArrayToString(prhs[2]);
+      wisdom_str += str;
+      mxFree(str);
 
-        //
-        // If 3rd arg is a string then only a wisdom string is valid.
-        //
+      //
+      // If 3rd arg is a string then only a wisdom string is valid.
+      //
 
-        if (!fft.is_wisdom(wisdom_str)) {
-          dream_err_msg("The string in arg 3 do not seem to be in a FFTW wisdom format!");
-        }
-        else {
-          load_wisdom = true;
-        }
-      } else { // 3rd arg not a string then assume in-place mode.
-        fft.forget_wisdom(); // Clear wisdom history (a new wisdom will be created below).
-        if (nlhs > 0) {
-          dream_err_msg("3rd arg is not a FFTW wisdom string and in-place mode is assumed. But then there should be no output args!");
-        }
+      if (!fft.is_wisdom(wisdom_str)) {
+        dream_err_msg("The string in arg 3 do not seem to be in a FFTW wisdom format!");
+      }
+      else {
+        load_wisdom = true;
+      }
+    } else { // 3rd arg not a string then assume in-place mode.
+      fft.forget_wisdom(); // Clear wisdom history (a new wisdom will be created below).
+      if (nlhs > 0) {
+        dream_err_msg("3rd arg is not a FFTW wisdom string and in-place mode is assumed. But then there should be no output args!");
       }
     }
     break;
@@ -323,7 +321,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       }
 
       if (is_set == false) {
-        if (fft.is_wisdom(ip_mode) < 0 ) {
+        if (!fft.is_wisdom(ip_mode)) {
           dream_err_msg("Non-valid string in arg 4!");
         } else {
           wisdom_str = ip_mode;
@@ -342,7 +340,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       wisdom_str += str;
       mxFree(str);
 
-      if (fft.is_wisdom(wisdom_str) < 0 ) {
+      if (!fft.is_wisdom(wisdom_str)) {
         dream_err_msg("The string in 5th arg do not seem to be in a FFTW wisdom format!");
       } else {
         load_wisdom = true;
@@ -399,7 +397,6 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   //
 
   if(load_wisdom) {
-
     if (!fft.import_wisdom(wisdom_str)) {
       dream_err_msg("Failed to load FFTW wisdom!");
     }

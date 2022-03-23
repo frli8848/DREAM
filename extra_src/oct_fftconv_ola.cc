@@ -489,7 +489,7 @@ Copyright @copyright{} 2010-2021 Fredrik Lingvall.\n\
       }
 
       if (is_set == false) {
-        if (fft.is_wisdom(ip_mode) < 0 ) {
+        if (!fft.is_wisdom(ip_mode)) {
           error("Non-valid string in arg 4!");
           return oct_retval;
         } else {
@@ -509,7 +509,7 @@ Copyright @copyright{} 2010-2021 Fredrik Lingvall.\n\
       // Read the wisdom string.
       wisdom_str = args(5).string_value();
 
-      if (fft.is_wisdom(wisdom_str) < 0 ) {
+      if (!fft.is_wisdom(wisdom_str)) {
         error("The string in 5th arg do not seem to be in a FFTW wisdom format!");
         return oct_retval;
       } else {

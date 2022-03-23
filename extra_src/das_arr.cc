@@ -44,7 +44,7 @@ dream_idx_type centroid(double *h,dream_idx_type nt);
  ***/
 
 ErrorLevel das_arr(double xo, double yo, double zo, double dt, dream_idx_type nt,
-                    double delay, double cp, int  num_elements,
+                    double delay, double cp, dream_idx_type num_elements,
                     double *gx, double *gy, double *gz, FocusMet foc_met, double focal,
                     SteerMet steer_met, double theta, double phi,
                     double *apod, bool do_apod, ApodMet apod_met, double param,
@@ -54,7 +54,7 @@ ErrorLevel das_arr(double xo, double yo, double zo, double dt, dream_idx_type nt
   double *h;
   dream_idx_type i, i_c;
   double ramax, xamax, yamax;
-  double xs, ys, zs, foc_delay, weight;
+  double foc_delay, weight;
   ErrorLevel err = ErrorLevel::none, out_err = ErrorLevel::none;
 
   h = (double*) malloc(nt*sizeof(double));
@@ -74,7 +74,7 @@ ErrorLevel das_arr(double xo, double yo, double zo, double dt, dream_idx_type nt
     beamsteering(steer_met, theta, phi, gx[n], gy[n], xamax, yamax, ramax, cp, &steer_delay);
 
     if (do_apod) {
-      apodization(apod_met, n, apod, &weight, xs, ys, ramax, param);
+      apodization(apod_met, n, apod, &weight, gx[n], gy[n], ramax, param);
     }
 
     err = delay_arr(xo, yo, zo,
@@ -124,7 +124,7 @@ ErrorLevel das_arr(double xo, double yo, double zo, double dt, dream_idx_type nt
  ***/
 
 ErrorLevel das_arr_ud(double xo, double yo, double zo, double dt, dream_idx_type nt,
-                      double delay, double cp, int  num_elements,
+                      double delay, double cp, dream_idx_type num_elements,
                       double *gx, double *gy, double *gz, FocusMet foc_met, double *focal,
                       SteerMet steer_met, double theta, double phi,
                       double *apod, bool do_apod,
@@ -134,7 +134,7 @@ ErrorLevel das_arr_ud(double xo, double yo, double zo, double dt, dream_idx_type
   double *h;
   dream_idx_type i, i_c;
   double ramax, xamax, yamax;
-  double xs, ys, zs, foc_delay, weight;
+  double foc_delay, weight;
   ErrorLevel err = ErrorLevel::none, out_err = ErrorLevel::none;
 
   h = (double*) malloc(nt*sizeof(double));
@@ -155,10 +155,10 @@ ErrorLevel das_arr_ud(double xo, double yo, double zo, double dt, dream_idx_type
     beamsteering(steer_met, theta, phi, gx[i], gy[i], xamax, yamax, ramax, cp, &steer_delay);
 
     if (do_apod) {
-      apodization(apod_met, i, apod, &weight, xs, ys, ramax, param);
+      apodization(apod_met, i, apod, &weight, gx[i], gy[i], ramax, param);
     }
 
-    err = delay_arr(xo,yo,zo,xs,ys,zs,dt,nt,delay,foc_delay,steer_delay,cp,weight,h,err_level);
+    err = delay_arr(xo, yo, zo, gx[i], gy[i], gz[i], dt,nt,delay,foc_delay,steer_delay,cp,weight,h,err_level);
     if (err != ErrorLevel::none) {
       out_err = err;
       if ( (err == ErrorLevel::parallel_stop) || (err == ErrorLevel::stop) ) {

@@ -269,7 +269,7 @@ Copyright @copyright{} 2006-2022 Fredrik Lingvall.\n\
   //
 
   // Num inputs
-  if ( (nrhs < 2) ||  (nrhs < 2) ) {
+  if ( (nrhs < 2) ||  (nrhs > 5) ) {
     error("fftconv_p requires 2 to 5 input arguments!");
     return oct_retval;
   }
@@ -295,7 +295,7 @@ Copyright @copyright{} 2006-2022 Fredrik Lingvall.\n\
   B_N = tmp1.cols();
   B = (double*) tmp1.fortran_vec();
 
-  // Check that arg 2.
+  // Check dims of arg 2.
   if ( B_M != 1 && B_N !=1 && B_N != A_N) {
     error("Argument 2 must be a vector or a matrix with the same number of columns as arg 1!");
     return oct_retval;

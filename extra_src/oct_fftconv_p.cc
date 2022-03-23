@@ -574,11 +574,11 @@ Copyright @copyright{} 2006-2022 Fredrik Lingvall.\n\
     return oct_retval;
   }
 
-  if ( (nrhs == 3 && !load_wisdom) || nrhs == 4 || nrhs == 5) { // In-place mode.
+  //
+  // In-place mode.
+  //
 
-    //
-    // In-place mode.
-    //
+  if ( (nrhs == 3 && !load_wisdom) || nrhs == 4 || nrhs == 5) {
 
     if (  args(2).matrix_value().rows() != A_M+B_M-1) {
       error("Wrong number of rows in argument 3!");

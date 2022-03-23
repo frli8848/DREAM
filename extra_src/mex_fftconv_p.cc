@@ -267,8 +267,6 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
   case 3:
     {
-      mexErrMsgTxt("FFTW support is currently disabled!");
-
       if (mxIsChar(prhs[2])) { // 3rd arg is a FFTW wisdom string.
 
         char *str = mxArrayToString(prhs[2]);
@@ -508,17 +506,17 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
   }
 
-  if ( (nrhs == 3 && !load_wisdom) || nrhs == 4 || nrhs == 5) { // In-place mode.
+  //
+  // In-place mode.
+  //
 
-    //
-    // In-place mode.
-    //
+  if ( (nrhs == 3 && !load_wisdom) || nrhs == 4 || nrhs == 5) {
 
     if ( mxGetM(prhs[2]) != A_M+B_M-1) {
       dream_err_msg("Wrong number of rows in argument 3!");
     }
 
-    if ( mxGetM(prhs[2]) != A_N) {
+    if ( mxGetN(prhs[2]) != A_N) {
       dream_err_msg("Wrong number of columns in argument 3!");
     }
 

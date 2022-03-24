@@ -44,7 +44,7 @@ DEFUN_DLD (dream_apodwin, args, nlhs,
 DREAM_APODWIN - Computes apodization using the same method\n\
 as used in the array functions in the DREAM Toolbox.\n\
 \n\
- Inputparameters:\n\
+ Input parameters:\n\
 \n\
 @table @code\n\
 @item apod_met\n\
@@ -56,7 +56,7 @@ of apodization weights for the 'ud' option),\n\
 Parameter for raised cosine and Gaussian apodization functions (a scalar).\n\
 @end table\n\
 \n\
-The options for the @code{apod_met}parameter are:\n\
+The options for the @code{apod_met} parameter are:\n\
 \n\
 @table @code\n\
 @item 'off'\n\

@@ -224,13 +224,13 @@ Observation point(s) ([mm]):\n\
 An N x 3 matrix, Ro = [xo1 yo1 zo2; xo2 yo2 zo2; ... xoN yoN zoN]; where N is the number of observation points.\n\
 @end table\n\
 \n\
- Array gridparameter:\n\
+ Array grid parameter:\n\
 @table @code\n\
 @item G\n\
   Vector of annulus radii [mm].\n\
 @end table\n\
 \n\
-Samplingparameters: s_par = [dx dy dt nt]; \n\
+Sampling parameters: s_par = [dx dy dt nt]; \n\
 \n\
 @table @code\n\
 @item dx\n\
@@ -271,7 +271,7 @@ Focusing method, options are: 'on', 'off', and 'ud'.\n\
 Focal distance [mm]. If foc_met = 'ud' (user defined) then focal is a vector of focusing delays.\n\
 @end table\n\
 \n\
-Apodizationparameters: apod_met, apod, and win_par. The apod_met (apodization method) options are:\n\
+Apodization parameters: apod_met, apod, and win_par. The apod_met (apodization method) options are:\n\
 \n\
 @table @code\n\
 \n\
@@ -291,17 +291,17 @@ Simply supported.\n\
 Clamped.\n\
 @end table\n\
 \n\
-and the apod and win_parparameters are:\n\
+and the apod and win_par parameters are:\n\
 \n\
 @table @code\n\
 @item apod\n\
 Vector of apodiztion weights (used for the 'ud' option).\n\
 @item win_par\n\
-A scalarparameter for raised cosine and Gaussian apodization functions.\n\
+A scalar parameter for raised cosine and Gaussian apodization functions.\n\
 @end table\n\
 \n\
 Error Handling: err_level;\n\
-err_level is an optional text stringparameter for controlling the error behavior, options are:\n\
+err_level is an optional text string parameter for controlling the error behavior, options are:\n\
 \n\
 @table @code\n\
 @item 'ignore'\n\

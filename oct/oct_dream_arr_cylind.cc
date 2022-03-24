@@ -237,7 +237,7 @@ Observation point(s) ([mm]):\n\
 An N x 3 matrix, Ro = [xo1 yo1 zo2; xo2 yo2 zo2; ... xoN yoN zoN]; where N is the number of observation points.\n\
 @end table\n\
 \n\
-Geometricalparameters: geom_par = [a b Rcurv];\n\
+Geometrical parameters: geom_par = [a b Rcurv];\n\
 \n\
 @table @code\n\
 @item a\n\
@@ -248,7 +248,7 @@ Element width in y-direction [mm].\n\
 Radius of the curvature [mm]. If Rcurv > 0 then it is focsued/concave and if Rcurv < 0 it is convex/defocused.\n\
 @end table\n\
 \n\
-Array gridparameter:\n\
+Array grid parameter:\n\
 \n\
 @table @code\n\
 @item G\n\
@@ -297,7 +297,7 @@ Focusing method, options are: 'off', 'x', 'y', 'xy', 'x+y', and 'ud'.\n\
 Focal distance [mm]. If foc_met = 'ud' (user defined) then focal is a vector of focusing delays.\n\
 @end table\n\
 \n\
-Beam steeringparameters: steer_met and steer_par:\n\
+Beam steering parameters: steer_met and steer_par:\n\
 \n\
 @table @code\n\
 @item steer_met\n\
@@ -325,17 +325,17 @@ Simply supported.\n\
 Clamped.\n\
 @end table\n\
 \n\
-and the apod and win_parparameters are:\n\
+and the apod and win_par parameters are:\n\
 \n\
 @table @code\n\
 @item apod\n\
 Vector of apodiztion weights (used for the 'ud' option).\n\
 @item win_par\n\
-A scalarparameter for raised cosine and Gaussian apodization functions.\n\
+A scalar parameter for raised cosine and Gaussian apodization functions.\n\
 @end table\n\
 \n\
 Error Handling: err_level;\n\
-err_level is an optional text stringparameter for controlling the error behavior, options are:\n\
+err_level is an optional text string parameter for controlling the error behavior, options are:\n\
 \n\
 @table @code\n\
 @item 'ignore'\n\

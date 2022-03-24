@@ -210,7 +210,7 @@ x-size  of the transducer [mm].\n\
 y-size  of the transducer [mm].\n\
 @end table\n\
 \n\
-Samplingparameters: s_par = [dx dy dt nt]; \n\
+Sampling parameters: s_par = [dx dy dt nt]; \n\
 \n\
 @table @code\n\
 @item dx\n\
@@ -243,7 +243,7 @@ Attenuation coefficient [dB/(cm MHz)] .\n\
 @end table\n\
 \n\
 Error Handling: err_level;\n\
-err_level is an optional text stringparameter for controlling the error behavior, options are:\n\
+err_level is an optional text string parameter for controlling the error behavior, options are:\n\
 \n\
 @table @code\n\
 @item 'ignore'\n\

@@ -210,7 +210,7 @@ Sound velocity [m/s].\n\
 @end table\n\
 \n\
 circ_sir is an oct-function that is a part of the DREAM Toolbox available at\n\
-@url{http://www.signal.uu.se/Toolbox/dream/}.\n\
+@url{https://github.com/frli8848/DREAM}.\n\
 \n\
 Copyright @copyright{} 2008-2021 Fredrik Lingvall.\n\
 @seealso {dreamcirc, scirc_sir}\n\

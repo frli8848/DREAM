@@ -234,7 +234,7 @@ fftconv_p(A,B,Y,mode,wisdom_str_in);\n\
 where the 'mode' is a string which can be '=', '+=', or '-='.\n\
 \n\
 fftconv_p is a part of the DREAM Toolbox available at\n\
-@url{http://www.signal.uu.se/Toolbox/dream/}.\n\
+@url{https://github.com/frli8848/DREAM}.\n\
 \n\
 Copyright @copyright{} 2006-2022 Fredrik Lingvall.\n\
 @seealso {conv, conv_p, fftconv, fftw_wisdom}\n\

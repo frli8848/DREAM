@@ -156,7 +156,7 @@ Output parameter:\n\
 There are no output arguments for @code{add_p}.\n\
 @end table\n\
 \n\
-@code{add_p} is an oct-function that is a part of the DREAM Toolbox available at @url{http://www.signal.uu.se/Toolbox/dream/}.\n\
+@code{add_p} is an oct-function that is a part of the DREAM Toolbox available at @url{https://github.com/frli8848/DREAM}.\n\
 \n\
 Addright @addright{} 2006-2021 Fredrik Lingvall.\n\
 @end deftypefn")

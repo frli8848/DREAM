@@ -215,7 +215,7 @@ Scalar the number of points used for for sampling the analytic SIR in each sampl
 @end table\n\
 \n\
 scirc_sir is an oct-function that is a part of the DREAM Toolbox available at\n\
-@url{http://www.signal.uu.se/Toolbox/dream/}.\n\
+@url{https://github.com/frli8848/DREAM}.\n\
 \n\
 Copyright @copyright{} 2008-2021 Fredrik Lingvall.\n\
 @seealso {dreamcirc, circ_sir}\n\

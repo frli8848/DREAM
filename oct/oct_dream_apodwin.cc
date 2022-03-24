@@ -76,7 +76,7 @@ Clamped.\n\
 @end table\n\
 \n\
 dream_apodwin is an oct-function that is a part of the DREAM Toolbox available at\n\
-@url{http://www.signal.uu.se/Toolbox/dream/}.\n\
+@url{https://github.com/frli8848/DREAM}.\n\
 \n\
 Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
 @seealso {dream_arr_rect, dream_arr_circ, dream_arr_cylind_f, dream_arr_cylind_d}\n\

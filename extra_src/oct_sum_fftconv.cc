@@ -254,7 +254,7 @@ sum_fftconv(H,U,Y,wisdom_str);\n\
 in Y2 unless Y2 is changed before the sum_fftconv call).\n\
 \n\
 sum_fftconv is a part of the DREAM Toolbox available at\n\
-@url{http://www.signal.uu.se/Toolbox/dream/}.\n\
+@url{https://github.com/frli8848/DREAM}.\n\
 \n\
 Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
 @seealso {conv, conv_p, fftconv, fftconv_p, fftw_wisdom}")

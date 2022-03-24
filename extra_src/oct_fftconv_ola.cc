@@ -331,7 +331,7 @@ where the 'mode' is a string which can be '=', '+=', or '-='.\n\
 NOTE: fftconv_ola requires the FFTW library version 3 @url{http://www.fftw.org}.\n\
 \n\
 fftconv_ola is a part of the DREAM Toolbox available at\n\
-@url{http://www.signal.uu.se/Toolbox/dream/}.\n\
+@url{https://github.com/frli8848/DREAM}.\n\
 \n\
 Copyright @copyright{} 2010-2021 Fredrik Lingvall.\n\
 @seealso {conv_p, fftconv_p, fftconv, conv, fftw_wisdom}\n\

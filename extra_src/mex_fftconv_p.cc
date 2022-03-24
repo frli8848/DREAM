@@ -221,7 +221,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   //
 
   // Num inputs
-  if ( (nrhs < 2) ||  (nrhs < 2) ) {
+  if ( (nrhs < 2) ||  (nrhs > 5) ) {
     dream_err_msg("fftconv_p requires 2 to 5 input arguments!");
   }
 

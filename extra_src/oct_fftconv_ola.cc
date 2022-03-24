@@ -337,8 +337,8 @@ Copyright @copyright{} 2010-2021 Fredrik Lingvall.\n\
 @seealso {conv_p, fftconv_p, fftconv, conv, fftw_wisdom}\n\
 @end deftypefn")
 {
-  sighandler_t  old_handler, old_handler_abrt, old_handler_keyint;
-  std::thread  *threads;
+  sighandler_t old_handler, old_handler_abrt, old_handler_keyint;
+  std::thread *threads;
   double *Y = nullptr;
   DATA  *D = nullptr;
   int plan_method = 4; // Default to FFTW_ESTIMATE
@@ -589,8 +589,6 @@ Copyright @copyright{} 2010-2021 Fredrik Lingvall.\n\
 
   if (nrhs == 3 || (nrhs == 4 && load_wisdom)) { // Normal mode.
 
-    running = true;
-
     // Allocate mamory for the output matrix.
     Matrix Ymat(A_M+B_M-1, A_N);
     Y = Ymat.fortran_vec();
@@ -634,6 +632,8 @@ Copyright @copyright{} 2010-2021 Fredrik Lingvall.\n\
     error("Failed to allocate memory for thread data!");
     return oct_retval;
   }
+
+  running = true;
 
   for (dream_idx_type thread_n=0; thread_n<nthreads; thread_n++) {
 

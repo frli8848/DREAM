@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2006,2007,2008,2009,2014,2015,2016 Fredrik Lingvall
+* copyright (C) 2006,2007,2008,2009,2014,2015,2016,2022 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -25,18 +25,11 @@
 #include <csignal>
 #include <thread>
 
-#include "dream.h"
-//#include "dream_error.h"
-
-//
-// Octave headers.
-//
-
 #include <octave/oct.h>
 
-#define EQU 0
-#define SUM 1
-#define NEG 2
+#include "dream.h"
+#include "affinity.h"
+#include "conv.h"
 
 /***
  *
@@ -49,8 +42,6 @@
 //
 
 volatile int running;
-volatile int in_place;
-int mode = EQU;
 
 //
 // typedef:s
@@ -58,8 +49,8 @@ int mode = EQU;
 
 typedef struct
 {
-  octave_idx_type line_start;
-  octave_idx_type line_stop;
+  octave_idx_type col_start;
+  octave_idx_type col_stop;
   double *A;
   octave_idx_type A_M;
   octave_idx_type A_N;
@@ -67,6 +58,7 @@ typedef struct
   octave_idx_type B_M;
   octave_idx_type B_N;
   double *Y;
+  ConvMode conv_mode;
 } DATA;
 
 typedef void (*sighandler_t)(int);
@@ -80,33 +72,30 @@ void sighandler(int signum);
 void sig_abrt_handler(int signum);
 void sig_keyint_handler(int signum);
 
-void conv(double *xr, octave_idx_type nx, double *yr, octave_idx_type ny, double *zr,
-           int in_place, int mode);
-
 /***
  *
  * Thread function.
  *
  ***/
 
-void* smp_dream_conv_p(void *arg)
+void* smp_dream_conv(void *arg)
 {
   DATA D = *(DATA *)arg;
-  octave_idx_type    line_start=D.line_start, line_stop=D.line_stop, n;
+  octave_idx_type    col_start=D.col_start, col_stop=D.col_stop, n;
   double *A = D.A, *B = D.B, *Y = D.Y;
   octave_idx_type A_M = D.A_M, B_M = D.B_M, B_N = D.B_N;
-
+  ConvMode conv_mode = D.conv_mode;
   // Do the convolution.
 
-  for (n=line_start; n<line_stop; n++) {
+  for (n=col_start; n<col_stop; n++) {
 
     if (B_N > 1) // B is a matrix.
-      conv( &A[0+n*A_M], A_M, &B[0+n*B_M], B_M, &Y[0+n*(A_M+B_M-1)],in_place,mode);
+      conv( &A[0+n*A_M], A_M, &B[0+n*B_M], B_M, &Y[0+n*(A_M+B_M-1)], conv_mode);
     else // B is a vector.
-      conv( &A[0+n*A_M], A_M, B, B_M, &Y[0+n*(A_M+B_M-1)],in_place,mode);
+      conv( &A[0+n*A_M], A_M, B, B_M, &Y[0+n*(A_M+B_M-1)], conv_mode);
 
     if (running == false) {
-      octave_stdout << "conv_p: thread for column " << line_start+1 << " -> " << line_stop << "bailing out!\n";
+      octave_stdout << "conv_p: thread for column " << col_start+1 << " -> " << col_stop << "bailing out!\n";
       break;
       //return(NULL);
     }
@@ -168,17 +157,16 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
 @seealso {fftconv_p, fftconv, conv}\n\
 @end deftypefn")
 {
-  double *A,*B, *Y;
-  sighandler_t   old_handler, old_handler_abrt, old_handler_keyint;
-  octave_idx_type line_start, line_stop, A_M, A_N, B_M, B_N, n;
-  char   *the_str = NULL;
-  int    buflen, is_set = false;
-  DATA   *D;
-  std::thread     *threads;
+  double *A = nullptr, *B = nullptr, *Y = nullptr;
+  sighandler_t old_handler, old_handler_abrt, old_handler_keyint;
+  octave_idx_type col_start, col_stop, A_M, A_N, B_M, B_N;
+  bool is_set = false;
+  DATA *D = nullptr;
+  std::thread *threads;
   octave_idx_type  thread_n, nthreads;
-  octave_value_list oct_retval;
+  ConvMode conv_mode = ConvMode::equ;
 
-  in_place = false;
+  octave_value_list oct_retval;
 
   int nrhs = args.length ();
 
@@ -208,12 +196,8 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
 
   case 4:
     if ( args(3).is_string() ) { // 4:th arg is a string '=', '+=', or '-='.
-      std::string strin = args(3).string_value();
-      buflen = strin.length();
-      the_str = (char*) malloc(buflen * sizeof(char));
-      for ( n=0; n<buflen; n++ ) {
-        the_str[n] = strin[n];
-      }
+
+      std::string ip_mode = args(3).string_value();
 
       // Valid strings are:
       //  '='  : In-place replace mode.
@@ -222,18 +206,18 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
 
       is_set = false;
 
-      if (strcmp(the_str,"=") == 0) {
-        mode = EQU;
+      if (ip_mode.compare("=") == 0) {
+        conv_mode=ConvMode::equ;
         is_set = true;
       }
 
-      if (strcmp(the_str,"+=") == 0) {
-        mode = SUM;
+      if (ip_mode.compare("+=") == 0) {
+        conv_mode=ConvMode::sum;
         is_set = true;
       }
 
-      if (strcmp(the_str,"-=") == 0) {
-        mode = NEG;
+      if (ip_mode.compare("-=") == 0) {
+        conv_mode=ConvMode::neg;
         is_set = true;
       }
 
@@ -242,7 +226,6 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
         return oct_retval;
       }
     }
-    free(the_str);
     break;
 
   default:
@@ -314,122 +297,16 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
     // Normal (non in-place) mode.
     //
 
-    in_place = false;
-
-    //
-    // Create/get output matrix.
-    //
-
     Matrix Ymat(A_M+B_M-1, A_N);
     Y = Ymat.fortran_vec();
 
-    //
-    // Call the CONV subroutine.
-    //
-
-    running = true;
-
-    if (nthreads>1) { // Use threads
-
-      // Allocate local data.
-      D = (DATA*) malloc(nthreads*sizeof(DATA));
-      if (!D) {
-        error("Failed to allocate memory for thread data!");
-        return oct_retval;
-      }
-
-      // Allocate mem for the threads.
-      threads = new std::thread[nthreads]; // Init thread data.
-      if (!threads) {
-        error("Failed to allocate memory for threads!");
-        return oct_retval;
-      }
-
-      for (thread_n = 0; thread_n < nthreads; thread_n++) {
-
-        line_start = thread_n * A_N/nthreads;
-        line_stop =  (thread_n+1) * A_N/nthreads;
-
-        // Init local data.
-        D[thread_n].line_start = line_start; // Local start index;
-        D[thread_n].line_stop = line_stop; // Local stop index;
-        D[thread_n].A = A;
-        D[thread_n].A_M = A_M;
-        D[thread_n].A_N = A_N;
-        D[thread_n].B = B;
-        D[thread_n].B_M = B_M;
-        D[thread_n].B_N = B_N;
-        D[thread_n].Y = Y;
-
-        // Start the threads.
-        threads[thread_n] = std::thread(smp_dream_conv_p, &D[thread_n]);
-
-      } // for (thread_n = 0; thread_n < nthreads; thread_n++)
-
-      // Wait for all threads to finish.
-      for (thread_n = 0; thread_n < nthreads; thread_n++)
-        threads[thread_n].join();
-
-      // Free memory.
-      if (D)
-        free((void*) D);
-
-    } else{			// Do not use threads
-
-      if (B_N > 1) {		// B is a matrix.
-        for (n=0; n<A_N; n++) {
-
-          conv( &A[0+n*A_M], A_M, B, B_M, &Y[0+n*(A_M+B_M-1)],in_place,mode);
-
-          if (running==false) {
-            printf("conv_p: bailing out!\n");
-            break;
-          }
-        }
-      } else {			// B is a vector.
-        for (n=0; n<A_N; n++) {
-
-          conv( &A[0+n*A_M], A_M, B, B_M, &Y[0+n*(A_M+B_M-1)],in_place,mode);
-
-          if (running==false) {
-            printf("conv_p: bailing out!\n");
-            break;
-          }
-        }
-      }
-    }
-
-    //
-    // Restore old signal handlers.
-    //
-
-    if (std::signal(SIGTERM, old_handler) == SIG_ERR) {
-      std::cerr << "Couldn't register old SIGTERM signal handler!" << std::endl;
-    }
-
-    if (std::signal(SIGABRT, old_handler_abrt) == SIG_ERR) {
-      std::cerr << "Couldn't register old SIGABRT signal handler!" << std::endl;
-    }
-
-    if (std::signal(SIGINT, old_handler_keyint) == SIG_ERR) {
-      std::cerr << "Couldn't register old SIGINT signal handler!" << std::endl;
-    }
-
-    if (!running) {
-      error("CTRL-C pressed!\n"); // Bail out.
-      return oct_retval;
-    }
-
     oct_retval.append(Ymat);
-    return oct_retval;
 
   } else {
 
     //
     // In-place mode.
     //
-
-    in_place = true;
 
     if (args(2).matrix_value().rows() != A_M+B_M-1) {
       error("Wrong number of rows in argument 3!");
@@ -444,105 +321,86 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
     const Matrix Ytmp = args(2).matrix_value();
 
     Y = (double*) Ytmp.fortran_vec();
+  }
 
-    //
-    // Call the CONV subroutine.
-    //
+  //
+  // Call the CONV subroutine.
+  //
 
-    running = true;
+  running = true;
 
-    if (nthreads>1) { // Use threads
-
-      // Allocate local data.
-      D = (DATA*) malloc(nthreads*sizeof(DATA));
-      if (!D) {
-        error("Failed to allocate memory for thread data!");
-        return oct_retval;
-      }
-
-      // Allocate mem for the threads.
-      threads = new std::thread[nthreads]; // Init thread data.
-          if (!threads) {
-        error("Failed to allocate memory for threads!");
-        return oct_retval;
-      }
-
-      for (thread_n = 0; thread_n < nthreads; thread_n++) {
-
-        line_start = thread_n * A_N/nthreads;
-        line_stop =  (thread_n+1) * A_N/nthreads;
-
-        // Init local data.
-        D[thread_n].line_start = line_start; // Local start index;
-        D[thread_n].line_stop = line_stop; // Local stop index;
-        D[thread_n].A = A;
-        D[thread_n].A_M = A_M;
-        D[thread_n].A_N = A_N;
-        D[thread_n].B = B;
-        D[thread_n].B_M = B_M;
-        D[thread_n].B_N = B_N;
-        D[thread_n].Y = Y;
-
-        // Start the threads.
-        threads[thread_n] = std::thread(smp_dream_conv_p, &D[thread_n]);
-      }
-
-      // Wait for all threads to finish.
-      for (thread_n = 0; thread_n < nthreads; thread_n++)
-        threads[thread_n].join();
-
-      // Free memory.
-      if (D)
-        free((void*) D);
-
-    } else { // Do not use threads
-
-      if (B_N > 1) { // B is a matrix.
-        for (n=0; n<A_N; n++) {
-
-          conv( &A[0+n*A_M], A_M, &B[0+n*B_M], B_M, &Y[0+n*(A_M+B_M-1)],in_place,mode);
-
-          if (running==false) {
-            printf("conv_p: bailing out!\n");
-            break;
-          }
-        }
-      } else {// B is a vector.
-
-        for (n=0; n<A_N; n++) {
-
-          conv( &A[0+n*A_M], A_M, B, B_M, &Y[0+n*(A_M+B_M-1)],in_place,mode);
-
-          if (running==false) {
-            printf("conv_p: bailing out!\n");
-            break;
-          }
-        }
-      }
-    }
-
-    //
-    // Restore old signal handlers.
-    //
-
-    if (std::signal(SIGTERM, old_handler) == SIG_ERR) {
-      std::cerr << "Couldn't register old SIGTERM signal handler!" << std::endl;
-    }
-
-    if (std::signal(SIGABRT, old_handler_abrt) == SIG_ERR) {
-      std::cerr << "Couldn't register old SIGABRT signal handler!" << std::endl;
-    }
-
-    if (std::signal(SIGINT, old_handler_keyint) == SIG_ERR) {
-      std::cerr << "Couldn't register old SIGINT signal handler!" << std::endl;
-    }
-
-    if (!running) {
-      error("CTRL-C pressed!\n"); // Bail out.
-      return oct_retval;
-    }
-
+  // Allocate local data.
+  D = (DATA*) malloc(nthreads*sizeof(DATA));
+  if (!D) {
+    error("Failed to allocate memory for thread data!");
     return oct_retval;
   }
 
+  // Allocate mem for the threads.
+  threads = new std::thread[nthreads]; // Init thread data.
+  if (!threads) {
+    error("Failed to allocate memory for threads!");
+    return oct_retval;
+  }
+
+  for (thread_n = 0; thread_n < nthreads; thread_n++) {
+
+    col_start = thread_n * A_N/nthreads;
+    col_stop =  (thread_n+1) * A_N/nthreads;
+
+    // Init local data.
+    D[thread_n].col_start = col_start; // Local start index;
+    D[thread_n].col_stop = col_stop; // Local stop index;
+    D[thread_n].A = A;
+    D[thread_n].A_M = A_M;
+    D[thread_n].A_N = A_N;
+    D[thread_n].B = B;
+    D[thread_n].B_M = B_M;
+    D[thread_n].B_N = B_N;
+    D[thread_n].Y = Y;
+    D[thread_n].conv_mode = conv_mode;
+
+    if (nthreads > 1) {
+      // Start the threads.
+      threads[thread_n] = std::thread(smp_dream_conv, &D[thread_n]);
+      set_dream_thread_affinity(thread_n, nthreads, threads);
+    } else {
+      smp_dream_conv(&D[0]);
+    }
+  }
+
+  if (nthreads > 1) {
+    // Wait for all threads to finish.
+    for (thread_n = 0; thread_n < nthreads; thread_n++) {
+      threads[thread_n].join();
+    }
+  }
+
+  // Free memory.
+  if (D) {
+    free((void*) D);
+  }
+
+  //
+  // Restore old signal handlers.
+  //
+
+  if (std::signal(SIGTERM, old_handler) == SIG_ERR) {
+    std::cerr << "Couldn't register old SIGTERM signal handler!" << std::endl;
+  }
+
+  if (std::signal(SIGABRT, old_handler_abrt) == SIG_ERR) {
+    std::cerr << "Couldn't register old SIGABRT signal handler!" << std::endl;
+  }
+
+  if (std::signal(SIGINT, old_handler_keyint) == SIG_ERR) {
+    std::cerr << "Couldn't register old SIGINT signal handler!" << std::endl;
+  }
+
+  if (!running) {
+    error("CTRL-C pressed!\n"); // Bail out.
+    return oct_retval;
+  }
+
+  return oct_retval;
 }

@@ -22,10 +22,8 @@
 ***/
 
 #include "dream.h"
+#include "fftconv.h"
 
-#define EQU 0
-#define SUM 1
-#define NEG 2
 
 /***
  *
@@ -33,56 +31,49 @@
  *
  ***/
 
-void conv(double *xr, dream_idx_type nx, double *yr, dream_idx_type ny, double *zr, int in_place, int mode)
+void conv(double *xr, dream_idx_type nx, double *yr, dream_idx_type ny, double *zr, ConvMode conv_mode)
 {
   dream_idx_type i,j;
 
   // Don't clear if in-place '+=' and '-=' modes.
-  if (in_place == false || mode == EQU) {
+  if (conv_mode == ConvMode::equ) {
     for (i=0; i < (nx+ny)-1; i++) {
       zr[i]=0.0;
     }
   }
 
-  if (in_place == false) { // Normal mode.
+  switch (conv_mode) {
 
-    for(i=0; i<nx; i++) {
-      for(j=0; j<ny; j++) {
-        zr[i+j] += xr[i] * yr[j];
-      }
-    }
-  }
-  else { // in-place
-
-    switch (mode) {
-
-    case EQU:
-    case SUM:
+  case ConvMode::sum:
+    {
       // in-place '=' and '+=' operation.
       for(i=0; i<nx; i++) {
         for(j=0; j<ny; j++) {
           zr[i+j] += xr[i] * yr[j];
         }
       }
-      break;
+    }
+    break;
 
-    case NEG:
+  case ConvMode::neg:
+    {
       // in-place '-=' operation.
       for(i=0; i<nx; i++) {
         for(j=0; j<ny; j++) {
           zr[i+j] -= xr[i] * yr[j];
         }
       }
-      break;
+    }
+    break;
 
-    default:
-      // in-place '=' operation.
-      for(i=0; i<nx; i++) {
-        for(j=0; j<ny; j++) {
-          zr[i+j] += xr[i] * yr[j];
-        }
+  default:
+    // in-place '=' operation.
+    for(i=0; i<nx; i++) {
+      for(j=0; j<ny; j++) {
+        zr[i+j] += xr[i] * yr[j];
       }
-      break;
-    } // switch
-  } // in-place
+    }
+    break;
+
+  } // switch
 }

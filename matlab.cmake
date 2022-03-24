@@ -662,6 +662,7 @@ if (Matlab_FOUND)
 
     set (mex_sum_fftconv_SOURCE_FILES
       extra_src/mex_sum_fftconv.cc
+      extra_src/fftconv.cc
       src/affinity.cc
       src/dream_error.cc
       )

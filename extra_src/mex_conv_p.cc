@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2003,2004,2006,2007,2008,2009,2015,2016,2021 Fredrik Lingvall
+* Copyright (C) 2003,2004,2006,2007,2008,2009,2015,2016,2021,2022 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -21,21 +21,14 @@
 *
 ***/
 
-#include <iostream>
 #include <csignal>
-#include <string>
-#include <cstring>
-#include <cmath>
 #include <thread>
-
-#include "dream.h"
-#include "dream_error.h"
 
 #include "mex.h"
 
-#define EQU 0
-#define SUM 1
-#define NEG 2
+#include "dream.h"
+#include "affinity.h"
+#include "conv.h"
 
 /***
  *
@@ -48,8 +41,6 @@
 //
 
 volatile int running;
-volatile int in_place;
-int mode = EQU;
 
 //
 // typedef:s
@@ -57,8 +48,8 @@ int mode = EQU;
 
 typedef struct
 {
-  size_t line_start;
-  size_t line_stop;
+  size_t col_start;
+  size_t col_stop;
   double *A;
   size_t A_M;
   size_t A_N;
@@ -66,6 +57,7 @@ typedef struct
   size_t B_M;
   size_t B_N;
   double *Y;
+  ConvMode conv_mode;
 } DATA;
 
 typedef void (*sighandler_t)(int);
@@ -74,13 +66,10 @@ typedef void (*sighandler_t)(int);
 // Function prototypes.
 //
 
-void* smp_dream_conv_p(void *arg);
+void* smp_dream_conv(void *arg);
 void sighandler(int signum);
 void sig_abrt_handler(int signum);
 void sig_keyint_handler(int signum);
-
-void conv(double *xr, size_t nx, double *yr, size_t ny, double *zr,
-          int in_place, int mode);
 
 /***
  *
@@ -88,24 +77,25 @@ void conv(double *xr, size_t nx, double *yr, size_t ny, double *zr,
  *
  ***/
 
-void* smp_dream_conv_p(void *arg)
+void* smp_dream_conv(void *arg)
 {
   DATA D = *(DATA *)arg;
-  size_t    line_start=D.line_start, line_stop=D.line_stop, n;
+  size_t    col_start=D.col_start, col_stop=D.col_stop;
   double *A = D.A, *B = D.B, *Y = D.Y;
   size_t A_M = D.A_M, B_M = D.B_M, B_N = D.B_N;
+  ConvMode conv_mode = D.conv_mode;
 
   // Do the convolution.
 
-  for (n=line_start; n<line_stop; n++) {
+  for (dream_idx_type n=col_start; n<col_stop; n++) {
 
     if (B_N > 1) // B is a matrix.
-      conv( &A[0+n*A_M], A_M, &B[0+n*B_M], B_M, &Y[0+n*(A_M+B_M-1)],in_place,mode);
+      conv( &A[0+n*A_M], A_M, &B[0+n*B_M], B_M, &Y[0+n*(A_M+B_M-1)], conv_mode);
     else // B is a vector.
-      conv( &A[0+n*A_M], A_M, B, B_M, &Y[0+n*(A_M+B_M-1)],in_place,mode);
+      conv( &A[0+n*A_M], A_M, B, B_M, &Y[0+n*(A_M+B_M-1)], conv_mode);
 
     if (running == false) {
-      mexPrintf("conv_p: thread for column %d -> %d bailing out!\n",line_start+1,line_stop);
+      std::cout << "conv_p: thread for column " << col_start+1 << " -> " << col_stop << "bailing out!\n";
       break;
     }
 
@@ -140,16 +130,14 @@ void sig_keyint_handler(int signum) {
 
 void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
-  double *A,*B, *Y;
+  double *A = nullptr,*B = nullptr, *Y = nullptr;
   sighandler_t   old_handler, old_handler_abrt, old_handler_keyint;
-  size_t line_start, line_stop, A_M, A_N, B_M, B_N, n;
-  int    buflen, is_set = false;
-  DATA   *D;
+  size_t col_start, col_stop, A_M, A_N, B_M, B_N;
+  bool is_set = false;
+  DATA *D = nullptr;
   std::thread *threads;
   size_t  thread_n, nthreads;
-  char   *the_str = NULL;
-
-  in_place = false;
+  ConvMode conv_mode = ConvMode::equ;
 
   // Check for proper inputs arguments.
 
@@ -157,30 +145,30 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
   case 0:
   case 1:
-    mexErrMsgTxt("conv_p requires 2 to 4 input arguments!");
+    dream_err_msg("conv_p requires 2 to 4 input arguments!");
     break;
 
   case 2:
     if (nlhs > 1) {
-      mexErrMsgTxt("Too many output arguments for conv_p!");
+      dream_err_msg("Too many output arguments for conv_p!");
     }
     break;
 
   case 3:
     if (nlhs > 0) {
-      mexErrMsgTxt("No output arguments required for conv_p in in-place operating mode!");
+      dream_err_msg("No output arguments required for conv_p in in-place operating mode!");
     }
     if (mxIsChar(prhs[2])) {
-      mexErrMsgTxt("Arg 3 must be a matrix (not a string)");
+      dream_err_msg("Arg 3 must be a matrix (not a string)");
     }
     break;
 
   case 4:
     if (mxIsChar(prhs[3])) { // 4th arg is a mode string.
-      //the_str = (char*) mxGetChars(prhs[4]);
-      buflen = mxGetM(prhs[3])*mxGetN(prhs[3])+1;
-      the_str = (char*) malloc(buflen * sizeof(char));
-      mxGetString(prhs[3], the_str, buflen); // Obsolete in Matlab 7.x ?
+
+      char *str = mxArrayToString(prhs[3]);
+      std::string ip_mode(str);
+      mxFree(str);
 
       // Valid strings are:
       //  '='  : In-place replace mode.
@@ -189,30 +177,29 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
       is_set = false;
 
-      if (strcmp(the_str,"=") == 0) {
-        mode = EQU;
+      if (ip_mode.compare("=") == 0) {
+        conv_mode=ConvMode::equ;
         is_set = true;
       }
 
-      if (strcmp(the_str,"+=") == 0) {
-        mode = SUM;
+      if (ip_mode.compare("+=") == 0) {
+        conv_mode=ConvMode::sum;
         is_set = true;
       }
 
-      if (strcmp(the_str,"-=") == 0) {
-        mode = NEG;
+      if (ip_mode.compare("-=") == 0) {
+        conv_mode=ConvMode::neg;
         is_set = true;
       }
 
-      if (is_set == false)
-        mexErrMsgTxt("Non-valid string in arg 4!");
-
+      if (is_set == false) {
+        dream_err_msg("Non-valid string in arg 4!");
+      }
     }
-    free(the_str);
     break;
 
   default:
-    mexErrMsgTxt("conv_p requires 2 to 4 input arguments!");
+    dream_err_msg("conv_p requires 2 to 4 input arguments!");
     break;
   }
 
@@ -226,7 +213,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
   // Check that arg 2.
   if ( B_M != 1 && B_N !=1 && B_N != A_N)
-    mexErrMsgTxt("Argument 2 must be a vector or a matrix with the same number of rows as arg 1!");
+    dream_err_msg("Argument 2 must be a vector or a matrix with the same number of rows as arg 1!");
 
   if (  B_M == 1 || B_N == 1 ) { // B is a vector.
     B_M = B_M*B_N;
@@ -259,7 +246,6 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     // Normal mode.
     //
 
-    in_place = false;
     plhs[0] = mxCreateDoubleMatrix(A_M+B_M-1, A_N, mxREAL);
     Y = mxGetPr(plhs[0]);
 
@@ -269,13 +255,11 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     // in-place mode.
     //
 
-    in_place = true;
-
     if ( mxGetM(prhs[2]) != A_M+B_M-1)
-      mexErrMsgTxt("Wrong number of rows in argument 3!");
+      dream_err_msg("Wrong number of rows in argument 3!");
 
     if ( mxGetN(prhs[2]) != A_N)
-      mexErrMsgTxt("Wrong number of columns in argument 3!");
+      dream_err_msg("Wrong number of columns in argument 3!");
 
     Y = mxGetPr(prhs[2]);
   }
@@ -302,70 +286,53 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
   running = true;
 
-  if (nthreads>1) { // Use threads
+  // Allocate local data.
+  D = (DATA*) malloc(nthreads*sizeof(DATA));
+  if (!D) {
+    dream_err_msg("Failed to allocate memory for thread data!");
+  }
 
-    // Allocate local data.
-    D = (DATA*) malloc(nthreads*sizeof(DATA));
-    if (!D)
-      mexErrMsgTxt("Failed to allocate memory for thread data!");
+  // Allocate mem for the threads.
+  threads = new std::thread[nthreads]; // Init thread data.
+  if (!threads)
+    dream_err_msg("Failed to allocate memory for threads!");
 
-    // Allocate mem for the threads.
-    threads = new std::thread[nthreads]; // Init thread data.
-    if (!threads)
-      mexErrMsgTxt("Failed to allocate memory for threads!");
+  for (thread_n = 0; thread_n < nthreads; thread_n++) {
 
-    for (thread_n = 0; thread_n < nthreads; thread_n++) {
+    col_start = thread_n * A_N/nthreads;
+    col_stop =  (thread_n+1) * A_N/nthreads;
 
-      line_start = thread_n * A_N/nthreads;
-      line_stop =  (thread_n+1) * A_N/nthreads;
+    // Init local data.
+    D[thread_n].col_start = col_start; // Local start index;
+    D[thread_n].col_stop = col_stop; // Local stop index;
+    D[thread_n].A = A;
+    D[thread_n].A_M = A_M;
+    D[thread_n].A_N = A_N;
+    D[thread_n].B = B;
+    D[thread_n].B_M = B_M;
+    D[thread_n].B_N = B_N;
+    D[thread_n].Y = Y;
+    D[thread_n].conv_mode = conv_mode;
 
-      // Init local data.
-      D[thread_n].line_start = line_start; // Local start index;
-      D[thread_n].line_stop = line_stop; // Local stop index;
-      D[thread_n].A = A;
-      D[thread_n].A_M = A_M;
-      D[thread_n].A_N = A_N;
-      D[thread_n].B = B;
-      D[thread_n].B_M = B_M;
-      D[thread_n].B_N = B_N;
-      D[thread_n].Y = Y;
-
+    if (nthreads > 1) {
       // Start the threads.
-      threads[thread_n] = std::thread(smp_dream_conv_p, &D[thread_n]);
-
-    } // for (thread_n = 0; thread_n < nthreads; thread_n++)
-
-    // Wait for all threads to finish.
-    for (thread_n = 0; thread_n < nthreads; thread_n++)
-        threads[thread_n].join();
-
-    // Free memory.
-    if (D)
-      free((void*) D);
-
-  } else {			// Do not use threads
-
-    if (B_N > 1) {		// B is a matrix.
-      for (n=0; n<A_N; n++) {
-
-        conv( &A[0+n*A_M], A_M, &B[0+n*B_M], B_M, &Y[0+n*(A_M+B_M-1)],in_place,mode);
-
-        if (running==false) {
-          printf("conv_p: bailing out!\n");
-          break;
-        }
-      }
-    } else {			// B is a vector.
-      for (n=0; n<A_N; n++) {
-
-        conv( &A[0+n*A_M], A_M, B, B_M, &Y[0+n*(A_M+B_M-1)],in_place,mode);
-
-        if (running==false) {
-          printf("conv_p: bailing out!\n");
-          break;
-        }
-      }
+      threads[thread_n] = std::thread(smp_dream_conv, &D[thread_n]);
+      set_dream_thread_affinity(thread_n, nthreads, threads);
+    } else {
+      smp_dream_conv(&D[0]);
     }
+  }
+
+  if (nthreads > 1) {
+    // Wait for all threads to finish.
+    for (thread_n = 0; thread_n < nthreads; thread_n++) {
+      threads[thread_n].join();
+    }
+  }
+
+  // Free memory.
+  if (D) {
+    free((void*) D);
   }
 
   //

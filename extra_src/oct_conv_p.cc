@@ -21,7 +21,6 @@
 *
 ***/
 
-#include <iostream>
 #include <csignal>
 #include <thread>
 
@@ -81,13 +80,14 @@ void sig_keyint_handler(int signum);
 void* smp_dream_conv(void *arg)
 {
   DATA D = *(DATA *)arg;
-  octave_idx_type    col_start=D.col_start, col_stop=D.col_stop, n;
+  octave_idx_type    col_start=D.col_start, col_stop=D.col_stop;
   double *A = D.A, *B = D.B, *Y = D.Y;
   octave_idx_type A_M = D.A_M, B_M = D.B_M, B_N = D.B_N;
   ConvMode conv_mode = D.conv_mode;
+
   // Do the convolution.
 
-  for (n=col_start; n<col_stop; n++) {
+  for (dream_idx_type n=col_start; n<col_stop; n++) {
 
     if (B_N > 1) // B is a matrix.
       conv( &A[0+n*A_M], A_M, &B[0+n*B_M], B_M, &Y[0+n*(A_M+B_M-1)], conv_mode);
@@ -176,20 +176,20 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
 
   case 0:
   case 1:
-    error("conv_p requires 2 to 4 input arguments!");
+    dream_err_msg("conv_p requires 2 to 4 input arguments!");
     return oct_retval;
     break;
 
   case 2:
     if (nlhs > 1) {
-      error("Too many output arguments for conv_p!");
+      dream_err_msg("Too many output arguments for conv_p!");
       return oct_retval;
     }
     break;
 
   case 3:
     if (nlhs > 0) {
-      error("No output arguments required for conv_p in in-place operating mode!");
+      dream_err_msg("No output arguments required for conv_p in in-place operating mode!");
       return oct_retval;
     }
     break;
@@ -222,14 +222,14 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
       }
 
       if (is_set == false) {
-        error("Non-valid string in arg 4!");
+        dream_err_msg("Non-valid string in arg 4!");
         return oct_retval;
       }
     }
     break;
 
   default:
-    error("conv_p requires 2 to 4 input arguments!");
+    dream_err_msg("conv_p requires 2 to 4 input arguments!");
     return oct_retval;
     break;
   }
@@ -246,7 +246,7 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
 
   // Check that arg 2.
   if ( B_M != 1 && B_N !=1 && B_N != A_N) {
-    error("Argument 2 must be a vector or a matrix with the same number of rows as arg 1!");
+    dream_err_msg("Argument 2 must be a vector or a matrix with the same number of rows as arg 1!");
     return oct_retval;
   }
 
@@ -309,12 +309,12 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
     //
 
     if (args(2).matrix_value().rows() != A_M+B_M-1) {
-      error("Wrong number of rows in argument 3!");
+      dream_err_msg("Wrong number of rows in argument 3!");
       return oct_retval;
     }
 
     if (args(2).matrix_value().cols() != A_N) {
-      error("Wrong number of columns in argument 3!");
+      dream_err_msg("Wrong number of columns in argument 3!");
       return oct_retval;
     }
 
@@ -332,14 +332,14 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
   // Allocate local data.
   D = (DATA*) malloc(nthreads*sizeof(DATA));
   if (!D) {
-    error("Failed to allocate memory for thread data!");
+    dream_err_msg("Failed to allocate memory for thread data!");
     return oct_retval;
   }
 
   // Allocate mem for the threads.
   threads = new std::thread[nthreads]; // Init thread data.
   if (!threads) {
-    error("Failed to allocate memory for threads!");
+    dream_err_msg("Failed to allocate memory for threads!");
     return oct_retval;
   }
 
@@ -398,7 +398,7 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
   }
 
   if (!running) {
-    error("CTRL-C pressed!\n"); // Bail out.
+    dream_err_msg("CTRL-C pressed!\n"); // Bail out.
     return oct_retval;
   }
 

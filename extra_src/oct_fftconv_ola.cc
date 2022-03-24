@@ -338,8 +338,9 @@ Copyright @copyright{} 2010-2021 Fredrik Lingvall.\n\
 @end deftypefn")
 {
   sighandler_t  old_handler, old_handler_abrt, old_handler_keyint;
-  std::thread   *threads;
-  DATA   *D;
+  std::thread  *threads;
+  double *Y = nullptr;
+  DATA  *D = nullptr;
   int plan_method = 4; // Default to FFTW_ESTIMATE
   dream_idx_type fft_len;
   bool return_wisdom = false, load_wisdom = false;
@@ -592,98 +593,12 @@ Copyright @copyright{} 2010-2021 Fredrik Lingvall.\n\
 
     // Allocate mamory for the output matrix.
     Matrix Ymat(A_M+B_M-1, A_N);
-    double *Y = Ymat.fortran_vec();
+    Y = Ymat.fortran_vec();
 
     SIRData ymat(Y, A_M+B_M-1, A_N);
     ymat.clear();
 
-    // Init thread data.
-    threads = new std::thread[nthreads];
-    if (!threads) {
-      error("Failed to allocate memory for threads!");
-      return oct_retval;
-    }
-
-    // Allocate thread data.
-    D = (DATA*) malloc(nthreads*sizeof(DATA));
-    if (!D) {
-      error("Failed to allocate memory for thread data!");
-      return oct_retval;
-    }
-
-    for (dream_idx_type thread_n=0; thread_n<nthreads; thread_n++) {
-
-      dream_idx_type col_start = thread_n * A_N/nthreads;
-      dream_idx_type col_stop = (thread_n+1) * A_N/nthreads;
-
-      // Init local data.
-      D[thread_n].col_start = col_start; // Local start index;
-      D[thread_n].col_stop = col_stop; // Local stop index;
-      D[thread_n].A = A;
-      D[thread_n].A_M = A_M;
-      D[thread_n].A_N = A_N;
-      D[thread_n].B = B;
-      D[thread_n].B_M = B_M;
-      D[thread_n].B_N = B_N;
-      D[thread_n].block_len = block_len;
-      D[thread_n].Y = Y;
-      D[thread_n].fft = &fft;
-      D[thread_n].conv_mode = conv_mode;
-
-      if (nthreads > 1) {
-        // Start the threads.
-        threads[thread_n] = std::thread(smp_dream_fftconv_ola, &D[thread_n]);
-      } else {
-        smp_dream_fftconv_ola(&D[0]);
-      }
-
-    } // for (thread_n = 0; thread_n < nthreads; thread_n++)
-
-    //
-    // Wait for all threads to finish.
-    //
-
-    if (nthreads > 1) {
-      for (dream_idx_type thread_n=0; thread_n < nthreads; thread_n++) {
-        threads[thread_n].join();
-      }
-    }
-
-    if (D) {
-      free((void*) D);
-    }
-
-    //
-    // Restore old signal handlers.
-    //
-
-    if (std::signal(SIGTERM, old_handler) == SIG_ERR) {
-      std::cerr << "Couldn't register old SIGTERM signal handler!" << std::endl;
-    }
-
-    if (std::signal(SIGABRT, old_handler_abrt) == SIG_ERR) {
-      std::cerr << "Couldn't register old SIGABRT signal handler!" << std::endl;
-    }
-
-    if (std::signal(SIGINT, old_handler_keyint) == SIG_ERR) {
-      std::cerr << "Couldn't register old SIGINT signal handler!" << std::endl;
-    }
-
-    if (!running) {
-      error("CTRL-C pressed!\n"); // Bail out.
-      return oct_retval;
-    }
-
-    // 1st output arg.
     oct_retval.append(Ymat);
-
-    // Return the FFTW Wisdom so that the plans can be re-used.
-    if (return_wisdom) {
-      std::string cmout = fft.get_wisdom();
-      oct_retval.append(cmout); // Add to output args.
-    }
-
-    return oct_retval;
   }
 
   //
@@ -703,92 +618,90 @@ Copyright @copyright{} 2010-2021 Fredrik Lingvall.\n\
     }
 
     const Matrix Ytmp = args(3).matrix_value();
-    double *Y = (double*) Ytmp.data();
+    Y = (double*) Ytmp.data();
+  }
 
-    SIRData ymat(Y, Ytmp.rows(), Ytmp.cols());
-    ymat.clear();
+  // Init thread data.
+  threads = new std::thread[nthreads];
+  if (!threads) {
+    error("Failed to allocate memory for threads!");
+    return oct_retval;
+  }
 
-    //
-    // Call the CONV subroutine.
-    //
+  // Allocate thread data.
+  D = (DATA*) malloc(nthreads*sizeof(DATA));
+  if (!D) {
+    error("Failed to allocate memory for thread data!");
+    return oct_retval;
+  }
 
-    running = true;
+  for (dream_idx_type thread_n=0; thread_n<nthreads; thread_n++) {
 
-    // Allocate mem for the threads.
-    threads = new std::thread[nthreads]; // Init thread data.
-    if (!threads) {
-      error("Failed to allocate memory for threads!");
-      return oct_retval;
-    }
+    dream_idx_type col_start = thread_n * A_N/nthreads;
+    dream_idx_type col_stop = (thread_n+1) * A_N/nthreads;
 
-    // Allocate local data.
-    DATA *D = (DATA*) malloc(nthreads*sizeof(DATA));
-    if (!D) {
-      error("Failed to allocate memory for thread data!");
-      return oct_retval;
-      }
+    // Init local data.
+    D[thread_n].col_start = col_start; // Local start index;
+    D[thread_n].col_stop = col_stop; // Local stop index;
+    D[thread_n].A = A;
+    D[thread_n].A_M = A_M;
+    D[thread_n].A_N = A_N;
+    D[thread_n].B = B;
+    D[thread_n].B_M = B_M;
+    D[thread_n].B_N = B_N;
+    D[thread_n].block_len = block_len;
+    D[thread_n].Y = Y;
+    D[thread_n].fft = &fft;
+    D[thread_n].conv_mode = conv_mode;
 
-    for (dream_idx_type thread_n=0; thread_n<nthreads; thread_n++) {
-
-      dream_idx_type col_start = thread_n * A_N/nthreads;
-      dream_idx_type col_stop =  (thread_n+1) * A_N/nthreads;
-
-      // Init local data.
-      D[thread_n].col_start = col_start; // Local start index;
-      D[thread_n].col_stop = col_stop; // Local stop index;
-      D[thread_n].A = A;
-      D[thread_n].A_M = A_M;
-      D[thread_n].A_N = A_N;
-      D[thread_n].B = B;
-      D[thread_n].B_M = B_M;
-      D[thread_n].B_N = B_N;
-      D[thread_n].block_len = block_len;
-      D[thread_n].Y = Y;
-
+    if (nthreads > 1) {
       // Start the threads.
       threads[thread_n] = std::thread(smp_dream_fftconv_ola, &D[thread_n]);
+    } else {
+      smp_dream_fftconv_ola(&D[0]);
+    }
 
-    } // for (thread_n = 0; thread_n < nthreads; thread_n++)
+  } // for (thread_n = 0; thread_n < nthreads; thread_n++)
 
-      // Wait for all threads to finish.
-    for (dream_idx_type thread_n = 0; thread_n < nthreads; thread_n++)
+  //
+  // Wait for all threads to finish.
+  //
+
+  if (nthreads > 1) {
+    for (dream_idx_type thread_n=0; thread_n < nthreads; thread_n++) {
       threads[thread_n].join();
-
-    // Free memory.
-    if (D) {
-      free((void*) D);
     }
+  }
 
-    //
-    // Restore old signal handlers.
-    //
+  if (D) {
+    free((void*) D);
+  }
 
-    if (std::signal(SIGTERM, old_handler) == SIG_ERR) {
-      std::cerr << "Couldn't register old SIGTERM signal handler!" << std::endl;
-    }
+  //
+  // Restore old signal handlers.
+  //
 
-    if (std::signal(SIGABRT, old_handler_abrt) == SIG_ERR) {
-      std::cerr << "Couldn't register old SIGABRT signal handler!" << std::endl;
-    }
+  if (std::signal(SIGTERM, old_handler) == SIG_ERR) {
+    std::cerr << "Couldn't register old SIGTERM signal handler!" << std::endl;
+  }
 
-    if (std::signal(SIGINT, old_handler_keyint) == SIG_ERR) {
-      std::cerr << "Couldn't register old SIGINT signal handler!" << std::endl;
-    }
+  if (std::signal(SIGABRT, old_handler_abrt) == SIG_ERR) {
+    std::cerr << "Couldn't register old SIGABRT signal handler!" << std::endl;
+  }
 
-    if (!running) {
-      error("CTRL-C pressed!\n"); // Bail out.
-      return oct_retval;
-    }
+  if (std::signal(SIGINT, old_handler_keyint) == SIG_ERR) {
+    std::cerr << "Couldn't register old SIGINT signal handler!" << std::endl;
+  }
 
-    // FIXME: Should we really return this here?
-
-    // Return the FFTW Wisdom so that the plans can be re-used.
-    if (return_wisdom) {
-      std::string cmout = fft.get_wisdom();
-      oct_retval.append(cmout); // Add to output args.
-    }
-
+  if (!running) {
+    error("CTRL-C pressed!\n"); // Bail out.
     return oct_retval;
+  }
+
+  // Return the FFTW Wisdom so that the plans can be re-used.
+  if (return_wisdom) {
+    std::string cmout = fft.get_wisdom();
+    oct_retval.append(cmout); // Add to output args.
   }
 
   return oct_retval;

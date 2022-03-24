@@ -21,7 +21,6 @@
 *
 ***/
 
-
 #include <csignal>
 #include <thread>
 #include <complex>
@@ -64,12 +63,12 @@ typedef struct
   ConvMode conv_mode;
 } DATA;
 
-
 typedef void (*sighandler_t)(int);
 
 //
 // Function prototypes.
 //
+
 void* smp_dream_sum_fftconv(void *arg);
 void sighandler(int signum);
 void sig_abrt_handler(int signum);
@@ -117,7 +116,7 @@ void* smp_dream_sum_fftconv(void *arg)
                 H, L, H_M,
                 n,
                 U, U_M, // U must be U_M x L
-                &Y[0+n*(H_M+U_M-1)],
+                &Y[0+n*fft_len],
                 a, b, c, af, bf, cf,
                 conv_mode);
 
@@ -159,20 +158,16 @@ extern void _main();
 
 void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
-  sighandler_t  old_handler, old_handler_abrt, old_handler_keyint;
+  sighandler_t old_handler, old_handler_abrt, old_handler_keyint;
   dream_idx_type col_start, col_stop, H_M, H_N, H_L, U_M, U_N;
   double *Y=nullptr;
   std::thread *threads;
   dream_idx_type thread_n, nthreads;
-  DATA   *D=nullptr;
+  DATA *D=nullptr;
   int plan_method = 4; // Default to FFTW_ESTIMATE
   dream_idx_type fft_len;
   bool return_wisdom = false, load_wisdom = false;
   ConvMode conv_mode=ConvMode::equ;
-
-  const mwSize *dv;
-  //const long *dv; // This gives a runtime error.
-  int dims;
 
   //
   // Set the method which fftw computes plans
@@ -203,10 +198,15 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     return_wisdom = true;
   }
 
-
+  const mwSize *dv;
+  //const long *dv; // This gives a runtime error.
+  int dims;
   dims = mxGetNumberOfDimensions(prhs[0]);
-  if (dims != 3)
-    mexErrMsgTxt("Argument 1 should be a 3D Matrix\n");
+
+  if (dims != 3) {
+    dream_err_msg("Argument 1 should be a 3D Matrix\n");
+  }
+
 
   dv = mxGetDimensions(prhs[0]);
   H_M = dv[0];
@@ -254,7 +254,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       mxFree(str);
 
       //
-      // If 3:th arg is a string then only a wisdom string is valid.
+      // If 3rd arg is a string then only a wisdom string is valid.
       //
 
       if (!fft.is_wisdom(wisdom_str)) {
@@ -302,9 +302,8 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Get number of CPU cores (including hypethreading, C++11)
   nthreads = std::thread::hardware_concurrency();
 
-  // Read DREAM_NUM_THREADS env var
   if(const char* env_p = std::getenv("DREAM_NUM_THREADS")) {
-    unsigned int dream_threads = std::stoul(env_p);
+    dream_idx_type dream_threads = std::stoul(env_p);
     if (dream_threads < nthreads) {
       nthreads = dream_threads;
     }
@@ -347,8 +346,13 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
   if (nrhs == 2 || (nrhs == 3 && load_wisdom)) { // Normal mode.
 
-    plhs[0] = mxCreateDoubleMatrix(H_M+U_M-1, H_N, mxREAL);
+    plhs[0] = mxCreateDoubleMatrix(fft_len, H_N, mxREAL);
     Y = mxGetPr(plhs[0]);
+
+    // Clear output in normal mode
+    SIRData ymat(Y, fft_len, H_N);
+    ymat.clear();
+
   }
 
   //
@@ -357,11 +361,11 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
   if ( (nrhs == 3 && !load_wisdom) || nrhs == 4 ) {
 
-    if ( mxGetM(prhs[2]) != H_M+U_M-1)
-      mexErrMsgTxt("Wrong number of rows in argument 4!");
+    if ( mxGetM(prhs[2]) != fft_len)
+      dream_err_msg("Wrong number of rows in argument 4!");
 
     if ( mxGetN(prhs[2]) != H_N)
-      mexErrMsgTxt("Wrong number of columns in argument 4!");
+      dream_err_msg("Wrong number of columns in argument 4!");
 
     Y = mxGetPr(prhs[2]);
   }
@@ -375,7 +379,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Allocate local data.
   D = (DATA*) malloc(nthreads*sizeof(DATA));
   if (!D) {
-    mexErrMsgTxt("Failed to allocate memory for thread data!");
+    dream_err_msg("Failed to allocate memory for thread data!");
   }
 
   // Allocate mem for the threads.
@@ -409,6 +413,13 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       set_dream_thread_affinity(thread_n, nthreads, threads);
     } else {
       smp_dream_sum_fftconv(&D[0]);
+    }
+  }
+
+  if (nthreads > 1) {
+    // Wait for all threads to finish.
+    for (thread_n = 0; thread_n < nthreads; thread_n++) {
+      threads[thread_n].join();
     }
   }
 

@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2007-2009,2012,2014-x2016,2019,2021 Fredrik Lingvall
+* Copyright (C) 2007-2009,2012,2014-2016,2019,2021 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *

@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2021 Fredrik Lingvall
+* Copyright (C) 2021,2022 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -40,6 +40,11 @@ typedef octave_value_list args_t;
 #ifdef DREAM_MATLAB
 #include "mex.h"
 typedef const mxArray** args_t;
+#endif
+
+// TODO
+#ifdef DREAM_PYTHON
+#include <pybind11/pybind11.h>
 #endif
 
 class ArgParser

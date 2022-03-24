@@ -351,7 +351,7 @@ be useful but WITHOUT ANY WARRANTY. More specifically:
 
 % \item \href{http://www.fftw.org}{FFTW} $\ge$ 3.0.1 (optional).\footnote{The attenuation code in DREAM makes heavily
 %     use of FFTs. If the optimized \href{http://www.fftw.org}{FFTW} is installed then DREAM can be configured to use
-%     this lib.} %Also, the \texttt{fftconv\_p} and \texttt{sum\_fftconv\_p} functions needs the FFTW3 library.}
+%     this lib.} %Also, the \texttt{fftconv\_p} and \texttt{sum\_fftconv} functions needs the FFTW3 library.}
 
 % \item Pthread.\footnote{If you want to use the parallel (threaded) DREAM functions in Windows you need to install
 %   the Pthreads-Win32 library.}
@@ -409,7 +409,7 @@ treated by simply convolving the electro-acoustical impulse response with the in
 present a short introduction to the impulse response method and, in particular, discuss how to use the method
 for discrete-time modeling.
 
-\subsection{The Baffled Piston Model and the Rayleigh integral}
+\subsection{The Baffled Piston Model and the Rayleigh Integral}
 \label{sec:analythical}
 
 The impulse response method is based on the assumption that the transducer can be treated as a
@@ -853,8 +853,8 @@ Sections~\ref{sec:transducer-functions}, \ref{sec:parallel}, and~\ref{sec:misc-f
 
 Let us study a the pressure response for a circular transducer using water as the propagation
 medium (with a sound speed $\cp = 1500$ [m/s]). We start by setting the sampling frequency and defining the
-points of interest, the so-called observation points. The observation points are located on a line
-at $z=10$ mm, from 1--50 mm with 1 mm  between them:
+points of interest, the so-called \emph{observation points}. The observation points are located on a line
+at $z=10$ mm, from 1--50 mm with 1 mm between them:
 \footnotesize
 \begin{verbatim}
 Fs = 10;   % Sampling freq. in MHz.
@@ -1649,10 +1649,9 @@ column in \texttt{A} is convolved with \texttt{B}.
 The \texttt{fftconv\_p} performs the convolutions in the frequency
 domain using the FFTW library~\cite{fftw} which is significantly
 faster than the time-domain implementation \texttt{conv\_p} for long
-vectors. To use the \texttt{fftconv\_p} the FFTW3 lib must be
-available. The windows version of \texttt{fftconv\_p} is linked to
-the FFTW lib which, as previously described, can be found at
-\texttt{ftp://ftp.fftw.org/pub/fftw/fftw3win32mingw.zip}.
+vectors.\footnote{We have appended a \texttt{\_p} to the function names
+  to distinguish them from the non-threaded build-in \texttt{conv} and \texttt{fftconv}
+  (availbale in Octave) functions.}
 
 \subsubsection{Using Pre-computed FFTW Plans}
 
@@ -1680,7 +1679,7 @@ The time-consuming call to FFTW plan functions is then avoided at each call to \
 \subsubsection{Using the In-place Mode}
 
 If the involved matrices are large then memory allocation can be time consuming. To alleviate this problem
-both \texttt{conv\_p},  \texttt{fftconv\_p} and  \texttt{sum\_fftconv\_p} (see Section~\ref{sec:sumfftconv_p}) have an in-place
+both \texttt{conv\_p},  \texttt{fftconv\_p} and  \texttt{sum\_fftconv} (see Section~\ref{sec:sumfftconv}) have an in-place
 mode that uses a pre-allocated output matrix, hence memory allocation for the (large) output matrix \texttt{Y} is avoided.
 For the \texttt{conv\_p} and \texttt{fftconv\_p} functions, the in-place operation has three modes,
 \texttt{'='}, \texttt{'+='}, and \texttt{'-='}, respectively.
@@ -1711,7 +1710,7 @@ both \texttt{X} and \texttt{Y} will be altered, since Malab/Octave do not make
 a copy of a matrix unless it is changed after \texttt{X = Y} assignment.
 
 \subsubsection{Computing Array Responses for Arbitrary Input Signals}
-\label{sec:sumfftconv_p}
+\label{sec:sumfftconv}
 
 The pressure response at an observation point $\rr$ can be computed by super-imposing the
 responses from the individual array elements. Assume that we have an array with $K$ transmit
@@ -1739,16 +1738,16 @@ elements. The pressure response $p(\rr,t)$ is then given by,
   the $k$th input signal.
 }
 %
-The DREAM Toolbox has a function, \texttt{sum\_fftconv\_p}, to facilitate computation of
-discrete array responses with arbitrary input signals. Similar to the \texttt{fftconv\_p} function,
-the \texttt{sum\_fftconv\_p} function uses a FFT based algorithm to compute the convolutions.
-The \texttt{sum\_fftconv\_p} function performs an operation similar to the code:
+The DREAM Toolbox has a function, \texttt{sum\_fftconv}, to facilitate computation of
+discrete array responses with arbitrary input signals. Similar to the \texttt{fftconv} function,
+the \texttt{sum\_fftconv} function uses a FFT based algorithm to compute the convolutions.
+The \texttt{sum\_fftconv} function performs an operation similar to the code:
 %%
 \begin{verbatim}
   YF = zeros(M+K-1,N);
   for l=1:L
     for n=1:N
-      YF(:,n) = YF(:,n) + fft(A(:,n,l),M+K-1).* fft(B(:,l),M+K-1);
+      YF(:,n) = YF(:,n) + fft(H(:,n,l),M+K-1).* fft(U(:,l),M+K-1);
     end
   end
   Y = real(ifft(Y));
@@ -1757,18 +1756,18 @@ The \texttt{sum\_fftconv\_p} function performs an operation similar to the code:
 where \texttt{A} is a 3D matrix.
 
 \begin{verbatim}
-  [Y] = sum_fftconv_p(A,B);
-  [Y] = sum_fftconv_p(A,B,wisdom_str);
-        sum_fftconv_p(A,B,Y);
-        sum_fftconv_p(A,B,Y,wisdom_str);
+  [Y] = sum_fftconv(U,B);
+  [Y] = sum_fftconv(H,U,wisdom_str);
+        sum_fftconv(H,U,Y);
+        sum_fftconv(H,U,Y,wisdom_str);
 \end{verbatim}
 %
 \noindent Input parameters:
 \begin{itemize}
 
-\item [] \texttt{A} An $M\times N\times L$ three-dimensional matrix.
+\item [] \texttt{H} An $M\times N\times L$ three-dimensional matrix.
 
-\item [] \texttt{B} A $K\times L$ matrix.
+\item [] \texttt{U} A $K\times L$ matrix.
 
 \item [] \texttt{wisdom\_str} Optional parameter (see Section~\ref{sec:misc-conv}).
 
@@ -1781,13 +1780,13 @@ A typical usage is:
 \begin{verbatim}
 
 % Compute a new fftw wisdom string.
-[tmp,wisdom_str]  = fftconv_p(A(:,1,1),B(:,1));
+[tmp,wisdom_str]  = fftconv_p(H(:,1,1),U(:,1));
 
 for i=1:N
 
   % Do some stuff here.
 
-  Y = sum_fftconv_p (A,B,wisdom_str);
+  Y = sum_fftconv(H,U,wisdom_str);
 end
 \end{verbatim}
 %%

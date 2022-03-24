@@ -160,10 +160,10 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
   sighandler_t old_handler, old_handler_abrt, old_handler_keyint;
   dream_idx_type col_start, col_stop, H_M, H_N, H_L, U_M, U_N;
-  double *Y=nullptr;
+  double *Y = nullptr;
   std::thread *threads;
   dream_idx_type thread_n, nthreads;
-  DATA *D=nullptr;
+  DATA *D = nullptr;
   int plan_method = 4; // Default to FFTW_ESTIMATE
   dream_idx_type fft_len;
   bool return_wisdom = false, load_wisdom = false;

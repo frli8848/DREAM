@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2021 Fredrik Lingvall
+* Copyright (C) 2021,2022 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -40,7 +40,7 @@ void add_fftconv(FFT &fft,
                  double **H, dream_idx_type L, dream_idx_type h_len, // 3D impulse response matrix.
                  dream_idx_type n, // observation point index.
                  double *U, dream_idx_type u_len, // Input signal matrix.
-                 double *z,                        // OUtput vector.
+                 double *z,                       // Output vector.
                  double *a, double *b, double *c,
                  std::complex<double> *af, std::complex<double> *bf, std::complex<double> *cf,
                  ConvMode conv_mode);

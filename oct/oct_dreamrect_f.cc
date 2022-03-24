@@ -211,7 +211,7 @@ Observation point(s) ([mm]):\n\
 An N x 3 matrix, Ro = [xo1 yo1 zo2; xo2 yo2 zo2; ... xoN yoN zoN]; where N is the number of observation points.\n\
 @end table\n\
 \n\
-Geometrical apod_pareters: geom_par = [a b];\n\
+Geometricalparameters: geom_par = [a b];\n\
 \n\
 @table @code\n\
 @item a\n\
@@ -220,7 +220,7 @@ x-size  of the transducer [mm].\n\
 y-size  of the transducer [mm].\n\
 @end table\n\
 \n\
-Sampling apod_pareters: s_par = [dx dy dt nt]; \n\
+Samplingparameters: s_par = [dx dy dt nt]; \n\
 \n\
 @table @code\n\
 @item dx\n\
@@ -262,7 +262,7 @@ Focal distance [mm].\n\
 @end table\n\
 \n\
 Error Handling: err_level;\n\
-err_level is an optional text string apod_pareter for controlling the error behavior, options are:\n\
+err_level is an optional text stringparameter for controlling the error behavior, options are:\n\
 \n\
 @table @code\n\
 @item 'ignore'\n\

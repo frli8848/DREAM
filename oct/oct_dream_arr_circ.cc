@@ -237,14 +237,14 @@ Observation point(s) ([mm]):\n\
 An N x 3 matrix, Ro = [xo1 yo1 zo2; xo2 yo2 zo2; ... xoN yoN zoN]; where N is the number of observation points.\n\
 @end table\n\
 \n\
-Geometrical apod_pareters: geom_par = [r];\n\
+Geometricalparameters: geom_par = [r];\n\
 \n\
 @table @code\n\
 @item r\n\
 Radius of the transducer elements [mm].\n\
 @end table\n\
 \n\
-Array grid apod_pareter:\n\
+Array gridparameter:\n\
 \n\
 @table @code\n\
 @item G\n\
@@ -253,7 +253,7 @@ of the elements, column 2 the y-positions, and column 3\n\
 the z-positions, and where L is the number of elements.\n\
 @end table\n\
 \n\
-Sampling apod_pareters: s_par = [dx dy dt nt]; \n\
+Samplingparameters: s_par = [dx dy dt nt]; \n\
 \n\
 @table @code\n\
 @item dx\n\
@@ -294,7 +294,7 @@ Focusing method, options are: 'off', 'x', 'y', 'xy', 'x+y', and 'ud'.\n\
 Focal distance [mm]. If foc_met = 'ud' (user defined) then focal is a vector of focusing delays.\n\
 @end table\n\
 \n\
-Beam steering apod_pareters: steer_met and steer_par:\n\
+Beam steeringparameters: steer_met and steer_par:\n\
 \n\
 @table @code\n\
 @item steer_met\n\
@@ -304,7 +304,7 @@ theta [deg] is the x-direction steer angle and \n\
 phi [deg] is the y-direction steer angle.\n\
 @end table\n\
 \n\
-Apodization apod_pareters: apod_met, apod, and win_par. The apod_met (apodization method) options are:\n\
+Apodizationparameters: apod_met, apod, and win_par. The apod_met (apodization method) options are:\n\
 \n\
 @table @code\n\
 \n\
@@ -324,17 +324,17 @@ Simply supported.\n\
 Clamped.\n\
 @end table\n\
 \n\
-and the apod and win_par apod_pareters are:\n\
+and the apod and win_parparameters are:\n\
 \n\
 @table @code\n\
 @item apod\n\
 Vector of apodiztion weights (used for the 'ud' option).\n\
 @item win_par\n\
-A scalar apod_pareter for raised cosine and Gaussian apodization functions.\n\
+A scalarparameter for raised cosine and Gaussian apodization functions.\n\
 @end table\n\
 \n\
 Error Handling: err_level;\n\
-err_level is an optional text string apod_pareter for controlling the error behavior, options are:\n\
+err_level is an optional text stringparameter for controlling the error behavior, options are:\n\
 \n\
 @table @code\n\
 @item 'ignore'\n\

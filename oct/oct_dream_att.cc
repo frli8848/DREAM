@@ -53,7 +53,7 @@ Observation point(s) ([mm]):\n\
 An N x 3 matrix, Ro = [xo1 yo1 zo2; xo2 yo2 zo2; ... xoN yoN zoN]; where N is the number of observation points.\n\
 @end table\n\
 \n\
-Sampling apod_pareters: s_par = [dt nt]; \n\
+Samplingparameters: s_par = [dt nt]; \n\
 \n\
 @table @code\n\
 @item dt\n\

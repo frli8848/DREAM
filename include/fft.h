@@ -77,6 +77,7 @@ class FFTCVec
   {
     m_len = len;
     m_vc = reinterpret_cast<std::complex<double>*>(fftw_malloc(sizeof(fftw_complex)*len));
+    m_is_allocated = true;
   };
 
   FFTCVec(dream_idx_type len, std::complex<double> *vc) :

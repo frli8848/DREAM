@@ -34,6 +34,17 @@ option(BUILD_PYTHON "Enable building of the Python bindings." OFF) # Work in pro
 option(BUILD_USERMAN "Enable building of the user manual." OFF)
 option(USE_OPENCL "Enable OpenCL support." OFF) # Experimental
 
+#
+# Testing
+#
+
+option(BUILD_TESTS "Determines whether to build non-automated tests." OFF)
+if(BUILD_TESTS)
+  enable_testing()
+  add_subdirectory(tests)
+endif (BUILD_TESTS)
+
+
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   set(MACOSX TRUE)
 endif()

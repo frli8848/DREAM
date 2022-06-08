@@ -25,6 +25,8 @@
 #ifndef __DREAM__
 #define __DREAM__
 
+#include <memory>
+
 enum class DelayType {
   single,
     multiple
@@ -63,11 +65,17 @@ typedef octave_idx_type dream_idx_type;
 #define mxGetN(N)   args(N).matrix_value().cols()
 #define mxIsChar(N) args(N).is_string()
 
-#else
+#endif
+
+#ifdef DREAM_MATLAB
 #include "mex.h"
 typedef mwSize dream_idx_type;
 #endif
 
+#if !defined(DREAM_OCTAVE) && !defined(DREAM_MATLAB)
+typedef size_t dream_idx_type;
+#define HAVE_FFTW
+#endif
 
 /***
  *
@@ -78,6 +86,14 @@ typedef mwSize dream_idx_type;
 class SIRData
 {
  public:
+
+  SIRData(dream_idx_type len, dream_idx_type no) {
+    m_size = len;
+    m_len = len;
+    m_no = no;
+    m_H = std::make_unique<double[]>(len*no);
+    m_h = m_H.get();
+  }
 
   SIRData(double *h, dream_idx_type len) {
     m_h = h;
@@ -115,6 +131,7 @@ class SIRData
 
  private:
 
+  std::unique_ptr<double[]> m_H;
   double *m_h;
   dream_idx_type m_size;
   dream_idx_type m_len;

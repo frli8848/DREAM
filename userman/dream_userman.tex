@@ -1707,7 +1707,7 @@ Note the in-place mode have the side effect that, in the code
 \end{verbatim}
 %
 both \texttt{X} and \texttt{Y} will be altered, since Malab/Octave do not make
-a copy of a matrix unless it is changed after \texttt{X = Y} assignment.
+a copy of a matrix unless it is changed after the \texttt{X = Y} assignment.
 
 \subsubsection{Computing Array Responses for Arbitrary Input Signals}
 \label{sec:sumfftconv}
@@ -1744,16 +1744,17 @@ the \texttt{sum\_fftconv} function uses a FFT based algorithm to compute the con
 The \texttt{sum\_fftconv} function performs an operation similar to the code:
 %%
 \begin{verbatim}
-  YF = zeros(M+K-1,N);
+  fft_len = M+K-1;
+  YF = zeros(fft_len,N);
   for l=1:L
     for n=1:N
-      YF(:,n) = YF(:,n) + fft(H(:,n,l),M+K-1).* fft(U(:,l),M+K-1);
+      YF(:,n) = YF(:,n) + fft(H(:,n,l), fft_len).* fft(U(:,l), fft_len);
     end
   end
-  Y = real(ifft(Y));
+  Y = real(ifft(Y))/fft_len;
 \end{verbatim}
 %%
-where \texttt{A} is a 3D matrix.
+where \texttt{H} is a 3D matrix.
 
 \begin{verbatim}
   [Y] = sum_fftconv(U,B);

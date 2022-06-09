@@ -31,7 +31,7 @@ set (DREAM_SRC
 # Use the list to make executables and what to link with (the dependency)
 foreach(NAME IN LISTS UNIT_TEST_LIST)
 
-  add_executable(${NAME} ${NAME}.cc ${DREAM_SRC})
+  add_executable(${NAME} src/${NAME}.cc ${DREAM_SRC})
 
   set_target_properties (${NAME} PROPERTIES
     CXX_STANDARD 14

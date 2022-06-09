@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2009,2015,2021 Fredrik Lingvall
+* Copyright (C) 2009,2015,2021,2022 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -22,8 +22,7 @@
 ***/
 
 #include "dream.h"
-#include "fftconv.h"
-
+#include "conv.h"
 
 /***
  *

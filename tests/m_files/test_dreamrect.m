@@ -17,26 +17,30 @@ alpha  = 5.0;                   % Absorbtion (dB/cm Hz).
 %% Sampled analytical
 [Ha] = rect_sir(Ro,geom_par,s_par(3:4),delay,m_par(1:2));
 
-figure(1);
-clf;
+if (exist('DO_PLOTTING'))
 
-if size(H,2)>1
-  mesh(xo,t,H);
-  axis('tight');
-  view(135,32);
-else
-  plot(t,H,'b');
-  hold on;
-  plot(t,Hatt,'r');
-  plot(t,Ha,'g');
-  ax = axis;
-  axis([0 50 ax(3) ax(4)]);
-  xlabel('t [\mus]')
-  ylabel('h_{SIR} [m/s]')
-  grid('on');
-  legend('Attenuation {\alpha} = 0 [dB/cm MHz]',...
-       'Attenuation {\alpha} = 5 [dB/cm MHz]',...
-       'Analytical');
+  figure(1);
+  clf;
+
+  if (size(H,2)>1)
+    mesh(xo,t,H);
+    axis('tight');
+    view(135,32);
+  else
+    plot(t,H,'b');
+    hold on;
+    plot(t,Hatt,'r');
+    plot(t,Ha,'g');
+    ax = axis;
+    axis([0 50 ax(3) ax(4)]);
+    xlabel('t [\mus]')
+    ylabel('h_{SIR} [m/s]')
+    grid('on');
+    legend('Attenuation {\alpha} = 0 [dB/cm MHz]',...
+           'Attenuation {\alpha} = 5 [dB/cm MHz]',...
+           'Analytical');
+  end
+
+  title('Rectangular transducer')
+
 end
-
-title('Rectangular transducer')

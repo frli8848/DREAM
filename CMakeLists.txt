@@ -38,12 +38,11 @@ option(USE_OPENCL "Enable OpenCL support." OFF) # Experimental
 # Testing
 #
 
-option(BUILD_TESTS "Determines whether to build non-automated tests." OFF)
+option(BUILD_TESTS "Determines whether to build tests." OFF)
 if(BUILD_TESTS)
   enable_testing()
   add_subdirectory(tests)
 endif (BUILD_TESTS)
-
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   set(MACOSX TRUE)

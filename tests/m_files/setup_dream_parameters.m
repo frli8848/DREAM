@@ -1,6 +1,6 @@
 ONE_POINT = 1;
-%ONE_POINT = 0; %Many points.
-
+%%ONE_POINT = 0; %Many points.
+%% DO_PLOTTING = 1;
 
 % Are we running on a Linux machine?
 tmp_str = computer;
@@ -18,9 +18,6 @@ else
   % Default to one cpu.
   n_cpus = 1;
 end
-
-figure(1);
-clf
 
 Fs = 4;   % Sampling freq. [MHz].
 Ts = 1/Fs; % [us].

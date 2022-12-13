@@ -2,7 +2,7 @@
 %% ------------- Circular Transducer --------------------------
 %%
 
-setup_dream_parameters
+setup_dream_parameters;
 
 %% Geometrical parameters.
 R  = 10;				% Radius of the transdecer.
@@ -12,24 +12,26 @@ geom_par = [R];
 alpha  = 5.0;                   % Absorbtion (dB/cm Hz).
 [Hatt,err] = dreamcirc(Ro,geom_par,s_par,delay,[v cp alpha],'stop');
 
-figure(1);
-clf;
+if (exist('DO_PLOTTING'))
 
-if size(H,2)>1
-  mesh(xo,t,H);
-  axis('tight');
-  view(135,32);
-else
-  plot(t,H,'b');
-  hold on;
-  plot(t,Hatt,'r');
-  ax = axis;
-  axis([0 50 ax(3) ax(4)]);
-  xlabel('t [\mus]')
-  ylabel('h_{SIR} [m/s]')
-  grid('on');
-  legend('Attenuation {\alpha} = 0 [dB/cm MHz]',...
-         'Attenuation {\alpha} = 5 [dB/cm MHz]');
+  figure(1);
+  clf;
+
+  if size(H,2)>1
+    mesh(xo,t,H);
+    axis('tight');
+    view(135,32);
+  else
+    plot(t,H,'b');
+    hold on;
+    plot(t,Hatt,'r');
+    ax = axis;
+    axis([0 50 ax(3) ax(4)]);
+    xlabel('t [\mus]')
+    ylabel('h_{SIR} [m/s]')
+    grid('on');
+    legend('Attenuation {\alpha} = 0 [dB/cm MHz]',...
+           'Attenuation {\alpha} = 5 [dB/cm MHz]');
+  end
+  title('Circular transducer')
 end
-
-title('Circular transducer')

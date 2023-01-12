@@ -55,7 +55,7 @@ void* ArrRect::smp_dream_arr_rect(void *arg)
   double xo, yo, zo;
   double *h = D.h;
   double a=D.a, b=D.b, dx=D.dx, dy=D.dy, dt=D.dt;
-  dream_idx_type n, no=D.no, nt=D.nt;
+  dream_idx_type no=D.no, nt=D.nt;
   ErrorLevel tmp_lev=ErrorLevel::none, err_level=D.err_level;
   double *delay=D.delay, *ro=D.ro, v=D.v, cp=D.cp;
   Attenuation *att = D.att;
@@ -86,7 +86,7 @@ void* ArrRect::smp_dream_arr_rect(void *arg)
     tmp_lev = err_level;
   }
 
-  for (n=start; n<stop; n++) {
+  for (dream_idx_type n=start; n<stop; n++) {
     xo = ro[n];
     yo = ro[n+1*no];
     zo = ro[n+2*no];
@@ -108,7 +108,6 @@ void* ArrRect::smp_dream_arr_rect(void *arg)
                                   steer_met, theta, phi,
                                   apod, do_apod, apod_met, apod_par,
                                   &h[n*nt], tmp_lev);
-
     } else {
       err = dream_arr_rect_serial(*att, *xc_vec, *x_vec,
                                   xo, yo, zo,
@@ -122,7 +121,7 @@ void* ArrRect::smp_dream_arr_rect(void *arg)
                                   &h[n*nt], tmp_lev);
     }
 
-    if (err != ErrorLevel::none || m_out_err ==  ErrorLevel::parallel_stop) {
+    if (err != ErrorLevel::none || m_out_err == ErrorLevel::parallel_stop) {
       tmp_err = err;
       if (err == ErrorLevel::parallel_stop || m_out_err == ErrorLevel::parallel_stop) {
         break; // Jump out when a ErrorLevel::stop error occurs.
@@ -180,7 +179,8 @@ ErrorLevel ArrRect::dream_arr_rect_serial(double xo, double yo, double zo,
 
     // Compute the response for the n:th elemen and add it to the impulse response vector h.
     err = dreamrect(xo - gx[n], yo - gy[n], zo - gz[n],
-                    a, b, dx, dy, dt, nt,
+                    a, b,
+                    dx, dy, dt, nt,
                     delay - foc_delay - steer_delay,
                     v, cp,
                     h,
@@ -236,12 +236,14 @@ ErrorLevel ArrRect::dream_arr_rect_serial(Attenuation &att, FFTCVec &xc_vec, FFT
     // Compute the response for the n:th elemen and add it to the impulse response vector h.
     err = dreamrect(att, xc_vec, x_vec,
                     xo - gx[n], yo - gy[n], zo - gz[n],
-                    a, b, dx, dy, dt, nt,
+                    a, b,
+                    dx, dy, dt, nt,
                     delay - foc_delay - steer_delay,
                     v, cp,
                     h,
                     err_level,
                     weight);
+
     if (err != ErrorLevel::none) {
       out_err = err;
     }
@@ -296,6 +298,7 @@ ErrorLevel ArrRect::dream_arr_rect(double alpha,
     nthreads = no;
   }
 
+  // Check if we have attenuation
   Attenuation att(nt, dt, alpha);
   Attenuation *att_ptr = nullptr;
   if (alpha > std::numeric_limits<double>::epsilon() ) {
@@ -350,7 +353,6 @@ ErrorLevel ArrRect::dream_arr_rect(double alpha,
     } else {
       smp_dream_arr_rect(&D[0]);
     }
-
   }
 
   // Wait for all threads to finish.

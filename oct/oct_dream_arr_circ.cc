@@ -98,7 +98,7 @@ Normal velocity [m/s].\n\
 @item cp\n\
 Sound velocity [m/s].\n\
 @item alpha\n\
-Attenuation coefficient [dB/(cm MHz)] .\n\
+Attenuation coefficient [dB/(cm MHz)].\n\
 \n\
 @end table\n\
 \n\
@@ -170,17 +170,15 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
 @seealso {dreamcirc}\n\
 @end deftypefn")
 {
-  double apod_par=0.0;
-  double *G;
   FocusMet foc_met=FocusMet::none;
   SteerMet steer_met=SteerMet::none;
-  bool   do_apod=false;
+  bool    do_apod=false;
   ApodMet apod_met=ApodMet::gauss;
-  double *h, *err_p;
+  double *h;
 
   octave_value_list oct_retval;
 
-  int nrhs = args.length ();
+  int nrhs = args.length();
 
   ArgParser ap;
 
@@ -225,7 +223,7 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
 
   dream_idx_type num_elements = (dream_idx_type) mxGetM(2); // Number of elementents in the array.
   const Matrix tmp2 = args(2).matrix_value();
-  G = (double*) tmp2.fortran_vec(); // First column in the matrix.
+  double *G = (double*) tmp2.fortran_vec(); // First column in the matrix.
   //gy    = gx + num_elements;		// Second column in the matrix.
   //gz    = gy + num_elements;		// Third column in the matrix.
 
@@ -294,6 +292,7 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
   // Allocate space for the user defined apodization weights
   std::unique_ptr<double[]> apod = std::make_unique<double[]>(num_elements);
 
+  double apod_par=0.0;
   if (nrhs >= 11) {
     if (!ap.parse_apod_args("dream_arr_circ", args, 10, num_elements,
                             do_apod, apod.get(), apod_met, apod_par)) {
@@ -372,7 +371,7 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
 
   if (nlhs == 2) {
     Matrix err_mat(1, 1);
-    err_p = err_mat.fortran_vec();
+    double *err_p = err_mat.fortran_vec();
     err_p[0] = (double) err;
     oct_retval.append(err_mat);
   }

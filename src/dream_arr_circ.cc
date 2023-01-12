@@ -55,7 +55,7 @@ void* ArrCirc::smp_dream_arr_circ(void *arg)
   double xo, yo, zo;
   double *h = D.h;
   double R=D.R, dx=D.dx, dy=D.dy, dt=D.dt;
-  dream_idx_type n, no=D.no, nt=D.nt;
+  dream_idx_type no=D.no, nt=D.nt;
   ErrorLevel tmp_lev=ErrorLevel::none, err_level=D.err_level;
   double *delay=D.delay, *ro=D.ro, v=D.v, cp=D.cp;
   Attenuation *att = D.att;
@@ -65,7 +65,7 @@ void* ArrCirc::smp_dream_arr_circ(void *arg)
   int do_apod = D.do_apod;
   ApodMet apod_met = D.apod_met;
   double *focal=D.focal, *apod=D.apod, theta=D.theta,phi=D.phi,apod_par=D.apod_par;
-  dream_idx_type    num_elements = D.num_elements;
+  dream_idx_type num_elements = D.num_elements;
 
   double *gx = D.G;               // First column in the matrix.
   double *gy = gx + num_elements; // Second column in the matrix.
@@ -86,7 +86,7 @@ void* ArrCirc::smp_dream_arr_circ(void *arg)
     tmp_lev = err_level;
   }
 
-  for (n=start; n<stop; n++) {
+  for (dream_idx_type n=start; n<stop; n++) {
     xo = ro[n];
     yo = ro[n+1*no];
     zo = ro[n+2*no];
@@ -179,8 +179,7 @@ ErrorLevel ArrCirc::dream_arr_circ_serial(double xo, double yo, double zo,
     // Compute the response for the n:th element and add it to the impulse response vector h.
     err = dreamcirc(xo - gx[n], yo - gy[n], zo - gz[n],
                     R,
-                    dx, dy, dt,
-                    nt,
+                    dx, dy, dt, nt,
                     delay - foc_delay - steer_delay,
                     v, cp,
                     h,
@@ -237,14 +236,12 @@ ErrorLevel ArrCirc::dream_arr_circ_serial(Attenuation &att, FFTCVec &xc_vec, FFT
     err = dreamcirc(att, xc_vec, x_vec,
                     xo - gx[n], yo - gy[n], zo - gz[n],
                     R,
-                    dx, dy, dt,
-                    nt,
+                    dx, dy, dt, nt,
                     delay - foc_delay - steer_delay,
                     v, cp,
                     h,
                     err_level,
                     weight);
-
 
     if (err != ErrorLevel::none) {
       out_err = err;
@@ -300,6 +297,7 @@ ErrorLevel ArrCirc::dream_arr_circ(double alpha,
     nthreads = no;
   }
 
+  // Check if we have attenuation
   Attenuation att(nt, dt, alpha);
   Attenuation *att_ptr = nullptr;
   if (alpha > std::numeric_limits<double>::epsilon() ) {

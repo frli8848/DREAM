@@ -160,7 +160,7 @@ err_level is an optional text string parameter for controlling the error behavio
 An error is ignored (no error message is printed and the program is not stopped) but the err output \n\
 argument is negative if an error occured.\n\
 @item 'warn'\n\
-An error message is printed but the program in not stopped (and err is negative).\n\
+A warning message is printed but the program in not stopped.\n\
 @item 'stop'\n\
 An error message is printed and the program is stopped.\n\
 @end table\n\
@@ -172,12 +172,10 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
 @seealso {dreamrect}\n\
 @end deftypefn")
 {
-  double *ro;
-  double apod_par=0.0, *delay;
+  double apod_par=0.0;
   double *G;
   FocusMet foc_met=FocusMet::none;
   SteerMet steer_met=SteerMet::none;
-  double theta=0.0, phi=0.0;
   bool   do_apod=false;
   ApodMet apod_met=ApodMet::gauss;
   double *h, *err_p;
@@ -208,7 +206,7 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
 
   dream_idx_type no = mxGetM(0); // Number of observation points.
   const Matrix tmp0 = args(0).matrix_value();
-  ro = (double*) tmp0.fortran_vec();
+  double *ro = (double*) tmp0.fortran_vec();
 
   //
   // Transducer geometry
@@ -252,7 +250,7 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
   }
 
   const Matrix tmp4 = args(4).matrix_value();
-  delay = (double*) tmp4.fortran_vec();
+  double *delay = (double*) tmp4.fortran_vec();
 
   //
   // Material parameters
@@ -282,6 +280,7 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
   // Beam steering.
   //
 
+  double theta=0.0, phi=0.0;
   if (nrhs >= 9) {
     if (!ap.parse_steer_args("dream_arr_rect", args, 8, steer_met, theta, phi)) {
       return oct_retval;

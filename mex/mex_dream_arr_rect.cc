@@ -1,6 +1,6 @@
 /***
  *
- * Copyright (C) 2003,2006,2007,2008,2009,2014,2015,2019,2021 Fredrik Lingvall
+ * Copyright (C) 2003,2006,2007,2008,2009,2014,2015,2019,2021,2023 Fredrik Lingvall
  *
  * This file is part of the DREAM Toolbox.
  *
@@ -97,7 +97,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Focusing parameters.
   //
 
-  // Allocate space for the user defined focusing delays
+  // Allocate memory for the user defined focusing delays
   std::unique_ptr<double[]> focal = std::make_unique<double[]>(num_elements);
 
   FocusMet foc_met=FocusMet::none;
@@ -137,26 +137,6 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
                        do_apod, apod.get(), apod_met, apod_par);
   } else {
     do_apod = false;
-  }
-
-  //
-  // Number of threads.
-  //
-
-  // Get number of CPU cores (including hypethreading, C++11)
-  dream_idx_type nthreads = std::thread::hardware_concurrency();
-
-  // Read DREAM_NUM_THREADS env var
-  if(const char* env_p = std::getenv("DREAM_NUM_THREADS")) {
-    dream_idx_type dream_threads = std::stoul(env_p);
-    if (dream_threads < nthreads) {
-      nthreads = dream_threads;
-    }
-  }
-
-  // nthreads can't be larger then the number of observation points.
-  if (nthreads > no) {
-    nthreads = no;
   }
 
   //
@@ -203,7 +183,6 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
                                 steer_met, theta, phi,
                                 apod.get(), do_apod, apod_met, apod_par,
                                 h, err_level);
-
 
   if (!arr_rect.is_running()) {
     dream_err_msg("CTRL-C pressed!\n"); // Bail out.

@@ -22,7 +22,6 @@
 *
 ***/
 
-#include <atomic>
 #include <thread>
 
 #include "dream.h"
@@ -65,6 +64,7 @@ typedef struct
 class ArrRect
 {
  public:
+
  ArrRect()
    : m_out_err(ErrorLevel::none)
     {;}

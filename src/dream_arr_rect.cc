@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2002,2003,2006,2007,2008,2009,2014,2019,2021 Fredrik Lingvall
+* Copyright (C) 2002,2003,2006,2007,2008,2009,2014,2019,2021,2023 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -22,6 +22,7 @@
 ***/
 
 #include <cmath>
+#include <atomic>
 
 #include "dream_arr_rect.h"
 #include "dreamrect.h"
@@ -123,7 +124,7 @@ void* ArrRect::smp_dream_arr_rect(void *arg)
 
     if (err != ErrorLevel::none || m_out_err ==  ErrorLevel::parallel_stop) {
       tmp_err = err;
-      if (err == ErrorLevel::parallel_stop || m_out_err ==  ErrorLevel::parallel_stop) {
+      if (err == ErrorLevel::parallel_stop || m_out_err == ErrorLevel::parallel_stop) {
         break; // Jump out when a ErrorLevel::stop error occurs.
       }
     }
@@ -207,10 +208,10 @@ ErrorLevel ArrRect::dream_arr_rect_serial(Attenuation &att, FFTCVec &xc_vec, FFT
 {
   ErrorLevel err = ErrorLevel::none, out_err = ErrorLevel::none;
 
+  // FIXME: Do we need this one?
   for (dream_idx_type i=0; i<nt; i++) {
     h[i] = 0.0;
   }
-
 
   double r_max, x_max, y_max;
   max_dim_arr(&x_max, &y_max, &r_max, gx, gy, gz, num_elements);
@@ -251,7 +252,7 @@ ErrorLevel ArrRect::dream_arr_rect_serial(Attenuation &att, FFTCVec &xc_vec, FFT
 
 /***
  *
- * dream_arr_rect
+ * dream_arr_rect - 2D array with rectangular elements.
  *
  ***/
 
@@ -344,8 +345,7 @@ ErrorLevel ArrRect::dream_arr_rect(double alpha,
 
     if (nthreads > 1) {
       // Start the threads.
-      //threads[thread_n] = std::thread(smp_dream_arr_rect, &D[thread_n]); // Start the threads.
-      threads[thread_n] = arr_rect_thread(&D[thread_n]); // Start the threads.
+      threads[thread_n] = arr_rect_thread(&D[thread_n]);
       set_dream_thread_affinity(thread_n, nthreads, threads);
     } else {
       smp_dream_arr_rect(&D[0]);

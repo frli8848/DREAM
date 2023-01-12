@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2002,2003,2006,2007,2008,2009,2019,2021 Fredrik Lingvall
+* Copyright (C) 2002,2003,2006,2007,2008,2009,2019,2021,2023 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -22,30 +22,99 @@
 *
 ***/
 
+#include <thread>
 
 #include "dream.h"
 #include "attenuation.h"
 #include "dream_error.h"
 
-ErrorLevel dream_arr_circ(double xo, double yo, double zo,
-                          double R,
-                          double dx, double dy, double dt,
-                          dream_idx_type nt, double delay,
-                          double v, double cp,
-                          dream_idx_type num_elements, double *gx, double *gy, double *gz,
-                          FocusMet foc_met, double *focal,
-                          SteerMet steer_met, double theta, double phi,
-                          double *apod, bool do_apod, ApodMet apod_met, double param,
-                          double *ha, ErrorLevel err_level);
+// Thread data
+typedef struct
+{
+  dream_idx_type no;
+  dream_idx_type start;
+  dream_idx_type stop;
+  double *ro;
+  double R;
+  double dx;
+  double dy;
+  double dt;
+  dream_idx_type nt;
+  DelayType delay_type;
+  double *delay;
+  double v;
+  double cp;
+  Attenuation *att;
+  dream_idx_type num_elements;
+  double *G;
+  FocusMet foc_met;
+  SteerMet steer_met;
+  bool do_apod;
+  ApodMet apod_met;
+  double *focal;
+  double *apod;
+  double theta;
+  double phi;
+  double apod_par;
+  double *h;
+  ErrorLevel err_level;
+} DATA;
 
-ErrorLevel  dream_arr_circ(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
-                           double xo, double yo, double zo,
-                           double R,
-                           double dx, double dy, double dt,
-                           dream_idx_type nt, double delay,
-                           double v, double cp,
-                           dream_idx_type num_elements, double *gx, double *gy, double *gz,
-                           FocusMet foc_met, double *focal,
-                           SteerMet steer_met, double theta, double phi,
-                           double *apod, bool do_apod, ApodMet apod_met, double param,
-                           double *ha, ErrorLevel err_level);
+class ArrCirc
+{
+ public:
+
+ ArrCirc()
+   : m_out_err(ErrorLevel::none)
+    {;}
+
+  ~ArrCirc()  = default;
+
+  ErrorLevel dream_arr_circ(double alpha,
+                            double *ro, dream_idx_type no,
+                            double R,
+                            double dx, double dy, double dt,
+                            dream_idx_type nt,
+                            DelayType delay_type, double *delay,
+                            double v, double cp,
+                            dream_idx_type num_elements, double *G,
+                            FocusMet foc_met, double *focal,
+                            SteerMet steer_met, double theta, double phi,
+                            double *apod, bool do_apod, ApodMet apod_met, double apod_par,
+                            double *h, ErrorLevel err_level);
+
+  static void abort(int signum);
+  bool is_running();
+
+ private:
+
+  void* smp_dream_arr_circ(void *arg);
+  std::thread arr_circ_thread(void *arg) {
+    return std::thread(&ArrCirc::smp_dream_arr_circ, this, arg);
+  }
+
+  ErrorLevel dream_arr_circ_serial(double xo, double yo, double zo,
+                                   double R,
+                                   double dx, double dy, double dt,
+                                   dream_idx_type nt, double delay,
+                                   double v, double cp,
+                                   dream_idx_type num_elements, double *gx, double *gy, double *gz,
+                                   FocusMet foc_met, double *focal,
+                                   SteerMet steer_met, double theta, double phi,
+                                   double *apod, bool do_apod, ApodMet apod_met, double param,
+                                   double *h, ErrorLevel err_level);
+
+  ErrorLevel  dream_arr_circ_serial(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
+                                    double xo, double yo, double zo,
+                                    double R,
+                                    double dx, double dy, double dt,
+                                    dream_idx_type nt, double delay,
+                                    double v, double cp,
+                                    dream_idx_type num_elements, double *gx, double *gy, double *gz,
+                                    FocusMet foc_met, double *focal,
+                                    SteerMet steer_met, double theta, double phi,
+                                    double *apod, bool do_apod, ApodMet apod_met, double param,
+                                    double *h, ErrorLevel err_level);
+
+  ErrorLevel m_out_err;
+};

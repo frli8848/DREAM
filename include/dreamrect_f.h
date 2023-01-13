@@ -22,6 +22,7 @@
 *
 ***/
 
+#pragma once
 
 #include "dream.h"
 #include "attenuation.h"

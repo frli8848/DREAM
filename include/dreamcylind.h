@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2002,2003,2005,2006,2007,2008,2009,2021 Fredrik Lingvall
+* Copyright (C) 2002,2003,2005,2006,2007,2008,2009,2021,2023 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -22,6 +22,7 @@
 *
 ***/
 
+#pragma once
 
 #include "dream.h"
 #include "attenuation.h"

@@ -117,7 +117,7 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
 
   no = mxGetM(0); // Number of observation points.
   const Matrix tmp0 = args(0).matrix_value();
-  ro = (double*) tmp0.fortran_vec();
+  ro = (double*) tmp0.data();
 
   //
   // Temporal and spatial sampling parameters.
@@ -128,7 +128,7 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
     return oct_retval;
   }
   const Matrix tmp1 = args(1).matrix_value();
-  s_par = (double*) tmp1.fortran_vec();
+  s_par = (double*) tmp1.data();
   dt    = s_par[0];		// Temporal discretization size (= 1/sampling freq).
   nt    = (int) s_par[1];	// Length of SIR.
 
@@ -141,7 +141,7 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
   }
 
   const Matrix tmp2 = args(2).matrix_value();
-  delay = (double*) tmp2.fortran_vec();
+  delay = (double*) tmp2.data();
 
   //
   // Material parameters
@@ -153,7 +153,7 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
     return oct_retval;
   }
   const Matrix tmp3 = args(3).matrix_value();
-  m_par = (double*) tmp3.fortran_vec();
+  m_par = (double*) tmp3.data();
   cp    = m_par[0]; // Sound speed.
   alpha  = m_par[1]; // Attenuation coefficient [dB/(cm MHz)].
 
@@ -163,7 +163,7 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
 
   // Create an output matrix for the impulse response(s)
   Matrix h_mat(nt, no);
-  h = h_mat.fortran_vec();
+  h = (double*) h_mat.data();
 
   SIRData hsir(h, nt, no);
   hsir.clear();

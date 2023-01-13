@@ -104,7 +104,7 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
   //
 
   const Matrix tmp1 = args(1).matrix_value();
-  dream_idx_type num_elements = (dream_idx_type) tmp1.fortran_vec()[0];
+  dream_idx_type num_elements = (dream_idx_type) tmp1.data()[0];
 
   // Allocate space for the user defined apodization weights
   std::unique_ptr<double[]> apod = std::make_unique<double[]>(num_elements);
@@ -117,7 +117,7 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
 
   // Create an output matrix for the impulse response
   Matrix h_mat(num_elements,1);
-  h = h_mat.fortran_vec();
+  h = (double*) h_mat.data();
 
   double weight=1.0;
   double ramax = 1.0;

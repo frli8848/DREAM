@@ -152,7 +152,7 @@ public:
       retval=false;
     } else {
 
-      double *pars = get_fortran_vec(args, arg_num);
+      double *pars = get_data(args, arg_num);
 
       if (num_pars==1) { // Scalars needs special treatment
         arg1 = get_scalar(args, arg_num);
@@ -195,10 +195,10 @@ public:
     }
 
     if (retval) {
-      dx = get_fortran_vec(args, arg_num)[0]; // Spatial x-direction discretization size.
-      dy = get_fortran_vec(args, arg_num)[1]; // Spatial y-direction discretization size.
-      dt = get_fortran_vec(args, arg_num)[2]; // Temporal discretization size (= 1/sampling freq).
-      nt = (dream_idx_type) get_fortran_vec(args, arg_num)[3]; // Length of SIR.
+      dx = get_data(args, arg_num)[0]; // Spatial x-direction discretization size.
+      dy = get_data(args, arg_num)[1]; // Spatial y-direction discretization size.
+      dt = get_data(args, arg_num)[2]; // Temporal discretization size (= 1/sampling freq).
+      nt = (dream_idx_type) get_data(args, arg_num)[3]; // Length of SIR.
     }
 
     return retval;
@@ -228,9 +228,9 @@ public:
     }
 
     if (retval) {
-      v     = get_fortran_vec(args, arg_num)[0];
-      cp    = get_fortran_vec(args, arg_num)[1];
-      alpha = get_fortran_vec(args, arg_num)[2];
+      v     = get_data(args, arg_num)[0];
+      cp    = get_data(args, arg_num)[1];
+      alpha = get_data(args, arg_num)[2];
     }
 
     return retval;
@@ -352,7 +352,7 @@ public:
           s << "delays must have the same length as the number of array elements!";
             retval=false;
         } else { // Copy the user defined apodization weights.
-          double *tmp_focal = get_fortran_vec(args, arg_num+1);
+          double *tmp_focal = get_data(args, arg_num+1);
           if (focal) {
             std::memcpy(focal, tmp_focal, num_elements*sizeof(double));
           } else {
@@ -435,7 +435,7 @@ public:
       }
 
       if (is_set && retval) {
-        const double *steer_pars = get_fortran_vec(args, arg_num+1);
+        const double *steer_pars = get_data(args, arg_num+1);
         theta = steer_pars[0];
         phi= steer_pars[1];
       }
@@ -505,7 +505,7 @@ public:
           s << func_name <<  " the length of argument arg " << arg_num+1 << " (apodization vector) must be the same as the number of array elements!";
           retval=false;
         } else { // Copy the user defined apodization weights.
-          double *tmp_apod = get_fortran_vec(args, arg_num+1);
+          double *tmp_apod = get_data(args, arg_num+1);
           if (apod) {
             std::memcpy(apod, tmp_apod, num_elements*sizeof(double));
           } else {
@@ -550,9 +550,9 @@ private:
     return args(arg_num).matrix_value().cols();
   };
 
-  double* get_fortran_vec(const args_t args, dream_idx_type arg_num) {
+  double* get_data(const args_t args, dream_idx_type arg_num) {
     const Matrix tmp_mat = args(arg_num).matrix_value();
-    return (double*) tmp_mat.fortran_vec();
+    return (double*) tmp_mat.data();
   };
 
   double get_scalar(const args_t args, dream_idx_type arg_num) {
@@ -579,7 +579,7 @@ private:
     return mxGetN(args[arg_num]);
   };
 
-  double* get_fortran_vec(args_t args, dream_idx_type arg_num) {
+  double* get_data(args_t args, dream_idx_type arg_num) {
     return (double*) mxGetPr(args[arg_num]);
   };
 

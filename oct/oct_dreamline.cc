@@ -273,7 +273,7 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
 
   dream_idx_type no = mxGetM(0); // Number of observation points.
   const Matrix tmp0 = args(0).matrix_value();
-  ro = (double*) tmp0.fortran_vec();
+  ro = (double*) tmp0.data();
 
   //
   // Transducer geometry
@@ -303,7 +303,7 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
   }
 
   const Matrix tmp3 = args(3).matrix_value();
-  delay = (double*) tmp3.fortran_vec();
+  delay = (double*) tmp3.data();
 
   //
   // Material parameters
@@ -348,7 +348,7 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
 
   // Create an output matrix for the impulse response
   Matrix h_mat(nt, no);
-  h = h_mat.fortran_vec();
+  h = (double*) h_mat.data();
 
   SIRData hsir(h, nt, no);
   hsir.clear();
@@ -470,7 +470,7 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
   //
   if (nlhs == 2) {
     Matrix err_mat(1, 1);
-    err_p = err_mat.fortran_vec();
+    err_p = (double*) err_mat.data();
     err_p[0] = (double) out_err;
     oct_retval.append(err_mat);
   }

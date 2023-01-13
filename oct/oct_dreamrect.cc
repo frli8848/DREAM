@@ -140,7 +140,7 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
 
   dream_idx_type no = mxGetM(0); // Number of observation points.
   const Matrix tmp0 = args(0).matrix_value();
-  double *ro = (double*) tmp0.fortran_vec();
+  double *ro = (double*) tmp0.data();
 
   //
   // Transducer geometry
@@ -170,7 +170,7 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
   }
 
   const Matrix tmp3 = args(3).matrix_value();
-  double *delay = (double*) tmp3.fortran_vec();
+  double *delay = (double*) tmp3.data();
 
   DelayType delay_type = DelayType::single;  // delay is a scalar.
   if (mxGetM(3) * mxGetN(3) != 1) {
@@ -216,7 +216,7 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
 
   // Create an output matrix for the impulse response
   Matrix h_mat(nt, no);
-  double *h = h_mat.fortran_vec();
+  double *h = (double*) h_mat.data();
 
   SIRData hsir(h, nt, no);
   hsir.clear();
@@ -274,7 +274,7 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
 
   if (nlhs == 2) {
     Matrix err_mat(1, 1);
-    double *err_p = err_mat.fortran_vec();
+    double *err_p = (double*) err_mat.data();
     err_p[0] = (double) err;
     oct_retval.append(err_mat);
   }

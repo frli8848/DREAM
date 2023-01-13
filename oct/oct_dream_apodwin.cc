@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2006,2007,2008,2009,2015,2016,2021,2021 Fredrik Lingvall
+* Copyright (C) 2006,2007,2008,2009,2015,2016,2021,2021,2023 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -78,7 +78,7 @@ Clamped.\n\
 dream_apodwin is an oct-function that is a part of the DREAM Toolbox available at\n\
 @url{https://github.com/frli8848/DREAM}.\n\
 \n\
-Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
+Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
 @seealso {dream_arr_rect, dream_arr_circ, dream_arr_cylind_f, dream_arr_cylind_d}\n\
 @end deftypefn")
 {

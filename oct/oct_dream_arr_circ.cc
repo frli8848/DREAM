@@ -166,7 +166,7 @@ An error message is printed and the program is stopped.\n\
 dream_arr_circ is an oct-function that is a part of the DREAM Toolbox available at\n\
 @url{https://github.com/frli8848/DREAM}.\n\
 \n\
-Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
+Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
 @seealso {dreamcirc}\n\
 @end deftypefn")
 {

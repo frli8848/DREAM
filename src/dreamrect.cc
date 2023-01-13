@@ -224,14 +224,20 @@ ErrorLevel Rect::dreamrect(double alpha,
     D[thread_n].h = h;
     D[thread_n].err_level = err_level;
 
-    // Start the threads.
-    threads[thread_n] = rect_thread(&D[thread_n]);
-    set_dream_thread_affinity(thread_n, nthreads, threads);
+    if (nthreads>1) {
+      // Start the threads.
+      threads[thread_n] = rect_thread(&D[thread_n]);
+      set_dream_thread_affinity(thread_n, nthreads, threads);
+    } else {
+      smp_dream_rect(&D[0]);
+    }
   }
 
   // Wait for all threads to finish.
-  for (thread_n = 0; thread_n < nthreads; thread_n++) {
-    threads[thread_n].join();
+  if (nthreads>1) {
+    for (thread_n = 0; thread_n < nthreads; thread_n++) {
+      threads[thread_n].join();
+    }
   }
 
   // Free memory.

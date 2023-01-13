@@ -32,22 +32,68 @@
  * dreamrect_f - Focused rectangular transducer.
  *
  ***/
+#pragma once
 
-ErrorLevel dreamrect_f(double xo, double yo, double zo,
-                       double a, double b, FocusMet foc_met, double focal,
-                       double dx, double dy, double dt,
-                       dream_idx_type nt,
-                       double delay,
-                       double v, double cp,
-                       double *h,
-                       ErrorLevel err_level);
+#include <thread>
 
-ErrorLevel dreamrect_f(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
-                       double xo, double yo, double zo,
-                       double a, double b, FocusMet foc_met, double focal,
-                       double dx, double dy, double dt,
-                       dream_idx_type nt,
-                       double delay,
+#include "dream.h"
+#include "attenuation.h"
+#include "dream_error.h"
+
+class Rect_f
+{
+ public:
+
+ Rect_f()
+   : m_out_err(ErrorLevel::none)
+    {;}
+
+  ~Rect_f()  = default;
+
+ErrorLevel dreamrect_f(double alpha,
+                       double *ro, dream_idx_type no,
+                       double a, double b,
+                       FocusMet foc_met, double focal,
+                       double dx, double dy, double dt, dream_idx_type nt,
+                       DelayType delay_type, double *delay,
                        double v, double cp,
-                       double *h,
-                       ErrorLevel err_level);
+                       double *h, ErrorLevel err_level);
+
+ static void abort(int signum);
+ bool is_running();
+
+ private:
+
+ void* smp_dream_rect_f(void *arg);
+ std::thread rect_f_thread(void *arg) {
+   return std::thread(&Rect_f::smp_dream_rect_f, this, arg);
+ }
+
+ double focus_delay_rect(FocusMet foc_met, double focal,
+                         double xs, double ys,
+                         double x_max, double y_max, double r_max,
+                         double cp);
+
+ ErrorLevel dreamrect_f_serial(double xo, double yo, double zo,
+                               double a, double b,
+                               FocusMet foc_met, double focal,
+                               double dx, double dy, double dt,
+                               dream_idx_type nt,
+                               double delay,
+                               double v, double cp,
+                               double *h,
+                               ErrorLevel err_level);
+
+ ErrorLevel dreamrect_f_serial(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
+                               double xo, double yo, double zo,
+                               double a, double b,
+                               FocusMet foc_met, double focal,
+                               double dx, double dy, double dt,
+                               dream_idx_type nt,
+                               double delay,
+                               double v, double cp,
+                               double *h,
+                               ErrorLevel err_level);
+
+ ErrorLevel m_out_err;
+};

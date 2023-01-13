@@ -210,15 +210,15 @@ ErrorLevel ArrRect::dream_arr_rect_serial(double xo, double yo, double zo,
       apodization(apod_met, n, apod, &weight, gx[n], gy[n], r_max, apod_par);
     }
 
-    // Compute the response for the n:th elemen and add it to the impulse response vector h.
-    err = dreamrect(xo - gx[n], yo - gy[n], zo - gz[n],
-                    a, b,
-                    dx, dy, dt, nt,
-                    delay - foc_delay - steer_delay,
-                    v, cp,
-                    h,
-                    err_level,
-                    weight);
+    // Compute the response for the n:th element and add it to the impulse response vector h.
+    err = dreamrect_serial(xo - gx[n], yo - gy[n], zo - gz[n],
+                           a, b,
+                           dx, dy, dt, nt,
+                           delay - foc_delay - steer_delay,
+                           v, cp,
+                           h,
+                           err_level,
+                           weight);
 
     if (err != ErrorLevel::none) {
       out_err = err;
@@ -266,16 +266,16 @@ ErrorLevel ArrRect::dream_arr_rect_serial(Attenuation &att, FFTCVec &xc_vec, FFT
       apodization(apod_met, n, apod, &weight, gx[n], gy[n], r_max, apod_par);
     }
 
-    // Compute the response for the n:th elemen and add it to the impulse response vector h.
-    err = dreamrect(att, xc_vec, x_vec,
-                    xo - gx[n], yo - gy[n], zo - gz[n],
-                    a, b,
-                    dx, dy, dt, nt,
-                    delay - foc_delay - steer_delay,
-                    v, cp,
-                    h,
-                    err_level,
-                    weight);
+    // Compute the response for the n:th element and add it to the impulse response vector h.
+    err = dreamrect_serial(att, xc_vec, x_vec,
+                           xo - gx[n], yo - gy[n], zo - gz[n],
+                           a, b,
+                           dx, dy, dt, nt,
+                           delay - foc_delay - steer_delay,
+                           v, cp,
+                           h,
+                           err_level,
+                           weight);
 
     if (err != ErrorLevel::none) {
       out_err = err;

@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2006,2007,2008,2009,2012,2014,2015,2016,2021,2021, 2023 Fredrik Lingvall
+* Copyright (C) 2006,2007,2008,2009,2012,2014,2015,2016,2021,2021,2023 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -244,6 +244,12 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
                            delay_type,  delay,
                            v, cp,
                            h, err_level);
+
+  if (!rect_f.is_running()) {
+    error("CTRL-C pressed!\n"); // Bail out.
+    return oct_retval;
+  }
+
   //
   // Check for Error.
   //

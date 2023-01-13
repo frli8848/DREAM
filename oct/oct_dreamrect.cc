@@ -26,10 +26,6 @@
 #include "dreamrect.h"
 #include "arg_parser.h"
 
-//
-// Octave headers.
-//
-
 #include <octave/oct.h>
 
 /***
@@ -45,6 +41,8 @@ DEFUN_DLD (dreamrect, args, nlhs,
 DREAMRECT - Computes the spatial impulse response\n\
 for a rectangular transducer using parallel processing\n\
 (using threads).\n\
+\n\
+Observation point(s) ([mm]):\n\
 \n\
 @table @code\n\
 @item Ro\n\
@@ -64,7 +62,7 @@ Sampling parameters: s_par = [dx dy dt nt]; \n\
 \n\
 @table @code\n\
 @item dx\n\
-Spatial x-direction discretization size [mm] .\n\
+Spatial x-direction discretization size [mm].\n\
 @item dy\n\
 Spatial y-direction discretization size [mm].\n\
 @item dt\n\
@@ -88,7 +86,7 @@ Normal velocity [m/s].\n\
 @item cp\n\
 Sound velocity [m/s].\n\
 @item alpha\n\
-Attenuation coefficient [dB/(cm MHz)] .\n\
+Attenuation coefficient [dB/(cm MHz)].\n\
 \n\
 @end table\n\
 \n\
@@ -232,9 +230,9 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
   // Call the DREAM subroutine.
   //
 
-  // Check if we should use the GPU
-
 #ifdef USE_OPENCL
+
+  // Check if we should use the GPU
   if (device == "gpu") {
     cl_dreamrect(ro, no, a, b,  dx, dy, dt, nt,  delay[0], v, cp, h);
 

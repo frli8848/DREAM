@@ -214,11 +214,11 @@ ErrorLevel ArrAnnu::dream_arr_annu_serial(double xo, double yo, double zo,
         h_disc[i] = 0.0; // h(i,1) = 0.0;
       }
     } else {
-      err = dreamcirc(xo, yo, zo,
-                      Gr[n],
-                      dx, dy, dt, nt,
-                      delay,
-                      v, cp, &h_disc[n*nt], err_level);
+      err = dreamcirc_serial(xo, yo, zo,
+                             Gr[n],
+                             dx, dy, dt, nt,
+                             delay,
+                             v, cp, &h_disc[n*nt], err_level);
       if (err != ErrorLevel::none) {
         out_err = err;
       }
@@ -295,12 +295,12 @@ ErrorLevel ArrAnnu::dream_arr_annu_serial(Attenuation &att, FFTCVec &xc_vec, FFT
         h_disc[i] = 0.0; // h(i,1) = 0.0;
       }
     } else {
-      err = dreamcirc(att, xc_vec, x_vec,
-                      xo, yo, zo,
-                      Gr[n],
-                      dx, dy, dt, nt,
-                      delay,
-                      v, cp, &h_disc[n*nt], err_level);
+      err = dreamcirc_serial(att, xc_vec, x_vec,
+                             xo, yo, zo,
+                             Gr[n],
+                             dx, dy, dt, nt,
+                             delay,
+                             v, cp, &h_disc[n*nt], err_level);
       if (err != ErrorLevel::none) {
         out_err = err;
       }

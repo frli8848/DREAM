@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2002,2003,2004,2006,2007,2008,2009,2021 Fredrik Lingvall
+* Copyright (C) 2002,2003,2004,2006,2007,2008,2009,2021,2023 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -21,30 +21,70 @@
 *
 ***/
 
+#pragma once
+
+#include <thread>
+
 #include "dream.h"
 #include "attenuation.h"
 #include "dream_error.h"
 
-ErrorLevel dreamcirc(double xo, double yo, double zo,
-                     double R,
-                     double dx, double dy, double dt,
-                     dream_idx_type nt,
-                     double delay,
-                     double v, double cp,
-                     double *h,
-                     ErrorLevel err_level,
-                     double weight=1.0);
+class Circ
+{
+ public:
 
-ErrorLevel dreamcirc(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
-                     double xo, double yo, double zo,
+ Circ()
+   : m_out_err(ErrorLevel::none)
+    {;}
+
+  ~Circ()  = default;
+
+ErrorLevel dreamcirc(double alpha,
+                     double *ro, dream_idx_type no,
                      double R,
-                     double dx, double dy, double dt,
-                     dream_idx_type nt,
-                     double delay,
+                     double dx, double dy, double dt, dream_idx_type nt,
+                     DelayType delay_type, double *delay,
                      double v, double cp,
-                     double *h,
-                     ErrorLevel err_level,
-                     double weight=1.0);
+                     double *h, ErrorLevel err_level);
+
+ static void abort(int signum);
+ bool is_running();
+
+ private:
+
+ void* smp_dream_circ(void *arg);
+ std::thread circ_thread(void *arg) {
+   return std::thread(&Circ::smp_dream_circ, this, arg);
+ }
+
+ ErrorLevel m_out_err;
+};
+
+// FIXME. We keep the serial code out of the class until
+// we have benchmarked how much overhead it is to have them as
+// member functions in the array class(es) that also uses these
+// functions.
+
+ErrorLevel dreamcirc_serial(double xo, double yo, double zo,
+                            double R,
+                            double dx, double dy, double dt,
+                            dream_idx_type nt,
+                            double delay,
+                            double v, double cp,
+                            double *h,
+                            ErrorLevel err_level,
+                            double weight=1.0);
+
+ErrorLevel dreamcirc_serial(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
+                            double xo, double yo, double zo,
+                            double R,
+                            double dx, double dy, double dt,
+                            dream_idx_type nt,
+                            double delay,
+                            double v, double cp,
+                            double *h,
+                            ErrorLevel err_level,
+                            double weight=1.0);
 
 #ifdef USE_OPENCL
 int cl_dreamcirc(const double *Ro, int No,

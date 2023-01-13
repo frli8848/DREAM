@@ -286,13 +286,15 @@ ErrorLevel dreamrect_serial(double xo, double yo, double zo,
         h[it] += ai;
       } else {
 
-        if  (it >= 0)
+        if  (it >= 0) {
           err = dream_out_of_bounds_err("SIR out of bounds",it-nt+1,err_level);
-        else
+        } else {
           err = dream_out_of_bounds_err("SIR out of bounds",it,err_level);
+        }
 
-        if ( (err_level == ErrorLevel::parallel_stop) || (err_level == ErrorLevel::stop) )
+        if ( (err_level == ErrorLevel::parallel_stop) || (err_level == ErrorLevel::stop) ) {
           return err; // Bail out.
+        }
       }
       xs += dx;
     }

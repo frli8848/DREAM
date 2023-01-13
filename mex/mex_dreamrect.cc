@@ -75,6 +75,11 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   ap.check_delay("dreamrect", prhs, 3, no);
   double *delay = mxGetPr(prhs[3]);
 
+  DelayType delay_type = DelayType::single;  // delay is a scalar.
+  if (mxGetM(prhs[3]) * mxGetN(prhs[3]) != 1) {
+    delay_type = DelayType::multiple; // delay is a vector.
+  }
+
   //
   // Material parameters
   //
@@ -105,11 +110,6 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
   // Register signal handler.
   std::signal(SIGABRT, Rect::abort);
-
-  DelayType delay_type = DelayType::single;  // delay is a scalar.
-  if (mxGetM(prhs[3]) * mxGetN(prhs[3]) != 1) {
-    delay_type = DelayType::multiple; // delay is a vector.
-  }
 
   //
   // Call the DREAM subroutine.

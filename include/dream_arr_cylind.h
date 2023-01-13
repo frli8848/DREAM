@@ -28,40 +28,6 @@
 #include "attenuation.h"
 #include "dream_error.h"
 
-// Thread data
-typedef struct
-{
-  dream_idx_type no;
-  dream_idx_type start;
-  dream_idx_type stop;
-  double *ro;
-  double a;
-  double b;
-  double Rcurv;
-  double dx;
-  double dy;
-  double dt;
-  dream_idx_type nt;
-  DelayType delay_type;
-  double *delay;
-  double v;
-  double cp;
-  Attenuation *att;
-  dream_idx_type num_elements;
-  double *G;
-  FocusMet foc_met;
-  SteerMet steer_met;
-  bool do_apod;
-  ApodMet apod_met;
-  double *focal;
-  double *apod;
-  double theta;
-  double phi;
-  double apod_par;
-  double *h;
-  ErrorLevel err_level;
-} DATA;
-
 class ArrCylind
 {
  public:

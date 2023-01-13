@@ -220,6 +220,11 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
   const Matrix tmp3 = args(3).matrix_value();
   double *delay = (double*) tmp3.fortran_vec();
 
+  DelayType delay_type = DelayType::single;  // delay is a scalar.
+  if (mxGetM(3) * mxGetN(3) != 1) {
+    delay_type = DelayType::multiple; // delay is a vector.
+  }
+
   //
   // Material parameters
   //
@@ -283,11 +288,6 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
   hsir.clear();
 
   ArrAnnu arr_annu;
-
-  DelayType delay_type = DelayType::single;  // delay is a scalar.
-  if (mxGetM(3) * mxGetN(3) != 1) {
-    delay_type = DelayType::multiple; // delay is a vector.
-  }
 
   //
   // Call the DREAM subroutine.

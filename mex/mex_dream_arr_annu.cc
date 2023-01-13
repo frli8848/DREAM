@@ -76,6 +76,11 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   ap.check_delay("dream_arr_annu", prhs, 3, no);
   double *delay = mxGetPr(prhs[3]);
 
+  DelayType delay_type = DelayType::single;  // delay is a scalar.
+  if (mxGetM(prhs[3]) * mxGetN(prhs[3]) != 1) {
+    delay_type = DelayType::multiple; // delay is a vector.
+  }
+
   //
   // Material parameters
   //
@@ -134,11 +139,6 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   hsir.clear();
 
   ArrAnnu arr_annu;
-
-  DelayType delay_type = DelayType::single;  // delay is a scalar.
-  if (mxGetM(prhs[3]) * mxGetN(prhs[3]) != 1) {
-    delay_type = DelayType::multiple; // delay is a vector.
-  }
 
   //
   // Call the DREAM subroutine.

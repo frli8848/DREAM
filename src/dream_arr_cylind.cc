@@ -25,7 +25,6 @@
 #include <atomic>
 
 #include "dream_arr_cylind.h"
-#include "dreamcylind.h"
 #include "arr_functions.h"
 #include "affinity.h"
 
@@ -120,6 +119,7 @@ void* ArrCylind::smp_dream_arr_cylind(void *arg)
     tmp_lev = err_level;
   }
 
+  Cylind cylind;
   for (dream_idx_type n=start; n<stop; n++) {
     xo = ro[n];
     yo = ro[n+1*no];
@@ -133,7 +133,8 @@ void* ArrCylind::smp_dream_arr_cylind(void *arg)
     }
 
     if (att == nullptr) {
-      err = dream_arr_cylind_serial(xo, yo, zo,
+      err = dream_arr_cylind_serial(cylind,
+                                    xo, yo, zo,
                                     a, b, Rcurv,
                                     dx, dy, dt, nt,
                                     dlay, v, cp,
@@ -143,7 +144,8 @@ void* ArrCylind::smp_dream_arr_cylind(void *arg)
                                     apod, do_apod, apod_met, apod_par,
                                     &h[n*nt], tmp_lev);
     } else {
-      err = dream_arr_cylind_serial(*att, *xc_vec, *x_vec,
+      err = dream_arr_cylind_serial(cylind,
+                                    *att, *xc_vec, *x_vec,
                                     xo, yo, zo,
                                     a, b, Rcurv,
                                     dx, dy, dt, nt,
@@ -180,59 +182,7 @@ void* ArrCylind::smp_dream_arr_cylind(void *arg)
 }
 
 
-ErrorLevel ArrCylind::dream_arr_cylind_serial(double xo, double yo, double zo,
-                                              double a, double b, double Rcurv,
-                                              double dx, double dy, double dt,
-                                              dream_idx_type nt,
-                                              double delay, double v, double cp,
-                                              dream_idx_type num_elements, double *gx, double *gy, double *gz,
-                                              FocusMet foc_met, double *focal,
-                                              SteerMet steer_met, double theta, double phi,
-                                              double *apod, bool do_apod, ApodMet apod_met, double apod_par,
-                                              double *h, ErrorLevel err_level)
-{
-  ErrorLevel err = ErrorLevel::none, out_err = ErrorLevel::none;
-
-  double r_max, x_max, y_max;
-  max_dim_arr(&x_max, &y_max, &r_max, gx, gy, gz, num_elements);
-
-  for (dream_idx_type n=0; n<num_elements; n++) {
-
-    double foc_delay = 0.0;
-    if (foc_met != FocusMet::ud) {
-      focusing(foc_met, focal[0], gx[n], gy[n], x_max, y_max, r_max, cp, &foc_delay);
-    } else {
-      focusing(foc_met, focal[n], gx[n], gy[n], x_max, y_max, r_max, cp, &foc_delay);
-    }
-
-    double steer_delay = 0.0;
-    beamsteering(steer_met, theta, phi, gx[n], gy[n], x_max, y_max, r_max, cp, &steer_delay);
-
-    double weight = 1.0;
-    if (do_apod) {
-      apodization(apod_met, n, apod, &weight, gx[n], gy[n], r_max, apod_par);
-    }
-
-    // Compute the response for the n:th element and add it to the impulse response vector h.
-    Cylind cylind;
-    err = cylind.dreamcylind_serial(xo - gx[n], yo - gy[n], zo - gz[n],
-                             a, b, Rcurv,
-                             dx, dy, dt, nt,
-                             delay - foc_delay - steer_delay,
-                             v, cp,
-                             h,
-                             err_level,
-                             weight);
-
-    if (err != ErrorLevel::none) {
-      out_err = err;
-    }
-  }
-
-  return out_err;
-}
-
-ErrorLevel ArrCylind::dream_arr_cylind_serial(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
+ErrorLevel ArrCylind::dream_arr_cylind_serial(Cylind &cylind,
                                               double xo, double yo, double zo,
                                               double a, double b, double Rcurv,
                                               double dx, double dy, double dt,
@@ -267,7 +217,59 @@ ErrorLevel ArrCylind::dream_arr_cylind_serial(Attenuation &att, FFTCVec &xc_vec,
     }
 
     // Compute the response for the n:th element and add it to the impulse response vector h.
-    Cylind cylind;
+    err = cylind.dreamcylind_serial(xo - gx[n], yo - gy[n], zo - gz[n],
+                             a, b, Rcurv,
+                             dx, dy, dt, nt,
+                             delay - foc_delay - steer_delay,
+                             v, cp,
+                             h,
+                             err_level,
+                             weight);
+
+    if (err != ErrorLevel::none) {
+      out_err = err;
+    }
+  }
+
+  return out_err;
+}
+
+ErrorLevel ArrCylind::dream_arr_cylind_serial(Cylind &cylind,
+                                              Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
+                                              double xo, double yo, double zo,
+                                              double a, double b, double Rcurv,
+                                              double dx, double dy, double dt,
+                                              dream_idx_type nt,
+                                              double delay, double v, double cp,
+                                              dream_idx_type num_elements, double *gx, double *gy, double *gz,
+                                              FocusMet foc_met, double *focal,
+                                              SteerMet steer_met, double theta, double phi,
+                                              double *apod, bool do_apod, ApodMet apod_met, double apod_par,
+                                              double *h, ErrorLevel err_level)
+{
+  ErrorLevel err = ErrorLevel::none, out_err = ErrorLevel::none;
+
+  double r_max, x_max, y_max;
+  max_dim_arr(&x_max, &y_max, &r_max, gx, gy, gz, num_elements);
+
+  for (dream_idx_type n=0; n<num_elements; n++) {
+
+    double foc_delay = 0.0;
+    if (foc_met != FocusMet::ud) {
+      focusing(foc_met, focal[0], gx[n], gy[n], x_max, y_max, r_max, cp, &foc_delay);
+    } else {
+      focusing(foc_met, focal[n], gx[n], gy[n], x_max, y_max, r_max, cp, &foc_delay);
+    }
+
+    double steer_delay = 0.0;
+    beamsteering(steer_met, theta, phi, gx[n], gy[n], x_max, y_max, r_max, cp, &steer_delay);
+
+    double weight = 1.0;
+    if (do_apod) {
+      apodization(apod_met, n, apod, &weight, gx[n], gy[n], r_max, apod_par);
+    }
+
+    // Compute the response for the n:th element and add it to the impulse response vector h.
     err = cylind.dreamcylind_serial(att, xc_vec, x_vec,
                              xo - gx[n], yo - gy[n], zo - gz[n],
                              a, b, Rcurv,

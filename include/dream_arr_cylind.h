@@ -27,6 +27,7 @@
 #include <thread>
 
 #include "dream.h"
+#include "dreamcylind.h"
 #include "attenuation.h"
 #include "dream_error.h"
 
@@ -64,7 +65,8 @@ class ArrCylind
   }
 
 
-  ErrorLevel dream_arr_cylind_serial(double xo, double yo, double zo,
+  ErrorLevel dream_arr_cylind_serial(Cylind &cylind,
+                                     double xo, double yo, double zo,
                                      double a, double b, double Rcurv,
                                      double dx, double dy, double dt, dream_idx_type nt,
                                      double delay, double v, double cp,
@@ -74,7 +76,8 @@ class ArrCylind
                                      double *apod, bool do_apod, ApodMet apod_met, double param,
                                      double *h, ErrorLevel err_level);
 
-  ErrorLevel dream_arr_cylind_serial(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
+  ErrorLevel dream_arr_cylind_serial(Cylind &cylind,
+                                     Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
                                      double xo, double yo, double zo,
                                      double a, double b, double Rcurv,
                                      double dx, double dy, double dt, dream_idx_type nt,

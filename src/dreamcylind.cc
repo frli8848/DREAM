@@ -22,37 +22,239 @@
 ***/
 
 #include <cmath>
+#include <atomic>
 
 #include "dreamcylind.h"
+#include "attenuation.h"
+#include "affinity.h"
 
-//
-//  Function prototypes.
-//
+std::mutex err_mutex_cylind;
+std::atomic<bool> running_cylind;
 
-double cylind_f(double xs, double ys,
-                double Rcurv,
-                double z_Rcurv,
-                double xo, double yo, double zo,
-                double &du);
+void Cylind::abort(int signum)
+{
+  running_cylind= false;
+}
 
-double cylind_d(double xs, double ys,
-                double Rcurv, double z_Rcurv,
-                double xo, double yo, double zo,
-                double &du);
+bool Cylind::is_running()
+{
+  return running_cylind;
+}
+
+// Thread data.
+typedef struct
+{
+  dream_idx_type no;
+  dream_idx_type start;
+  dream_idx_type stop;
+  double *ro;
+  double a;
+  double b;
+  double Rcurv;
+  double dx;
+  double dy;
+  double dt;
+  dream_idx_type nt;
+  DelayType delay_type;
+  double *delay;
+  double v;
+  double cp;
+  Attenuation *att;
+  double *h;
+  ErrorLevel err_level;
+} DATA_CYLIND;
 
 /***
  *
- * dreamcylind : cylindric concave or convex transducer
+ * Thread function.
  *
  ***/
 
-ErrorLevel dreamcylind(double xo, double yo, double zo,
-                       double a, double b, double Rcurv,
-                       double dx, double dy, double dt,
-                       dream_idx_type nt, double delay, double v, double cp,
-                       double *h,
-                       ErrorLevel err_level,
-                       double weight)
+void* Cylind::smp_dream_cylind(void *arg)
+{
+  ErrorLevel tmp_err=ErrorLevel::none, err=ErrorLevel::none;
+  DATA_CYLIND D = *(DATA_CYLIND *)arg;
+  double xo, yo, zo;
+  double *h = D.h;
+  double a=D.a, b=D.b, Rcurv=D.Rcurv, dx=D.dx, dy=D.dy, dt=D.dt;
+  dream_idx_type n, no=D.no, nt=D.nt;
+  ErrorLevel tmp_lev=ErrorLevel::none, err_level=D.err_level;
+  double *delay=D.delay, *ro=D.ro, v=D.v, cp=D.cp;
+  Attenuation *att = D.att;
+  dream_idx_type start=D.start, stop=D.stop;
+
+  // Buffers for the FFTs in the Attenuation
+  std::unique_ptr<FFTCVec> xc_vec;
+  std::unique_ptr<FFTVec> x_vec;
+  if (att) {
+    xc_vec = std::make_unique<FFTCVec>(nt);
+    x_vec = std::make_unique<FFTVec>(nt);
+  }
+
+  // Let the thread finish and then catch the error.
+  if (err_level == ErrorLevel::stop)
+    tmp_lev = ErrorLevel::parallel_stop;
+  else
+    tmp_lev = err_level;
+
+  for (n=start; n<stop; n++) {
+    xo = ro[n];
+    yo = ro[n+1*no];
+    zo = ro[n+2*no];
+
+    double dlay = 0.0;
+    if (D.delay_type == DelayType::single) {
+      dlay = delay[0];
+    } else { // DelayType::multiple.
+      dlay = delay[n];
+    }
+
+    if (att == nullptr) {
+      err = dreamcylind_serial(xo, yo, zo,
+                               a, b, Rcurv,
+                               dx, dy, dt,
+                               nt, dlay, v, cp,
+                               &h[n*nt],tmp_lev);
+    } else {
+      err = dreamcylind_serial(*att, *xc_vec.get(),*x_vec.get(),
+                               xo, yo, zo,
+                               a, b, Rcurv,
+                               dx, dy, dt,
+                               nt, dlay, v, cp,
+                               &h[n*nt],tmp_lev);
+    }
+
+    if (err != ErrorLevel::none || m_out_err ==  ErrorLevel::parallel_stop) {
+        tmp_err = err;
+        if (err == ErrorLevel::parallel_stop || m_out_err ==  ErrorLevel::parallel_stop)
+          break; // Jump out when a ErrorLevel::stop error occurs.
+    }
+
+    if (!running_cylind) {
+      std::cout << "Thread for observation points " << start+1 << " -> " << stop << " bailing out!\n";
+      return(NULL);
+      }
+
+  }
+
+  if ((tmp_err != ErrorLevel::none) && (m_out_err == ErrorLevel::none)) {
+    std::lock_guard<std::mutex> lk(err_mutex_cylind);
+
+    m_out_err = tmp_err;
+  }
+
+  return(NULL);
+}
+
+/***
+ *
+ * dreamcylind : Threaded cylindric concave or convex transducer function
+ *
+ ***/
+
+ErrorLevel Cylind::dreamcylind(double alpha,
+                               double *ro, dream_idx_type no,
+                               double a, double b, double Rcurv,
+                               double dx, double dy, double dt, dream_idx_type nt,
+                               DelayType delay_type, double *delay,
+                               double v, double cp,
+                               double *h, ErrorLevel err_level)
+{
+  std::thread *threads;
+  unsigned int thread_n, nthreads;
+  dream_idx_type start, stop;
+  DATA_CYLIND *D;
+
+  running_cylind = true;
+
+  //
+  // Number of threads.
+  //
+
+  // Get number of CPU cores (including hypethreading, C++11).
+  nthreads = std::thread::hardware_concurrency();
+
+  // Read DREAM_NUM_THREADS env var
+  if(const char* env_p = std::getenv("DREAM_NUM_THREADS")) {
+    unsigned int dream_threads = std::stoul(env_p);
+    if (dream_threads < nthreads) {
+      nthreads = dream_threads;
+    }
+  }
+
+  // nthreads can't be larger then the number of observation points.
+  if (nthreads > (unsigned int) no) {
+    nthreads = no;
+  }
+
+  // Check if we have attenuation
+  Attenuation att(nt, dt, alpha);
+  Attenuation *att_ptr = nullptr;
+  if (alpha > std::numeric_limits<double>::epsilon() ) {
+    att_ptr = &att;
+  }
+  // Allocate local data.
+  D = (DATA_CYLIND*) malloc(nthreads*sizeof(DATA_CYLIND));
+
+  // Allocate mem for the threads.
+  threads = new std::thread[nthreads]; // Init thread data.
+
+  for (thread_n = 0; thread_n < nthreads; thread_n++) {
+
+    start = thread_n * no/nthreads;
+    stop =  (thread_n+1) * no/nthreads;
+
+    // Init local data.
+    D[thread_n].start = start; // Local start index;
+    D[thread_n].stop = stop; // Local stop index;
+    D[thread_n].no = no;
+    D[thread_n].ro = ro;
+    D[thread_n].a = a;
+    D[thread_n].b = b;
+    D[thread_n].Rcurv = Rcurv;
+    D[thread_n].dx = dx;
+    D[thread_n].dy = dy;
+    D[thread_n].dt = dt;
+    D[thread_n].nt = nt;
+    D[thread_n].delay_type = delay_type;
+    D[thread_n].delay = delay;
+    D[thread_n].v = v;
+    D[thread_n].cp = cp;
+    D[thread_n].att = att_ptr;
+    D[thread_n].h = h;
+    D[thread_n].err_level = err_level;
+
+    if (nthreads>1) {
+      // Start the threads.
+      threads[thread_n] = cylind_thread(&D[thread_n]);
+      set_dream_thread_affinity(thread_n, nthreads, threads);
+    } else {
+      smp_dream_cylind(&D[0]);
+    }
+  }
+
+  // Wait for all threads to finish.
+  if (nthreads>1) {
+    for (thread_n = 0; thread_n < nthreads; thread_n++) {
+      threads[thread_n].join();
+    }
+  }
+
+  // Free memory.
+  if (D) {
+    free((void*) D);
+  }
+
+  return m_out_err;
+}
+
+ErrorLevel Cylind::dreamcylind_serial(double xo, double yo, double zo,
+                                      double a, double b, double Rcurv,
+                                      double dx, double dy, double dt,
+                                      dream_idx_type nt, double delay, double v, double cp,
+                                      double *h,
+                                      ErrorLevel err_level,
+                                      double weight)
 {
   double t, xsmin, xsmax, ai, du, r;
   double phi, phi_min, phi_max;
@@ -125,14 +327,14 @@ ErrorLevel dreamcylind(double xo, double yo, double zo,
   return err;
 }
 
-ErrorLevel dreamcylind(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
-                       double xo, double yo, double zo,
-                       double a, double b, double Rcurv,
-                       double dx, double dy, double dt,
-                       dream_idx_type nt, double delay, double v, double cp,
-                       double *h,
-                       ErrorLevel err_level,
-                       double weight)
+ErrorLevel Cylind::dreamcylind_serial(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
+                                      double xo, double yo, double zo,
+                                      double a, double b, double Rcurv,
+                                      double dx, double dy, double dt,
+                                      dream_idx_type nt, double delay, double v, double cp,
+                                      double *h,
+                                      ErrorLevel err_level,
+                                      double weight)
 {
   dream_idx_type it;
   double t, xsmin, xsmax, ai, du, r;
@@ -185,16 +387,16 @@ ErrorLevel dreamcylind(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
       if ((it < nt) && (it >= 0)) {
         att.att(xc_vec, x_vec, r, it, h, ai);
       } else  {
-        if  (it >= 0)
+        if  (it >= 0) {
           err = dream_out_of_bounds_err("SIR out of bounds",it-nt+1,err_level);
-        else
+        } else {
           err = dream_out_of_bounds_err("SIR out of bounds",it,err_level);
+        }
 
         if ( (err_level == ErrorLevel::parallel_stop) || (err_level == ErrorLevel::stop) ) {
           return err; // Bail out.
         }
       }
-
       xs += dx;
     }
 
@@ -211,10 +413,10 @@ ErrorLevel dreamcylind(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
  *
  ***/
 
-double cylind_f(double xs, double ys,
-                double Rcurv, double z_Rcurv,
-                double xo, double yo, double zo,
-                double &du)
+double Cylind::cylind_f(double xs, double ys,
+                        double Rcurv, double z_Rcurv,
+                        double xo, double yo, double zo,
+                        double &du)
 {
   du = 1.0;
 
@@ -261,10 +463,10 @@ double cylind_f(double xs, double ys,
  *
  ***/
 
-double cylind_d(double xs, double ys,
-                double Rcurv, double z_Rcurv,
-                double xo, double yo, double zo,
-                double &du)
+double Cylind::cylind_d(double xs, double ys,
+                        double Rcurv, double z_Rcurv,
+                        double xo, double yo, double zo,
+                        double &du)
 {
   du = 1.0;
 

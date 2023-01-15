@@ -214,14 +214,15 @@ ErrorLevel ArrCylind::dream_arr_cylind_serial(double xo, double yo, double zo,
     }
 
     // Compute the response for the n:th element and add it to the impulse response vector h.
-    err = dreamcylind(xo - gx[n], yo - gy[n], zo - gz[n],
-                      a, b, Rcurv,
-                      dx, dy, dt, nt,
-                      delay - foc_delay - steer_delay,
-                      v, cp,
-                      h,
-                      err_level,
-                      weight);
+    Cylind cylind;
+    err = cylind.dreamcylind_serial(xo - gx[n], yo - gy[n], zo - gz[n],
+                             a, b, Rcurv,
+                             dx, dy, dt, nt,
+                             delay - foc_delay - steer_delay,
+                             v, cp,
+                             h,
+                             err_level,
+                             weight);
 
     if (err != ErrorLevel::none) {
       out_err = err;
@@ -266,15 +267,16 @@ ErrorLevel ArrCylind::dream_arr_cylind_serial(Attenuation &att, FFTCVec &xc_vec,
     }
 
     // Compute the response for the n:th element and add it to the impulse response vector h.
-    err = dreamcylind(att, xc_vec, x_vec,
-                      xo - gx[n], yo - gy[n], zo - gz[n],
-                      a, b, Rcurv,
-                      dx, dy, dt, nt,
-                      delay - foc_delay - steer_delay,
-                      v, cp,
-                      h,
-                      err_level,
-                      weight);
+    Cylind cylind;
+    err = cylind.dreamcylind_serial(att, xc_vec, x_vec,
+                             xo - gx[n], yo - gy[n], zo - gz[n],
+                             a, b, Rcurv,
+                             dx, dy, dt, nt,
+                             delay - foc_delay - steer_delay,
+                             v, cp,
+                             h,
+                             err_level,
+                             weight);
 
     if (err != ErrorLevel::none) {
       out_err = err;

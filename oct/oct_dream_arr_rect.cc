@@ -172,12 +172,6 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
 @seealso {dreamrect}\n\
 @end deftypefn")
 {
-  FocusMet foc_met=FocusMet::none;
-  SteerMet steer_met=SteerMet::none;
-  bool    do_apod=false;
-  ApodMet apod_met=ApodMet::gauss;
-  double *h;
-
   octave_value_list oct_retval;
 
   int nrhs = args.length();
@@ -268,6 +262,8 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
   // Focusing parameters.
   //
 
+  FocusMet foc_met=FocusMet::none;
+
   // Allocate space for the user defined focusing delays
   std::unique_ptr<double[]> focal = std::make_unique<double[]>(num_elements);
 
@@ -283,6 +279,8 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
   // Beam steering.
   //
 
+  SteerMet steer_met=SteerMet::none;
+
   double theta=0.0, phi=0.0;
   if (nrhs >= 9) {
     if (!ap.parse_steer_args("dream_arr_rect", args, 8, steer_met, theta, phi)) {
@@ -295,6 +293,9 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
   //
   // Apodization.
   //
+
+  bool    do_apod=false;
+  ApodMet apod_met=ApodMet::gauss;
 
   // Allocate space for the user defined apodization weights
   std::unique_ptr<double[]> apod = std::make_unique<double[]>(num_elements);
@@ -325,7 +326,7 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
 
   // Create an output matrix for the impulse response
   Matrix h_mat(nt, no);
-  h = (double*) h_mat.data();
+  double *h = (double*) h_mat.data();
 
   SIRData hsir(h, nt, no);
   hsir.clear();

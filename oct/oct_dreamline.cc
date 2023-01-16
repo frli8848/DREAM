@@ -72,7 +72,7 @@ Normal velocity [m/s].\n\
 @item cp\n\
 Sound velocity [m/s].\n\
 @item alpha\n\
-Attenuation coefficient [dB/(cm MHz)] .\n\
+Attenuation coefficient [dB/(cm MHz)].\n\
 \n\
 @end table\n\
 \n\

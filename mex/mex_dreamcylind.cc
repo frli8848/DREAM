@@ -38,9 +38,6 @@ extern void _main();
 
 void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
-  std::thread *threads;
-  sighandler_t old_handler, old_handler_abrt, old_handler_keyint;
-
   ArgParser ap;
 
   // Check for proper number of arguments

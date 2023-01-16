@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2006,2007,2008,2009,2012,2014,2015,2016,2021,2021.2023 Fredrik Lingvall
+* Copyright (C) 2006,2007,2008,2009,2012,2014,2015,2016,2021,2021,2023 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -151,7 +151,7 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
   //
 
   double dx=0.0, dy=0.0, dt=0.0;
-  octave_idx_type nt=0;
+  dream_idx_type nt=0;
   if (!ap.parse_sampling("dreamsphere", args, 2, 4, dx, dy, dt, nt)) {
     return oct_retval;
   }

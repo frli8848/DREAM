@@ -236,7 +236,6 @@ ErrorLevel Line::dreamline(double alpha,
   return m_out_err;
 }
 
-
 ErrorLevel Line::dreamline_serial(double xo, double yo, double zo,
                                   double a,
                                   double dx, double dy, double dt, dream_idx_type nt,

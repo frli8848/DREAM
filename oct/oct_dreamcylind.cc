@@ -93,10 +93,11 @@ Normal velocity [m/s].\n\
 @item cp\n\
 Sound velocity [m/s].\n\
 @item alpha\n\
-Attenuation coefficient [dB/(cm MHz)] .\n\
+Attenuation coefficient [dB/(cm MHz)].\n\
 \n\
 @end table\n\
 \n\
+Error Handling: err_level;\n\
 err_level is an optional text string parameter for controlling the error behavior, options are:\n\
 \n\
 @table @code\n\
@@ -234,7 +235,7 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
   // Check for Error.
   //
 
-  if (err == ErrorLevel::stop)  {
+  if (err == ErrorLevel::stop) {
     dream_err_msg(""); // Bail out if error.
   }
 

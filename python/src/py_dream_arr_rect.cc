@@ -103,7 +103,7 @@ py::array_t<double,py::array::f_style> py_dream_arr_rect(py::array_t<double,py::
 
   double dx=0.0, dy=0.0, dt=0.0;
   dream_idx_type nt=0;
-  if (!ap. parse_sampling("dream_arr_rect", py_s_par, no, dx, dy, dt, nt)) {
+  if (!ap.parse_sampling("dream_arr_rect", py_s_par, 4, dx, dy, dt, nt)) {
     throw std::runtime_error("Error in dream_arr_rect!");
   }
 
@@ -116,10 +116,10 @@ py::array_t<double,py::array::f_style> py_dream_arr_rect(py::array_t<double,py::
   }
 
   py::buffer_info delay_info = py_delay->request();
-  auto delay_ndim = ro_info.ndim;
-  auto delay_m = ro_info.shape[0];
-  auto delay_n = ro_info.shape[1];
-  double *delay = static_cast<double*>(G_info.ptr);
+  auto delay_ndim = delay_info.ndim;
+  auto delay_m = delay_info.shape[0];
+  auto delay_n = delay_info.shape[1];
+  double *delay = static_cast<double*>(delay_info.ptr);
 
   DelayType delay_type = DelayType::single; // delay is a scalar.
   if (delay_m * delay_n != 1) {
@@ -144,7 +144,7 @@ py::array_t<double,py::array::f_style> py_dream_arr_rect(py::array_t<double,py::
   // Allocate memory for the user defined focusing delays
   std::unique_ptr<double[]> focal = std::make_unique<double[]>(num_elements);
 
-  if (!ap.parse_focus_args("dream_arr_rect", steer_str, py_focal, num_elements, foc_met, focal.get())) {
+  if (!ap.parse_focus_args("dream_arr_rect", foc_str, py_focal, num_elements, foc_met, focal.get())) {
     throw std::runtime_error("Error in dream_arr_rect!");
   }
 
@@ -209,7 +209,7 @@ py::array_t<double,py::array::f_style> py_dream_arr_rect(py::array_t<double,py::
                                 delay_type, delay,
                                 v, cp,
                                 num_elements, G,
-                                foc_met,  focal.get(),
+                                foc_met, focal.get(),
                                 steer_met, theta, phi,
                                 apod.get(), do_apod, apod_met, apod_par,
                                 h, err_level);

@@ -272,7 +272,7 @@ Start point of SIR:\n\
 'delay'\n\
    Scalar delay for all observation points or a vector with individual delays for each observation point [us].\n \
 \n\
-Material parameters: m_par = [v cp alpha];\n\
+Material parameters: m_par = np.asmatrix([v,cp,alpha])\n\
 \n\
 'v'\n\
    Normal velocity [m/s].\n\
@@ -320,7 +320,7 @@ and the apod and win_par parameters are:\n\
 'win_par'\n\
    A scalar parameter for raised cosine and Gaussian apodization functions.\n\
 \n\
-Error Handling: err_level;\n\
+Error Handling: err_level\n\
 'err_level' is an optional text string parameter for controlling the error behavior, options are:\n\
 \n\
 \"ignore\"\n\

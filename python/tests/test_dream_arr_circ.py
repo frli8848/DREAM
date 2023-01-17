@@ -100,5 +100,8 @@ plt.plot(t, Hatt, 'r--',label='Attenuation alpha = 5 [dB/cm MHz]', linewidth=2, 
 
 plt.title('Array with circular elements')
 
+plt.xlabel('t [us]')
+plt.ylabel('h_{SIR} [m/s]')
+
 plt.legend()
 plt.show()

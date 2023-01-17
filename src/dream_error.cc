@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2003,2004,2006,2008,2009,2012,2016,2021,2022 Fredrik Lingvall
+* Copyright (C) 2003,2004,2006,2008,2009,2012,2016,2021,2022,2023 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -23,7 +23,7 @@
 
 #include "dream_error.h"
 
-#ifdef DREAM_OCTAVE
+#if defined(DREAM_OCTAVE) || defined(DREAM_PYTHON)
 #include <iostream>
 #endif
 
@@ -44,7 +44,7 @@ ErrorLevel dream_out_of_bounds_err(const char *msg, int idx, ErrorLevel err_leve
 
   case ErrorLevel::stop:
     {
-#ifdef DREAM_OCTAVE
+#if defined(DREAM_OCTAVE) || defined(DREAM_PYTHON)
       std::cout << msg << " (offset = " << idx << " samples)" << std::endl;
 #endif
 
@@ -57,7 +57,7 @@ ErrorLevel dream_out_of_bounds_err(const char *msg, int idx, ErrorLevel err_leve
 
   case ErrorLevel::warn:
     {
-#ifdef DREAM_OCTAVE
+#if defined(DREAM_OCTAVE) || defined(DREAM_PYTHON)
       std::cout << msg << " (offset = " << idx << " samples)" << std::endl;
 #endif
 
@@ -72,7 +72,7 @@ ErrorLevel dream_out_of_bounds_err(const char *msg, int idx, ErrorLevel err_leve
 
   case ErrorLevel::parallel_stop:
     {
-#ifdef DREAM_OCTAVE
+#if defined(DREAM_OCTAVE) || defined(DREAM_PYTHON)
       std::cout << msg << " (offset = " << idx << " samples)" << std::endl;
 #endif
 
@@ -91,7 +91,7 @@ ErrorLevel dream_out_of_bounds_err(const char *msg, int idx, ErrorLevel err_leve
 
 void dream_err_msg(const char *msg)
 {
-#ifdef DREAM_OCTAVE
+#if defined(DREAM_OCTAVE) || defined(DREAM_PYTHON)
   std::cout << msg << std::endl;
 #endif
 

@@ -115,7 +115,7 @@ endif (BUILD_MEX)
 #
 
 if (BUILD_PYTHON)
-  include(python.cmake)
+  add_subdirectory(python)
 endif (BUILD_PYTHON)
 
 #

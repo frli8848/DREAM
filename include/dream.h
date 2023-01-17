@@ -72,7 +72,13 @@ typedef octave_idx_type dream_idx_type;
 typedef mwSize dream_idx_type;
 #endif
 
-#if !defined(DREAM_OCTAVE) && !defined(DREAM_MATLAB)
+#ifdef DREAM_PYTHON
+#include <pybind11/pybind11.h>
+#include <pybind11/numpy.h>
+typedef pybind11::ssize_t dream_idx_type;
+#endif
+
+#if !defined(DREAM_OCTAVE) && !defined(DREAM_MATLAB) && !defined(DREAM_PYTHON)
 typedef size_t dream_idx_type;
 #define HAVE_FFTW
 #endif

@@ -1,0 +1,66 @@
+#
+# Copyright (C) 2023 Fredrik Lingvall
+#
+
+project(py_dream)
+
+find_package(Python COMPONENTS Interpreter Development REQUIRED)
+find_package(pybind11 CONFIG REQUIRED)
+
+find_package(FFTW)
+
+# Strip lead and trailing whitepasce
+#string(STRIP "${OCTAVE_INCLUDE_DIRS}" OCTAVE_INCLUDE_DIRS)
+
+set (DREAM_PYTHON_INCLUDE_DIRS
+  "${PROJECT_BINARY_DIR};"
+  "${PROJECT_SOURCE_DIR}/../include;"
+  "${FFTW_INCLUDE_DIR};"
+  #"${OCTAVE_INCLUDE_DIRS}"
+)
+message (STATUS "DREAM_PYTHON_INCLUDE_DIRS: ${DREAM_PYTHON_INCLUDE_DIRS}")
+
+
+if (pybind11_FOUND)
+
+  set (DREAM_PYTHON_FLAGS "-DDREAM_PYTHON")
+
+  message (STATUS "Python_INCLUDE_DIRS ${pybind11_INCLUDE_DIR}")
+  message (STATUS "PYTHON_LD_FLAGS ${PYTHON_LD_FLAGS}")
+
+  if (FFTW_FOUND)
+    set (PYTHON_LD_FLAGS "${PYTHON_LD_FLAGS} -lfftw3")
+  endif (FFTW_FOUND)
+
+endif (pybind11_FOUND)
+
+#
+# dream_arr_rect
+#
+
+set (py_dream_arr_rect_SOURCE_FILES
+  src/py_dream_arr_rect.cc
+  ../src/dream_arr_rect.cc
+  ../src/dreamrect.cc
+  ../src/attenuation.cc
+  ../src/affinity.cc
+  ../src/arr_functions.cc
+  ../src/dream_error.cc
+)
+
+#Python_add_library(py_dream_arr_rect ${py_dream_arr_rect_SOURCE_FILES})
+add_library(py_dream_arr_rect MODULE ${py_dream_arr_rect_SOURCE_FILES})
+target_link_libraries(py_dream_arr_rect pybind11::module
+  ${FFTW_LIBRARIES}
+)
+
+set_target_properties(py_dream_arr_rect PROPERTIES
+  CXX_STANDARD 14
+  COMPILE_FLAGS "${DREAM_PYTHON_FLAGS}"
+  INCLUDE_DIRECTORIES "${DREAM_PYTHON_INCLUDE_DIRS}"
+  INTERPROCEDURAL_OPTIMIZATION ON
+  #CXX_VISIBILITY_PRESET ON
+  #VISIBILITY_INLINES_HIDDEN ON
+  LINK_FLAGS ${PYTHON_LD_FLAGS}
+  PREFIX "" OUTPUT_NAME "dream_arr_rect"
+)

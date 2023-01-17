@@ -45,6 +45,7 @@ typedef const mxArray** args_t;
 // TODO
 #ifdef DREAM_PYTHON
 #include <pybind11/pybind11.h>
+typedef const std::string args_t;
 #endif
 
 class ArgParser
@@ -605,5 +606,8 @@ private:
   };
 #endif
 
+#ifdef DREAM_PYTHON
+
+#endif
 
 };

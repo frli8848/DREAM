@@ -64,6 +64,36 @@ set_target_properties(py_dreamrect PROPERTIES
 )
 
 #
+# dreamcirc
+#
+
+set (py_dreamcirc_SOURCE_FILES
+  src/py_dreamcirc.cc
+  ../src/dreamcirc.cc
+  ../src/attenuation.cc
+  ../src/affinity.cc
+  ../src/arr_functions.cc
+  ../src/dream_error.cc
+)
+
+add_library(py_dreamcirc MODULE ${py_dreamcirc_SOURCE_FILES})
+target_link_libraries(py_dreamcirc pybind11::module
+  ${FFTW_LIBRARIES}
+)
+
+set_target_properties(py_dreamcirc PROPERTIES
+  CXX_STANDARD 14
+  COMPILE_FLAGS "${DREAM_PYTHON_FLAGS}"
+  INCLUDE_DIRECTORIES "${DREAM_PYTHON_INCLUDE_DIRS}"
+  INTERPROCEDURAL_OPTIMIZATION ON
+  #CXX_VISIBILITY_PRESET ON
+  #VISIBILITY_INLINES_HIDDEN ON
+  LINK_FLAGS ${PYTHON_LD_FLAGS}
+  PREFIX "" OUTPUT_NAME "dreamcirc"
+)
+
+
+#
 # dream_arr_rect
 #
 

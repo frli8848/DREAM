@@ -284,14 +284,14 @@ Material parameters: m_par = [v cp alpha];\n\
 Focusing parameters: foc_met and focal:\n\
 \n\
 'foc_met'\n\
-   Focusing method, options are: 'off', 'x', 'y', 'xy', 'x+y', and 'ud'.\n\
+   Focusing method, options are: \"off\", \"x\", \"y\", \"xy\", \"x+y\", and \"ud\".\n\
 'focal'\n\
-   Focal distance [mm]. If foc_met = 'ud' (user defined) then focal is a vector of focusing delays.\n\
+   Focal distance [mm]. If foc_met = \"ud\" (user defined) then focal is a vector of focusing delays.\n\
 \n\
 Beam steering parameters: steer_met and steer_par:\n\
 \n\
 'steer_met'\n\
-   Beam steering method, options are: 'off', 'x', 'y', and 'xy'.\n\
+   Beam steering method, options are: \"off\", \"x\", \"y\", and \"xy\".\n\
 'steer_par' =  [theta phi];\n\
    theta [deg] is the x-direction steer angle and \n\
    phi [deg] is the y-direction steer angle.\n\
@@ -316,7 +316,7 @@ Apodization parameters: apod_met, apod, and win_par. The apod_met (apodization m
 and the apod and win_par parameters are:\n\
 \n\
 'apod'\n\
-   Vector of apodiztion weights (used for the 'ud' option).\n\
+   Vector of apodiztion weights (used for the \"ud\" option).\n\
 'win_par'\n\
    A scalar parameter for raised cosine and Gaussian apodization functions.\n\
 \n\
@@ -332,7 +332,7 @@ Error Handling: err_level;\n\
   An error message is printed and the program is stopped.\n\
 \n\
 dream_arr_rect is a part of the DREAM Toolbox available at\n\
-https://github.com/frli8848/DREAM}.\n\
+https://github.com/frli8848/DREAM.\n\
 \n\
 Copyright 2006-2023 Fredrik Lingvall.";
 

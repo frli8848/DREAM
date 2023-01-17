@@ -35,6 +35,35 @@ if (pybind11_FOUND)
 endif (pybind11_FOUND)
 
 #
+# dreamrect
+#
+
+set (py_dreamrect_SOURCE_FILES
+  src/py_dreamrect.cc
+  ../src/dreamrect.cc
+  ../src/attenuation.cc
+  ../src/affinity.cc
+  ../src/arr_functions.cc
+  ../src/dream_error.cc
+)
+
+add_library(py_dreamrect MODULE ${py_dreamrect_SOURCE_FILES})
+target_link_libraries(py_dreamrect pybind11::module
+  ${FFTW_LIBRARIES}
+)
+
+set_target_properties(py_dreamrect PROPERTIES
+  CXX_STANDARD 14
+  COMPILE_FLAGS "${DREAM_PYTHON_FLAGS}"
+  INCLUDE_DIRECTORIES "${DREAM_PYTHON_INCLUDE_DIRS}"
+  INTERPROCEDURAL_OPTIMIZATION ON
+  #CXX_VISIBILITY_PRESET ON
+  #VISIBILITY_INLINES_HIDDEN ON
+  LINK_FLAGS ${PYTHON_LD_FLAGS}
+  PREFIX "" OUTPUT_NAME "dreamrect"
+)
+
+#
 # dream_arr_rect
 #
 
@@ -79,7 +108,6 @@ set (py_dream_arr_circ_SOURCE_FILES
   ../src/dream_error.cc
 )
 
-#Python_add_library(py_dream_arr_circ ${py_dream_arr_circ_SOURCE_FILES})
 add_library(py_dream_arr_circ MODULE ${py_dream_arr_circ_SOURCE_FILES})
 target_link_libraries(py_dream_arr_circ pybind11::module
   ${FFTW_LIBRARIES}
@@ -110,7 +138,6 @@ set (py_dream_arr_cylind_SOURCE_FILES
   ../src/dream_error.cc
 )
 
-#Python_add_library(py_dream_arr_cylind ${py_dream_arr_cylind_SOURCE_FILES})
 add_library(py_dream_arr_cylind MODULE ${py_dream_arr_cylind_SOURCE_FILES})
 target_link_libraries(py_dream_arr_cylind pybind11::module
   ${FFTW_LIBRARIES}

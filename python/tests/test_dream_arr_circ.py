@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 #import sys
 #sys.path.insert(0, '../')
 
-import dream_arr_rect as dar
+import dream_arr_circ as dac
 
 #plt.rcParams['text.usetex'] = True
 
@@ -44,9 +44,8 @@ m_par = np.asmatrix([v,cp,alpha]);
 delay = np.asmatrix(0.0);
 
 # Element size [mm].
-a = 0.8;
-b = 20.0;
-geom_par = np.asmatrix([a,b]);
+R = 0.4;
+geom_par = np.asmatrix([R]);
 
 # Grid function (position vectors of the elements).
 gx = np.linspace(-10.0, 10.0, num=21, endpoint=True)
@@ -87,7 +86,7 @@ apod_met = "off";
 apod = np.ones((num_elements,1));     # Apodization weights for "ud".
 win_par = 1.0; # Parameter for raised cos and Gaussian apodization functions.
 
-H = dar.dream_arr_rect(Ro,geom_par,G,s_par,delay,m_par,foc_met,focal,steer_met,steer_par,apod_met,apod,win_par,"stop")
+H = dac.dream_arr_circ(Ro,geom_par,G,s_par,delay,m_par,foc_met,focal,steer_met,steer_par,apod_met,apod,win_par,"stop")
 
 fig = plt.figure(1)
 plt.clf()
@@ -96,7 +95,7 @@ plt.plot(t, H, 'b-', label='Attenuation alpha = 0 [dB/cm MHz]', linewidth=2, mar
 
 alpha  = 5.0;                   # Absorbtion (dB/cm Hz).
 m_par = np.asmatrix([v,cp,alpha]);
-Hatt = dar.dream_arr_rect(Ro,geom_par,G,s_par,delay,m_par,foc_met,focal,steer_met,steer_par,apod_met,apod,win_par,"stop");
+Hatt = dac.dream_arr_circ(Ro,geom_par,G,s_par,delay,m_par,foc_met,focal,steer_met,steer_par,apod_met,apod,win_par,"stop");
 plt.plot(t, Hatt, 'r--',label='Attenuation alpha = 5 [dB/cm MHz]', linewidth=2, markersize=12)
 
 plt.legend()

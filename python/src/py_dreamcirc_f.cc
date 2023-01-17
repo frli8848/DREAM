@@ -166,8 +166,7 @@ py::array_t<double,py::array::f_style> py_dreamcirc_f(py::array_t<double,py::arr
   }
 
   if (err == ErrorLevel::stop) {
-    dream_err_msg("Error in dreamcirc");
-    throw std::runtime_error("Error in dreamcirc!");
+    throw std::runtime_error("Error in dreamcirc_f!");
   }
 
   return py_h_mat;

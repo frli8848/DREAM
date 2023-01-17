@@ -52,7 +52,7 @@ Geometrical parameters: geom_par = [R];\n\
 \n\
 @table @code\n\
 @item R\n\
-Radius of the transducer elements [mm].\n\
+Radius of the transducer [mm].\n\
 @end table\n\
 \n\
 Sampling parameters: s_par = [dx dy dt nt]; \n\

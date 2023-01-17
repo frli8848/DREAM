@@ -60,7 +60,7 @@ m_par = np.asmatrix([v,cp,alpha]);
 Hatt = dr.dreamrect(Ro,geom_par,s_par,delay,m_par,"stop");
 plt.plot(t, Hatt, 'r--',label='Attenuation alpha = 5 [dB/cm MHz]', linewidth=2, markersize=12)
 
-plt.title('Array with rectangular elements')
+plt.title('Rectangular transducer')
 
 plt.xlabel('t [us]')
 plt.ylabel('h_{SIR} [m/s]')

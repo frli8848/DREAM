@@ -166,8 +166,7 @@ py::array_t<double,py::array::f_style> py_dreamrect_f(py::array_t<double,py::arr
   }
 
   if (err == ErrorLevel::stop) {
-    dream_err_msg("Error in dreamrect");
-    throw std::runtime_error("Error in dreamrect!");
+    throw std::runtime_error("Error in dreamrect_f!");
   }
 
   return py_h_mat;

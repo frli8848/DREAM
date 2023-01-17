@@ -219,6 +219,11 @@ py::array_t<double,py::array::f_style> py_dream_arr_rect(py::array_t<double,py::
     throw std::runtime_error("Error in dream_arr_rect!");
   }
 
+  if (err == ErrorLevel::stop) {
+    throw std::runtime_error("Error in dream_arr_rect!");
+  }
+
+
   return py_h_mat;
 }
 
@@ -242,7 +247,7 @@ Observation point(s) ([mm]):\n\
 'Ro'\n\
    An N x 3 matrix, Ro = np.asmatrix([xo1 yo1 zo2; xo2 yo2 zo2; ... xoN yoN zoN]) where N is the number of observation points.\n\
 \n\
-Geometrical parameters: geom_par = np.asmatrix([a,b]);\n\
+Geometrical parameters: geom_par = np.asmatrix([a,b])\n\
 \n\
 'a'\n\
    Element width in x-direction [mm].\n\

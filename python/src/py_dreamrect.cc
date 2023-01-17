@@ -129,14 +129,14 @@ py::array_t<double,py::array::f_style> py_dreamrect(py::array_t<double,py::array
   SIRData hsir(h, nt, no);
   hsir.clear();
 
+  Rect rect;
+
   // Register signal handler.
   std::signal(SIGABRT, Rect::abort);
 
   //
   // Call DREAM function
   //
-
-  Rect rect;
 
   err = rect.dreamrect(alpha,
                        ro, no,
@@ -148,6 +148,10 @@ py::array_t<double,py::array::f_style> py_dreamrect(py::array_t<double,py::array
 
   if (!rect.is_running()) {
     dream_err_msg("CTRL-C pressed!\n"); // Bail out.
+    throw std::runtime_error("Error in dreamrect!");
+  }
+
+  if (err == ErrorLevel::stop) {
     throw std::runtime_error("Error in dreamrect!");
   }
 
@@ -222,7 +226,7 @@ https://github.com/frli8848/DREAM.\n\
 Copyright 2006-2023 Fredrik Lingvall.";
 
   m.def("dreamrect", &py_dreamrect,
-        "H = dreamrectw(Ro,geom_par,G,s_par,delay,m_par,err_level)",
+        "H = dreamrect(Ro,geom_par,G,s_par,delay,m_par,err_level)",
         py::arg("Ro"),
         py::arg("geom_par"),
         py::arg("s_par"),

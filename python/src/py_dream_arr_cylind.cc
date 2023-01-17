@@ -240,7 +240,7 @@ for an array transducer with cylindrical elements using parallel processing\n\
 Observation point(s) ([mm]):\n\
 \n\
 'Ro'\n\
-   An N x 3 matrix, Ro = [xo1 yo1 zo2; xo2 yo2 zo2; ... xoN yoN zoN]; where N is the number of observation points.\n\
+   An N x 3 matrix, Ro = np.asmatrix([xo1 yo1 zo2; xo2 yo2 zo2; ... xoN yoN zoN]) where N is the number of observation points.\n\
 \n\
 Geometrical parameters: geom_par = np.asmatrix([a,b,Rcurv])\n\
 \n\

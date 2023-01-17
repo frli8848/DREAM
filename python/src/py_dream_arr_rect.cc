@@ -240,9 +240,9 @@ for an array transducer with rectangular elements using parallel processing\n\
 Observation point(s) ([mm]):\n\
 \n\
 'Ro'\n\
-   An N x 3 matrix, Ro = [xo1 yo1 zo2; xo2 yo2 zo2; ... xoN yoN zoN]; where N is the number of observation points.\n\
+   An N x 3 matrix, Ro = np.asmatrix([xo1 yo1 zo2; xo2 yo2 zo2; ... xoN yoN zoN]) where N is the number of observation points.\n\
 \n\
-Geometrical parameters: geom_par = [a b];\n\
+Geometrical parameters: geom_par = np.asmatrix([a,b]);\n\
 \n\
 'a'\n\
    Element width in x-direction [mm].\n\
@@ -256,7 +256,7 @@ Array grid parameter:\n\
 of the elements, column 2 the y-positions, and column 3\n\
 the z-positions, and where L is the number of elements.\n\
 \n\
-Sampling parameters: s_par = [dx dy dt nt]; \n\
+Sampling parameters: s_par = np.asmatrix([dx,dy,dt,nt]) \n\
 \n\
 'dx'\n\
    Spatial x-direction discretization size [mm].\n\
@@ -292,7 +292,7 @@ Beam steering parameters: steer_met and steer_par:\n\
 \n\
 'steer_met'\n\
    Beam steering method, options are: \"off\", \"x\", \"y\", and \"xy\".\n\
-'steer_par' =  [theta phi];\n\
+'steer_par' =  np.asmatrix([theta,phi])\n\
    theta [deg] is the x-direction steer angle and \n\
    phi [deg] is the y-direction steer angle.\n\
 \n\

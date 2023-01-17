@@ -240,7 +240,7 @@ for an array transducer with circular elements using parallel processing\n\
 Observation point(s) ([mm]):\n\
 \n\
 'Ro'\n\
-   An N x 3 matrix, Ro = [xo1 yo1 zo2; xo2 yo2 zo2; ... xoN yoN zoN]; where N is the number of observation points.\n\
+   An N x 3 matrix, Ro = np.asmatrix([xo1 yo1 zo2; xo2 yo2 zo2; ... xoN yoN zoN]) where N is the number of observation points.\n\
 \n\
 Geometrical parameters: geom_par = np.asmatrix([R])\n\
 \n\
@@ -270,7 +270,7 @@ Start point of SIR:\n\
 'delay'\n\
    Scalar delay for all observation points or a vector with individual delays for each observation point [us].\n \
 \n\
-Material parameters: m_par = np.asmatrix([v cp alpha])\n\
+Material parameters: m_par = np.asmatrix([v,cp,alpha])\n\
 \n\
 'v'\n\
    Normal velocity [m/s].\n\

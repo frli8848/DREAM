@@ -99,5 +99,7 @@ m_par = np.asmatrix([v,cp,alpha]);
 Hatt = dar.dream_arr_rect(Ro,geom_par,G,s_par,delay,m_par,foc_met,focal,steer_met,steer_par,apod_met,apod,win_par,"stop");
 plt.plot(t, Hatt, 'r--',label='Attenuation alpha = 5 [dB/cm MHz]', linewidth=2, markersize=12)
 
+plt.title('Array with rectangular elements')
+
 plt.legend()
 plt.show()

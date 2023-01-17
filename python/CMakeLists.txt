@@ -95,3 +95,34 @@ set_target_properties(py_dream_arr_circ PROPERTIES
   LINK_FLAGS ${PYTHON_LD_FLAGS}
   PREFIX "" OUTPUT_NAME "dream_arr_circ"
 )
+
+#
+# dream_arr_cylind
+#
+
+set (py_dream_arr_cylind_SOURCE_FILES
+  src/py_dream_arr_cylind.cc
+  ../src/dream_arr_cylind.cc
+  ../src/dreamcylind.cc
+  ../src/attenuation.cc
+  ../src/affinity.cc
+  ../src/arr_functions.cc
+  ../src/dream_error.cc
+)
+
+#Python_add_library(py_dream_arr_cylind ${py_dream_arr_cylind_SOURCE_FILES})
+add_library(py_dream_arr_cylind MODULE ${py_dream_arr_cylind_SOURCE_FILES})
+target_link_libraries(py_dream_arr_cylind pybind11::module
+  ${FFTW_LIBRARIES}
+)
+
+set_target_properties(py_dream_arr_cylind PROPERTIES
+  CXX_STANDARD 14
+  COMPILE_FLAGS "${DREAM_PYTHON_FLAGS}"
+  INCLUDE_DIRECTORIES "${DREAM_PYTHON_INCLUDE_DIRS}"
+  INTERPROCEDURAL_OPTIMIZATION ON
+  #CXX_VISIBILITY_PRESET ON
+  #VISIBILITY_INLINES_HIDDEN ON
+  LINK_FLAGS ${PYTHON_LD_FLAGS}
+  PREFIX "" OUTPUT_NAME "dream_arr_cylind"
+)

@@ -40,17 +40,17 @@
  *
  ***/
 
-int cl_dreamcirc(const double *Ro,
-                 int No,
-                 double r,
-                 double dx,
-                 double dy,
-                 double dt,
-                 int nt,
-                 double delay,
-                 double v,
-                 double cp,
-                 double *H)
+int Circ::cl_dreamcirc(const double *Ro,
+                       int No,
+                       double r,
+                       double dx,
+                       double dy,
+                       double dt,
+                       int nt,
+                       double delay,
+                       double v,
+                       double cp,
+                       double *H)
 {
   std::string kernel_str;
 

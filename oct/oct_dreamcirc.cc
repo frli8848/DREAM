@@ -232,7 +232,7 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
   // Check if we should use the GPU
   if (device == "gpu") {
 
-    cl_dreamcirc(ro, no, R,  dx, dy, dt, nt,  delay[0], v, cp, h);
+    circ.cl_dreamcirc(ro, no, R,  dx, dy, dt, nt,  delay[0], v, cp, h);
 
   } else { // Otherwise use the cpu
 #endif

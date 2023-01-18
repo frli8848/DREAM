@@ -47,6 +47,22 @@ ErrorLevel dreamrect(double alpha,
                      double v, double cp,
                      double *h, ErrorLevel err_level);
 
+#ifdef USE_OPENCL
+  int cl_dreamrect(const double *Ro,
+                   int No,
+                   double a,
+                   double b,
+                   double dx,
+                   double dy,
+                   double dt,
+                   int nt,
+                   double delay,
+                   double v,
+                   double cp,
+                   double *h);
+#endif
+
+
  static void abort(int signum);
  bool is_running();
 
@@ -85,18 +101,3 @@ ErrorLevel dreamrect_serial(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
                             double *h,
                             ErrorLevel err_level,
                             double weight=1.0);
-
-#ifdef USE_OPENCL
-int cl_dreamrect(const double *Ro,
-                 int No,
-                 double a,
-                 double b,
-                 double dx,
-                 double dy,
-                 double dt,
-                 int nt,
-                 double delay,
-                 double v,
-                 double cp,
-                 double *H);
-#endif

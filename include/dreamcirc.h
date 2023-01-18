@@ -47,6 +47,16 @@ ErrorLevel dreamcirc(double alpha,
                      double v, double cp,
                      double *h, ErrorLevel err_level);
 
+#ifdef USE_OPENCL
+  int cl_dreamcirc(const double *Ro, int No,
+                   double R,
+                   double dx, double dy, double dt,
+                   int nt,
+                   double delay,
+                   double v, double cp,
+                   double *H);
+#endif
+
  static void abort(int signum);
  bool is_running();
 
@@ -85,13 +95,3 @@ ErrorLevel dreamcirc_serial(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
                             double *h,
                             ErrorLevel err_level,
                             double weight=1.0);
-
-#ifdef USE_OPENCL
-int cl_dreamcirc(const double *Ro, int No,
-                 double R,
-                 double dx, double dy, double dt,
-                 int nt,
-                 double delay,
-                 double v, double cp,
-                 double *H);
-#endif

@@ -234,7 +234,7 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
 
   // Check if we should use the GPU
   if (device == "gpu") {
-    cl_dreamrect(ro, no, a, b,  dx, dy, dt, nt,  delay[0], v, cp, h);
+    rect.cl_dreamrect(ro, no, a, b,  dx, dy, dt, nt,  delay[0], v, cp, h);
 
   } else { // Otherwise use the cpu
 #endif

@@ -39,18 +39,18 @@
  *
  ***/
 
-int cl_dreamrect(const double *Ro,
-                 int No,
-                 double a,
-                 double b,
-                 double dx,
-                 double dy,
-                 double dt,
-                 int nt,
-                 double delay,
-                 double v,
-                 double cp,
-                 double *H)
+int Rect::cl_dreamrect(const double *Ro,
+                       int No,
+                       double a,
+                       double b,
+                       double dx,
+                       double dy,
+                       double dt,
+                       int nt,
+                       double delay,
+                       double v,
+                       double cp,
+                       double *H)
 {
   std::string kernel_str;
 

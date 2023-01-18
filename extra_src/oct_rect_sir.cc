@@ -234,7 +234,7 @@ Copyright @copyright{} 2008-2020 Fredrik Lingvall.\n\
 
 #ifdef USE_OPENCL
   if (device == "gpu") {
-    cl_rect_sir(ro, no, a, b, dt, nt, delay[0], v, cp, h);
+    rect_sir.cl_rect_sir(ro, no, a, b, dt, nt, delay[0], v, cp, h);
 
   } else { // Otherwise use the cpu
 #endif

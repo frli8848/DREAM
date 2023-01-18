@@ -47,16 +47,16 @@ ErrorLevel rect_sir(double *ro, dream_idx_type no,
                     double *h);
 
 #ifdef USE_OPENCL
- int cl_rect_sir(const double *ro,
-                 int no,
-                 double a,
-                 double b,
-                 double dt,
-                 int nt,
-                 double delay,
-                 double v,
-                 double cp,
-                 double *h);
+  int cl_rect_sir(const double *ro,
+                  int no,
+                  double a,
+                  double b,
+                  double dt,
+                  int nt,
+                  double delay,
+                  double v,
+                  double cp,
+                  double *h);
 #endif
 
  static void abort(int signum);

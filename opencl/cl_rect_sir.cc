@@ -38,16 +38,16 @@
  *
  ***/
 
-int cl_rect_sir(const double *Ro,
-                int No,
-                double a,
-                double b,
-                double dt,
-                int nt,
-                double delay,
-                double v,
-                double cp,
-                double *H)
+int RectSir::cl_rect_sir(const double *Ro,
+                         int No,
+                         double a,
+                         double b,
+                         double dt,
+                         int nt,
+                         double delay,
+                         double v,
+                         double cp,
+                         double *h)
 {
   std::string kernel_str;
 
@@ -202,7 +202,7 @@ int cl_rect_sir(const double *Ro,
   // Read the memory buffer C on the device to the local variable C
   //
 
-  ret = clEnqueueReadBuffer(command_queue, H_mo, CL_TRUE, 0, nt*No*sizeof(double), H, 0, NULL, NULL);
+  ret = clEnqueueReadBuffer(command_queue, H_mo, CL_TRUE, 0, nt*No*sizeof(double), h, 0, NULL, NULL);
   if (ret < 0) std::cout << "cl read ret: " << ret << std::endl;
 
   //

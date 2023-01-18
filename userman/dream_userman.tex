@@ -23,9 +23,10 @@
 \title{\textbf{User Manual for the DREAM Toolbox\\
     Version \version}\\
   An ultrasound simulation software for use with
-  \href{http://www.mathworks.com}{\textsc{Matlab}}
+  \href{http://www.mathworks.com}{\textsc{Matlab}},
+  \href{http://www.octave.org}{\textsc{GNU Octave}},
   and
-  \href{http://www.octave.org}{\textsc{GNU Octave}}}
+  \textsc{Python}}
 
 \author{Fredrik Lingvall\footnote{\texttt{https://github.com/frli8848/DREAM}}}
 
@@ -282,8 +283,7 @@
 released under the GNU General Public License (GPL), for both \Matlab\ and Octave for simulating acoustic
 fields radiated from common ultrasonic transducer types and arbitrarily complicated ultrasonic transducers
 arrays. The DREAM toolbox enables analysis of beam steering, beam focusing, and apodization
-for wide band (pulse) excitation both in near and far fields. The toolbox is also
-provided with a user friendly graphical user interface (GUI).
+for wide band (pulse) excitation both in near and far fields.
 
 The toolbox consists of a set of routines for computing (discrete) spatial impulse
 response (SIRs) for various single-element transducer geometries as well as multi-element
@@ -1990,38 +1990,6 @@ The input parameters,
 %
 are similar to the ones used in the transducer functions previously described.
 
-% TODO: remove this section?
-%\input{model_based.tex}
-
-\section{The Graphical User Interface (Matlab only)}
-\label{sec:gui}
-
-To launch the DREAM Toolbox GUI, type \texttt{dream\_gui} in the \Matlab\ Command
-Window %\footnote{The DREAM GUI is not available for Octave.}
-and a graphical user interface will be raised as shown in Figure~\ref{fig:gui}.
-%
-\begin{figure}[phtb]
- \begin{center}
-     %\mbox{\scalebox{0.3}{\fbox{\epsfig{file=userman/eps/gui.ps}}}}
-     \mbox{\scalebox{0.3}{\fbox{\epsfig{file=userman/eps/gui.eps}}}}
- \end{center}
-\caption{The graphical user interface.
-\label{fig:gui}}
-\end{figure}
-%
-After activating the user interface, users can set parameters,
-compute SIRs, and save and process the resulting SIR by using the
-graphical controls. For setting of geometry parameters, please also refer to the
-schematic diagram of transducer displayed in the center of the graphic interface.
-After setting all the parameters, clicking on the \emph{Compute} button
-starts to compute SIR. In addition, the DREAM GUI provides several post-processing
-operations to process the SIRs, including computing pressure response, computing the
-spectrum of the SIR, and convolving the SIR with an excitation signal. Notice that if
-users tick the checkbox of pressure response, the spectrum and
-convolution operations will be performed on the pressure instead of on the SIR.
-The parameters and resulting SIR can be stored in an \texttt{*.mat} file by clicking on the
-button of \emph{Save}.  The parameters settings can then be restored by loading the file using
-the \emph{Load} button.
 %, or read the
 %parameters and process SIR data in the \Matlab\ command window.
 

@@ -34,6 +34,8 @@ if (pybind11_FOUND)
 
 endif (pybind11_FOUND)
 
+# Single element transducers
+
 #
 # dreamline
 #
@@ -178,6 +180,37 @@ set_target_properties(py_dreamcirc_f PROPERTIES
   LINK_FLAGS ${PYTHON_LD_FLAGS}
   PREFIX "" OUTPUT_NAME "dreamcirc_f"
 )
+
+#
+# dreamsphere
+#
+
+set (py_dreamsphere_SOURCE_FILES
+  src/py_dreamsphere.cc
+  ../src/dreamsphere.cc
+  ../src/attenuation.cc
+  ../src/affinity.cc
+  ../src/arr_functions.cc
+  ../src/dream_error.cc
+)
+
+add_library(py_dreamsphere MODULE ${py_dreamsphere_SOURCE_FILES})
+target_link_libraries(py_dreamsphere pybind11::module
+  ${FFTW_LIBRARIES}
+)
+
+set_target_properties(py_dreamsphere PROPERTIES
+  CXX_STANDARD 14
+  COMPILE_FLAGS "${DREAM_PYTHON_FLAGS}"
+  INCLUDE_DIRECTORIES "${DREAM_PYTHON_INCLUDE_DIRS}"
+  INTERPROCEDURAL_OPTIMIZATION ON
+  #CXX_VISIBILITY_PRESET ON
+  #VISIBILITY_INLINES_HIDDEN ON
+  LINK_FLAGS ${PYTHON_LD_FLAGS}
+  PREFIX "" OUTPUT_NAME "dreamsphere"
+)
+
+# Arrays
 
 #
 # dream_arr_rect

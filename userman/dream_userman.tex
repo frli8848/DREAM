@@ -14,6 +14,8 @@
 \usepackage{ifthen}
 \newboolean{TEX4HT}
 
+\usepackage{listings} % For programming code
+
 %\usepackage[]{multicolumn}
 %\usepackage[]{showlabels}
 
@@ -854,9 +856,16 @@ Sections~\ref{sec:transducer-functions}, \ref{sec:parallel}, and~\ref{sec:misc-f
 Let us study a the pressure response for a circular transducer using water as the propagation
 medium (with a sound speed $\cp = 1500$ [m/s]). We start by setting the sampling frequency and defining the
 points of interest, the so-called \emph{observation points}. The observation points are located on a line
-at $z=10$ mm, from 1--50 mm with 1 mm between them:
-\footnotesize
-\begin{verbatim}
+at $z=10$ mm, from 1--50 mm with 1 mm between them (using m-code):
+%
+\begin{lstlisting}[language=Matlab,
+  basicstyle=\scriptsize,
+  breaklines=true,
+  captionpos=b,
+  frame=single,
+  commentstyle=\color{red},
+  caption={Defining observation points.},
+  label={code:obs_points}]
 Fs = 10;   % Sampling freq. in MHz.
 Ts = 1/Fs;
 
@@ -867,64 +876,134 @@ Ts = 1/Fs;
 % Depth
 z = 10; % [mm]
 
-%  Points along x-axis.
+% Points along x-axis.
 d  = 1;                               % [mm]
 xo = (0:d:50);                        % 0-50 mm.
 yo = zeros(length(xo),1);
 zo = z*ones(length(xo),1);
 Ro = [xo(:) yo(:) zo(:)];
-\end{verbatim}
-\normalsize
-
+\end{lstlisting}
+%
 Then we need to define the discretization parameters for both the transducer surface and the temporal
 sampling:
 %
-\footnotesize
-\begin{verbatim}
+\begin{lstlisting}[language=Matlab,
+  basicstyle=\scriptsize,
+  breaklines=true,
+  captionpos=b,
+  frame=single,
+  commentstyle=\color{red},
+  caption={Defining descretization parameters.},
+  label={code:discr_pars}]
 % Descretization parameters.
 dx = 0.03;                              % [mm].
 dy = 0.03;                              % [mm]
 dt = Ts;                                % [us].
 nt = 400;                               % Length of spatial impulse response vector.
 s_par = [dx dy dt nt];
-\end{verbatim}
-\normalsize
-
+\end{lstlisting}
+%
 We must also define the sound speed of the medium, normal velocity, and attenuation. Here we choose
 an attenuation free medium ($\alpha = 0$) and a unit normal velocity:
-\footnotesize
-\begin{verbatim}
+%
+\begin{lstlisting}[language=Matlab,
+  basicstyle=\scriptsize,
+  breaklines=true,
+  captionpos=b,
+  frame=single,
+  commentstyle=\color{red},
+  caption={Defining material parameters.},
+  label={code:discr_pars}]
 % Material parameters.
-v     = 1.0;                            % Normal velocity.
-cp    = 1500;                           % Sound speed.
-alpha  = 0;                             % Absorbtion [dB/(cm MHz)].
+v     = 1.0;                           % Normal velocity.
+cp    = 1500;                          % Sound speed.
+alpha = 0;                             % Absorbtion [dB/(cm MHz)].
 m_par = [v cp alpha];
-\end{verbatim}
-\normalsize
-
+\end{lstlisting}
+%
 The size of the transducer must also be defined, here we use a circular transducer with a
 5 mm radius:
-\footnotesize
-\begin{verbatim}
+\begin{lstlisting}[language=Matlab,
+  basicstyle=\scriptsize,
+  breaklines=true,
+  captionpos=b,
+  frame=single,
+  commentstyle=\color{red},
+  caption={Defining geometrical parameters.},
+  label={code:geom_pars}]
 % Geometrical parameters.
 r = 5;                                 % Radius [mm].
 geom_par = [r];
-
-\end{verbatim}
-\normalsize
-
+\end{lstlisting}
+%
 Finally we set the start point of the SIR and call the DREAM function \texttt{dreamcirc} to
 compute the discrete SIRs:
-\footnotesize
-\begin{verbatim}
+\begin{lstlisting}[language=Matlab,
+  basicstyle=\scriptsize,
+  breaklines=true,
+  captionpos=b,
+  frame=single,
+  commentstyle=\color{red},
+  caption={Defining SIR starting point.},
+  label={code:delat_pars}]
 % Delay.
 t_z = z*1e3/cp;
 %delay = 0;                             % Start at 0 [us].
 delay = t_z;                            % Start at t_z [us].
 
 H = dreamcirc(Ro,geom_par,s_par,delay,m_par,'stop');
-\end{verbatim}
-\normalsize
+\end{lstlisting}
+
+
+For Python, the corresponding code is:
+\begin{lstlisting}[language=Python,
+  basicstyle=\scriptsize,
+  breaklines=true,
+  captionpos=b,
+  frame=single,
+  commentstyle=\color{red},
+  caption={A short Python \texttt{dreamcirc} example.},
+  label={code:short_example}]
+import math
+import numpy as np
+
+import dreamcirc as dc
+
+Fs = 4.0                        # Sampling freq. [MHz].
+Ts = 1/Fs                       # [us].
+
+# Depth
+z = 10.0                        # [mm]
+
+xo = np.linspace(0.0, 50.0, num=50, endpoint=True)
+xo = gx.reshape(51,1)
+[m,n] = np.shape(xo)
+gy = np.zeros((m,1), dtype=float);
+gz = z*np.ones((m,1), dtype=float);
+Ro = gx
+Ro = np.hstack((G, gy))
+Ro = np.hstack((G, gz))
+
+# Descretization parameters.
+dx = 0.03;                # [mm].
+dy = 0.03;                # [mm]
+dt = Ts;                  # [us].
+nt = 400.0;               # Length of spatial impulse response vector.
+s_par = np.asmatrix([dx,dy,dt,nt]);
+
+# Material parameters.
+v     = 1.0;                    # Normal velocity.
+cp    = 1500.0;                 # Sound speed.
+alpha = 0.0;                    # Absorbtion (dB/cm Hz).
+m_par = np.asmatrix([v,cp,alpha]);
+
+# Element size [mm].
+R = 10.0;
+geom_par = np.asmatrix([R]);
+
+H = dc.dreamcirc(Ro,geom_par,s_par,delay,m_par,"stop")
+\end{lstlisting}
+
 
 %
 % TODO: add electrical impulse response.
@@ -933,11 +1012,12 @@ H = dreamcirc(Ro,geom_par,s_par,delay,m_par,'stop');
 \section{Transducer Function Reference}
 \label{sec:transducer-functions}
 
-\PARstart{T}{he} transducer functions are implemented as \textsc{Matlab} \emph{mex}-functions
-and Octave\ \emph{oct}-functions; a \emph{mex/oct}-function is pre-compiled code that is dynamically
-linked to \Matlab/Octave at run time. This greatly increases the computation speed compared to using
-ordinary m-files since the DR-concept (see~\cite{Piwakowski1999}) uses \texttt{for} and \texttt{while}
-loops extensively. An overview of the transducer functions can be found in Table~\ref{tab:overview}.
+\PARstart{T}{he} transducer functions are implemented as \emph{mex}-functions for \Matlab,
+\emph{oct}-functions for Octave, and as modules for Python; the bindings are pre-compiled code that is
+dynamically linked to \Matlab/Octave/Python at run time. This greatly increases the computation speed
+compared to using ordinary m-files or Python code since the DR-concept (see~\cite{Piwakowski1999}) uses
+\texttt{for} and \texttt{while} loops extensively. An overview of the transducer functions can be found
+in Table~\ref{tab:overview}.
 
 % Need a new line above the table otherwise all rows on the table are
 % printed on top of each other (bug in latex?).
@@ -1288,8 +1368,33 @@ and the focusing is described in Section~\ref{sec:focus}.
 The positions of the array transducer elements are determined by the $L\times3$ \emph{grid matrix}
 \texttt{G}. The first column contain the (center) $x$-positions of the elements, the second the $y$-positions,
 and the third the $z$-positions ($L$ is the number of elements), respectively. This approach is very flexible
-and allows for arbitrary array geometries that  not is restricted to equally spaced linear or 2D
+and allows for arbitrary array geometries that not is restricted to equally spaced linear or 2D
 arrays.%\footnote{Note that \texttt{G} is a vector for the annular array}.
+
+\noindent \textbf{Example m-code (linear array)}:
+\footnotesize
+\begin{verbatim}
+  gx = -10:1:10;
+  gy = zeros(length(gx),1);
+  gz = zeros(length(gx),1);
+  gx=gx(:); gy=gy(:); gz=gz(:);
+  G = [gx gy gz];
+\end{verbatim}
+\normalsize
+
+\noindent \textbf{Example Python/numpy code (linear array)}:
+\footnotesize
+\begin{verbatim}
+  gx = np.linspace(-10.0, 10.0, num=21, endpoint=True)
+  gx = gx.reshape(21,1)
+  [num_elements,n] = np.shape(gx)
+  gy = np.zeros((num_elements,1), dtype=float)
+  gz = np.zeros((num_elements,1), dtype=float)
+  G = gx
+  G = np.hstack((G, gy))
+  G = np.hstack((G, gz))
+\end{verbatim}
+\normalsize
 
 \subsubsection{Array Focusing}
 \label{sec:arrfocus}
@@ -1427,17 +1532,7 @@ Geometrical parameters:
  geom_par = [a b r]:
    a  - Element size in x-direction.
    b  - Element size in y-direction.
-   r  - Radius (y-direction).
-\end{verbatim}
-
-\noindent \textbf{Example (linear array)}:
-\begin{verbatim}
-  gx = -10:1:10;
-  gy = zeros(length(gx),1);
-  gz = zeros(length(gx),1);
-  gx=gx(:);  gy=gy(:);  gz=gz(:);
-  G = [gx gy gz];
-
+   Rcurv - Radius (y-direction).
 \end{verbatim}
 
 \subsubsection{Array with Cylindrical Convex Elements}

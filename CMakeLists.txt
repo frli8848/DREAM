@@ -68,7 +68,7 @@ if (UNIX AND NOT MACOSX)
 
   message(STATUS " ")
   message(STATUS "****************************")
-  message(STATUS "Octave bindings: ${LINUX_DISTRO} ${LINUX_DISTRO_VERSION} Linux detected!")
+  message(STATUS " ${LINUX_DISTRO} ${LINUX_DISTRO_VERSION} Linux detected!")
   message(STATUS "****************************")
   message(STATUS " ")
 
@@ -124,8 +124,8 @@ endif (BUILD_PYTHON)
 
 if (BUILD_USERMAN)
 
-  file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/version.tex" "\\newcommand{\\version}{\\texttt{${DREAM_VERSION}}\\xspace}\r")
-  file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/revision.tex" "\\rhead{\\date \\texttt{${DREAM_VERSION}} }\r")
+  file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/version.tex" "\\newcommand{\\version}{\\texttt{${DREAM_VERSION_SHA1}}\\xspace}\r")
+  file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/revision.tex" "\\rhead{\\date \\texttt{${DREAM_VERSION_SHA1}} }\r")
 
   include (userman/UseLATEX.cmake)
 

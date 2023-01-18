@@ -29,7 +29,7 @@ print("Observation point (x,y,z) = (%f, %f, %f)" % (xo,yo,zo))
 dx = 0.05;                # [mm].
 dy = 0.05;                # [mm]
 dt = Ts;                  # [us].
-nt = 300.0;                 # Length of spatial impulse response vector.
+nt = 300.0;               # Length of spatial impulse response vector.
 s_par = np.asmatrix([dx,dy,dt,nt]);
 
 t = np.linspace(0.0, Ts*float(nt-1), num=int(nt), endpoint=True)

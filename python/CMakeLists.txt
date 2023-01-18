@@ -35,6 +35,35 @@ if (pybind11_FOUND)
 endif (pybind11_FOUND)
 
 #
+# dreamline
+#
+
+set (py_dreamline_SOURCE_FILES
+  src/py_dreamline.cc
+  ../src/dreamline.cc
+  ../src/attenuation.cc
+  ../src/affinity.cc
+  ../src/arr_functions.cc
+  ../src/dream_error.cc
+)
+
+add_library(py_dreamline MODULE ${py_dreamline_SOURCE_FILES})
+target_link_libraries(py_dreamline pybind11::module
+  ${FFTW_LIBRARIES}
+)
+
+set_target_properties(py_dreamline PROPERTIES
+  CXX_STANDARD 14
+  COMPILE_FLAGS "${DREAM_PYTHON_FLAGS}"
+  INCLUDE_DIRECTORIES "${DREAM_PYTHON_INCLUDE_DIRS}"
+  INTERPROCEDURAL_OPTIMIZATION ON
+  #CXX_VISIBILITY_PRESET ON
+  #VISIBILITY_INLINES_HIDDEN ON
+  LINK_FLAGS ${PYTHON_LD_FLAGS}
+  PREFIX "" OUTPUT_NAME "dreamline"
+)
+
+#
 # dreamrect
 #
 

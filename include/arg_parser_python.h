@@ -113,19 +113,19 @@ public:
     return retval;
   };
 
-  /*
-  bool check_array_annu(const char *func_name, args_t args, dream_idx_type arg_num) {
+  bool check_array_annu(const char *func_name, py::array_t<double,py::array::f_style> *py_G) {
     bool retval=true;
     std::ostringstream s;
-    if ( (get_m(args, arg_num) != 1) && (get_n(args, arg_num) != 1) && (get_n(args, arg_num)*get_n(args, arg_num) % 2 == 0) ) {
-      s << func_name <<  " requires that arg " << arg_num+1 << "  must be a (number of radii) vector with an odd number of elements!";
+
+    if ( (get_m(py_G) != 1) && (get_n(py_G) != 1) &&
+         (get_n(py_G)*get_n(py_G) % 2 == 0) ) {
+      s << func_name <<  " requires that array grid arg must be a (number of radii) vector with an odd number of elements!";
       dream_err_msg(s.str().c_str());
       retval=false;
     }
 
     return retval;
   };
-  */
 
   /*
   bool check_geometry(const char *func_name, args_t args, dream_idx_type arg_num, dream_idx_type num_pars) {

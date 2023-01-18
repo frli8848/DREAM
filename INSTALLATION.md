@@ -99,7 +99,7 @@ Now, to build optimized Linux binaries do, for example,
 $ git clone https://github.com/frli8848/DREAM.git
 $ cd DREAM
 DREAM $ mkdir build && cd build
-DREAM/build $ cmake -DCMAKE_C_FLAGS="-O3 -march=native"  -DCMAKE_CXX_FLAGS="-O3 -march=native" -DBUILD_OCT=on -DBUILD_MEX=on ..
+DREAM/build $ cmake -DCMAKE_CXX_FLAGS="-O3 -march=native" -DBUILD_OCT=on -DBUILD_MEX=on ..
 DREAM/build $ make -j8
 ```
 which will build DREAM with both Matlab and Octave support.
@@ -131,7 +131,40 @@ in the Linux build section above.
 
 Nothing here yet.
 
+## Python (on Linux)
+
+First, one needs to install `pybind11`, `numpy` and `matplotlib` (to run the tests). On Gentoo Linux
+```
+$ sudo dev-python/pybind11
+$ sudo emerge dev-python/numpy
+$ dev-python/matplotlib
+```
+and on Ubuntu Linux
+```
+$ sudo apt install python3-pybind11
+% sudo apt install python3-numpy
+$ sudo apt install python3-matplotlib
+```
+Then (clone if needed) configure and build using (`mex` and `oct` builds are optional and can be switched off):
+```bash
+$ git clone https://github.com/frli8848/DREAM.git
+$ cd DREAM
+DREAM $ mkdir build && cd build
+DREAM/build $ cmake -DCMAKE_CXX_FLAGS="-O3 -march=native" -DBUILD_OCT=on -DBUILD_MEX=on -DBUILD_PYTHON=on ..
+DREAM/build $ make -j8
+```
+
+Finally, set the `PYTHONPATH` to your build folder (see the corresponding section below) and run the tests
+using, for  example:
+```
+$ cd DREAM/python/tests
+$ DREAM/python/tests $ python3 test_dreamrect.py
+```
+A window should appear with the SIR plots.
+
 # Post Installation Setup
+
+## MATLAB and Octave
 
 After building/installing the Matlab mex-files and/or Octave oct-files add the build folder, or biniary install folder, to
 the Matlab/Octave path. That is, for Octave
@@ -140,3 +173,12 @@ add
 addpath('/<YOUR-HOME-DIR>/<PATH-TO-DREAM-SOURCES>/DREAM/build')
 ```
 to the `~/.octaverc` file, and for Matlab add it to the `~/Documents/MATLAB/startup.m` file.
+
+## Python
+
+After building the Python bindings add the build/installation folder to your `PYTHONPATH`
+using, for example
+```
+$ export PYTHONPATH="$PYTHONPATH:$HOME/DREAM/build/python"
+```
+if you have your DREAM sources in `$HOME/DREAM`.

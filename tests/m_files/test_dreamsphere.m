@@ -55,9 +55,6 @@ alpha  = 5.0;                   % Absorbtion (dB/cm Hz).
 
 if (exist('DO_PLOTTING'))
 
-  figure(2);
-  clf;
-
   if size(Hd,2)>1
     figure(2)
     clf

@@ -177,7 +177,7 @@ Observation point(s) ([mm]):\n\
 'Ro'\n\
    An N x 3 matrix, Ro = np.asmatrix([xo1 yo1 zo2; xo2 yo2 zo2; ... xoN yoN zoN]) where N is the number of observation points.\n\
 \n\
-Geometrical parameters: geom_par = np.asmatrix([a,b]);\n\
+Geometrical parameters: geom_par = np.asmatrix([a]);\n\
 \n\
 'a'\n\
    Width of the strip (in x-direction) [mm].\n\
@@ -216,7 +216,7 @@ Error Handling: err_level;\n\
 \"warn\"\n\
    A warning message is printed but the program in not stopped.\n\
 \"stop\"\n\
-  An error message is printed and the program is stopped.\n\
+   An error message is printed and the program is stopped.\n\
 \n\
 dreamline is a part of the DREAM Toolbox available at\n\
 https://github.com/frli8848/DREAM.\n\

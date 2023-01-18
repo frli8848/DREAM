@@ -38,7 +38,7 @@ DEFUN_DLD (dreamsphere, args, nlhs,
 @deftypefn {Loadable Function} {} [H,err] = dreamsphere(Ro,geom_par,s_par,delay,m_par,err_level)\n\
 \n\
 DREAMSPHERE - Computes the spatial impulse response\n\
-for a concave (focused) or convex (defocused spherical transducer using parallel\n\
+for a concave (focused) or convex (defocused) spherical transducer using parallel\n\
 processing (using threads).\n\
 \n\
 Observation point(s) ([mm]):\n\

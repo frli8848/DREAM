@@ -97,9 +97,6 @@ alpha  = 5.0;                   % Absorbtion (dB/cm Hz).
 
 if (exist('DO_PLOTTING'))
 
-  figure(2);
-  clf;
-
   if (size(H,2)>1)
     mesh(xo,t,H);
     axis('tight');

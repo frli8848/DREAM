@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 #import sys
 #sys.path.insert(0, '../')
 
-import dreamcirc as dr
+import dreamcirc as dc
 
 #plt.rcParams['text.usetex'] = True
 
@@ -47,7 +47,7 @@ delay = np.asmatrix(0.0);
 R = 10.0;
 geom_par = np.asmatrix([R]);
 
-H = dr.dreamcirc(Ro,geom_par,s_par,delay,m_par,"stop")
+H = dc.dreamcirc(Ro,geom_par,s_par,delay,m_par,"stop")
 
 fig = plt.figure(1)
 plt.clf()
@@ -56,7 +56,7 @@ plt.plot(t, H, 'b-', label='Attenuation alpha = 0 [dB/cm MHz]', linewidth=2, mar
 
 alpha  = 5.0;                   # Absorbtion (dB/cm Hz).
 m_par = np.asmatrix([v,cp,alpha]);
-Hatt = dr.dreamcirc(Ro,geom_par,s_par,delay,m_par,"stop");
+Hatt = dc.dreamcirc(Ro,geom_par,s_par,delay,m_par,"stop");
 plt.plot(t, Hatt, 'r--',label='Attenuation alpha = 5 [dB/cm MHz]', linewidth=2, markersize=12)
 
 plt.xlabel('t [us]')

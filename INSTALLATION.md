@@ -154,7 +154,7 @@ DREAM/build $ cmake -DCMAKE_CXX_FLAGS="-O3 -march=native" -DBUILD_OCT=on -DBUILD
 DREAM/build $ make -j8
 ```
 
-Finally, set the `PYTHONPATH` to your build folder (see the corresponding section below) and run the tests
+Finally, set the `PYTHONPATH` to your `build/python` folder (see the corresponding section below) and run the tests
 using, for  example:
 ```
 $ cd DREAM/python/tests

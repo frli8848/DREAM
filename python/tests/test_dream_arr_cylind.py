@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 #import sys
 #sys.path.insert(0, '../')
 
-import dream_arr_cylind as dar
+import dream_arr_cylind as dacy
 
 #plt.rcParams['text.usetex'] = True
 
@@ -88,7 +88,9 @@ apod_met = "off";
 apod = np.ones((num_elements,1));     # Apodization weights for "ud".
 win_par = 1.0; # Parameter for raised cos and Gaussian apodization functions.
 
-H = dar.dream_arr_cylind(Ro,geom_par,G,s_par,delay,m_par,foc_met,focal,steer_met,steer_par,apod_met,apod,win_par,"stop")
+# Focused
+
+H = dacy.dream_arr_cylind(Ro,geom_par,G,s_par,delay,m_par,foc_met,focal,steer_met,steer_par,apod_met,apod,win_par,"stop")
 
 fig, axs = plt.subplots(2)
 
@@ -96,7 +98,7 @@ axs[0].plot(t, H, 'b-', label='Attenuation alpha = 0 [dB/cm MHz]', linewidth=2, 
 
 alpha  = 5.0;                   # Absorbtion (dB/cm Hz).
 m_par = np.asmatrix([v,cp,alpha]);
-Hatt = dar.dream_arr_cylind(Ro,geom_par,G,s_par,delay,m_par,foc_met,focal,steer_met,steer_par,apod_met,apod,win_par,"stop");
+Hatt = dacy.dream_arr_cylind(Ro,geom_par,G,s_par,delay,m_par,foc_met,focal,steer_met,steer_par,apod_met,apod,win_par,"stop");
 axs[0].plot(t, Hatt, 'r--',label='Attenuation alpha = 5 [dB/cm MHz]', linewidth=2, markersize=12)
 
 axs[0].set_title('Array with focused cylindrical transducer at Rcurv=10 [mm]')
@@ -105,21 +107,22 @@ axs[0].legend()
 axs[0].set_xlabel('t [us]')
 axs[0].set_ylabel('h_{SIR} [m/s]')
 
-
-H = dar.dream_arr_cylind(Ro,geom_par,G,s_par,delay,m_par,foc_met,focal,steer_met,steer_par,apod_met,apod,win_par,"stop")
+# Defocused
 
 Rcurv = -10.0;
 geom_par = np.asmatrix([a,b,Rcurv]);
 
+H = dacy.dream_arr_cylind(Ro,geom_par,G,s_par,delay,m_par,foc_met,focal,steer_met,steer_par,apod_met,apod,win_par,"stop")
+
 alpha  = 0.0;                   # Absorbtion (dB/cm Hz).
 m_par = np.asmatrix([v,cp,alpha]);
 
-H = dar.dream_arr_cylind(Ro,geom_par,G,s_par,delay,m_par,foc_met,focal,steer_met,steer_par,apod_met,apod,win_par,"stop")
+H = dacy.dream_arr_cylind(Ro,geom_par,G,s_par,delay,m_par,foc_met,focal,steer_met,steer_par,apod_met,apod,win_par,"stop")
 axs[1].plot(t, H, 'b-', label='Attenuation alpha = 0 [dB/cm MHz]', linewidth=2, markersize=12)
 
 alpha  = 5.0;                   # Absorbtion (dB/cm Hz).
 m_par = np.asmatrix([v,cp,alpha]);
-Hatt = dar.dream_arr_cylind(Ro,geom_par,G,s_par,delay,m_par,foc_met,focal,steer_met,steer_par,apod_met,apod,win_par,"stop");
+Hatt = dacy.dream_arr_cylind(Ro,geom_par,G,s_par,delay,m_par,foc_met,focal,steer_met,steer_par,apod_met,apod,win_par,"stop");
 axs[1].plot(t, Hatt, 'r--',label='Attenuation alpha = 5 [dB/cm MHz]', linewidth=2, markersize=12)
 
 axs[1].set_title('Array with defocused cylindrical transducer at Rcurv=-10 [mm]')

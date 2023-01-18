@@ -1,10 +1,12 @@
 # Introduction
 
 The DREAM (Discrete REpresentation Array Modeling) toolbox is a free open source toolbox,
-for both Matlab and Octave, for simulating acoustic fields radiated from common ultrasonic
-transducer types and arbitrarily complicated ultrasonic transducers arrays. The DREAM toolbox
-enables analysis of beam-steering, beam-focusing, and apodization for wideband (pulse) excitation
-both in near and far fields.
+for:
+* Matlab and Octave,
+* Python (experimental),
+for simulating acoustic fields radiated from common ultrasonic transducer types and arbitrarily
+complicated ultrasonic transducers arrays. The DREAM toolbox enables analysis of beam-steering,
+beam-focusing, and apodization for wideband (pulse) excitation both in near and far fields.
 
 The DREAM toolbox can be used to, for example, simulate and evaluate array designs, evaluate imaging
 methods etc. An example is shown in Figure 1 below where the wavefield of an (undersampled)

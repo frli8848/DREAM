@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 #import sys
 #sys.path.insert(0, '../')
 
-import dreamcirc_f as dr
+import dreamcirc_f as dcf
 
 #plt.rcParams['text.usetex'] = True
 
@@ -55,7 +55,7 @@ foc_met = "xy";
 #foc_met = "x+y";
 focal = np.asmatrix(10.0);
 
-H = dr.dreamcirc_f(Ro,geom_par,s_par,delay,m_par,foc_met,focal,"stop")
+H = dcf.dreamcirc_f(Ro,geom_par,s_par,delay,m_par,foc_met,focal,"stop")
 
 fig = plt.figure(1)
 plt.clf()
@@ -64,7 +64,7 @@ plt.plot(t, H, 'b-', label='Attenuation alpha = 0 [dB/cm MHz]', linewidth=2, mar
 
 alpha  = 5.0;                   # Absorbtion (dB/cm Hz).
 m_par = np.asmatrix([v,cp,alpha]);
-Hatt = dr.dreamcirc_f(Ro,geom_par,s_par,delay,m_par,foc_met,focal,"stop");
+Hatt = dcf.dreamcirc_f(Ro,geom_par,s_par,delay,m_par,foc_met,focal,"stop");
 plt.plot(t, Hatt, 'r--',label='Attenuation alpha = 5 [dB/cm MHz]', linewidth=2, markersize=12)
 
 plt.title('Focused circular transducer')

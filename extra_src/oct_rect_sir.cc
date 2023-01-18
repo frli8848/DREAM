@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2008,2009,2012,2015,2016,2021,2020 Fredrik Lingvall
+* Copyright (C) 2008,2009,2012,2015,2016,2021,2020,2023 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -21,140 +21,12 @@
 *
 ***/
 
-#include <thread>
-#include <mutex>
+#include <csignal>
 
 #include "rect_sir.h"
-#include "affinity.h"
-#include "dream_error.h"
-
-//
-// Octave headers.
-//
+#include "arg_parser.h"
 
 #include <octave/oct.h>
-
-//
-// Globals
-//
-
-//volatile ErrorLevel out_err=ErrorLevel::none;
-//std::mutex err_lock;
-int running;
-
-//
-// typedef:s
-//
-
-typedef struct
-{
-  octave_idx_type no;
-  octave_idx_type start;
-  octave_idx_type stop;
-  double *ro;
-  double a;
-  double b;
-  double dt;
-  octave_idx_type nt;
-  DelayType delay_type;
-  double *delay;
-  double v;
-  double cp;
-  //double alpha;
-  double *h;
-  //ErrorLevel err_level;
-} DATA;
-
-typedef void (*sighandler_t)(int);
-
-/***
- *
- * Thread function.
- *
- ***/
-
-void* smp_dream_rect_sir(void *arg)
-{
-  //ErrorLevel tmp_err=ErrorLevel::none, err=ErrorLevel::none;
-  DATA D = *(DATA *)arg;
-  double xo, yo, zo;
-  double *h = D.h;
-  double a=D.a, b=D.b, dt=D.dt;
-  octave_idx_type n, no=D.no, nt=D.nt;
-  //int    tmp_lev, err_level=D.err_level;
-  double *delay=D.delay, *ro=D.ro, v=D.v, cp=D.cp; // alfa=D.alfa;
-  octave_idx_type start=D.start, stop=D.stop;
-
-  // Let the thread finish and then catch the error.
-  /*
-  if (err_level == ErrorLevel::stop)
-    tmp_lev = ErrorLevel::parallel_stop;
-  else
-    tmp_lev = err_level;
-  */
-
-  if (D.delay_type == DelayType::single) {
-    for (n=start; n<stop; n++) {
-      xo = ro[n];
-      yo = ro[n+1*no];
-      zo = ro[n+2*no];
-
-      rect_sir(xo,yo,zo,a,b,dt,nt,delay[0],v,cp,&h[n*nt]); // TODO: Add attenuation.
-
-      if (!running) {
-        octave_stdout << "Thread for observation points " << start+1 << " -> " << stop << " bailing out!\n";
-        return(NULL);
-      }
-
-    }
-  } else { // DelayType::multiple.
-    for (n=start; n<stop; n++) {
-      xo = ro[n];
-      yo = ro[n+1*no];
-      zo = ro[n+2*no];
-
-      rect_sir(xo,yo,zo,a,b,dt,nt,delay[n],v,cp,&h[n*nt]); // TODO: Add attenuation.
-
-      if (!running) {
-        octave_stdout << "Thread for observation points " << start+1 << " -> " << stop << " bailing out!\n";
-        return(NULL);
-      }
-
-    }
-  }
-
-  // Lock out_err for update, update it, and unlock.
-  /*
-  err_lock.lock();
-
-  if ((tmp_err != ErrorLevel::none) && (out_err == ErrorLevel::none))
-    out_err = tmp_err;
-
-  err_lock.unlock();
-  */
-
-  return(NULL);
-}
-
-/***
- *
- * Signal handlers.
- *
- ***/
-
-void sighandler(int signum) {
-  //printf("Caught signal SIGTERM.\n");
-  running = false;
-}
-
-void sig_abrt_handler(int signum) {
-  //printf("Caught signal SIGABRT.\n");
-}
-
-void sig_keyint_handler(int signum) {
-  //printf("Caught signal SIGINT.\n");
-}
-
 
 /***
  *
@@ -223,102 +95,107 @@ Copyright @copyright{} 2008-2020 Fredrik Lingvall.\n\
 @seealso {dreamrect,circ_sir}\n\
 @end deftypefn")
 {
-  double *ro,*geom_par,*s_par,*m_par;
-  dream_idx_type nt, no;
-  double  a, b, dt;
-  double *delay,v,cp;
-  double *h;
-  DATA   *D;
-  octave_idx_type start, stop;
-  std::thread *threads;
-  unsigned int thread_n, nthreads;
-  sighandler_t  old_handler, old_handler_abrt, old_handler_keyint;
   std::string device;
   octave_value_list oct_retval;
 
   int nrhs = args.length ();
 
+  ArgParser ap;
+
   // Check for proper number of arguments
 
-  if (nrhs != 5 && nrhs != 6) {
-    dream_err_msg("rect_sir requires 5 or 6 input arguments!");
+  if (!ap.check_arg_in("rect_sir", nrhs, 5, 6)) {
+    return oct_retval;
   }
-  else
-    if (nlhs > 1) {
-      dream_err_msg("Too many output arguments for rect_sir!");
-    }
+
+  if (!ap.check_arg_out("rect_sir", nlhs, 0, 1)) {
+    return oct_retval;
+  }
 
   //
   // Observation point.
   //
 
-  // Check that arg (number of observation points) x 3 matrix
-  if (mxGetN(0) != 3) {
-    error("Argument 1 must be a (number of observation points) x 3 matrix!");
+  if (!ap.check_obs_points("rect_sir", args, 0)) {
     return oct_retval;
   }
 
-  no = mxGetM(0); // Number of observation points.
+  dream_idx_type no = mxGetM(0); // Number of observation points.
   const Matrix tmp0 = args(0).matrix_value();
-  ro = (double*) tmp0.fortran_vec();
+  double *ro = (double*) tmp0.fortran_vec();
 
   //
   // Transducer geometry
   //
 
-  // Check that arg 2 is a two element vector.
-  if (!((mxGetM(1)==2 && mxGetN(1)==1) || (mxGetM(1)==1 && mxGetN(1)==2))) {
-    error("Argument 2 must be a two element vector!");
+  double a=0.0, b=0.0, dummy=0.0;
+  if (!ap.parse_geometry("rect_sir", args, 1, 2, a, b, dummy)) {
     return oct_retval;
   }
-
-  const Matrix tmp1 = args(1).matrix_value();
-  geom_par = (double*) tmp1.fortran_vec();
-  a  = geom_par[0];		// x-dim of the transducer.
-  b  = geom_par[1];		// y-dim of the transducer.
 
   //
   // Temporal and spatial sampling parameters.
   //
 
   // Check that arg 3 is a 2 element vector
-  if (!((mxGetM(2)==2 && mxGetN(2)==1) || (mxGetM(2)==1 && mxGetN(2)==2))) {
+  if (!((mxGetM(2) == 2 && mxGetN(2) == 1) ||
+        (mxGetM(2) == 1 && mxGetN(2) == 2))) {
     error("Argument 3 must be a vector of length 2!");
     return oct_retval;
   }
 
   const Matrix tmp2 = args(2).matrix_value();
-  s_par = (double*) tmp2.fortran_vec();
-  dt    = s_par[0]; // Temporal discretization size (= 1/sampling freq).
-  nt    = (dream_idx_type) s_par[1];	// Length of SIR.
+  double *s_par = (double*) tmp2.fortran_vec();
+  double dt = s_par[0]; // Temporal discretization size (= 1/sampling freq).
+  dream_idx_type nt = (dream_idx_type) s_par[1];	// Length of SIR.
 
   //
   // Start point of impulse response vector ([us]).
   //
 
-  // Check that arg 4 is a scalar (or vector).
-  if ( (mxGetM(3) * mxGetN(3) !=1) && ((mxGetM(3) * mxGetN(3)) != no)) {
-    error("Argument 4 must be a scalar or a vector with a length equal to the number of observation points!");
+  if (!ap.check_delay("rect_sir", args, 3, no)) {
     return oct_retval;
   }
 
   const Matrix tmp3 = args(3).matrix_value();
-  delay = (double*) tmp3.fortran_vec();
+  double *delay = (double*) tmp3.fortran_vec();
+
+  DelayType delay_type = DelayType::single;  // delay is a scalar.
+  if (mxGetM(3) * mxGetN(3) != 1) {
+    delay_type = DelayType::multiple; // delay is a vector.
+  }
 
   //
   // Material parameters
   //
 
   // Check that arg 5 is a 2 element vector.
-  if (!((mxGetM(4)==2 && mxGetN(4)==1) || (mxGetM(4)==1 && mxGetN(4)==2))) {
+  if (!((mxGetM(4) == 2 && mxGetN(4) == 1) ||
+        (mxGetM(4) == 1 && mxGetN(4) == 2))) {
     error("Argument 5 must be a vector of length 2!");
     return oct_retval;
   }
 
   const Matrix tmp4 = args(4).matrix_value();
-  m_par = (double*) tmp4.fortran_vec();
-  v     = m_par[0]; // Normal velocity of transducer surface.
-  cp    = m_par[1]; // Sound speed.
+  double *m_par = (double*) tmp4.fortran_vec();
+  double v  = m_par[0];      // Normal velocity of transducer surface.
+  double cp = m_par[1];      // Sound speed.
+
+  /*
+  //
+  // Error reporting.
+  //
+
+  ErrorLevel err=ErrorLevel::none, err_level=ErrorLevel::stop;
+
+  if (nrhs >= 6) {
+    if (!ap.parse_error_arg("dreamrect", args, 5, err_level)) {
+      return oct_retval;
+    }
+  } else {
+    err_level = ErrorLevel::stop; // Default.
+  }
+  */
 
   //
   // Compute device
@@ -332,7 +209,6 @@ Copyright @copyright{} 2008-2020 Fredrik Lingvall.\n\
     }
 
     device = args(5).string_value();
-    octave_stdout << "Compute device: " <<   device  << "\n";
   }
 
   //
@@ -340,130 +216,64 @@ Copyright @copyright{} 2008-2020 Fredrik Lingvall.\n\
   //
 
   Matrix h_mat(nt, no);
-  h = h_mat.fortran_vec();
+  double *h = h_mat.fortran_vec();
 
-  //
-  // Register signal handlers.
-  //
+  SIRData hsir(h, nt, no);
+  hsir.clear();
 
-  if ((old_handler = signal(SIGTERM, &sighandler)) == SIG_ERR) {
-    printf("Couldn't register SIGTERM signal handler.\n");
-  }
+  RectSir rect_sir;
 
-  if (( old_handler_abrt=signal(SIGABRT, &sighandler)) == SIG_ERR) {
-    printf("Couldn't register SIGABRT signal handler.\n");
-  }
-
-  if (( old_handler_keyint=signal(SIGINT, &sighandler)) == SIG_ERR) {
-    printf("Couldn't register SIGINT signal handler.\n");
-  }
+  // Register signal handler.
+  std::signal(SIGABRT, RectSir::abort);
 
   //
   // Call the rect_sir subroutine.
   //
 
-  running = true;
-
   // Check if we should use the GPU
 
 #ifdef USE_OPENCL
   if (device == "gpu") {
-    cl_rect_sir(ro, no, a, b, dt, nt,  delay[0], v, cp, h);
+    cl_rect_sir(ro, no, a, b, dt, nt, delay[0], v, cp, h);
 
   } else { // Otherwise use the cpu
 #endif
 
-    //
-    // Number of threads.
-    //
+    ErrorLevel err = rect_sir.rect_sir(ro, no,
+                                       a, b,
+                                       dt, nt,
+                                       delay_type, delay,
+                                       v, cp,
+                                       h);
 
-    // Get number of CPU cores (including hypethreading, C++11)
-    nthreads = std::thread::hardware_concurrency();
-
-    // Read DREAM_NUM_THREADS env var
-    if(const char* env_p = std::getenv("DREAM_NUM_THREADS")) {
-      unsigned int dream_threads = std::stoul(env_p);
-      if (dream_threads < nthreads) {
-        nthreads = dream_threads;
-      }
+    if (!rect_sir.is_running()) {
+      dream_err_msg("CTRL-C pressed!\n"); // Bail out.
     }
 
-    // nthreads can't be larger then the number of observation points.
-    if (nthreads > (unsigned int) no) {
-      nthreads = no;
+    //
+    // Check for Error. FIXME: Do we need to here?
+    //
+
+    // NB. The GPU and analytical SIR code do not return any error codes.
+    if (err == ErrorLevel::stop) {
+      error("Error in rect_sir"); // Bail out if error.
+      return oct_retval;
     }
-
-
-   // Allocate local data.
-  D = (DATA*) malloc(nthreads*sizeof(DATA));
-
-  // Allocate mem for the threads.
-  threads = new std::thread[nthreads]; // Init thread data.
-
-  for (thread_n = 0; thread_n < nthreads; thread_n++) {
-
-    start = thread_n * no/nthreads;
-    stop =  (thread_n+1) * no/nthreads;
-
-    // Init local data.
-    D[thread_n].start = start; // Local start index;
-    D[thread_n].stop = stop; // Local stop index;
-    D[thread_n].no = no;
-    D[thread_n].ro = ro;
-    D[thread_n].a = a;
-    D[thread_n].b = b;
-    D[thread_n].dt = dt;
-    D[thread_n].nt = nt;
-
-    if (mxGetM(3) * mxGetN(3) == 1)
-      D[thread_n].delay_type = DelayType::single; // delay is a scalar.
-    else
-      D[thread_n].delay_type = DelayType::multiple; // delay is a vector.
-
-    D[thread_n].delay = delay;
-    D[thread_n].v = v;
-    D[thread_n].cp = cp;
-    //D[thread_n].alpha = alpha;
-    D[thread_n].h = h;
-    //D[thread_n].err_level = err_level;
-
-    // Starts the threads.
-    threads[thread_n] = std::thread(smp_dream_rect_sir, &D[thread_n]); // Start the threads.
-    set_dream_thread_affinity(thread_n, nthreads, threads);
-  }
-
-  // Wait for all threads to finish.
-  for (thread_n = 0; thread_n < nthreads; thread_n++)
-    threads[thread_n].join();
-
-  // Free memory.
-  free((void*) D);
 
 #ifdef USE_OPENCL
   }
 #endif
 
-  //
-  // Restore old signal handlers.
-  //
-
-  if (signal(SIGTERM, old_handler) == SIG_ERR) {
-    printf("Couldn't register old SIGTERM signal handler.\n");
-  }
-
-  if (signal(SIGABRT,  old_handler_abrt) == SIG_ERR) {
-    printf("Couldn't register old SIGABRT signal handler.\n");
-  }
-
-  if (signal(SIGINT, old_handler_keyint) == SIG_ERR) {
-    printf("Couldn't register old SIGINT signal handler.\n");
-  }
-
-  if (!running) {
-    dream_err_msg("CTRL-C pressed!\n"); // Bail out.
-  }
-
   oct_retval.append(h_mat);
+
+  /*
+  if (nlhs == 2) {
+    Matrix err_mat(1, 1);
+    double *err_p = (double*) err_mat.data();
+    err_p[0] = (double) err;
+    oct_retval.append(err_mat);
+  }
+  */
 
   return oct_retval;
 }

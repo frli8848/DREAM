@@ -1,6 +1,6 @@
 __kernel void dreamcirc(__global const double *Ro,
                         int No,
-                        double r,
+                        double R,
                         double dx,
                         double dy,
                         double dt,
@@ -10,68 +10,54 @@ __kernel void dreamcirc(__global const double *Ro,
                         double cp,
                         __global double *H)
 {
-  int i, it;
-  double t;
-  double ai;
-  double ri, x, y;
-  double rx,ry,rz;
-
   int no = get_global_id(0);
   double xo = Ro[no];
   double yo = Ro[no + No*1];
   double zo = Ro[no + No*2];
 
-  //double pi = 4.0 * atan(1.0);
-  double ds = dx * dy;
-
-  rs = sqrt(r*r - (ys-y)*(ys-y));
-  xsmin = -rs + xs;
-  xsmax = rs + xs;
-
-  ry = yo - y;
-
-  x = xsmin + dx / 2.0;
-
   __global double *h = &H[0+nt*no];
-  for (i = 0; i < nt; i++) {
+  for (int i = 0; i < nt; i++) {
     h[i] = 0.0;
   }
 
-  y = ysmin + dy/2;
-  while (y <= ysmax) {
+  double ds = dx * dy;
 
-    //xlimit_circ(y, r, xs, ys, &xsmin, &xsmax);
-    rs = sqrt(r*r - (ys-y)*(ys-y));
-    xsmin = -rs + xs;
-    xsmax = rs + xs;
+  // y-dim integration bounds
+  double ysmin = -R;
+  double ysmax =  R;
 
-    ry = yo - y;
+  double ys = ysmin + dy/2.0;
+  while (ys <= ysmax) {
 
-    x = xsmin + dx / 2.0;
-    while (x <= xsmax) {
+    double rxs = sqrt(R*R - ys*ys);
+    double xsmin = -rxs;
+    double xsmax = rxs;
 
-      //distance(xo, yo, zo, x, y, &ri);
-      rx = xo - x;
-      //ry = yo - y; // Moved outside this loop.
-      //rz = zo;
-      ri = sqrt(rx*rx + ry*ry + zo*zo);
+    double ry = yo - ys;
 
-      ai = v * ds / (2*M_PI * ri);
+    double xs = xsmin + dx/2.0;
+    while (xs <= xsmax) {
+
+      // Compute the distance (length) from an observation point (xo,yo,zo)
+      // to a point (xs,ys) on the transducer surface.
+      double rx = xo - xs;
+      double r = sqrt(rx*rx + ry*ry + zo*zo);
+
+      double ai = v * ds / (2*M_PI * r);
       ai /= dt;
-      ai *= 1000; // Convert to SI units.
+      ai *= 1000.0; // Convert to SI units.
 
       // Propagation delay in micro seconds.
-      t = ri * 1000.0/cp;
-      it = (int) rint((t - delay)/dt);
+      double t = r * 1000.0/cp;
+      int it = (int) rint((t - delay)/dt);
 
       // Check if index is out of bounds.
       if ((it < nt) && (it >= 0)) {
         h[it] += ai; // TODO here we hit global memory - try to avoid this in the inner loop.
       }
 
-      x += dx;
+      xs += dx;
     }
-
-    y += dy;
+    ys += dy;
   }
 }

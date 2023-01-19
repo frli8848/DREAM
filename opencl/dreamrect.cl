@@ -11,57 +11,50 @@ __kernel void dreamrect(__global const double *Ro,
                         double cp,
                         __global double *H)
 {
-  int i, it;
-  double t;
-  double ai;
-  double ri, x, y;
-  double rx,ry,rz;
-
-  double xsmin = -a/2.0;
-  double xsmax =  a/2.0;
-  double ysmin = -b/2.0;
-  double ysmax =  b/2.0;
-
-  double pi = 4.0 * atan(1.0);
-  double ds = dx * dy;
-
   int no = get_global_id(0);
   double xo = Ro[no];
   double yo = Ro[no + No*1];
   double zo = Ro[no + No*2];
 
   __global double *h = &H[0+nt*no];
-  for (i = 0; i < nt; i++) {
+  for (int i = 0; i < nt; i++) {
     h[i] = 0.0;
   }
 
-  rz = zo;
-  y = ysmin + dy / 2.0;
+  double xsmin = -a/2.0;
+  double xsmax =  a/2.0;
+  double ysmin = -b/2.0;
+  double ysmax =  b/2.0;
 
-  while (y <= ysmax) {
-    ry = yo - y;
-    x = xsmin + dx / 2.0;
+  double ds = dx * dy;
 
-    while (x <= xsmax) {
+  double rz = zo;
+  double ys = ysmin + dy / 2.0;
 
-      rx = xo - x;
-      ri = sqrt(rx*rx + ry*ry + rz*rz);
+  while (ys <= ysmax) {
 
-      ai = v * ds / (2*pi * ri);
+    double ry = yo - ys;
+    double xs = xsmin + dx / 2.0;
+
+    while (xs <= xsmax) {
+
+      double rx = xo - xs;
+      double r = sqrt(rx*rx + ry*ry + rz*rz);
+
+      double ai = v * ds / (2.0*M_PI * r);
       ai /= dt;
       ai *= 1000.0;		// Convert to SI units.
 
-      t = ri * 1000.0/cp;	// Propagation delay in micro seconds.
-      it = (int) rint((t - delay)/dt); // Sample index.
+      double t = r * 1000.0/cp;	// Propagation delay in micro seconds.
+      int it = (int) rint((t - delay)/dt); // Sample index.
 
       // Check if index is out of bounds.
       if ( (it < nt) && (it >= 0) ) {
         h[it] += ai; // TODO here we hit global memory - try to avoid this in the inner loop.
       }
 
-      x += dx;
+      xs += dx;
     }
-    y += dy;
+    ys += dy;
   }
-
 }

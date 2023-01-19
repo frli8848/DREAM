@@ -398,7 +398,7 @@ void RectSir::rect_sir_serial(double xo_i,
 
     for (it=0; it<nt; it++) {
 
-      t = (((double) it) * dt + delay)/1e6; // in [s].
+      t = (((double) it) * dt + delay)/1.0e6; // in [s].
 
       a_k = 0;
       if ( (t >= tau_1) && (t <= tau_4) )

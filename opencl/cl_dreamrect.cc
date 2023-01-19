@@ -54,22 +54,25 @@ int Rect::cl_dreamrect(const double *Ro,
 {
   std::string kernel_str;
 
-#if 1
+  //
   // Load the kernel from a file into a string.
+  //
 
-  std::ifstream f_kernel("/home/fl/projects/DREAM/opencl/dreamrect.cl");
+  std::string dream_cl_kernel = "";
+  if(const char* env_p = std::getenv("DREAM_CL_KERNELS")) {
+    dream_cl_kernel += env_p;
+  } else {
+    throw std::runtime_error("Error in dreamrect - DREAM_CL_KERNELS env variable not set!");
+  }
 
+  std::string dreamrect_kernel = dream_cl_kernel;
+  dreamrect_kernel += "/dreamrect.cl";
+  std::ifstream f_kernel(dreamrect_kernel);
   f_kernel.seekg(0, std::ios::end);
   kernel_str.reserve(f_kernel.tellg());
   f_kernel.seekg(0, std::ios::beg);
-
   kernel_str.assign((std::istreambuf_iterator<char>(f_kernel)),
              std::istreambuf_iterator<char>());
-
-#else
-  // Load the kernel from an inline string.
-  kernel_str.append(das_beamfomer_update_cl_kernel);
-#endif
 
   //std::cout << "CL Kernel: " <<  kernel_str.c_str() << std::endl;
 
@@ -203,7 +206,7 @@ int Rect::cl_dreamrect(const double *Ro,
   //
 
   size_t global_item_size = No; // Process the entire number of observation points
-  size_t local_item_size = 64; // NB No must be dividable by the local item  size (work group size).
+  size_t local_item_size = 64; // NB No must be dividable by the local item size (work group size).
   ret = clEnqueueNDRangeKernel(command_queue, kernel, 1, NULL, &global_item_size, &local_item_size, 0, NULL, NULL);
   if (ret < 0) std::cout << "cl enqueue ret: " << ret << std::endl;
 

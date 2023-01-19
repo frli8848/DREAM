@@ -9,18 +9,22 @@ __kernel void rect_sir(__global const double *Ro,
                        double cp,
                        __global double *H)
 {
+  int no = get_global_id(0);
+  double xo = Ro[no];
+  double yo = Ro[no + No*1];
+  double zo = Ro[no + No*2];
+
+  __global double *h = &H[0+nt*no];
+  for (int it = 0; it < nt; it++) {
+    h[it] = (double) 0.0;
+  }
+
   int    it, k;
   double t, t_z;
   double pi;
   double tau_1, tau_2, tau_3, tau_4, a, b;
   double a_k=0, g_k=0, s_k=0, l_k=0;
 
-  int no = get_global_id(0);
-  double xo = Ro[no];
-  double yo = Ro[no + No*1];
-  double zo = Ro[no + No*2];
-
-  //pi = atan( (double) 1.0) * 4.0;
   double cp_2pi = cp/(2.0*M_PI);
 
   // Convert to [m].
@@ -30,14 +34,9 @@ __kernel void rect_sir(__global const double *Ro,
   a = a_i / 1000.0;
   b = b_i / 1000.0;
 
-  __global double *h = &H[0+nt*no];
-  for (it = 0; it < nt; it++) {
-    h[it] = (double) 0.0;
-  }
-
   for  (k=1; k<=4; k++) { // loop over all 4 sub-rectangles.
 
-    if ( (xo <= a/2) && (yo <= b/2) ) {// In shadow.
+    if ( (xo <= a/2) && (yo <= b/2) ) {// Inside the aperture
 
       g_k = 1; // Add all.
       switch (k) {

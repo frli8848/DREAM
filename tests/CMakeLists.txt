@@ -67,6 +67,10 @@ if (BUILD_OCT)
   add_test(test_octave_dreamcylind_run octave --path "${PROJECT_SOURCE_DIR}/tests/m_files/" --eval test_dreamcylind)
   add_test(test_octave_dream_arr_annu_run octave --path "${PROJECT_SOURCE_DIR}/tests/m_files/" --eval test_dream_arr_annu)
 
+  if (USE_OPENCL)
+    add_test(test_octave_opencl_run octave --path "${PROJECT_SOURCE_DIR}/tests/m_files/" --eval test_opencl)
+  endif (USE_OPENCL)
+
 endif (BUILD_OCT)
 
 #

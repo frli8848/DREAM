@@ -42,7 +42,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
   // Check for proper number of arguments
 
-  ap.check_arg_in("dreamrect", nrhs, 5, 6);
+  ap.check_arg_in("dreamrect", nrhs, 5, 7); // NB. 7:th arg is for 'gpu' (OpenCL) which is not implemented here yet.
   ap.check_arg_out("dreamrect", nlhs, 0, 2);
 
   //

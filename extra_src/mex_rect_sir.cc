@@ -39,7 +39,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   ArgParser ap;
 
   // Check for proper number of arguments
-  ap.check_arg_in("rect_sir", nrhs, 5, 6);
+  ap.check_arg_in("rect_sir", nrhs, 5, 6); // NB. 6:th arg is for 'gpu' (OpenCL) which is not implemented here yet.
   ap.check_arg_out("rect_sir", nlhs, 0, 1);
 
   //

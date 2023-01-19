@@ -73,6 +73,7 @@ if (OCTAVE_FOUND)
 
   if (OpenCL_FOUND)
     set (oct_dreamrect_SOURCE_FILES ${oct_dreamrect_SOURCE_FILES} "opencl/cl_dreamrect.cc")
+    file (COPY opencl/dreamrect.cl DESTINATION kernels)
   endif (OpenCL_FOUND)
 
   add_library (oct_dreamrect MODULE
@@ -134,6 +135,7 @@ if (OCTAVE_FOUND)
 
   if (OpenCL_FOUND)
     set (oct_dreamcirc_SOURCE_FILES ${oct_dreamcirc_SOURCE_FILES} "opencl/cl_dreamcirc.cc")
+    file (COPY opencl/dreamcirc.cl DESTINATION kernels)
   endif (OpenCL_FOUND)
 
   add_library (oct_dreamcirc MODULE
@@ -479,6 +481,7 @@ if (OCTAVE_FOUND)
 
   if (OpenCL_FOUND)
     set (oct_rect_sir_SOURCE_FILES ${oct_rect_sir_SOURCE_FILES} "opencl/cl_rect_sir.cc")
+    file (COPY opencl/rect_sir.cl DESTINATION kernels)
   endif (OpenCL_FOUND)
 
   add_library (oct_rect_sir MODULE

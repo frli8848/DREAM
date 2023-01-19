@@ -51,22 +51,21 @@ int RectSir::cl_rect_sir(const double *Ro,
 {
   std::string kernel_str;
 
-#if 1
-  // Load the kernel from a file into a string.
+    std::string dream_cl_kernel = "";
+  if(const char* env_p = std::getenv("DREAM_CL_KERNELS")) {
+    dream_cl_kernel += env_p;
+  } else {
+    throw std::runtime_error("Error in rect_sir - DREAM_CL_KERNELS env variable not set!");
+  }
 
-  std::ifstream f_kernel("/home/fl/projects/DREAM/opencl/rect_sir.cl");
-
+  std::string rect_sir_kernel = dream_cl_kernel;
+  rect_sir_kernel += "/rect_sir.cl";
+  std::ifstream f_kernel(rect_sir_kernel);
   f_kernel.seekg(0, std::ios::end);
   kernel_str.reserve(f_kernel.tellg());
   f_kernel.seekg(0, std::ios::beg);
-
   kernel_str.assign((std::istreambuf_iterator<char>(f_kernel)),
              std::istreambuf_iterator<char>());
-
-#else
-  // Load the kernel from an inline string.
-  kernel_str.append(das_beamfomer_update_cl_kernel);
-#endif
 
   //std::cout << "CL Kernel: " <<  kernel_str.c_str() << std::endl;
 

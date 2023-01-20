@@ -48,11 +48,11 @@ The DREAM Toolbox can be used using:
 | dreamcirc_f  | Focused circular transducer  | Yes  | Yes  |  Yes |   |
 | dreamsphere  | Spherical concave/convex transducer (defocused/defocused)  | Yes  | Yes  | Yes  |   |
 | dreamcylind  | Cylindrical concave/convex transducer (focused/defocused)  | Yes  | Yes  | Yes  |   |
-|:--|:--|:--|:--|:--|:--|
 | dream_arr_rect  | Array with rectangular elements  | Yes  | Yes  | Yes  |   |
 | dream_arr_circ  | Array with circular elements  | Yes  | Yes  | Yes |   |
 | dream_arr_cylind  | Array with cylindrical concave/convex elements (focused/defocused) |  Yes | Yes | Yes  |   |
 | dream_arr_annu  | Annular array  | Yes  | Yes  | Yes  |   |
+
 _Table 1. DR-based transducer functions.
 
 | Function  | Description  | MATLAB  | Octave  | Python  | Comment |
@@ -60,6 +60,7 @@ _Table 1. DR-based transducer functions.
 | rect_sir | time-continous (analytic) rectangual ransducer | Yes  | Yes  | Yes  |  |
 | circ_sir | time-continous (analytic) circular ransducer | Yes  | Yes  | N/A |  |
 | scirc_sir | sampled time-continous (analytic) circular ransducer | Yes  | Yes  | N/A  |   |
+
 _Table 2. Analytic transducer functions.
 
 | Function  | Description  | MATLAB  | Octave  | Python  | Comment |
@@ -69,6 +70,7 @@ _Table 2. Analytic transducer functions.
 | fftconv_ola | threaded one dimensional FFT based convolutions using overlap-and-add| Yes  | Yes  | N/A |  |
 | sum_fftconv | threaded sum of one dimensional FFT based convolutions | Yes  | Yes  | N/A |  |
 | das | threaded delay-and-sum beamforming | Yes  | Yes  | N/A |  |
+
 _Table 3. Threaded (parallel) signal processing algorithms.
 
 # References

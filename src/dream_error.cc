@@ -23,9 +23,9 @@
 
 #include "dream_error.h"
 
-#if defined(DREAM_OCTAVE) || defined(DREAM_PYTHON)
+//#if defined(DREAM_OCTAVE) || defined(DREAM_PYTHON)
 #include <iostream>
-#endif
+//#endif
 
 #ifdef DREAM_MATLAB
 #include "mex.h"
@@ -48,8 +48,11 @@ ErrorLevel dream_out_of_bounds_err(const char *msg, int idx, ErrorLevel err_leve
       std::cout << msg << " (offset = " << idx << " samples)" << std::endl;
 #endif
 
+      // NB. mexPrintf is not thread safe!
+
 #ifdef DREAM_MATLAB
-      mexPrintf("%s (offset = %d samples)\n",msg,idx);
+      // mexPrintf("%s (offset = %d samples)\n",msg,idx);
+      std::cout << msg << " (offset = " << idx << " samples)" << std::endl;
       mexErrMsgTxt(""); // Bail out!
 #endif
     }
@@ -62,7 +65,8 @@ ErrorLevel dream_out_of_bounds_err(const char *msg, int idx, ErrorLevel err_leve
 #endif
 
 #ifdef DREAM_MATLAB
-      mexPrintf("%s (offset = %d samples)\n",msg,idx);
+      //mexPrintf("%s (offset = %d samples)\n",msg,idx);
+      std::cout << msg << " (offset = " << idx << " samples)" << std::endl;
 #endif
     }
     break;
@@ -77,7 +81,8 @@ ErrorLevel dream_out_of_bounds_err(const char *msg, int idx, ErrorLevel err_leve
 #endif
 
 #ifdef DREAM_MATLAB
-      mexPrintf("%s (offset = %d samples)\n",msg,idx);
+      //mexPrintf("%s (offset = %d samples)\n",msg,idx);
+      std::cout << msg << " (offset = " << idx << " samples)" << std::endl;
 #endif
     }
     break;

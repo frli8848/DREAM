@@ -47,17 +47,19 @@ fprintf('lambda = %1.2f [mm]\n',lambda);
 f_e = abs(freqz(h_e,1,1024));
 h_e = h_e/max(f_e); % Unity gain at center freq.
 
-figure(1);
-clf;
-subplot(211)
-plot(t,h_e);
-xlabel('t [{\mu}s]')
-title('System impulse response')
+if (exist('DO_PLOTTING'))
+  figure(1);
+  clf;
+  subplot(211)
+  plot(t,h_e);
+  xlabel('t [{\mu}s]')
+  title('System impulse response')
 
-subplot(212)
-f = (0:1023)/1024/Ts/2;
-plot(f,20*log10(f_e/max(f_e)));
-xlabel('f [MHz]')
+  subplot(212)
+  f = (0:1023)/1024/Ts/2;
+  plot(f,20*log10(f_e/max(f_e)));
+  xlabel('f [MHz]')
+end
 
 % Geometrical parameters.
 a = 0.8;                        % x-size.
@@ -81,10 +83,12 @@ delay = system_delay;
 Hdp = fftconv_p(H,H); % Double-path SIRs
 Ysaft = fftconv_p(Hdp,h_e);
 
-figure(2);
-clf;
-imagesc(Ysaft)
-title('SAFT B-scan')
+if (exist('DO_PLOTTING'))
+  figure(2);
+  clf;
+  imagesc(Ysaft)
+  title('SAFT B-scan')
+end
 
 num_elements = size(xo,2);
 Gt = [xo(:) zeros(num_elements,1) zeros(num_elements,1)];
@@ -99,9 +103,11 @@ Ro_saft = [X(:) Y(:) Z(:)];
 
 Im_saft = das(Ysaft, Gt, Gr, Ro_saft, dt, delay, cp);
 
-figure(3);
-clf;
-imagesc(x,z,reshape(Im_saft,length(z),length(x)))
-title('SAFT Reconstruction')
-xlabel('x [mm]')
-ylabel('z [mm]')
+if (exist('DO_PLOTTING'))
+  figure(3);
+  clf;
+  imagesc(x,z,reshape(Im_saft,length(z),length(x)))
+  title('SAFT Reconstruction')
+  xlabel('x [mm]')
+  ylabel('z [mm]')
+end

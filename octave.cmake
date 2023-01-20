@@ -509,6 +509,7 @@ if (OCTAVE_FOUND)
   set (oct_das_SOURCE_FILES
     extra_src/oct_das.cc
     extra_src/das.cc
+    src/affinity.cc
     src/dream_error.cc
     )
 

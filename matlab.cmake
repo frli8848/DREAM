@@ -523,6 +523,7 @@ if (Matlab_FOUND)
   set (mex_das_SOURCE_FILES
     extra_src/mex_das.cc
     extra_src/das.cc
+    src/affinity.cc
     src/dream_error.cc
     )
 

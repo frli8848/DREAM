@@ -18,7 +18,7 @@ _Figure 1. Simulated wavefield snapshot for a 32 element linear array._
 The toolbox consists of a set of routines for computing (discrete) spatial impulse responses (SIRs)
 for various single-element transducer geometries as well as multi-element transducer arrays. Based on
 linear systems theory, these SIR functions can then be convolved with the transducer's electrical impulse
-response to obtain the acoustic field at an observation point. Using the DREAM toolbox one can simulate
+response to obtain the acoustic field at an observation point. By using the DREAM toolbox one can simulate
 ultrasonic measurement systems for many configurations including phased arrays and measurements performed
 in lossy media.
 
@@ -42,36 +42,42 @@ The DREAM Toolbox can be used using:
 | Function  | Description  | MATLAB  | Octave  | Python  | Comment |
 |:--|:--|:--|:--|:--|:--|
 | dreamline | Strip/line transducer  | Yes  | Yes  | Yes  |   |
-| dreamrect  | Rectangular transducer  | Yes  |  Yes | Yes  |   |
-| dreamrect_f  | Focused rectangular transducer  | Yes  | Yes  | Yes  |   |
-| dreamcirc  | Circular transducer  | Yes  |Yes   | Yes  |   |
-| dreamcirc_f  | Focused circular transducer  | Yes  | Yes  |  Yes |   |
-| dreamsphere  | Spherical concave/convex transducer (defocused/defocused)  | Yes  | Yes  | Yes  |   |
-| dreamcylind  | Cylindrical concave/convex transducer (focused/defocused)  | Yes  | Yes  | Yes  |   |
-| dream_arr_rect  | Array with rectangular elements  | Yes  | Yes  | Yes  |   |
-| dream_arr_circ  | Array with circular elements  | Yes  | Yes  | Yes |   |
-| dream_arr_cylind  | Array with cylindrical concave/convex elements (focused/defocused) |  Yes | Yes | Yes  |   |
-| dream_arr_annu  | Annular array  | Yes  | Yes  | Yes  |   |
+| dreamrect | Rectangular transducer  | Yes  |  Yes | Yes  |   |
+| dreamrect_f | Focused rectangular transducer  | Yes  | Yes  | Yes  |   |
+| dreamcirc | Circular transducer  | Yes  |Yes   | Yes  |   |
+| dreamcirc_f | Focused circular transducer  | Yes  | Yes  |  Yes |   |
+| dreamsphere | Spherical concave/convex transducer (defocused/defocused)  | Yes  | Yes  | Yes  |   |
+| dreamcylind | Cylindrical concave/convex transducer (focused/defocused)  | Yes  | Yes  | Yes  |   |
+| dream_arr_rect | Array with rectangular elements  | Yes  | Yes  | Yes  |   |
+| dream_arr_circ | Array with circular elements  | Yes  | Yes  | Yes |   |
+| dream_arr_cylind | Array with cylindrical concave/convex elements (focused/defocused) |  Yes | Yes | Yes  |   |
+| dream_arr_annu | Annular array  | Yes  | Yes  | Yes  |   |
 
-_Table 1. DR-based transducer functions.
+_Table 1. DR-based transducer functions._
 
 | Function  | Description  | MATLAB  | Octave  | Python  | Comment |
 |:--|:--|:--|:--|:--|:--|
-| rect_sir | time-continous (analytic) rectangual ransducer | Yes  | Yes  | Yes  |  |
+| rect_sir | time-continous (analytic) rectangual ransducer | Yes  | Yes  | N/A  |  |
 | circ_sir | time-continous (analytic) circular ransducer | Yes  | Yes  | N/A |  |
-| scirc_sir | sampled time-continous (analytic) circular ransducer | Yes  | Yes  | N/A  |   |
+| scirc_sir | sampled time-continous (analytic) circular transducer | Yes  | Yes  | N/A  |   |
 
-_Table 2. Analytic transducer functions.
+_Table 2. Analytic transducer functions._
 
 | Function  | Description  | MATLAB  | Octave  | Python  | Comment |
 |:--|:--|:--|:--|:--|:--|
 | conv_p | threaded one dimensional convolution | Yes  | Yes  | N/A |  |
-| fftconv_p | threaded one dimensional FFT based convolutions | Yes  | Yes  | N/A |  |
-| fftconv_ola | threaded one dimensional FFT based convolutions using overlap-and-add| Yes  | Yes  | N/A |  |
-| sum_fftconv | threaded sum of one dimensional FFT based convolutions | Yes  | Yes  | N/A |  |
-| das | threaded delay-and-sum beamforming | Yes  | Yes  | N/A |  |
+| fftconv_p | threaded one dimensional FFT based convolutions | Yes (*)  | Yes  | N/A |  |
+| fftconv_ola | threaded one dimensional FFT based convolutions using overlap-and-add | Yes (*)  | Yes  | N/A |  |
+| sum_fftconv | threaded sum of one dimensional FFT based convolutions | Yes (*)  | Yes  | N/A |  |
+| das | threaded delay-and-sum (DAS) beamforming (SAFT and TFM) | Yes  | Yes  | N/A |  |
 
-_Table 3. Threaded (parallel) signal processing algorithms.
+_Table 3. Threaded (parallel) signal processing algorithms._
+
+(*) To avoid (work-around) a conflict with the FFTW lib used by DREAM and the one bundeled with MATLAB one can
+(on Linux systems) pre-load the one used by DREAM using, for example
+```bash
+ $ export LD_PRELOAD=/usr/lib64/libfftw3.so
+```
 
 # References
 

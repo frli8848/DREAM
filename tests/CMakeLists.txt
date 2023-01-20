@@ -67,6 +67,8 @@ if (BUILD_OCT)
   add_test(test_octave_dreamcylind_run octave --path "${PROJECT_SOURCE_DIR}/tests/m_files/" --eval test_dreamcylind)
   add_test(test_octave_dream_arr_annu_run octave --path "${PROJECT_SOURCE_DIR}/tests/m_files/" --eval test_dream_arr_annu)
 
+  add_test(test_octave_conv_run octave --path "${PROJECT_SOURCE_DIR}/tests/m_files/" --eval test_conv)
+
   add_test(test_octave_das_saft_run octave --path "${PROJECT_SOURCE_DIR}/tests/m_files/" --eval test_das_saft)
   add_test(test_octave_das_tfm_run octave --path "${PROJECT_SOURCE_DIR}/tests/m_files/" --eval test_das_tfm)
 
@@ -95,8 +97,13 @@ if (BUILD_MEX)
   add_test(test_matlab_dreamcylind_run matlab -sd "${PROJECT_SOURCE_DIR}/tests/m_files/" -batch test_dreamcylind)
   add_test(test_matlab_dream_arr_annu_run matlab -sd "${PROJECT_SOURCE_DIR}/tests/m_files/" -batch test_dream_arr_annu)
 
-  # These fails on MATLAB due to FFTW issues
-  #add_test(test_matlab_das_saft_run matlab -sd "${PROJECT_SOURCE_DIR}/tests/m_files/" -batch test_das_saft)
-  #add_test(test_matlab_das_tfm_run matlab -sd "${PROJECT_SOURCE_DIR}/tests/m_files/" -batch test_das_tfm)
+  # These fails on MATLAB due to FFTW issues unless one do something like:
+  #
+  # $ export LD_PRELOAD=/usr/lib64/libfftw3.so
+
+  add_test(test_matlab_conv_run matlab -sd "${PROJECT_SOURCE_DIR}/tests/m_files/" -batch test_conv)
+
+  add_test(test_matlab_das_saft_run matlab -sd "${PROJECT_SOURCE_DIR}/tests/m_files/" -batch test_das_saft)
+  add_test(test_matlab_das_tfm_run matlab -sd "${PROJECT_SOURCE_DIR}/tests/m_files/" -batch test_das_tfm)
 
 endif (BUILD_MEX)

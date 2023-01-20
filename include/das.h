@@ -24,9 +24,61 @@
 
 #pragma once
 
+#include <thread>
+
 #include "dream.h"
+#include "attenuation.h"
 #include "dream_error.h"
 
-ErrorLevel das(double xo, double yo, double zo,
-               double dt, dream_idx_type nt, double delay,
-               double cp, double *h, ErrorLevel err_level);
+enum class DASType {
+  saft,
+    tfm
+    };
+
+class DAS
+{
+ public:
+
+ DAS()
+   : m_out_err(ErrorLevel::none)
+    {;}
+
+  ~DAS()  = default;
+
+  ErrorLevel das(double *Y, dream_idx_type a_scan_len,
+                 double *ro, dream_idx_type no,
+                 double *gt, dream_idx_type num_t_elements,
+                 double *gr, dream_idx_type num_r_elements, // SAFT if num_r_elements = 0;
+                 double dt,
+                 DelayType delay_type, double *delay,
+                 double cp,
+                 double *Im,
+                 ErrorLevel err_level);
+
+  static void abort(int signum);
+ bool is_running();
+
+ private:
+
+ void* smp_das(void *arg);
+ std::thread das_thread(void *arg) {
+   return std::thread(&DAS::smp_das, this, arg);
+ }
+
+ ErrorLevel das_saft_serial(double *Y, // Size: nt x num_elements
+                            dream_idx_type a_scan_len,
+                            double *g, dream_idx_type num_elements,
+                            double xo, double yo, double zo,
+                            double dt, double delay,
+                            double cp, double &im, ErrorLevel err_level);
+
+ ErrorLevel das_tfm_serial(double *Y, // Size: nt x num_t_elements*num_r_elements (=FMC)
+                           dream_idx_type a_scan_len,
+                           double *gt, dream_idx_type num_t_elements,
+                           double *gr, dream_idx_type num_r_elements,
+                           double xo, double yo, double zo,
+                           double dt, double delay,
+                           double cp, double &im, ErrorLevel err_level);
+
+ ErrorLevel m_out_err;
+};

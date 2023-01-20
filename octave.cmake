@@ -527,62 +527,6 @@ if (OCTAVE_FOUND)
     LINK_FLAGS ${OCT_LD_FLAGS}
     SUFFIX ".oct" PREFIX "" OUTPUT_NAME "das")
 
-
-  # das_err
-
-  # This one fails on macOS
-  if(NOT MACOSX)
-
-    set (oct_das_arr_SOURCE_FILES
-      extra_src/oct_das_arr.cc
-      extra_src/das_arr.cc
-      src/arr_functions.cc
-      src/dream_error.cc
-      )
-
-    add_library (oct_das_arr MODULE
-      ${oct_das_arr_SOURCE_FILES}
-      )
-
-    target_link_libraries (oct_das_arr
-      ${OCTAVE_LIBRARIES}
-      )
-
-    set_target_properties (oct_das_arr PROPERTIES
-      CXX_STANDARD 14
-      COMPILE_FLAGS "${DREAM_OCT_FLAGS}"
-      INCLUDE_DIRECTORIES "${DREAM_OCT_INCLUDE_DIRS}"
-      LINK_FLAGS ${OCT_LD_FLAGS}
-      SUFFIX ".oct" PREFIX "" OUTPUT_NAME "das_arr")
-
-  endif(NOT MACOSX)
-
-  #
-  # SAFT
-  #
-
-  set (oct_saft_SOURCE_FILES
-    extra_src/oct_saft.cc
-    src/affinity.cc
-    src/dream_error.cc
-    )
-
-  add_library (oct_saft MODULE
-    ${oct_saft_SOURCE_FILES}
-    )
-
-  target_link_libraries (oct_saft
-    ${OCTAVE_LIBRARIES}
-    )
-
-  set_target_properties (oct_saft PROPERTIES
-    CXX_STANDARD 14
-    COMPILE_FLAGS "${DREAM_OCT_FLAGS}"
-    INCLUDE_DIRECTORIES "${DREAM_OCT_INCLUDE_DIRS}"
-    LINK_FLAGS ${OCT_LD_FLAGS}
-    SUFFIX ".oct" PREFIX "" OUTPUT_NAME "saft")
-
-
   #
   # Convolution algorithms
   #

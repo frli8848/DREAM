@@ -543,63 +543,6 @@ if (Matlab_FOUND)
     LINK_FLAGS ${MEX_LD_FLAGS}
     SUFFIX ".${Matlab_MEX_EXTENSION}" PREFIX "" OUTPUT_NAME "das")
 
-  # das_arr
-
-  # This one fails on macOS
-  if(NOT MACOSX)
-
-    set (mex_das_arr_SOURCE_FILES
-      extra_src/mex_das_arr.cc
-      extra_src/das_arr.cc
-      src/arr_functions.cc
-      src/dream_error.cc
-      )
-
-    add_library (mex_das_arr MODULE
-      ${mex_das_arr_SOURCE_FILES}
-      )
-
-    target_link_libraries (mex_das_arr
-      ${Matlab_LIBRARIES}
-      ${FFTW_LIBRARIES}
-      )
-
-    set_target_properties (mex_das_arr PROPERTIES
-      CXX_STANDARD 14
-      COMPILE_FLAGS "${DREAM_MEX_FLAGS}"
-      INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
-
-      LINK_FLAGS ${MEX_LD_FLAGS}
-      SUFFIX ".${Matlab_MEX_EXTENSION}" PREFIX "" OUTPUT_NAME "das_arr")
-
-  endif(NOT MACOSX)
-
-  #
-  # SAFT
-  #
-
-  set (mex_saft_SOURCE_FILES
-    extra_src/mex_saft.cc
-    src/affinity.cc
-    src/dream_error.cc
-    )
-
-  add_library (mex_saft MODULE
-    ${mex_saft_SOURCE_FILES}
-    )
-
-  target_link_libraries (mex_saft
-    ${Matlab_LIBRARIES}
-    )
-
-  set_target_properties (mex_saft PROPERTIES
-    CXX_STANDARD 14
-    COMPILE_FLAGS "${DREAM_MEX_FLAGS}"
-    INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
-
-    LINK_FLAGS ${MEX_LD_FLAGS}
-    SUFFIX ".${Matlab_MEX_EXTENSION}" PREFIX "" OUTPUT_NAME "saft")
-
   #
   # Convolution algorithms
   #

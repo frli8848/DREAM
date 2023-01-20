@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2008,2009,2016 Fredrik Lingvall
+* Copyright (C) 2008,2009,2016,2023 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -21,11 +21,10 @@
 *
 ***/
 
-#include "das.h"
+#include<csignal>
 
-//
-// Octave headers.
-//
+#include "das.h"
+#include "arg_parser.h"
 
 #include <octave/oct.h>
 
@@ -37,7 +36,7 @@
 
 DEFUN_DLD (das, args, nlhs,
            "-*- texinfo -*-\n\
-@deftypefn {Loadable Function} {}  [Y] = das(Ro,s_par,delay,m_par).\n\
+@deftypefn {Loadable Function} {}  [Im] = das(Y,Gt,Gr,Ro,s_par,delay,m_par,err_level).\n \
 \n\
 DAS Computes the delay reponse for single element transducer. That is,\n\
 DAS only comutes the delay to each observation point which is\n\
@@ -93,111 +92,130 @@ Copyright @copyright{} 2008-2021 Fredrik Lingvall.\n\
 @seealso {das_arr,saft,saft_p}\n\
 @end deftypefn")
 {
-  double *ro,*s_par,*m_par;
-  dream_idx_type nt,no,n;
-  double xo,yo,zo,dt;
-  double *delay,cp;
-  double *h, *err_p;
-  ErrorLevel err_level=ErrorLevel::stop, err=ErrorLevel::none, out_err = ErrorLevel::none;
-  bool is_set = false;
   octave_value_list oct_retval;
 
   int nrhs = args.length ();
 
+  ArgParser ap;
+
   // Check for proper number of arguments
 
-  if (!((nrhs == 5) || (nrhs == 6))) {
-    error("das requires 5 or 6 input arguments!");
+  if (!((nrhs == 7) || (nrhs == 8))) {
+    error("das requires 7 or 8 input arguments!");
     return oct_retval;
-      }
-  else
-    if (nlhs > 2) {
-      error("Too many output arguments for das!");
+  }
+
+  if (nlhs > 2) {
+    error("Too many output arguments for das!");
+    return oct_retval;
+  }
+
+  //
+  // Data
+  //
+
+  dream_idx_type a_scan_len = mxGetM(0); // A-scan length
+  dream_idx_type num_a_scans = mxGetN(0);
+  const Matrix tmp0 = args(0).matrix_value();
+  double *Y = (double*) tmp0.data();
+
+  //
+  // Transmit array
+  //
+
+  if (mxGetN(1) != 3) {
+    error("Argument 2 must be a (num transmit elements) x 3 matrix!");
+    return oct_retval;
+  }
+
+  dream_idx_type num_t_elements = mxGetM(1);
+  const Matrix tmp1 = args(1).matrix_value();
+  double *Gt = (double*) tmp1.data();
+
+  //
+  // Recieve array
+  //
+
+  dream_idx_type num_r_elements = 0;
+  double *Gr = nullptr;
+
+  if (mxGetM(2) != 0) { // Check if we do SAFT or TFM
+
+    if (mxGetN(2) != 3) {
+      error("Argument 3 must be a (num recieve elements) x 3 matrix!");
       return oct_retval;
     }
+
+    num_r_elements = mxGetM(2);
+    const Matrix tmp2 = args(2).matrix_value();
+    Gr = (double*) tmp2.data();
+  }
 
   //
   // Observation point.
   //
 
   // Check that arg (number of observation points) x 3 matrix.
-  if (mxGetN(0) != 3) {
-    error("Argument 1 must be a (number of observation points) x 3 matrix!");
+  if (mxGetN(3) != 3) {
+    error("Argument 4 must be a (number of observation points) x 3 matrix!");
     return oct_retval;
   }
 
-  no = mxGetM(0); // Number of observation points.
-  const Matrix tmp0 = args(0).matrix_value();
-  ro = (double*) tmp0.fortran_vec();
+  dream_idx_type no = mxGetM(3); // Number of observation points.
+  const Matrix tmp3 = args(3).matrix_value();
+  double *ro = (double*) tmp3.data();
 
   //
   // Temporal and spatial sampling parameters.
   //
 
-  if (!((mxGetM(1)==2 && mxGetN(2)==1) || (mxGetM(1)==1 && mxGetN(1)==2))) {
-    error("Argument 2 must be a vector of length 2!");
+  if (!(mxGetM(4) == 1 && mxGetN(4) == 1) ) {
+    error("Argument 5 must be a scalar!");
     return oct_retval;
   }
 
-  const Matrix tmp1 = args(1).matrix_value();
-  s_par = (double*) tmp1.fortran_vec();
-  dt    = s_par[0]; // Temporal discretization size (= 1/sampling freq).
-  nt    = (dream_idx_type) s_par[1];	// Length of SIR.
+  const Matrix tmp4 = args(4).matrix_value();
+  double *s_par = (double*) tmp4.data();
+  double dt = s_par[0]; // Temporal discretization size (= 1/sampling freq).
 
   //
   // Start point of impulse response vector ([us]).
   //
 
-  // Check that arg 3 is a scalar (or vector).
-    if ( (mxGetM(2) * mxGetN(2) !=1) && ((mxGetM(2) * mxGetN(2)) != no)) {
-    error("Argument 3 must be a scalar or a vector with a length equal to the number of observation points!");
+  if (!ap.check_delay("das", args, 5, no)) {
     return oct_retval;
   }
 
-  const Matrix tmp2 = args(2).matrix_value();
-  delay = (double*) tmp2.fortran_vec();
+  const Matrix tmp5 = args(5).matrix_value();
+  double *delay = (double*) tmp5.data();
+
+  DelayType delay_type = DelayType::single;  // delay is a scalar.
+  if (mxGetM(5) * mxGetN(5) != 1) {
+    delay_type = DelayType::multiple; // delay is a vector.
+  }
 
   //
   // Material parameters
   //
 
- // Check that arg 4 is a scalar.
-  if (!(mxGetM(3)==1 && mxGetN(3)==1)) {
-    error("Argument 4 must be a scalar!");
+  // Check that arg 7 is a scalar.
+  if (!(mxGetM(6)==1 && mxGetN(6)==1)) {
+    error("Argument 7 must be a scalar!");
     return oct_retval;
   }
 
-  const Matrix tmp3 = args(3).matrix_value();
-  m_par = (double*) tmp3.fortran_vec();
-  cp    = m_par[0]; // Sound speed.
+  const Matrix tmp6 = args(6).matrix_value();
+  double *m_par = (double*) tmp6.data();
+  double cp = m_par[0]; // Sound speed.
 
+  //
   // Error reporting.
-  if (nrhs == 5) {
+  //
 
-    if (!mxIsChar(4)) {
-      error("Argument 5 must be a string");
-      return oct_retval;
-    }
+  ErrorLevel err=ErrorLevel::none, err_level=ErrorLevel::stop;
 
-    std::string err_str = args(4).string_value();
-
-    if (err_str == "ignore") {
-      err_level = ErrorLevel::ignore;
-      is_set = true;
-    }
-
-    if (err_str == "warn") {
-      err_level = ErrorLevel::warn;
-      is_set = true;
-    }
-
-    if (err_str == "stop") {
-      err_level = ErrorLevel::stop;
-      is_set = true;
-    }
-
-    if (is_set == false) {
-      error("Unknown error level!");
+  if (nrhs == 8) {
+    if (!ap.parse_error_arg("das", args, 7, err_level)) {
       return oct_retval;
     }
   } else {
@@ -205,55 +223,41 @@ Copyright @copyright{} 2008-2021 Fredrik Lingvall.\n\
   }
 
   // Create an output matrix for the impulse response.
-  Matrix h_mat(nt, no);
-  h = h_mat.fortran_vec();
+  Matrix Im_mat(no,1);
+  double *Im = (double*) Im_mat.data();
 
-  // Call the DAS subroutine.
-  if (mxGetM(2) * mxGetN(2) == 1) {
-    for (n=0; n<no; n++) {
-      xo = ro[n];
-      yo = ro[n+1*no];
-      zo = ro[n+2*no];
+  DAS das;
 
-      err = das(xo, yo, zo,
-                dt, nt, delay[0],cp,
-                &h[n*nt], err_level);
+  // Register signal handler.
+  std::signal(SIGABRT, DAS::abort);
 
-      if (err != ErrorLevel::none) {
-        out_err = err;
-        if (err == ErrorLevel::stop) {
-          error("Error in das");
-          return oct_retval;
-        }
-      }
+  err = das.das(Y, a_scan_len,
+                ro,  no,
+                Gt, num_t_elements,
+                Gr, num_r_elements,
+                dt,
+                delay_type, delay,
+                cp,
+                Im,
+                err_level);
 
-    }
-  } else {
-    for (n=0; n<no; n++) {
-      xo = ro[n];
-      yo = ro[n+1*no];
-      zo = ro[n+2*no];
-
-      err = das(xo,yo,zo,dt,nt,delay[n],cp,&h[n*nt],err_level);
-
-      if (err != ErrorLevel::none) {
-        out_err = err;
-        if (err == ErrorLevel::stop) {
-          error("Error in das");
-          return oct_retval;
-        }
-      }
-
-    }
+  if (!das.is_running()) {
+    error("CTRL-C pressed!\n"); // Bail out.
+    return oct_retval;
   }
 
-  oct_retval.append(h_mat);
+  if (err == ErrorLevel::stop) {
+    error("Error in DAS"); // Bail out if error.
+    return oct_retval;
+  }
+
+  oct_retval.append(Im_mat);
 
   // Return error.
   if (nlhs == 2) {
-    Matrix err_mat(nt, no);
-    err_p = err_mat.fortran_vec();
-    err_p[0] = (double) out_err;
+    Matrix err_mat(1, 1);
+    double *err_p = (double*) err_mat.data();
+    err_p[0] = (double) err;
     oct_retval.append(err_mat);
   }
 

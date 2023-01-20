@@ -81,7 +81,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     }
 
     num_r_elements = mxGetM(prhs[2]);
-    Gr = mxGetPr(prhs[1]);
+    Gr = mxGetPr(prhs[2]);
   }
 
   //
@@ -100,12 +100,11 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Temporal and spatial sampling parameters.
   //
 
-  // Check that arg 2 is a scalat
   if (!(mxGetM(prhs[4]) == 1 && mxGetN(prhs[4]) == 1)) {
-    dream_err_msg("Argument 5 must be a vector of length 2!");
+    dream_err_msg("Argument 5 must be a scalar!");
   }
 
-  double *s_par = mxGetPr(prhs[1]);
+  double *s_par = mxGetPr(prhs[4]);
   double dt = s_par[0]; // Temporal discretization size (= 1/sampling freq).
 
   //
@@ -113,7 +112,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   //
 
   ap.check_delay("das", prhs, 5, no);
-  double *delay = mxGetPr(prhs[2]);
+  double *delay = mxGetPr(prhs[5]);
 
   DelayType delay_type = DelayType::single;  // delay is a scalar.
   if (mxGetM(prhs[5]) * mxGetN(prhs[5]) != 1) {
@@ -129,7 +128,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     dream_err_msg("Argument 7 must be a scalar!");
   }
 
-  double *m_par = mxGetPr(prhs[3]);
+  double *m_par = mxGetPr(prhs[6]);
   double cp = m_par[0]; // Sound speed.
 
   //

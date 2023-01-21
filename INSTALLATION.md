@@ -162,6 +162,63 @@ $ DREAM/python/tests $ python3 test_dreamrect.py
 ```
 A window should appear with the SIR plots.
 
+
+## Julia (on Linux)
+
+First install Julia, where on Ubuntu (22.04 LTS) there is no package so one have to do somthing like
+```bash
+$ wget https://julialang-s3.julialang.org/bin/linux/x64/1.8/julia-1.8.5-linux-x86_64.tar.gz
+$ tar xf julia-1.8.5-linux-x86_64.tar.gz
+$ sudo cp -a julia-1.8.5 /opt/
+$ sudo ln -s /opt/julia-1.8.5/bin/julia /usr/local/bin/julia
+```
+
+On Gentoo Julia is in unstable so one have to add
+```
+sci-mathematics/dsfmt
+sci-libs/openlibm
+dev-lang/julia
+app-emacs/julia-mode
+```
+to a file in `/etc/portage/package.accept_keywords/` and add the USE flag
+```
+net-misc/curl ssh
+```
+to a file in  `/etc/portage/package.use/`. Then one can install Julia using
+```bash
+$ sudo emerge dev-lang/julia
+```
+
+Now install the  `CxxWrap` package (and some other useful packages). Start Julia and press `]`
+to enter `Pkg` mode
+
+```bash
+$ julia
+               _
+   _       _ _(_)_     |  Documentation: https://docs.julialang.org
+  (_)     | (_) (_)    |
+   _ _   _| |_  __ _   |  Type "?" for help, "]?" for Pkg help.
+  | | | | | | |/ _` |  |
+  | | |_| | | | (_| |  |  Version 1.8.5 (2023-01-08)
+ _/ |\__'_|_|_|\__'_|  |  Official https://julialang.org/ release
+|__/
+
+julia>
+(@v1.8) pkg> add Plots
+(@v1.8) pkg> add GR
+(@v1.8) pkg> add https://github.com/barche/libcxxwrap_julia_jll.jl.git
+(@v1.8) pkg> add CxxWrap
+```
+
+Then (clone if needed) configure and build using:
+```bash
+$ git clone https://github.com/frli8848/DREAM.git
+$ cd DREAM
+DREAM $ mkdir build && cd build
+DREAM/build $ cmake -DCMAKE_CXX_FLAGS="-O3 -march=native" -DBUILD_JULIA=on ..
+DREAM/build $ make -j8
+```
+
 # Post Installation Setup
 
 ## MATLAB and Octave

@@ -31,6 +31,7 @@ message (STATUS "CMake system name: ${CMAKE_SYSTEM_NAME}")
 option(BUILD_MEX "Enable building of the mex-files." OFF)
 option(BUILD_OCT "Enable building of the oct-files." ON)
 option(BUILD_PYTHON "Enable building of the Python bindings." OFF) # Work in progess
+option(BUILD_JULIA "Enable building of the Julia bindings." OFF) # Work in progess
 option(BUILD_USERMAN "Enable building of the user manual." OFF)
 option(USE_OPENCL "Enable OpenCL support." OFF) # Experimental
 
@@ -117,6 +118,14 @@ endif (BUILD_MEX)
 if (BUILD_PYTHON)
   add_subdirectory(python)
 endif (BUILD_PYTHON)
+
+#
+# Julia
+#
+
+if (BUILD_JULIA)
+  add_subdirectory(julia)
+endif (BUILD_JULIA)
 
 #
 # User manual (N.B., we need CMake 3.x on Windows due to a MikTeX related bug).

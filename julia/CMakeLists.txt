@@ -15,7 +15,24 @@ set (CXXWRAP_INCLUDE_DIR ${CXXWRAP_PREFIX}/include)
 
 message (STATUS "Julia CxxWrap PREFIX ${CXXWRAP_PREFIX}")
 
-#set (JULIA_INCLUDE_DIR /usr/include/julia) # Gentoo
+
+# The Julia CxxWrap macro @@wrapmodule only seem to take hard coded paths
+# so we cannot read the DREAM install variable from variable definbed in in file
+# like in ~/.julia/config/startup.jl, for example. For now we just let cmake
+# generate the file with hard coded path on-the-fly.
+
+file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/DREAM.jl" "module DREAM\n")
+file(APPEND "${CMAKE_CURRENT_BINARY_DIR}/DREAM.jl" "using CxxWrap\n")
+file(APPEND "${CMAKE_CURRENT_BINARY_DIR}/DREAM.jl" "@wrapmodule(joinpath(\"${CMAKE_CURRENT_BINARY_DIR}\",\"dreamrect\"))\n")
+file(APPEND "${CMAKE_CURRENT_BINARY_DIR}/DREAM.jl" "function __init__()\n")
+file(APPEND "${CMAKE_CURRENT_BINARY_DIR}/DREAM.jl" "@initcxx\n")
+file(APPEND "${CMAKE_CURRENT_BINARY_DIR}/DREAM.jl" "end\n")
+file(APPEND "${CMAKE_CURRENT_BINARY_DIR}/DREAM.jl" "end\n")
+
+#file (COPY jl_files/DREAM.jl DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
+#message (STATUS "Julia DREAM MODULE PATH ${CMAKE_CURRENT_BINARY_DIR}")
+
+# NB. CxxWrap uses the C++17 standard!
 
 find_package(Julia REQUIRED)
 
@@ -54,7 +71,7 @@ target_link_libraries(jl_dreamrect
 )
 
 set_target_properties(jl_dreamrect PROPERTIES
-  CXX_STANDARD 14
+  CXX_STANDARD 17
   COMPILE_FLAGS "${DREAM_JULIA_FLAGS}"
   INCLUDE_DIRECTORIES "${DREAM_JULIA_INCLUDE_DIRS}"
   LINK_FLAGS ${JULIA_LD_FLAGS}

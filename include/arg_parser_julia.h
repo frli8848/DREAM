@@ -1,26 +1,26 @@
 /***
-*
-* Copyright (C) 2023 Fredrik Lingvall
-*
-* This file is part of the DREAM Toolbox.
-*
-* The DREAM Toolbox is free software; you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by the
-* Free Software Foundation; either version 2, or (at your option) any
-* later version.
-*
-* The DREAM Toolbox is distributed in the hope that it will be useful, but
-* WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-* FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
-* for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with the DREAM Toolbox; see the file COPYING.  If not, write to the
-* Free
-* Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-* 02110-1301, USA.
-*
-***/
+ *
+ * Copyright (C) 2023 Fredrik Lingvall
+ *
+ * This file is part of the DREAM Toolbox.
+ *
+ * The DREAM Toolbox is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2, or (at your option) any
+ * later version.
+ *
+ * The DREAM Toolbox is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with the DREAM Toolbox; see the file COPYING.  If not, write to the
+ * Free
+ * Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+ * 02110-1301, USA.
+ *
+ ***/
 
 #pragma once
 
@@ -32,10 +32,11 @@
 #include "dream.h"
 #include "dream_error.h"
 
-#include <pybind11/pybind11.h>
-#include <pybind11/numpy.h>
+#include "jlcxx/jlcxx.hpp"
+#include "jlcxx/array.hpp"
+#include "jlcxx/functions.hpp"
 
-namespace py = pybind11;
+namespace jl = jlcxx;
 
 class ArgParser
 {
@@ -79,13 +80,11 @@ public:
   };
   */
 
-  bool check_obs_points(const char *func_name, py::array_t<double,py::array::f_style> *py_ro) {
+  bool check_obs_points(const char *func_name,jl::ArrayRef<double, 2> jl_ro) {
     bool retval=true;
     std::ostringstream s;
 
-    py::buffer_info ro_info = py_ro->request();
-    auto ro_n = ro_info.shape[1];
-
+    auto ro_n = get_n(jl_ro);
     if (ro_n != 3) {
       s << func_name <<  " requires that observation point arg must be a (number of observation points) x 3 matrix!";
       dream_err_msg(s.str().c_str());
@@ -95,14 +94,14 @@ public:
     return retval;
   };
 
-  bool check_array(const char *func_name, py::array_t<double,py::array::f_style> *py_G) {
+  // 2D Array / Marrix
+  bool check_array(const char *func_name,jl::ArrayRef<double, 2> &jl_G) {
     bool retval=true;
     std::ostringstream s;
 
-    py::buffer_info G_info = py_G->request();
-    auto G_ndim = G_info.ndim;
-    auto G_m = G_info.shape[0];
-    auto G_n = G_info.shape[1];
+    //auto G_ndim = G_info.ndim;
+    auto G_m = get_m(jl_G);
+    auto G_n = get_n(jl_G);
 
     if ( G_n != 3 ) {
       s << func_name <<  " requires that array grid arg must be a (number of array elements) x 3 matrix!";
@@ -113,12 +112,12 @@ public:
     return retval;
   };
 
-  bool check_array_annu(const char *func_name, py::array_t<double,py::array::f_style> *py_G) {
+  bool check_array_annu(const char *func_name,jl::ArrayRef<double, 2> &jl_G) {
     bool retval=true;
     std::ostringstream s;
 
-    if ( (get_m(py_G) != 1) && (get_n(py_G) != 1) &&
-         (get_n(py_G)*get_n(py_G) % 2 == 0) ) {
+    if ( (get_m(jl_G) != 1) && (get_n(jl_G) != 1) &&
+         (get_n(jl_G)*get_n(jl_G) % 2 == 0) ) {
       s << func_name <<  " requires that array grid arg must be a (number of radii) vector with an odd number of elements!";
       dream_err_msg(s.str().c_str());
       retval=false;
@@ -145,13 +144,15 @@ public:
   };
   */
 
-  bool parse_geometry(const char *func_name, py::array_t<double,py::array::f_style> *py_geom_pars, dream_idx_type num_pars,
+  // 1D Array / Vector
+  bool parse_geometry(const char *func_name,jl::ArrayRef<double> &jl_geom_pars, dream_idx_type num_pars,
                       double &arg1, double &arg2, double &arg3) {
     bool retval=true;
     std::ostringstream s;
 
-    if (!((get_m(py_geom_pars) == num_pars && get_n(py_geom_pars) == 1) ||
-          (get_m(py_geom_pars) == 1 && get_n(py_geom_pars) == num_pars))) {
+    if (get_len(jl_geom_pars) != num_pars) {
+      //if (!((get_m(jl_geom_pars) == num_pars && get_n(jl_geom_pars) == 1) ||
+      //      (get_m(jl_geom_pars) == 1 && get_n(jl_geom_pars) == num_pars))) {
       if (num_pars == 1) {
         s << func_name <<  " requires that the geometry arg must be a scalar!";
       } else {
@@ -161,10 +162,10 @@ public:
       retval=false;
     } else {
 
-      double *pars = get_data(py_geom_pars);
+      double *pars = get_data(jl_geom_pars);
 
       if (num_pars==1) { // Scalars needs special treatment
-        arg1 = get_scalar(py_geom_pars);
+        arg1 = get_scalar(jl_geom_pars);
       }
 
       if (num_pars>1) {
@@ -182,11 +183,11 @@ public:
   };
 
   /*
-  bool check_sampling(const char *func_name, py::array_t<double,py::array::f_style> *py_s_par, dream_idx_type num_pars) {
+  bool check_sampling(const char *func_name,jl::ArrayRef<double> jl_s_par, dream_idx_type num_pars) {
     bool retval=true;
     std::ostringstream s;
-    if (!((get_m(py_s_par)==num_pars && get_n(py_s_pa)==1) ||
-          (get_m(py_s_par)==1 && get_n(py_s_par)==num_pars))) {
+    if (!((get_m(jl_s_par)==num_pars && get_n(jl_s_pa)==1) ||
+          (get_m(jl_s_par)==1 && get_n(jl_s_par)==num_pars))) {
       s << func_name <<  " requires that sampling par arg must be a " << num_pars << " element vector!";
       dream_err_msg(s.str().c_str());
       retval=false;
@@ -196,23 +197,25 @@ public:
   };
   */
 
-  bool parse_sampling(const char *func_name, py::array_t<double,py::array::f_style> *py_s_par, dream_idx_type num_pars,
+  // 1D Array / Vector
+  bool parse_sampling(const char *func_name,jl::ArrayRef<double> &jl_s_par, dream_idx_type num_pars,
                       double &dx, double &dy, double &dt, dream_idx_type &nt) {
     bool retval=true;
     std::ostringstream s;
 
-    if (!((get_m(py_s_par) == num_pars && get_n(py_s_par) == 1) ||
-          (get_m(py_s_par) == 1 && get_n(py_s_par) == num_pars))) {
+    if (get_len(jl_s_par) != num_pars) {
+      //if (!((get_m(jl_s_par) == num_pars && get_n(jl_s_par) == 1) ||
+      //      (get_m(jl_s_par) == 1 && get_n(jl_s_par) == num_pars))) {
       s << func_name <<  " requires that sampling par arg must be a " << num_pars << " element vector!";
       dream_err_msg(s.str().c_str());
       retval=false;
     }
 
     if (retval) {
-      dx = get_data(py_s_par)[0]; // Spatial x-direction discretization size.
-      dy = get_data(py_s_par)[1]; // Spatial y-direction discretization size.
-      dt = get_data(py_s_par)[2]; // Temporal discretization size (= 1/sampling freq).
-      nt = (dream_idx_type) get_data(py_s_par)[3]; // Length of SIR.
+      dx = get_data(jl_s_par)[0]; // Spatial x-direction discretization size.
+      dy = get_data(jl_s_par)[1]; // Spatial y-direction discretization size.
+      dt = get_data(jl_s_par)[2]; // Temporal discretization size (= 1/sampling freq).
+      nt = (dream_idx_type) get_data(jl_s_par)[3]; // Length of SIR.
     }
 
     return retval;
@@ -233,40 +236,40 @@ public:
   };
   */
 
-  bool parse_material(const char *func_name, py::array_t<double,py::array::f_style> *py_m_par,
+  // 1D Array / Vector
+  bool parse_material(const char *func_name,jl::ArrayRef<double> &jl_m_par,
                       double &v, double &cp, double &alpha) {
     bool retval=true;
     std::ostringstream s;
-    if (!((get_m(py_m_par) == 3 && get_n(py_m_par) == 1) ||
-          (get_m(py_m_par) == 1 && get_n(py_m_par) == 3))) {
+
+    if (get_len(jl_m_par) != 3) {
+      //if (!((get_m(jl_m_par) == 3 && get_n(jl_m_par) == 1) ||
+      //    (get_m(jl_m_par) == 1 && get_n(jl_m_par) == 3))) {
       s << func_name <<  " requires that material parameters par arg must be a 3 element vector!";
       dream_err_msg(s.str().c_str());
       retval=false;
     }
 
     if (retval) {
-      v     = get_data(py_m_par)[0];
-      cp    = get_data(py_m_par)[1];
-      alpha = get_data(py_m_par)[2];
+      v     = get_data(jl_m_par)[0];
+      cp    = get_data(jl_m_par)[1];
+      alpha = get_data(jl_m_par)[2];
     }
 
     return retval;
   };
 
 
-  // Check that the delay is a scalar or vector of length no.
-  bool check_delay(const char *func_name, py::array_t<double,py::array::f_style> *py_focal, dream_idx_type no) {
+  // 1D Array / Vector or scalar
+  bool check_delay(const char *func_name,jl::ArrayRef<double> &jl_focal, dream_idx_type no) {
     bool retval=true;
     std::ostringstream s;
 
-    dream_idx_type delay_len = get_m(py_focal)*get_n(py_focal);
+    //dream_idx_type delay_len = get_m(jl_focal)*get_n(jl_focal);
+    dream_idx_type delay_len = get_len(jl_focal);
     if ( (delay_len > 1) && (delay_len != no) ) { // delay is a vector
-
-      if (!((get_m(py_focal) == delay_len && get_n(py_focal) == 1) ||
-            (get_m(py_focal) == 1 && get_n(py_focal) == delay_len))) {
-        s << func_name <<  " requires that delay arg must be a " << delay_len << " element vector";
-        s << " (with a length equal to the number of observation points) or a scalar!";
-      }
+      s << func_name <<  " requires that delay arg must be a " << delay_len << " element vector";
+      s << " (with a length equal to the number of observation points) or a scalar!";
       dream_err_msg(s.str().c_str());
       retval=false;
     }
@@ -314,7 +317,8 @@ public:
    *
    ***/
 
-  bool parse_focus_args(const char *func_name, std::string foc_str, py::array_t<double,py::array::f_style> *py_focal, dream_idx_type num_elements,
+  // String + 1D Array / Vector
+  bool parse_focus_args(const char *func_name, std::string foc_str,jl::ArrayRef<double> &jl_focal, dream_idx_type num_elements,
                         FocusMet &foc_met, double *focal)
   {
     bool retval=true;
@@ -352,12 +356,12 @@ public:
       is_set = true;
 
       // Vector of focusing delays.
-      if (get_m(py_focal) * get_n(py_focal) != num_elements) {
+      if (get_len(jl_focal) != num_elements) {
         s << func_name <<  " the time delay vector arg for user defined ('ud') focusing\n!";
         s << "delays must have the same length as the number of array elements!";
         retval=false;
       } else { // Copy the user defined apodization weights.
-        double *tmp_focal = get_data(py_focal);
+        double *tmp_focal = get_data(jl_focal);
         if (focal) {
           std::memcpy(focal, tmp_focal, num_elements*sizeof(double));
         } else {
@@ -367,13 +371,13 @@ public:
       }
     } else { // Here focus arg must be a scalar.
 
-      if (get_m(py_focal)*get_n(py_focal) != 1) {
+      if (get_len(jl_focal) != 1) {
         s << func_name << " arg must be a scalar for non-user defined focusing!";
         dream_err_msg(s.str().c_str());
         retval=false;
       } else {
         if (focal) {
-          focal[0] = get_scalar(py_focal);
+          focal[0] = get_scalar(jl_focal);
         } else {
           s << func_name << " focal vector not initialzed!";
           dream_err_msg(s.str().c_str());
@@ -391,8 +395,8 @@ public:
     return retval;
   };
 
-  // A string arg and a 2 element vector
-  bool parse_steer_args(const char *func_name, std::string steer_str, py::array_t<double,py::array::f_style> *py_steer_par,
+  // String + 1D Array / Vector
+  bool parse_steer_args(const char *func_name, std::string steer_str,jl::ArrayRef<double> &jl_steer_par,
                         SteerMet &steer_met, double &theta, double &phi)
   {
     bool retval=true;
@@ -426,16 +430,14 @@ public:
     }
 
     // Check that steer arg is a 2 element vector.
-    if (!((get_m(py_steer_par) == 2 && get_n(py_steer_par) == 1) ||
-          (get_m(py_steer_par) == 1 && get_n(py_steer_par) == 2)))
-      {
-        retval=false;
-        s << func_name <<  " steer_par must be a 2 element vector!";
-        dream_err_msg(s.str().c_str());
-      }
+    if (get_len(jl_steer_par) != 2) {
+      retval=false;
+      s << func_name <<  " steer_par must be a 2 element vector!";
+      dream_err_msg(s.str().c_str());
+    }
 
     if (is_set && retval) {
-      const double *steer_pars = get_data(py_steer_par);
+      const double *steer_pars = get_data(jl_steer_par);
       theta = steer_pars[0];
       phi= steer_pars[1];
     }
@@ -443,8 +445,8 @@ public:
     return retval;
   };
 
-  // A string arg, a vector, and a scalar.
-  bool parse_apod_args(const char *func_name,  std::string apod_str, py::array_t<double,py::array::f_style> *py_apod, dream_idx_type num_elements,
+  // String + 1D Array / Vector + scalar
+  bool parse_apod_args(const char *func_name,  std::string apod_str,jl::ArrayRef<double> jl_apod, dream_idx_type num_elements,
                        bool &do_apod, double *apod, ApodMet &apod_met, double &apod_par) {
     bool retval=true;
     std::ostringstream s;
@@ -493,11 +495,11 @@ public:
       is_set = true;
 
       // Vector of apodization weights.
-      if (get_m(py_apod) * get_n(py_apod) != num_elements) {
+      if (get_len(jl_apod) != num_elements) {
         s << func_name <<  " the length of apodization vector argument must be the same as the number of array elements!";
         retval=false;
       } else { // Copy the user defined apodization weights.
-        double *tmp_apod = get_data(py_apod);
+        double *tmp_apod = get_data(jl_apod);
         if (apod) {
           std::memcpy(apod, tmp_apod, num_elements*sizeof(double));
         } else {
@@ -531,32 +533,39 @@ public:
     return retval;
   };
 
-private:
+  //private:
 
-  dream_idx_type get_m(const py::array_t<double,py::array::f_style> *py_arg) {
-    py::buffer_info py_arg_info = py_arg->request();
-    auto m = py_arg_info.shape[0];
+  // Vector
+  dream_idx_type get_len(const jl::ArrayRef<double> &jl_arg) {
+    auto len = jl_array_len(jl_arg.wrapped());
+    return (dream_idx_type) len;
+  };
 
+  // Matrix
+  dream_idx_type get_m(const jl::ArrayRef<double, 2> &jl_arg) {
+    auto m = jl_arg.wrapped()->nrows;
     return (dream_idx_type) m;
   };
 
-  dream_idx_type get_n(const py::array_t<double,py::array::f_style> *py_arg) {
-    py::buffer_info py_arg_info = py_arg->request();
-    auto n = py_arg_info.shape[1];
-
+  // Matrix
+  dream_idx_type get_n(const jl::ArrayRef<double, 2> &jl_arg) {
+    auto n = jl_arg.wrapped()->ncols;
     return (dream_idx_type) n;
   };
 
-  double* get_data(const py::array_t<double,py::array::f_style> *py_arg) {
-    py::buffer_info py_arg_info = py_arg->request();
 
-    return static_cast<double*>(py_arg_info.ptr);
+  // Vector
+  double* get_data(const jl::ArrayRef<double> &jl_arg) {
+    return static_cast<double*>(jl_array_data(jl_arg.wrapped()));
   };
 
-  double get_scalar(const py::array_t<double,py::array::f_style> *py_arg) {
-    py::buffer_info py_arg_info = py_arg->request();
-    double *retval = static_cast<double*>(py_arg_info.ptr);
+  // Matrix
+  double* get_data(const jl::ArrayRef<double, 2> &jl_arg) {
+    return static_cast<double*>(jl_array_data(jl_arg.wrapped()));
+  };
 
+  double get_scalar(const jl::ArrayRef<double> &jl_arg) {
+    double *retval = static_cast<double*>(jl_array_data(jl_arg.wrapped()));
     return retval[0];
   };
 
@@ -570,5 +579,4 @@ private:
     return args(arg_num).string_value();
   };
   */
-
 };

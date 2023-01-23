@@ -235,7 +235,20 @@ to the `~/.octaverc` file, and for Matlab add it to the `~/Documents/MATLAB/star
 
 After building the Python bindings add the build/installation folder to your `PYTHONPATH`
 using, for example
-```
+```bash
 $ export PYTHONPATH="$PYTHONPATH:$HOME/DREAM/build/python"
 ```
 if you have your DREAM sources in `$HOME/DREAM`.
+
+## Julia
+
+After building the Julia bindings add the build/installation folder to the Julia `LOAD_PATH`
+by adding it tou your  `~/.julia/config/startup.jl` by adding the line:
+```
+push!(LOAD_PATH, "/<YOUR-HOME-DIR>/<PATH-TO-DREAM-SOURCES>/DREAM/build/julia")
+```
+
+You should now be able to run, for example
+```bash
+DREAM/julia/tests $ julia -i test_dreamrect.jl
+```

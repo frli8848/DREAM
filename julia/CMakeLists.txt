@@ -21,6 +21,7 @@ message (STATUS "Julia CxxWrap PREFIX ${CXXWRAP_PREFIX}")
 # generate the module files with hard coded paths on-the-fly.
 
 set (DREAM_FUNC_LIST
+  dreamline
   dreamrect
   dreamcirc
 )
@@ -57,6 +58,31 @@ message (STATUS "JULIA_LD_FLAGS ${JULIA_LD_FLAGS}")
 if (FFTW_FOUND)
   set (JULIA_LD_FLAGS "${JULIA_LD_FLAGS} -lfftw3")
 endif (FFTW_FOUND)
+
+#
+# dreamline
+#
+
+set (jl_dreamline_SOURCE_FILES
+  src/jl_dreamline.cc
+  ../src/dreamline.cc
+  ../src/attenuation.cc
+  ../src/affinity.cc
+  ../src/dream_error.cc
+)
+
+add_library(jl_dreamline MODULE ${jl_dreamline_SOURCE_FILES})
+target_link_libraries(jl_dreamline
+  ${FFTW_LIBRARIES}
+)
+
+set_target_properties(jl_dreamline PROPERTIES
+  CXX_STANDARD 17
+  COMPILE_FLAGS "${DREAM_JULIA_FLAGS}"
+  INCLUDE_DIRECTORIES "${DREAM_JULIA_INCLUDE_DIRS}"
+  LINK_FLAGS ${JULIA_LD_FLAGS}
+  PREFIX "" OUTPUT_NAME "dreamline"
+)
 
 #
 # dreamrect

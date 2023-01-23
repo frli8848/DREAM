@@ -243,7 +243,7 @@ if you have your DREAM sources in `$HOME/DREAM`.
 ## Julia
 
 After building the Julia bindings add the build/installation folder to the Julia `LOAD_PATH`
-by adding it tou your  `~/.julia/config/startup.jl` by adding the line:
+by adding it to your  `~/.julia/config/startup.jl` by adding the line:
 ```
 push!(LOAD_PATH, "/<YOUR-HOME-DIR>/<PATH-TO-DREAM-SOURCES>/DREAM/build/julia")
 ```

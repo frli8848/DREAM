@@ -15,22 +15,27 @@ set (CXXWRAP_INCLUDE_DIR ${CXXWRAP_PREFIX}/include)
 
 message (STATUS "Julia CxxWrap PREFIX ${CXXWRAP_PREFIX}")
 
-
-# The Julia CxxWrap macro @@wrapmodule only seem to take hard coded paths
-# so we cannot read the DREAM install variable from variable definbed in in file
+# FIXME: The Julia CxxWrap macro @@wrapmodule only seem to take hard coded paths
+# so we cannot read the DREAM install path from a variable defined in a file
 # like in ~/.julia/config/startup.jl, for example. For now we just let cmake
-# generate the file with hard coded path on-the-fly.
+# generate the module files with hard coded paths on-the-fly.
 
-file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/DREAM.jl" "module DREAM\n")
-file(APPEND "${CMAKE_CURRENT_BINARY_DIR}/DREAM.jl" "using CxxWrap\n")
-file(APPEND "${CMAKE_CURRENT_BINARY_DIR}/DREAM.jl" "@wrapmodule(joinpath(\"${CMAKE_CURRENT_BINARY_DIR}\",\"dreamrect\"))\n")
-file(APPEND "${CMAKE_CURRENT_BINARY_DIR}/DREAM.jl" "function __init__()\n")
-file(APPEND "${CMAKE_CURRENT_BINARY_DIR}/DREAM.jl" "@initcxx\n")
-file(APPEND "${CMAKE_CURRENT_BINARY_DIR}/DREAM.jl" "end\n")
-file(APPEND "${CMAKE_CURRENT_BINARY_DIR}/DREAM.jl" "end\n")
+set (DREAM_FUNC_LIST
+  dreamrect
+  dreamcirc
+)
 
-#file (COPY jl_files/DREAM.jl DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
-#message (STATUS "Julia DREAM MODULE PATH ${CMAKE_CURRENT_BINARY_DIR}")
+# FIXME: There must be a cleaner way than having a separate file for each Julia module!?
+foreach (D_FUN IN LISTS DREAM_FUNC_LIST)
+  message (STATUS ${D_FUN})
+  file (WRITE "${CMAKE_CURRENT_BINARY_DIR}/${D_FUN}_m.jl" "module ${D_FUN}_m\n")
+  file (APPEND "${CMAKE_CURRENT_BINARY_DIR}/${D_FUN}_m.jl" "using CxxWrap\n")
+  file (APPEND "${CMAKE_CURRENT_BINARY_DIR}/${D_FUN}_m.jl" "@wrapmodule(joinpath(\"${CMAKE_CURRENT_BINARY_DIR}\",\"${D_FUN}\"))\n")
+  file (APPEND "${CMAKE_CURRENT_BINARY_DIR}/${D_FUN}_m.jl" "function __init__()\n")
+  file (APPEND "${CMAKE_CURRENT_BINARY_DIR}/${D_FUN}_m.jl" "@initcxx\n")
+  file (APPEND "${CMAKE_CURRENT_BINARY_DIR}/${D_FUN}_m.jl" "end\n")
+  file (APPEND "${CMAKE_CURRENT_BINARY_DIR}/${D_FUN}_m.jl" "end\n")
+endforeach()
 
 # NB. CxxWrap uses the C++17 standard!
 
@@ -76,4 +81,29 @@ set_target_properties(jl_dreamrect PROPERTIES
   INCLUDE_DIRECTORIES "${DREAM_JULIA_INCLUDE_DIRS}"
   LINK_FLAGS ${JULIA_LD_FLAGS}
   PREFIX "" OUTPUT_NAME "dreamrect"
+)
+
+#
+# dreamcirc
+#
+
+set (jl_dreamcirc_SOURCE_FILES
+  src/jl_dreamcirc.cc
+  ../src/dreamcirc.cc
+  ../src/attenuation.cc
+  ../src/affinity.cc
+  ../src/dream_error.cc
+)
+
+add_library(jl_dreamcirc MODULE ${jl_dreamcirc_SOURCE_FILES})
+target_link_libraries(jl_dreamcirc
+  ${FFTW_LIBRARIES}
+)
+
+set_target_properties(jl_dreamcirc PROPERTIES
+  CXX_STANDARD 17
+  COMPILE_FLAGS "${DREAM_JULIA_FLAGS}"
+  INCLUDE_DIRECTORIES "${DREAM_JULIA_INCLUDE_DIRS}"
+  LINK_FLAGS ${JULIA_LD_FLAGS}
+  PREFIX "" OUTPUT_NAME "dreamcirc"
 )

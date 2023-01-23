@@ -1,11 +1,11 @@
 #
-# dreamrect
+# dreamcirc
 #
 
 using LinearAlgebra
 using Plots
 
-using dreamrect_m
+using dreamcirc_m
 
 Fs = 4.0;                       # Sampling freq. [MHz].
 Ts = 1/Fs;                      # [us].
@@ -37,11 +37,10 @@ m_par = [v,cp,alpha];
 delay = [0.0];
 
 # Element size [mm].
-a = 10.0;
-b = 15.0;
-geom_par = [a,b];
+R = 10.0;
+geom_par = [R];
 
-H = dreamrect_m.dreamrect(Ro,geom_par,s_par,delay,m_par,"stop");
+H = dreamcirc_m.dreamcirc(Ro,geom_par,s_par,delay,m_par,"stop");
 
 t = range(0.0, Ts*float(nt-1), length=Int(nt));
 
@@ -49,11 +48,11 @@ plot(t, H, label="Attenuation alpha = 0 [dB/cm MHz]", linewidth=2)
 
 alpha  = 5.0;                   # Absorbtion (dB/cm Hz).
 m_par = [v,cp,alpha];
-Hatt = dreamrect_m.dreamrect(Ro,geom_par,s_par,delay,m_par,"stop");
+Hatt = dreamcirc_m.dreamcirc(Ro,geom_par,s_par,delay,m_par,"stop");
 
 plot!(t, Hatt, label="Attenuation alpha = 5 [dB/cm MHz]", linewidth=2)
 
-title!("Rectangular transducer")
+title!("Circular transducer")
 xlabel!("t [us]")
 ylabel!("h_{SIR} [m/s]")
 

@@ -35,7 +35,7 @@ if ONE_POINT
   zo = z;
   ro = [xo yo zo];
   Ro = ro;
-  disp(['Observation point (x,y,z) = ' num2str(Ro)]);
+  %%disp(['Observation point (x,y,z) = ' num2str(Ro)]);
 else
   %  Points along x-axis.
   d  = 1;

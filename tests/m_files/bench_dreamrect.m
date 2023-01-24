@@ -14,6 +14,12 @@ geom_par = [a b];
 Ro =[X(:) Y(:) Z(:)];
 fprintf('Num obs points: %d\n', size(Ro,1))
 
-tic,[H,err] = dreamrect(Ro,geom_par,s_par,delay,m_par,'stop');toc
+tic
+[H,err] = dreamrect(Ro,geom_par,s_par,delay,m_par,'stop');
+t = toc;
+fprintf('Elapsed time dreamrect CPU: %1.2f [s]\n', t);
 
-tic,[H,err] = dreamrect(Ro,geom_par,s_par,delay,m_par,'stop','gpu');toc
+tic
+[H,err] = dreamrect(Ro,geom_par,s_par,delay,m_par,'stop','gpu');
+t = toc;
+fprintf('Elapsed time dreamrect GPU: %1.2f [s]\n', t);

@@ -16,16 +16,6 @@ import dreamrect as dr
 Fs = 4.0;                       # Sampling freq. [MHz].
 Ts = 1/Fs;                      # [us].
 
-z = 10.0;
-
-# One point.
-xo = 0;
-yo = 0;
-zo = z;
-ro = np.asmatrix([xo,yo,zo]);
-Ro = ro;
-print("Observation point (x,y,z) = (%f, %f, %f)" % (xo,yo,zo))
-
 # Descretization parameters.
 dx = 0.05;                # [mm].
 dy = 0.05;                # [mm]
@@ -48,7 +38,6 @@ delay = np.asmatrix(0.0);
 a = 10.0;
 b = 15.0;
 geom_par = np.asmatrix([a,b]);
-
 
 # Make sure the number of obs points are a 64 (the OpenCL workgroup size)
 x = np.linspace(-15, 15, 61)

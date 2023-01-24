@@ -170,7 +170,7 @@ py::array_t<double,py::array::f_style> py_dream_arr_annu(py::array_t<double,py::
   hsir.clear();
 
   // Register signal handler.
-  std::signal(SIGABRT, ArrAnnu::abort);
+  std::signal(SIGINT, ArrAnnu::abort);
 
   //
   // Call DREAM function

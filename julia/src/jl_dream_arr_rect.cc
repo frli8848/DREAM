@@ -183,7 +183,7 @@ jl::ArrayRef<double, 2> jl_dream_arr_rect(jl::ArrayRef<double, 2> jl_ro,
   ArrRect arr_rect;
 
   // Register signal handler.
-  std::signal(SIGABRT, ArrRect::abort);
+  std::signal(SIGINT, ArrRect::abort);
 
   //
   // Call DREAM function

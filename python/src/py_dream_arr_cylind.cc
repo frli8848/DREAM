@@ -194,7 +194,7 @@ py::array_t<double,py::array::f_style> py_dream_arr_cylind(py::array_t<double,py
   hsir.clear();
 
   // Register signal handler.
-  std::signal(SIGABRT, ArrCylind::abort);
+  std::signal(SIGINT, ArrCylind::abort);
 
   //
   // Call DREAM function

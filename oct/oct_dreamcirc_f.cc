@@ -227,7 +227,7 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
   Circ_f circ_f;
 
   // Register signal handler.
-  std::signal(SIGABRT, Circ_f::abort);
+  std::signal(SIGINT, Circ_f::abort);
 
   //
   // Call the DREAM subroutine.

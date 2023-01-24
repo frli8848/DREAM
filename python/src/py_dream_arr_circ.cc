@@ -194,7 +194,7 @@ py::array_t<double,py::array::f_style> py_dream_arr_circ(py::array_t<double,py::
   hsir.clear();
 
   // Register signal handler.
-  std::signal(SIGABRT, ArrCirc::abort);
+  std::signal(SIGINT, ArrCirc::abort);
 
   //
   // Call DREAM function

@@ -166,7 +166,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   ArrCylind arr_cylind;
 
   // Register signal handler.
-  std::signal(SIGABRT, ArrCylind::abort);
+  std::signal(SIGINT, ArrCylind::abort);
 
   //
   // Call the DREAM subroutine.

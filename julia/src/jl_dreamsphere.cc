@@ -121,7 +121,7 @@ jl::ArrayRef<double, 2> jl_dreamsphere(jl::ArrayRef<double, 2> jl_ro,
   Sphere sphere;
 
   // Register signal handler.
-  std::signal(SIGABRT, Sphere::abort);
+  std::signal(SIGINT, Sphere::abort);
 
   //
   // Call DREAM function

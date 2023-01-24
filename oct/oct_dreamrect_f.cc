@@ -230,7 +230,7 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
   Rect_f rect_f;
 
   // Register signal handler.
-  std::signal(SIGABRT, Rect_f::abort);
+  std::signal(SIGINT, Rect_f::abort);
 
   //
   // Call the DREAM subroutine.

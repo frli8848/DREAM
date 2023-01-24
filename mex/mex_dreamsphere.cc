@@ -109,7 +109,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   Sphere sphere;
 
   // Register signal handler.
-  std::signal(SIGABRT, Sphere::abort);
+  std::signal(SIGINT, Sphere::abort);
 
   //
   // Call the DREAM subroutine.

@@ -145,7 +145,7 @@ py::array_t<double,py::array::f_style> py_dreamrect_f(py::array_t<double,py::arr
   Rect_f rect_f;
 
   // Register signal handler.
-  std::signal(SIGABRT, Rect_f::abort);
+  std::signal(SIGINT, Rect_f::abort);
 
   //
   // Call DREAM function

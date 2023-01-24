@@ -132,7 +132,7 @@ py::array_t<double,py::array::f_style> py_dreamrect(py::array_t<double,py::array
   Rect rect;
 
   // Register signal handler.
-  std::signal(SIGABRT, Rect::abort);
+  std::signal(SIGINT, Rect::abort);
 
   //
   // Call DREAM function

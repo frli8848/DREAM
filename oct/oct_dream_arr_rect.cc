@@ -334,7 +334,7 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
   ArrRect arr_rect;
 
   // Register signal handler.
-  std::signal(SIGABRT, ArrRect::abort);
+  std::signal(SIGINT, ArrRect::abort);
 
   //
   // Call the DREAM subroutine.

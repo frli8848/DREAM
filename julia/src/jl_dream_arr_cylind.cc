@@ -183,7 +183,7 @@ jl::ArrayRef<double, 2> jl_dream_arr_cylind(jl::ArrayRef<double, 2> jl_ro,
   ArrCylind arr_cylind;
 
   // Register signal handler.
-  std::signal(SIGABRT, ArrCylind::abort);
+  std::signal(SIGINT, ArrCylind::abort);
 
   //
   // Call DREAM function

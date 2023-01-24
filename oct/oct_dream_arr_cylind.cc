@@ -335,7 +335,7 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
   ArrCylind arr_cylind;
 
   // Register signal handler.
-  std::signal(SIGABRT, ArrCylind::abort);
+  std::signal(SIGINT, ArrCylind::abort);
 
   //
   // Call the DREAM subroutine.

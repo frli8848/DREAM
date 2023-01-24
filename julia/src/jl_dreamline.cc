@@ -121,7 +121,7 @@ jl::ArrayRef<double, 2> jl_dreamline(jl::ArrayRef<double, 2> jl_ro,
   Line line;
 
   // Register signal handler.
-  std::signal(SIGABRT, Line::abort);
+  std::signal(SIGINT, Line::abort);
 
   //
   // Call DREAM function

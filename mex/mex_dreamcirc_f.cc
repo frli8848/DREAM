@@ -122,7 +122,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   Circ_f circ_f;
 
   // Register signal handler.
-  std::signal(SIGABRT, Circ_f::abort);
+  std::signal(SIGINT, Circ_f::abort);
 
   //
   // Call the DREAM subroutine.

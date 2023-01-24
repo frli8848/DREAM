@@ -134,7 +134,7 @@ jl::ArrayRef<double, 2> jl_dreamcirc_f(jl::ArrayRef<double, 2> jl_ro,
   Circ_f circ_f;
 
   // Register signal handler.
-  std::signal(SIGABRT, Circ_f::abort);
+  std::signal(SIGINT, Circ_f::abort);
 
   //
   // Call DREAM function

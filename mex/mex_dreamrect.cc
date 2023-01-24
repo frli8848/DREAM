@@ -109,7 +109,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   Rect rect;
 
   // Register signal handler.
-  std::signal(SIGABRT, Rect::abort);
+  std::signal(SIGINT, Rect::abort);
 
   //
   // Call the DREAM subroutine.

@@ -121,7 +121,7 @@ jl::ArrayRef<double, 2> jl_dreamcirc(jl::ArrayRef<double, 2> jl_ro,
   Circ circ;
 
   // Register signal handler.
-  std::signal(SIGABRT, Circ::abort);
+  std::signal(SIGINT, Circ::abort);
 
   //
   // Call DREAM function

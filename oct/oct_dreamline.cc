@@ -192,7 +192,7 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
   Line line;
 
   // Register signal handler.
-  std::signal(SIGABRT, Line::abort);
+  std::signal(SIGINT, Line::abort);
 
   //
   // Call the DREAM subroutine.

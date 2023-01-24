@@ -213,7 +213,7 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
   Cylind cylind;
 
   // Register signal handler.
-  std::signal(SIGABRT, Cylind::abort);
+  std::signal(SIGINT, Cylind::abort);
 
   //
   // Call the DREAM subroutine.

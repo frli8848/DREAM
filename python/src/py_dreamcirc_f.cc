@@ -145,7 +145,7 @@ py::array_t<double,py::array::f_style> py_dreamcirc_f(py::array_t<double,py::arr
   Circ_f circ_f;
 
   // Register signal handler.
-  std::signal(SIGABRT, Circ_f::abort);
+  std::signal(SIGINT, Circ_f::abort);
 
   //
   // Call DREAM function

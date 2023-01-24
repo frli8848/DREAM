@@ -132,7 +132,7 @@ py::array_t<double,py::array::f_style> py_dreamline(py::array_t<double,py::array
   Line line;
 
   // Register signal handler.
-  std::signal(SIGABRT, Line::abort);
+  std::signal(SIGINT, Line::abort);
 
   //
   // Call DREAM function

@@ -121,7 +121,7 @@ jl::ArrayRef<double, 2> jl_dreamcylind(jl::ArrayRef<double, 2> jl_ro,
   Cylind cylind;
 
   // Register signal handler.
-  std::signal(SIGABRT, Cylind::abort);
+  std::signal(SIGINT, Cylind::abort);
 
   //
   // Call DREAM function

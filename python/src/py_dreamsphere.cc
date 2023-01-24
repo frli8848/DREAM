@@ -130,7 +130,7 @@ py::array_t<double,py::array::f_style> py_dreamsphere(py::array_t<double,py::arr
   hsir.clear();
 
   // Register signal handler.
-  std::signal(SIGABRT, Sphere::abort);
+  std::signal(SIGINT, Sphere::abort);
 
   //
   // Call DREAM function

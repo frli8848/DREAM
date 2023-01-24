@@ -205,7 +205,7 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
   Sphere sphere;
 
   // Register signal handler.
-  std::signal(SIGABRT, Sphere::abort);
+  std::signal(SIGINT, Sphere::abort);
 
   //
   // Call the DREAM subroutine.

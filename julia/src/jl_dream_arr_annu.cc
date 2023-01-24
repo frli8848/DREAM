@@ -159,7 +159,7 @@ jl::ArrayRef<double, 2> jl_dream_arr_annu(jl::ArrayRef<double, 2> jl_ro,
   ArrAnnu arr_annu;
 
   // Register signal handler.
-  std::signal(SIGABRT, ArrAnnu::abort);
+  std::signal(SIGINT, ArrAnnu::abort);
 
   //
   // Call DREAM function

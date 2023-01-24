@@ -331,7 +331,7 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
   ArrCirc arr_circ;
 
   // Register signal handler.
-  std::signal(SIGABRT, ArrCirc::abort);
+  std::signal(SIGINT, ArrCirc::abort);
 
   //
   // Call the DREAM subroutine.

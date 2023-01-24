@@ -134,7 +134,7 @@ jl::ArrayRef<double, 2> jl_dreamrect_f(jl::ArrayRef<double, 2> jl_ro,
   Rect_f rect_f;
 
   // Register signal handler.
-  std::signal(SIGABRT, Rect_f::abort);
+  std::signal(SIGINT, Rect_f::abort);
 
   //
   // Call DREAM function

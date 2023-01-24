@@ -112,8 +112,6 @@ axs[0].set_ylabel('h_{SIR} [m/s]')
 Rcurv = -10.0;
 geom_par = np.asmatrix([a,b,Rcurv]);
 
-H = dacy.dream_arr_cylind(Ro,geom_par,G,s_par,delay,m_par,foc_met,focal,steer_met,steer_par,apod_met,apod,win_par,"stop")
-
 alpha  = 0.0;                   # Absorbtion (dB/cm Hz).
 m_par = np.asmatrix([v,cp,alpha]);
 

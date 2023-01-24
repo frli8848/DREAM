@@ -31,6 +31,7 @@ set (DREAM_FUNC_LIST
   dream_arr_rect
   dream_arr_circ
   dream_arr_cylind
+  dream_arr_annu
 )
 
 # FIXME: There must be a cleaner way than having a separate file for each Julia module!?
@@ -323,4 +324,31 @@ set_target_properties(jl_dream_arr_cylind PROPERTIES
   INCLUDE_DIRECTORIES "${DREAM_JULIA_INCLUDE_DIRS}"
   LINK_FLAGS ${JULIA_LD_FLAGS}
   PREFIX "" OUTPUT_NAME "dream_arr_cylind"
+)
+
+#
+# dream_arr_annu
+#
+
+set (jl_dream_arr_annu_SOURCE_FILES
+  src/jl_dream_arr_annu.cc
+  ../src/dream_arr_annu.cc
+  ../src/dreamcirc.cc
+  ../src/attenuation.cc
+  ../src/affinity.cc
+  ../src/arr_functions.cc
+  ../src/dream_error.cc
+)
+
+add_library(jl_dream_arr_annu MODULE ${jl_dream_arr_annu_SOURCE_FILES})
+target_link_libraries(jl_dream_arr_annu
+  ${FFTW_LIBRARIES}
+)
+
+set_target_properties(jl_dream_arr_annu PROPERTIES
+  CXX_STANDARD 17
+  COMPILE_FLAGS "${DREAM_JULIA_FLAGS}"
+  INCLUDE_DIRECTORIES "${DREAM_JULIA_INCLUDE_DIRS}"
+  LINK_FLAGS ${JULIA_LD_FLAGS}
+  PREFIX "" OUTPUT_NAME "dream_arr_annu"
 )

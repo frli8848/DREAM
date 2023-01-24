@@ -112,12 +112,13 @@ public:
     return retval;
   };
 
-  bool check_array_annu(const char *func_name,jl::ArrayRef<double, 2> &jl_G) {
+  bool check_array_annu(const char *func_name,jl::ArrayRef<double> &jl_G) {
     bool retval=true;
     std::ostringstream s;
 
-    if ( (get_m(jl_G) != 1) && (get_n(jl_G) != 1) &&
-         (get_n(jl_G)*get_n(jl_G) % 2 == 0) ) {
+    if (get_len(jl_G) % 2 == 0) {
+      //if ( (get_m(jl_G) != 1) && (get_n(jl_G) != 1) &&
+      //   (get_n(jl_G)*get_n(jl_G) % 2 == 0) ) {
       s << func_name <<  " requires that array grid arg must be a (number of radii) vector with an odd number of elements!";
       dream_err_msg(s.str().c_str());
       retval=false;

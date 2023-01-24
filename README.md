@@ -27,8 +27,8 @@ concept [[[1]](#1),[[2]](#2)] which is a method based on the general approach of
 
 The DREAM Toolbox can be used using:
 * Matlab and Octave,
-* Python (experimental).
-
+* Python (experimental),
+* Julia (experimental, only tested on Linux),
 
 ## Features
 
@@ -39,37 +39,37 @@ The DREAM Toolbox can be used using:
 
 # Functions
 
-| Function  | Description  | MATLAB  | Octave  | Python  | Comment |
+| Function  | Description  | MATLAB  | Octave  | Python  | Julia |
 |:--|:--|:--|:--|:--|:--|
-| dreamline | Strip/line transducer  | Yes  | Yes  | Yes  |   |
-| dreamrect | Rectangular transducer  | Yes  |  Yes | Yes  |   |
-| dreamrect_f | Focused rectangular transducer  | Yes  | Yes  | Yes  |   |
-| dreamcirc | Circular transducer  | Yes  |Yes   | Yes  |   |
-| dreamcirc_f | Focused circular transducer  | Yes  | Yes  |  Yes |   |
-| dreamsphere | Spherical concave/convex transducer (defocused/defocused)  | Yes  | Yes  | Yes  |   |
-| dreamcylind | Cylindrical concave/convex transducer (focused/defocused)  | Yes  | Yes  | Yes  |   |
-| dream_arr_rect | Array with rectangular elements  | Yes  | Yes  | Yes  |   |
-| dream_arr_circ | Array with circular elements  | Yes  | Yes  | Yes |   |
-| dream_arr_cylind | Array with cylindrical concave/convex elements (focused/defocused) |  Yes | Yes | Yes  |   |
-| dream_arr_annu | Annular array  | Yes  | Yes  | Yes  |   |
+| dreamline | Strip/line transducer  | Yes  | Yes  | Yes  | Yes  |
+| dreamrect | Rectangular transducer  | Yes  |  Yes | Yes  | Yes  |
+| dreamrect_f | Focused rectangular transducer  | Yes  | Yes  | Yes  | Yes  |
+| dreamcirc | Circular transducer  | Yes  |Yes   | Yes  | Yes  |
+| dreamcirc_f | Focused circular transducer  | Yes  | Yes  |  Yes | Yes |
+| dreamsphere | Spherical concave/convex transducer (defocused/defocused)  | Yes  | Yes  | Yes  | Yes  |
+| dreamcylind | Cylindrical concave/convex transducer (focused/defocused)  | Yes  | Yes  | Yes  | Yes  |
+| dream_arr_rect | Array with rectangular elements  | Yes  | Yes  | Yes  | Yes  |
+| dream_arr_circ | Array with circular elements  | Yes  | Yes  | Yes | Yes  |
+| dream_arr_cylind | Array with cylindrical concave/convex elements (focused/defocused) |  Yes | Yes | Yes  | Yes  |
+| dream_arr_annu | Annular array  | Yes  | Yes  | Yes  | Yes  |
 
 _Table 1. DR-based transducer functions._
 
-| Function  | Description  | MATLAB  | Octave  | Python  | Comment |
+| Function  | Description  | MATLAB  | Octave  | Python  | Julia |
 |:--|:--|:--|:--|:--|:--|
-| rect_sir | time-continous (analytic) rectangual ransducer | Yes  | Yes  | N/A  |  |
-| circ_sir | time-continous (analytic) circular ransducer | Yes  | Yes  | N/A |  |
-| scirc_sir | sampled time-continous (analytic) circular transducer | Yes  | Yes  | N/A  |   |
+| rect_sir | time-continous (analytic) rectangual ransducer | Yes  | Yes  | N/A  | N/A |
+| circ_sir | time-continous (analytic) circular ransducer | Yes  | Yes  | N/A | N/A |
+| scirc_sir | sampled time-continous (analytic) circular transducer | Yes  | Yes  | N/A  | N/A  |
 
 _Table 2. Analytic transducer functions._
 
-| Function  | Description  | MATLAB  | Octave  | Python  | Comment |
+| Function  | Description  | MATLAB  | Octave  | Python  | Julia |
 |:--|:--|:--|:--|:--|:--|
-| conv_p | threaded one dimensional convolution | Yes  | Yes  | N/A |  |
-| fftconv_p | threaded one dimensional FFT based convolutions | Yes (*)  | Yes  | N/A |  |
-| fftconv_ola | threaded one dimensional FFT based convolutions using overlap-and-add | Yes (*)  | Yes  | N/A |  |
-| sum_fftconv | threaded sum of one dimensional FFT based convolutions | Yes (*)  | Yes  | N/A |  |
-| das | threaded delay-and-sum (DAS) beamforming (SAFT and TFM) | Yes  | Yes  | N/A |  |
+| conv_p | threaded one dimensional convolution | Yes  | Yes  | N/A  | N/A |
+| fftconv_p | threaded one dimensional FFT based convolutions | Yes (*)  | Yes  | N/A | N/A |
+| fftconv_ola | threaded one dimensional FFT based convolutions using overlap-and-add | Yes (*)  | Yes  | N/A | N/A |
+| sum_fftconv | threaded sum of one dimensional FFT based convolutions | Yes (*)  | Yes  | N/A | N/A |
+| das | threaded delay-and-sum (DAS) beamforming (SAFT and TFM) | Yes  | Yes  | N/A | N/A |
 
 _Table 3. Threaded (parallel) signal processing algorithms._
 

@@ -43,7 +43,6 @@ m_par = np.asmatrix([v,cp,alpha]);
 #t_z = z*1.0e-3/cp * 1.0e6;      # us
 delay = np.asmatrix(0.0);
 
-
 # Grid function (position vectors of the elements).
 gr = np.asmatrix([3.5, 3.6, 5.0, 5.1, 6.0, 6.1, 7.0, 7.1, 8.0])
 gr = gr.reshape(9,1)

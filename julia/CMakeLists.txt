@@ -15,7 +15,7 @@ set (CXXWRAP_INCLUDE_DIR ${CXXWRAP_PREFIX}/include)
 
 message (STATUS "Julia CxxWrap PREFIX ${CXXWRAP_PREFIX}")
 
-# FIXME: The Julia CxxWrap macro @@wrapmodule only seem to take hard coded paths
+# FIXME: The Julia CxxWrap macro @wrapmodule only seem to take hard coded paths
 # so we cannot read the DREAM install path from a variable defined in a file
 # like in ~/.julia/config/startup.jl, for example. For now we just let cmake
 # generate the module files with hard coded paths on-the-fly.
@@ -23,12 +23,14 @@ message (STATUS "Julia CxxWrap PREFIX ${CXXWRAP_PREFIX}")
 set (DREAM_FUNC_LIST
   dreamline
   dreamrect
+  dreamrect_f
   dreamcirc
+  dreamcirc_f
 )
 
 # FIXME: There must be a cleaner way than having a separate file for each Julia module!?
 foreach (D_FUN IN LISTS DREAM_FUNC_LIST)
-  message (STATUS ${D_FUN})
+  #message (STATUS ${D_FUN})
   file (WRITE "${CMAKE_CURRENT_BINARY_DIR}/${D_FUN}_m.jl" "module ${D_FUN}_m\n")
   file (APPEND "${CMAKE_CURRENT_BINARY_DIR}/${D_FUN}_m.jl" "using CxxWrap\n")
   file (APPEND "${CMAKE_CURRENT_BINARY_DIR}/${D_FUN}_m.jl" "@wrapmodule(joinpath(\"${CMAKE_CURRENT_BINARY_DIR}\",\"${D_FUN}\"))\n")
@@ -44,7 +46,7 @@ find_package(Julia REQUIRED)
 
 set (DREAM_JULIA_INCLUDE_DIRS
   ${PROJECT_BINARY_DIR}
-  "${PROJECT_SOURCE_DIR}/../include"
+  "${PROJECT_SOURCE_DIR}/../include;"
   ${Julia_INCLUDE_DIRS}
   ${CXXWRAP_INCLUDE_DIR}
   ${FFTW_INCLUDE_DIR}
@@ -109,6 +111,33 @@ set_target_properties(jl_dreamrect PROPERTIES
   PREFIX "" OUTPUT_NAME "dreamrect"
 )
 
+
+#
+# dreamrect_f
+#
+
+set (jl_dreamrect_f_SOURCE_FILES
+  src/jl_dreamrect_f.cc
+  ../src/dreamrect_f.cc
+  ../src/attenuation.cc
+  ../src/affinity.cc
+  ../src/arr_functions.cc
+  ../src/dream_error.cc
+)
+
+add_library(jl_dreamrect_f MODULE ${jl_dreamrect_f_SOURCE_FILES})
+target_link_libraries(jl_dreamrect_f
+  ${FFTW_LIBRARIES}
+)
+
+set_target_properties(jl_dreamrect_f PROPERTIES
+  CXX_STANDARD 17
+  COMPILE_FLAGS "${DREAM_JULIA_FLAGS}"
+  INCLUDE_DIRECTORIES "${DREAM_JULIA_INCLUDE_DIRS}"
+  LINK_FLAGS ${JULIA_LD_FLAGS}
+  PREFIX "" OUTPUT_NAME "dreamrect_f"
+)
+
 #
 # dreamcirc
 #
@@ -132,4 +161,30 @@ set_target_properties(jl_dreamcirc PROPERTIES
   INCLUDE_DIRECTORIES "${DREAM_JULIA_INCLUDE_DIRS}"
   LINK_FLAGS ${JULIA_LD_FLAGS}
   PREFIX "" OUTPUT_NAME "dreamcirc"
+)
+
+#
+# dreamcirc_f
+#
+
+set (jl_dreamcirc_f_SOURCE_FILES
+  src/jl_dreamcirc_f.cc
+  ../src/dreamcirc_f.cc
+  ../src/attenuation.cc
+  ../src/affinity.cc
+  ../src/arr_functions.cc
+  ../src/dream_error.cc
+)
+
+add_library(jl_dreamcirc_f MODULE ${jl_dreamcirc_f_SOURCE_FILES})
+target_link_libraries(jl_dreamcirc_f
+  ${FFTW_LIBRARIES}
+)
+
+set_target_properties(jl_dreamcirc_f PROPERTIES
+  CXX_STANDARD 17
+  COMPILE_FLAGS "${DREAM_JULIA_FLAGS}"
+  INCLUDE_DIRECTORIES "${DREAM_JULIA_INCLUDE_DIRS}"
+  LINK_FLAGS ${JULIA_LD_FLAGS}
+  PREFIX "" OUTPUT_NAME "dreamcirc_f"
 )

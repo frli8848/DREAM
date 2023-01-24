@@ -78,10 +78,17 @@ typedef mwSize dream_idx_type;
 typedef pybind11::ssize_t dream_idx_type;
 #endif
 
-#if !defined(DREAM_OCTAVE) && !defined(DREAM_MATLAB) && !defined(DREAM_PYTHON)
+// FIXME: Check what Julia uses as matrix/vector index type!
+#ifdef DREAM_JULIA
+typedef size_t dream_idx_type;
+#endif
+
+#if !defined(DREAM_OCTAVE) && !defined(DREAM_MATLAB) && !defined(DREAM_PYTHON) && !defined(DREAM_JULIA)
 typedef size_t dream_idx_type;
 #define HAVE_FFTW
 #endif
+
+
 
 /***
  *

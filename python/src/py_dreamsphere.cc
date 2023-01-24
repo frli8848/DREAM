@@ -141,7 +141,7 @@ py::array_t<double,py::array::f_style> py_dreamsphere(py::array_t<double,py::arr
   err = sphere.dreamsphere(alpha,
                            ro, no,
                            R, Rcurv,
-                           dx, dy,  dt, nt,
+                           dx, dy, dt, nt,
                            delay_type, delay,
                            v, cp,
                            h, err_level);

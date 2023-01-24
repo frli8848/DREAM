@@ -41,14 +41,14 @@ alpha = 0.0;                    # Absorbtion (dB/cm Hz).
 m_par = np.asmatrix([v,cp,alpha]);
 
 #t_z = z*1.0e-3/cp * 1.0e6;      # us
-delay = np.asmatrix(0.0);
+delay = np.asmatrix(0.0)
 
 # Focused
 
 # Geometrical parameters.
-R = 10;
-Rcurv = 25.0;
-geom_par = np.asmatrix([R,Rcurv]);
+R = 10
+Rcurv = 25.0
+geom_par = np.asmatrix([R,Rcurv])
 
 H = dsp.dreamsphere(Ro,geom_par,s_par,delay,m_par,"stop")
 
@@ -71,8 +71,6 @@ axs[0].set_ylabel('h_{SIR} [m/s]')
 
 Rcurv = -25.0;
 geom_par = np.asmatrix([R,Rcurv]);
-
-H = dsp.dreamsphere(Ro,geom_par,s_par,delay,m_par,"stop")
 
 alpha  = 0.0;                   # Absorbtion (dB/cm Hz).
 m_par = np.asmatrix([v,cp,alpha]);

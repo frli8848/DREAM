@@ -26,6 +26,7 @@ set (DREAM_FUNC_LIST
   dreamrect_f
   dreamcirc
   dreamcirc_f
+  dreamsphere
 )
 
 # FIXME: There must be a cleaner way than having a separate file for each Julia module!?
@@ -187,4 +188,29 @@ set_target_properties(jl_dreamcirc_f PROPERTIES
   INCLUDE_DIRECTORIES "${DREAM_JULIA_INCLUDE_DIRS}"
   LINK_FLAGS ${JULIA_LD_FLAGS}
   PREFIX "" OUTPUT_NAME "dreamcirc_f"
+)
+
+#
+# dreamsphere
+#
+
+set (jl_dreamsphere_SOURCE_FILES
+  src/jl_dreamsphere.cc
+  ../src/dreamsphere.cc
+  ../src/attenuation.cc
+  ../src/affinity.cc
+  ../src/dream_error.cc
+)
+
+add_library(jl_dreamsphere MODULE ${jl_dreamsphere_SOURCE_FILES})
+target_link_libraries(jl_dreamsphere
+  ${FFTW_LIBRARIES}
+)
+
+set_target_properties(jl_dreamsphere PROPERTIES
+  CXX_STANDARD 17
+  COMPILE_FLAGS "${DREAM_JULIA_FLAGS}"
+  INCLUDE_DIRECTORIES "${DREAM_JULIA_INCLUDE_DIRS}"
+  LINK_FLAGS ${JULIA_LD_FLAGS}
+  PREFIX "" OUTPUT_NAME "dreamsphere"
 )

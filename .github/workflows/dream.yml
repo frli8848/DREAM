@@ -78,6 +78,7 @@ jobs:
     - name: Install deps
       run: |
         sudo apt -yq update
+        sudo apt install -yq --no-install-recommends libfftw3-dev
         sudo apt install -yq --no-install-recommends python3-pybind11
         sudo apt install -yq --no-install-recommends python3-numpy
 

@@ -28,6 +28,7 @@ if (pybind11_FOUND)
   message (STATUS "PYTHON_LD_FLAGS ${PYTHON_LD_FLAGS}")
 
   if (FFTW_FOUND)
+    add_definitions( -DHAVE_FFTW )
     set (PYTHON_LD_FLAGS "${PYTHON_LD_FLAGS} -lfftw3")
   endif (FFTW_FOUND)
 

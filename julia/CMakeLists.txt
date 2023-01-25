@@ -64,6 +64,7 @@ set (DREAM_JULIA_FLAGS "-DDREAM_JULIA")
 message (STATUS "JULIA_LD_FLAGS ${JULIA_LD_FLAGS}")
 
 if (FFTW_FOUND)
+  add_definitions( -DHAVE_FFTW )
   set (JULIA_LD_FLAGS "${JULIA_LD_FLAGS} -lfftw3")
 endif (FFTW_FOUND)
 

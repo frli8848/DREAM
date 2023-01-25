@@ -339,16 +339,17 @@ ErrorLevel DAS::das_tfm_serial(double *Y, // Size: a_scan_len x num_t_elements*n
       double t_dp = t_t + t_r; // Double-path travel time.
       auto k = dream_idx_type(t_dp*Fs_khz - delay);
 
-      if ((k < a_scan_len) && (k >= 0)) {
-        im += y_p[k];
-      } else {
-        if (k >= 0) {
-          err = dream_out_of_bounds_err("DAS out of bounds",k-a_scan_len+1,err_level);
+      //if (n_r == n_t) { // For comparing with SAFT (for testing)
+        if ((k < a_scan_len) && (k >= 0)) {
+          im += y_p[k];
         } else {
-          err = dream_out_of_bounds_err("DAS out of bounds",k,err_level);
+          if (k >= 0) {
+            err = dream_out_of_bounds_err("DAS out of bounds",k-a_scan_len+1,err_level);
+          } else {
+            err = dream_out_of_bounds_err("DAS out of bounds",k,err_level);
+          }
         }
-      }
-
+        //} // SAFT testing
       y_p += a_scan_len; // Jump to the next A-scan
     }
   }

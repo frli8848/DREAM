@@ -2,14 +2,14 @@
 %% ------------- Delay-and-sum --------------------------
 %%
 
-Fs = 50;   % Sampling freq. [MHz].
-Ts = 1/Fs; % [us].
+Fs = 50.0;                      % Sampling freq. [MHz].
+Ts = 1/Fs;                      % [us].
 
 %% Descretization parameters.
 dx = 0.05;                % [mm].
 dy = 0.05;                % [mm]
 dt = Ts;                  % [us].
-nt = 2000;                 % Length of spatial impulse response vector.
+nt = 2000;                % Length of spatial impulse response vector.
 s_par = [dx dy dt nt];
 
 t = 0:Ts:Ts*(nt-1);
@@ -21,7 +21,7 @@ alpha  = 0.0;                   % Absorbtion (dB/cm Hz).
 m_par = [v cp alpha];
 
 %% Simulate a single point scatterer at (x=0,z=10)
-z = 10;
+z_pt = 10;
 
 %%
 %% Generate simulated data
@@ -51,7 +51,7 @@ if (exist('DO_PLOTTING'))
   figure(1);
   clf;
   subplot(211)
-  plot(t,h_e);
+  plot(t, h_e);
   xlabel('t [{\mu}s]')
   title('System impulse response')
 
@@ -62,7 +62,7 @@ if (exist('DO_PLOTTING'))
 end
 
 % Geometrical parameters.
-a = 0.8;                        % x-size.
+a = 0.4;                        % x-size.
 b = 15;				% y-size.
 geom_par = [a b];
 
@@ -70,14 +70,13 @@ geom_par = [a b];
 %% SAFT data
 %%
 
-d  = 0.5;
+d  = 0.5;                       % Synthetic array pitch.
 xo = (-25:d:25);
 yo = zeros(length(xo),1);
-zo = z*ones(length(xo),1);
+zo = z_pt*ones(length(xo),1);
 Ro = [xo(:) yo(:) zo(:)];
 
-delay = system_delay;
-
+delay = 0.0;
 [H,err] = dreamrect(Ro,geom_par,s_par,delay,m_par,'stop');
 
 Hdp = fftconv_p(H,H); % Double-path SIRs
@@ -86,8 +85,11 @@ Ysaft = fftconv_p(Hdp,h_e);
 if (exist('DO_PLOTTING'))
   figure(2);
   clf;
-  imagesc(Ysaft)
+  t_dp = 0:Ts:Ts*(size(Ysaft,1)-1);
+  imagesc(x,t_dp,Ysaft)
   title('SAFT B-scan')
+  xlabel('x [mm]')
+  ylabel('t [{\mu}s]')
 end
 
 num_elements = size(xo,2);
@@ -95,12 +97,13 @@ Gt = [xo(:) zeros(num_elements,1) zeros(num_elements,1)];
 Gr = [];
 
 %% Observation points for DAS
-x = -25:d:25;
+x = -25:0.5:25;
 z = 0:0.5:20;
 [X,Z] = meshgrid(x,z);
 Y = zeros(size(X));
 Ro_saft = [X(:) Y(:) Z(:)];
 
+delay = system_delay; % Compensate for the pulse/system (transducer) delay.
 Im_saft = das(Ysaft, Gt, Gr, Ro_saft, dt, delay, cp);
 
 if (exist('DO_PLOTTING'))

@@ -81,12 +81,13 @@ delay = 0.0;
 
 Hdp = fftconv_p(H,H); % Double-path SIRs
 Ysaft = fftconv_p(Hdp,h_e);
+Ysaft = Ysaft/max(max(abs(Ysaft))); % Normalize amplitudes
 
 if (exist('DO_PLOTTING'))
   figure(2);
   clf;
   t_dp = 0:Ts:Ts*(size(Ysaft,1)-1);
-  imagesc(x,t_dp,Ysaft)
+  imagesc(xo,t_dp,Ysaft)
   title('SAFT B-scan')
   xlabel('x [mm]')
   ylabel('t [{\mu}s]')
@@ -98,7 +99,7 @@ Gr = [];
 
 %% Observation points for DAS
 x = -25:0.5:25;
-z = 0:0.5:20;
+z = (0:63)/64*20; % Use the same as for the DAS TFM test.
 [X,Z] = meshgrid(x,z);
 Y = zeros(size(X));
 Ro_saft = [X(:) Y(:) Z(:)];

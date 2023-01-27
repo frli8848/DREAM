@@ -85,13 +85,20 @@ An error message is printed but the program in not stopped (and err is negative)
 An error message is printed and the program is stopped.\n\
 @end table\n\
 \n\
+@table @code\n\
+@item 'device'\n\
+A string which can be one of 'cpu' or 'gpu'.\n\
+@end table\n\
+\n\
 das is an oct-function that is a part of the DREAM Toolbox available at\n\
 @url{https://github.com/frli8848/DREAM}.\n\
 \n\
-Copyright @copyright{} 2008-2021 Fredrik Lingvall.\n\
+Copyright @copyright{} 2008-2023 Fredrik Lingvall.\n\
 @seealso {das_arr,saft,saft_p}\n\
 @end deftypefn")
 {
+  std::string device;
+
   octave_value_list oct_retval;
 
   int nrhs = args.length ();
@@ -100,8 +107,8 @@ Copyright @copyright{} 2008-2021 Fredrik Lingvall.\n\
 
   // Check for proper number of arguments
 
-  if (!((nrhs == 7) || (nrhs == 8))) {
-    error("das requires 7 or 8 input arguments!");
+  if ((nrhs < 7) && (nrhs > 9)) {
+    error("das requires 7 to 9 input arguments!");
     return oct_retval;
   }
 
@@ -161,9 +168,9 @@ Copyright @copyright{} 2008-2021 Fredrik Lingvall.\n\
     return oct_retval;
   }
 
-  dream_idx_type no = mxGetM(3); // Number of observation points.
+  dream_idx_type No = mxGetM(3); // Number of observation points.
   const Matrix tmp3 = args(3).matrix_value();
-  double *ro = (double*) tmp3.data();
+  double *Ro = (double*) tmp3.data();
 
   //
   // Temporal and spatial sampling parameters.
@@ -182,7 +189,7 @@ Copyright @copyright{} 2008-2021 Fredrik Lingvall.\n\
   // Start point of impulse response vector ([us]).
   //
 
-  if (!ap.check_delay("das", args, 5, no)) {
+  if (!ap.check_delay("das", args, 5, No)) {
     return oct_retval;
   }
 
@@ -214,7 +221,7 @@ Copyright @copyright{} 2008-2021 Fredrik Lingvall.\n\
 
   ErrorLevel err=ErrorLevel::none, err_level=ErrorLevel::stop;
 
-  if (nrhs == 8) {
+  if (nrhs >= 8) {
     if (!ap.parse_error_arg("das", args, 7, err_level)) {
       return oct_retval;
     }
@@ -222,8 +229,22 @@ Copyright @copyright{} 2008-2021 Fredrik Lingvall.\n\
     err_level = ErrorLevel::stop; // Default.
   }
 
+  //
+  // Compute device
+  //
+
+  if (nrhs == 9) {
+
+    if (!mxIsChar(8)) {
+      error("Argument 9 must be a string");
+      return oct_retval;
+    }
+
+    device = args(8).string_value();
+  }
+
   // Create an output matrix for the impulse response.
-  Matrix Im_mat(no,1);
+  Matrix Im_mat(No,1);
   double *Im = (double*) Im_mat.data();
 
   DAS das;
@@ -231,20 +252,41 @@ Copyright @copyright{} 2008-2021 Fredrik Lingvall.\n\
   // Register signal handler.
   std::signal(SIGABRT, DAS::abort);
 
-  err = das.das(Y, a_scan_len,
-                ro,  no,
-                Gt, num_t_elements,
-                Gr, num_r_elements,
-                dt,
-                delay_type, delay,
-                cp,
-                Im,
-                err_level);
+  std::cout << "Y: "  <<   a_scan_len << " x " << num_t_elements << " x " << num_r_elements << std::endl;
+#ifdef USE_OPENCL
 
-  if (!das.is_running()) {
-    error("CTRL-C pressed!\n"); // Bail out.
-    return oct_retval;
+  // Check if we should use the GPU
+  if (device == "gpu" && num_r_elements > 0) { // SAFT is most likely fast enough on the CPU.
+    das.cl_das_tfm(Y, a_scan_len,
+                   Ro,  No,
+                   Gt, num_t_elements,
+                   Gr, num_r_elements,
+                   dt,
+                   delay[0],
+                   cp,
+                   Im);
+
+  } else { // Otherwise use the cpu
+#endif
+
+    err = das.das(Y, a_scan_len,
+                  Ro,  No,
+                  Gt, num_t_elements,
+                  Gr, num_r_elements,
+                  dt,
+                  delay_type, delay,
+                  cp,
+                  Im,
+                  err_level);
+
+    if (!das.is_running()) {
+      error("CTRL-C pressed!\n"); // Bail out.
+      return oct_retval;
+    }
+
+#ifdef USE_OPENCL
   }
+#endif
 
   if (err == ErrorLevel::stop) {
     error("Error in DAS"); // Bail out if error.

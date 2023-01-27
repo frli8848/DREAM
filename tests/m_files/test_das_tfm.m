@@ -90,6 +90,8 @@ for n=1:L:L^2
   n_t = n_t+1;
 end
 
+Yfmc = Yfmc/max(max(abs(Yfmc))); % Normalize amplitudes
+
 if (exist('DO_PLOTTING'))
   figure(2);
   clf;
@@ -115,18 +117,29 @@ Gr = Gt;
 
 %% Observation points for DAS
 x = -25:0.5:25;
-z = 0:0.5:20;
+z = (0:63)/64*20; % Make sure its a factor of 64 (the OpenCL work group size).
 [X,Z] = meshgrid(x,z);
 Y = zeros(size(X));
 Ro_tfm = [X(:) Y(:) Z(:)];
 
-delay = system_delay; % Compensate for the pulse/system (transducer) delay.79
+delay = system_delay; % Compensate for the pulse/system (transducer) delay.
 Im_tfm = das(Yfmc, Gt, Gr, Ro_tfm, dt, delay, cp);
 
 if (exist('DO_PLOTTING'))
   figure(4);
   clf;
   imagesc(x,z,reshape(Im_tfm,length(z),length(x)))
+  title('TFM Reconstruction')
+  xlabel('x [mm]')
+  ylabel('z [mm]')
+end
+
+Im_tfm_gpu = das(Yfmc, Gt, Gr, Ro_tfm, dt, delay, cp, 'ignore','gpu');
+
+if (exist('DO_PLOTTING'))
+  figure(5);
+  clf;
+  imagesc(x,z,reshape(Im_tfm_gpu,length(z),length(x)))
   title('TFM Reconstruction')
   xlabel('x [mm]')
   ylabel('z [mm]')

@@ -511,14 +511,20 @@ if (OCTAVE_FOUND)
     extra_src/das.cc
     src/affinity.cc
     src/dream_error.cc
-    )
+  )
+
+  if (OpenCL_FOUND)
+    set (oct_das_SOURCE_FILES ${oct_das_SOURCE_FILES} "opencl/cl_das.cc")
+    file (COPY opencl/das.cl DESTINATION kernels)
+  endif (OpenCL_FOUND)
 
   add_library (oct_das MODULE
     ${oct_das_SOURCE_FILES}
-    )
+  )
 
   target_link_libraries (oct_das
     ${OCTAVE_LIBRARIES}
+    ${OpenCL_LIBRARIES}
     )
 
   set_target_properties (oct_das PROPERTIES

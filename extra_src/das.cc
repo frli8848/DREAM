@@ -43,10 +43,10 @@ bool DAS::is_running()
 // Thread data.
 typedef struct
 {
-  dream_idx_type no;
   dream_idx_type start;
   dream_idx_type stop;
-  double *ro;
+  double *Ro;
+  dream_idx_type No;
   double *gt;                   // Transmit
   dream_idx_type num_t_elements;
   double *gr;                   // Recieve
@@ -79,8 +79,8 @@ void* DAS::smp_das(void *arg)
   double *gr = D.gr;
   dream_idx_type num_r_elements  = D.num_r_elements;
   double dt=D.dt;
-  dream_idx_type n, no=D.no;
-  double *delay=D.delay, *ro=D.ro, cp=D.cp;
+  dream_idx_type No=D.No;
+  double *delay=D.delay, *Ro=D.Ro, cp=D.cp;
   DASType das_type=D.das_type;
   dream_idx_type start=D.start, stop=D.stop;
   ErrorLevel tmp_lev=ErrorLevel::none, err_level=D.err_level;
@@ -93,16 +93,16 @@ void* DAS::smp_das(void *arg)
     tmp_lev = err_level;
   }
 
-  for (n=start; n<stop; n++) {
-    double xo = ro[n];
-    double yo = ro[n+1*no];
-    double zo = ro[n+2*no];
+  for (dream_idx_type no=start; no<stop; no++) {
+    double xo = Ro[no];
+    double yo = Ro[no+1*No];
+    double zo = Ro[no+2*No];
 
     double dlay = 0.0;
     if (D.delay_type == DelayType::single) {
       dlay = delay[0];
     } else { // DelayType::multiple.
-      dlay = delay[n];
+      dlay = delay[no];
     }
 
     if (das_type == DASType::saft) {
@@ -110,7 +110,7 @@ void* DAS::smp_das(void *arg)
                             gt, num_t_elements, // Transmit = receive here.
                             xo, yo, zo,
                             dt, dlay,
-                            cp, Im[n], tmp_lev);
+                            cp, Im[no], tmp_lev);
     }
 
     if (das_type == DASType::tfm) {
@@ -119,7 +119,7 @@ void* DAS::smp_das(void *arg)
                            gr, num_r_elements,
                            xo, yo, zo,
                            dt, dlay,
-                           cp, Im[n], tmp_lev);
+                           cp, Im[no], tmp_lev);
     }
 
     if (err != ErrorLevel::none || m_out_err ==  ErrorLevel::parallel_stop) {
@@ -151,7 +151,7 @@ void* DAS::smp_das(void *arg)
  ***/
 
 ErrorLevel DAS::das(double *Y, dream_idx_type a_scan_len,
-                    double *ro, dream_idx_type no,
+                    double *Ro, dream_idx_type No,
                     double *gt, dream_idx_type num_t_elements,
                     double *gr, dream_idx_type num_r_elements, // SAFT if num_r_elements = 0;
                     double dt,
@@ -188,8 +188,8 @@ ErrorLevel DAS::das(double *Y, dream_idx_type a_scan_len,
   }
 
   // nthreads can't be larger then the number of observation points.
-  if (nthreads > (unsigned int) no) {
-    nthreads = no;
+  if (nthreads > (unsigned int) No) {
+    nthreads = No;
   }
 
   // Allocate local data.
@@ -200,8 +200,8 @@ ErrorLevel DAS::das(double *Y, dream_idx_type a_scan_len,
 
   for (thread_n = 0; thread_n < nthreads; thread_n++) {
 
-    start = thread_n * no/nthreads;
-    stop =  (thread_n+1) * no/nthreads;
+    start = thread_n * No/nthreads;
+    stop =  (thread_n+1) * No/nthreads;
 
     // Init local data.
     D[thread_n].start = start; // Local start index;
@@ -209,8 +209,8 @@ ErrorLevel DAS::das(double *Y, dream_idx_type a_scan_len,
     D[thread_n].Y = Y;
     D[thread_n].a_scan_len = a_scan_len;
     D[thread_n].Im = Im;
-    D[thread_n].no = no;
-    D[thread_n].ro = ro;
+    D[thread_n].No = No;
+    D[thread_n].Ro = Ro;
     D[thread_n].gt = gt;
     D[thread_n].num_t_elements = num_t_elements;
     D[thread_n].gr = gr;
@@ -261,7 +261,8 @@ ErrorLevel DAS::das_saft_serial(double *Y, // Size: a_scan_len x num_elements
 {
   ErrorLevel err = ErrorLevel::none;
   const double Fs_khz = (1.0/dt)*1000.0;
-  double one_over_cp = 1.0/cp;
+  const double one_over_cp = 1.0/cp;
+  const double delay_ms = delay/1000.0;
 
   //
   //  Transmit with one element - receive with one element.
@@ -269,16 +270,17 @@ ErrorLevel DAS::das_saft_serial(double *Y, // Size: a_scan_len x num_elements
 
   im = 0.0;
   double *y_p = Y;
-  for (size_t n_tr=0; n_tr<num_elements; n_tr++) {
+  for (dream_idx_type n_tr=0; n_tr<num_elements; n_tr++) {
 
     // Transmit/Receive
     double gx_tr = g[n_tr] - xo;
     double gy_tr = g[n_tr + 1*num_elements] - yo;
     double gz_tr = g[n_tr + 2*num_elements] - zo;
     double t_tr =  std::sqrt(gx_tr*gx_tr + gy_tr*gy_tr + gz_tr*gz_tr) * one_over_cp;
+    t_tr += delay_ms;           // Compensate for pulse system delay.
 
     double t_dp = 2.0*t_tr; // Double-path travel time.
-    auto k = dream_idx_type(t_dp*Fs_khz - delay);
+    auto k = dream_idx_type(t_dp*Fs_khz);
 
     if ((k < a_scan_len) && (k >= 0)) {
       im += y_p[k];
@@ -312,7 +314,8 @@ ErrorLevel DAS::das_tfm_serial(double *Y, // Size: a_scan_len x num_t_elements*n
 {
   ErrorLevel err = ErrorLevel::none;
   const double Fs_khz = (1.0/dt)*1000.0;
-  double one_over_cp = 1.0/cp;
+  const double one_over_cp = 1.0/cp;
+  const double delay_ms = delay/1000.0;
 
   //
   //  Transmit with all - receive with all elements.
@@ -320,15 +323,16 @@ ErrorLevel DAS::das_tfm_serial(double *Y, // Size: a_scan_len x num_t_elements*n
 
   im = 0.0;
   double *y_p = Y;
-  for (size_t n_t=0; n_t<num_t_elements; n_t++) {
+  for (dream_idx_type n_t=0; n_t<num_t_elements; n_t++) {
 
     // Transmit
     double gx_t = gt[n_t] - xo;
     double gy_t = gt[n_t + 1*num_t_elements] - yo;
     double gz_t = gt[n_t + 2*num_t_elements] - zo;
     double t_t =  std::sqrt(gx_t*gx_t + gy_t*gy_t + gz_t*gz_t) * one_over_cp;
+    t_t += delay_ms;            // Compensate for pulse system delay.
 
-    for (size_t n_r=0; n_r<num_r_elements; n_r++) {
+    for (dream_idx_type n_r=0; n_r<num_r_elements; n_r++) {
 
       // Recieve
       double gx_r = gr[n_r] - xo;
@@ -337,19 +341,19 @@ ErrorLevel DAS::das_tfm_serial(double *Y, // Size: a_scan_len x num_t_elements*n
       double t_r =  std::sqrt(gx_r*gx_r + gy_r*gy_r + gz_r*gz_r) * one_over_cp;
 
       double t_dp = t_t + t_r; // Double-path travel time.
-      auto k = dream_idx_type(t_dp*Fs_khz - delay);
+      auto k = dream_idx_type(t_dp*Fs_khz);
 
       //if (n_r == n_t) { // For comparing with SAFT (for testing)
-        if ((k < a_scan_len) && (k >= 0)) {
-          im += y_p[k];
+      if ((k < a_scan_len) && (k >= 0)) {
+        im += y_p[k];
+      } else {
+        if (k >= 0) {
+          err = dream_out_of_bounds_err("DAS out of bounds",k-a_scan_len+1,err_level);
         } else {
-          if (k >= 0) {
-            err = dream_out_of_bounds_err("DAS out of bounds",k-a_scan_len+1,err_level);
-          } else {
-            err = dream_out_of_bounds_err("DAS out of bounds",k,err_level);
-          }
+          err = dream_out_of_bounds_err("DAS out of bounds",k,err_level);
         }
-        //} // SAFT testing
+      }
+      //} // SAFT testing
       y_p += a_scan_len; // Jump to the next A-scan
     }
   }

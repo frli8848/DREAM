@@ -40,8 +40,8 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
   // Check for proper number of arguments
 
-  if (!((nrhs == 7) || (nrhs == 8))) {
-    dream_err_msg("das requires 7 or 8 input arguments!");
+  if (!((nrhs == 8) || (nrhs == 9))) {
+    dream_err_msg("das requires 8 or 9 input arguments!");
   }
 
   if (nlhs > 2) {
@@ -132,13 +132,20 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   double cp = m_par[0]; // Sound speed.
 
   //
+  // DAS method
+  //
+
+  DASType das_type;
+  ap.parse_das_arg("das", prhs, 7, das_type);
+
+  //
   // Error reporting.
   //
 
   ErrorLevel err=ErrorLevel::none, err_level=ErrorLevel::stop;
 
-  if (nrhs == 8) {
-    ap.parse_error_arg("das", prhs, 7, err_level);
+  if (nrhs == 9) {
+    ap.parse_error_arg("das", prhs, 8, err_level);
   } else {
     err_level = ErrorLevel::stop; // Default.
   }
@@ -159,6 +166,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
                 dt,
                 delay_type, delay,
                 cp,
+                das_type,
                 Im,
                 err_level);
 

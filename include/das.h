@@ -30,11 +30,6 @@
 #include "attenuation.h"
 #include "dream_error.h"
 
-enum class DASType {
-  saft,
-  tfm
-};
-
 class DAS
 {
 public:
@@ -52,6 +47,7 @@ public:
                  double dt,
                  DelayType delay_type, double *delay,
                  double cp,
+                 DASType das_type,
                  double *Im,
                  ErrorLevel err_level);
 
@@ -59,15 +55,16 @@ public:
   bool is_running();
 
 #ifdef USE_OPENCL
-  int cl_das_tfm(const double *Y, // Data
-                 dream_idx_type a_scan_len,
-                 const double *Ro, dream_idx_type No,
-                 const double *gt, dream_idx_type num_t_elements,
-                 const double *gr, dream_idx_type num_r_elements,
-                 double ddt,
-                 double delay,
-                 double cp,
-                 double *Im);
+  int cl_das(const double *Y, // Data
+             dream_idx_type a_scan_len,
+             const double *Ro, dream_idx_type No,
+             const double *gt, dream_idx_type num_t_elements,
+             const double *gr, dream_idx_type num_r_elements,
+             double ddt,
+             double delay,
+             double cp,
+             DASType das_type,
+             double *Im);
 #endif
 
 private:
@@ -88,6 +85,14 @@ private:
                             dream_idx_type a_scan_len,
                             double *gt, dream_idx_type num_t_elements,
                             double *gr, dream_idx_type num_r_elements,
+                            double xo, double yo, double zo,
+                            double dt, double delay,
+                            double cp, double &im, ErrorLevel err_level);
+
+  ErrorLevel das_rca_serial(double *Y, // Size: a_scan_len x num_t_elements*num_r_elements (=FMC)
+                            dream_idx_type a_scan_len,
+                            double *Gt, dream_idx_type num_t_elements,
+                            double *Gr, dream_idx_type num_r_elements,
                             double xo, double yo, double zo,
                             double dt, double delay,
                             double cp, double &im, ErrorLevel err_level);

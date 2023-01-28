@@ -123,7 +123,7 @@ Y = zeros(size(X));
 Ro_tfm = [X(:) Y(:) Z(:)];
 
 delay = system_delay; % Compensate for the pulse/system (transducer) delay.
-Im_tfm = das(Yfmc, Gt, Gr, Ro_tfm, dt, delay, cp);
+Im_tfm = das(Yfmc, Gt, Gr, Ro_tfm, dt, delay, cp,'tfm');
 
 if (exist('DO_PLOTTING'))
   figure(4);
@@ -134,7 +134,7 @@ if (exist('DO_PLOTTING'))
   ylabel('z [mm]')
 end
 
-Im_tfm_gpu = das(Yfmc, Gt, Gr, Ro_tfm, dt, delay, cp, 'ignore','gpu');
+Im_tfm_gpu = das(Yfmc, Gt, Gr, Ro_tfm, dt, delay, cp,'tfm', 'ignore','gpu');
 
 if (exist('DO_PLOTTING'))
   figure(5);

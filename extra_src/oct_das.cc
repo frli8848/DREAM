@@ -36,43 +36,83 @@
 
 DEFUN_DLD (das, args, nlhs,
            "-*- texinfo -*-\n\
-@deftypefn {Loadable Function} {}  [Im] = das(Y,Gt,Gr,Ro,s_par,delay,m_par,err_level).\n \
+@deftypefn {Loadable Function} {}  [Im] = das(Y,Gt,Gr,Ro,s_par,delay,m_par,method,err_level,device).\n \
 \n\
-DAS Computes the delay reponse for single element transducer. That is,\n\
-DAS only comutes the delay to each observation point which is\n\
-represented by a '1' at the corresponding data point.\n\
+DAS Computes the delay-and-sum processed reconstruction (beamformed image) for\n\
+three different array geometries: SAFT, TFM, and RCA. In the synthtic aperture\n\
+focusing techinque (SAFT) one use one transmitter and one reciever (the same)\n\
+and moves that along the array aperture. In the total focusing technique (TFM) one\n\
+first transmit with the first element and then recieve with all elements, transmit with the \n\
+second element and again receive with all elements and so on until the last transmit element (ie.,\n\
+transmit with all - receive with all). The last method, row-column adressed (RCA) array, is \n\
+a variant of TFM where the elements are arranged in a crossed layout to form a 2D array.\n\
+\n\
+Data matrix:\n\
+\n\
+@table @code\n\
+@item Y\n\
+A K x N matrix where K is the A-scan length and the number of A-scans, N, depends\n\
+on DAS algorithm selected (see below).\n\
+@end table\n\
+\n\
+Transmit element grid matrix:\n\
+\n\
+@table @code\n\
+\n\
+@item Gt\n\
+An Lt x 3 matrix, Gt = [x1 y1 z2; x2 y2 z2; ... xLt yoLt zLt]; where Lt is the number of tranmsit elements.\n\
+@end table\n\
+\n\
+Receive element grid matrix:\n\
+\n\
+@table @code\n\
+@item Gr\n\
+An Lr x 3 matrix, Gr = Gt = [x1 y1 z2; x2 y2 z2; ... xLr yoLr zLr]; where Lr is the number of tranmsit elements.\n\
+@end table\n\
 \n\
 Observation point(s) ([mm]):\n\
 \n\
 @table @code\n\
 @item Ro\n\
-An N x 3 matrix, Ro = [xo1 yo1 zo2; xo2 yo2 zo2; ... xoN yoN zoN]; where N is the number of observation points.\n\
+An No x 3 matrix, Ro = [xo1 yo1 zo2; xo2 yo2 zo2; ... xoNo yoNo zoNo]; where No is the number of observation points.\n\
 @end table\n\
 \n\
-Sampling parameters: s_par = [dt nt]; \n\
+Sampling parameter dt: \n\
 \n\
 @table @code\n\
 @item dt\n\
 Temporal discretization period (= 1/sampling freq) [us].\n\
-@item  nt\n\
-Length of impulse response vector.\n\
 @end table\n\
 \n\
-Start point of SIR:\n\
+Data start and pulse delay compensation:\n\
 \n\
 @table @code\n\
 @item  delay\n\
 Scalar delay for all observation points or a vector with individual delays for each observation point [us].\n\
 @end table\n\
 \n\
-Material parameters: m_par = [cp];\n\
+Sound speed:\n\
 \n\
 @table @code\n\
 @item cp\n\
-Sound velocity [m/s].\n\
+Sound velocity of the medium [m/s].\n\
 \n\
 @end table\n\
-Error Handling: err_level;\n\
+DAS algorithm:\n\
+das_met is a text string parameter for selecting DAS algorithm, options are:\n\
+\n\
+@table @code\n\
+@item 'saft'\n\
+When SAFT is selected data Y must be an K x Lt (SAFT is also selected if Gr=[]).\n\
+@item 'tfm'\n\
+When TFM is selected a linear array is assumed and data Y must be a \n\
+K x Lt*Lr matrix.\n\
+@item 'rca'\n\
+When RCA is selected a 2D RCA array is assumed and data Y must be a \n\
+K x Lt*Lr matrix.\n\
+@end table\n\
+\n\
+Error Handling:\n\
 err_level is an optional text string parameter for controlling the error behavior, options are:\n\
 \n\
 @table @code\n\
@@ -85,6 +125,8 @@ An error message is printed but the program in not stopped (and err is negative)
 An error message is printed and the program is stopped.\n\
 @end table\n\
 \n\
+Compute device:\n\
+\n\
 @table @code\n\
 @item 'device'\n\
 A string which can be one of 'cpu' or 'gpu'.\n\
@@ -94,7 +136,6 @@ das is an oct-function that is a part of the DREAM Toolbox available at\n\
 @url{https://github.com/frli8848/DREAM}.\n\
 \n\
 Copyright @copyright{} 2008-2023 Fredrik Lingvall.\n\
-@seealso {das_arr,saft,saft_p}\n\
 @end deftypefn")
 {
   std::string device;
@@ -107,8 +148,8 @@ Copyright @copyright{} 2008-2023 Fredrik Lingvall.\n\
 
   // Check for proper number of arguments
 
-  if ((nrhs < 7) && (nrhs > 9)) {
-    error("das requires 7 to 9 input arguments!");
+  if ((nrhs < 8) && (nrhs > 10)) {
+    error("das requires 7 to 10 input arguments!");
     return oct_retval;
   }
 
@@ -216,13 +257,22 @@ Copyright @copyright{} 2008-2023 Fredrik Lingvall.\n\
   double cp = m_par[0]; // Sound speed.
 
   //
+  // DAS method
+  //
+
+  DASType das_type;
+  if (!ap.parse_das_arg("das", args, 7, das_type)) {
+    return oct_retval;
+  }
+
+  //
   // Error reporting.
   //
 
   ErrorLevel err=ErrorLevel::none, err_level=ErrorLevel::stop;
 
-  if (nrhs >= 8) {
-    if (!ap.parse_error_arg("das", args, 7, err_level)) {
+  if (nrhs >= 9) {
+    if (!ap.parse_error_arg("das", args, 8, err_level)) {
       return oct_retval;
     }
   } else {
@@ -233,14 +283,14 @@ Copyright @copyright{} 2008-2023 Fredrik Lingvall.\n\
   // Compute device
   //
 
-  if (nrhs == 9) {
+  if (nrhs == 10) {
 
-    if (!mxIsChar(8)) {
-      error("Argument 9 must be a string");
+    if (!mxIsChar(9)) {
+      error("Argument 10 must be a string");
       return oct_retval;
     }
 
-    device = args(8).string_value();
+    device = args(9).string_value();
   }
 
   // Create an output matrix for the impulse response.
@@ -252,23 +302,22 @@ Copyright @copyright{} 2008-2023 Fredrik Lingvall.\n\
   // Register signal handler.
   std::signal(SIGABRT, DAS::abort);
 
-  std::cout << "Y: "  <<   a_scan_len << " x " << num_t_elements << " x " << num_r_elements << std::endl;
 #ifdef USE_OPENCL
 
   // Check if we should use the GPU
   if (device == "gpu" && num_r_elements > 0) { // SAFT is most likely fast enough on the CPU.
-    das.cl_das_tfm(Y, a_scan_len,
-                   Ro,  No,
-                   Gt, num_t_elements,
-                   Gr, num_r_elements,
-                   dt,
-                   delay[0],
-                   cp,
-                   Im);
+    das.cl_das(Y, a_scan_len,
+               Ro,  No,
+               Gt, num_t_elements,
+               Gr, num_r_elements,
+               dt,
+               delay[0],
+               cp,
+               das_type,
+               Im);
 
   } else { // Otherwise use the cpu
 #endif
-
     err = das.das(Y, a_scan_len,
                   Ro,  No,
                   Gt, num_t_elements,
@@ -276,6 +325,7 @@ Copyright @copyright{} 2008-2023 Fredrik Lingvall.\n\
                   dt,
                   delay_type, delay,
                   cp,
+                  das_type,
                   Im,
                   err_level);
 

@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2021,2022 Fredrik Lingvall
+* Copyright (C) 2021,2022,2023 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -42,12 +42,7 @@ typedef octave_value_list args_t;
 typedef const mxArray** args_t;
 #endif
 
-// TODO
-#ifdef DREAM_PYTHON
-#include <pybind11/pybind11.h>
-typedef const std::string args_t;
-#endif
-
+//! Argument parser class for MATLAB and Octave
 class ArgParser
 {
 public:
@@ -538,6 +533,44 @@ public:
     return retval;
   };
 
+  // A string arg
+  bool parse_das_arg(const char *func_name, args_t args, dream_idx_type arg_num, DASType &das_type) {
+    bool retval=true;
+    std::ostringstream s;
+    if (!is_string(args, arg_num)) {
+      s << func_name <<  " requires that arg " << arg_num+1 << " (DAS type) must be a string!";
+      dream_err_msg(s.str().c_str());
+      das_type = DASType::saft; // Default
+      retval=false;
+    } else {
+      std::string das_str = get_string_arg(args, arg_num);
+      bool is_set = false;
+
+      if (das_str == "saft") {
+        das_type = DASType::saft;
+        is_set = true;
+      }
+
+      if (das_str == "tfm") {
+        das_type = DASType::tfm;
+        is_set = true;
+      }
+
+      if (das_str == "rca") {
+        das_type = DASType::rca;
+        is_set = true;
+      }
+
+      if (is_set == false) {
+        retval=false;
+        s << func_name <<  " Unknown error level in arg " << arg_num+1 << "!";
+        dream_err_msg(s.str().c_str());
+      }
+    }
+
+    return retval;
+  };
+
 
 private:
 
@@ -605,9 +638,4 @@ private:
     return s.str();
   };
 #endif
-
-#ifdef DREAM_PYTHON
-
-#endif
-
 };

@@ -44,18 +44,27 @@
  *
  ***/
 
-int DAS::cl_das_tfm(const double *Y, // Data
-                    dream_idx_type a_scan_len,
-                    const double *Ro, dream_idx_type No,
-                    const double *gt, dream_idx_type num_t_elements,
-                    const double *gr, dream_idx_type num_r_elements,
-                    double dt,
-                    double delay,
-                    double cp,
-                    double *Im)
+int DAS::cl_das(const double *Y, // Data
+                dream_idx_type a_scan_len,
+                const double *Ro, dream_idx_type No,
+                const double *gt, dream_idx_type num_t_elements,
+                const double *gr, dream_idx_type num_r_elements,
+                double dt,
+                double delay,
+                double cp,
+                DASType das_type,
+                double *Im)
 {
   std::string kernel_str;
-  const std::string kernel_name="das_tfm"; // Function name of the OpenCL kernel
+  std::string kernel_name="das_tfm"; // Default function name of the OpenCL kernel
+
+  if (das_type == DASType::tfm) {
+    kernel_name="das_tfm";
+  }
+
+  if (das_type == DASType::rca) {
+    kernel_name="das_rca";
+  }
 
   //
   // Read OpenCL kernel file

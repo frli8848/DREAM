@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2007-2009,2012,2014-2016,2019,2021 Fredrik Lingvall
+* Copyright (C) 2007-2009,2012,2014-2016,2019,2021,2023 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -27,32 +27,55 @@
 
 #include <memory>
 
+enum class ErrorLevel {
+  none,
+  stop,
+  warn,
+  ignore,
+  parallel_stop
+};
+
 enum class DelayType {
   single,
-    multiple
-    };
+  multiple
+};
 
 enum class FocusMet {
   none,
-    x,
-    y,
-    xy,
-    x_y,
-    ud};
+  x,
+  y,
+  xy,
+  x_y,
+  ud
+};
 
 enum class SteerMet {
   none,
-    x,
-    y,
-    xy};
+  x,
+  y,
+  xy
+};
 
 enum class ApodMet {
   triangle,
-    gauss,
-    raised_cosine,
-    simply_supported,
-    clamped,
-    ud};
+  gauss,
+  raised_cosine,
+  simply_supported,
+  clamped,
+  ud
+};
+
+enum class ConvMode {
+  equ,
+  sum,
+  neg
+};
+
+enum class DASType {
+  saft,
+  tfm,
+  rca
+};
 
 #ifdef DREAM_OCTAVE
 

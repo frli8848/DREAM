@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2021,2022 Fredrik Lingvall
+* Copyright (C) 2021,2022,2023 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -23,12 +23,8 @@
 
 #pragma once
 
+#include "dream.h"
 #include "fft.h"
-
-enum class ConvMode {
-  equ,
-    sum,
-    neg};
 
 void fftconv(FFT &fft,
              double *xr, dream_idx_type nx, double *yr, dream_idx_type ny, double *zr,

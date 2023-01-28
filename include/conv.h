@@ -23,12 +23,8 @@
 
 #pragma once
 
+#include "dream.h"
 #include "fft.h"
-
-enum class ConvMode {
-  equ,
-    sum,
-    neg};
 
 void conv(double *xr, dream_idx_type nx, double *yr, dream_idx_type ny, double *zr,
           ConvMode conv_mode);

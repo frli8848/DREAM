@@ -61,23 +61,29 @@ if (exist('DO_PLOTTING'))
   xlabel('f [MHz]')
 end
 
-% Geometrical parameters.
-a = 0.4;                        % x-size.
-b = 15;				% y-size.
-geom_par = [a b];
-
 %%
-%% TFM data (full matrix capture - a.k.a FMC)
+%% RCA TFM data (full matrix capture - a.k.a FMC)
 %%
 
 d  = 0.5;                       % Array pitch
 xo = (-25:d:25);
 yo = zeros(length(xo),1);
 zo = z_pt*ones(length(xo),1);
-Ro = [xo(:) yo(:) zo(:)];
+Ro_t = [xo(:) yo(:) zo(:)];
+
+%% Crossed transmit and receve elemets.
+
+% Geometrical parameters.
+a = 0.4;                        % x-size.
+b = 50;				% y-size.
+geom_par_t = [a b];
 
 delay = 0.0;
-[H,err] = dreamrect(Ro,geom_par,s_par,delay,m_par,'stop');
+[Ht,err] = dreamrect(Ro_t,geom_par_t,s_par,delay,m_par,'stop');
+
+geom_par_r = [b a];
+Ro_r = [yo(:) xo(:) zo(:)];
+[Hr,err] = dreamrect(Ro_r,geom_par_r,s_par,delay,m_par,'stop');
 
 L = length(xo);
 Yfmc = zeros(nt+nt-1+nt_he-1,L^2);
@@ -85,62 +91,74 @@ Yfmc = zeros(nt+nt-1+nt_he-1,L^2);
 %% Loop over all transmit elements
 n_t=1;
 for n=1:L:L^2
-  Hdp = fftconv_p(H,H(:,n_t)); % Double-path SIRs for the n_t:th transmit
+  Hdp = fftconv_p(Hr,Ht(:,n_t)); % Double-path SIRs for the n_t:th transmit
   Yfmc(:,n:(n+L-1)) = fftconv_p(Hdp,h_e);
   n_t = n_t+1;
 end
 
 Yfmc = Yfmc/max(max(abs(Yfmc))); % Normalize amplitudes
 
-if (exist('DO_PLOTTING'))
-  figure(2);
-  clf;
-  t_dp = 0:Ts:Ts*(size(Yfmc,1)-1);
-  imagesc(1:L^2,t_dp,Yfmc)
-  title('FMC B-scan')
-  xlabel('A-scan index')
-  ylabel('t [{\mu}s]')
-
-  figure(3);
-  clf;
-  t_dp = 0:Ts:Ts*(size(Yfmc,1)-1);
-  imagesc(xo,t_dp,Yfmc(:,1:L:end))
-  title('FMC B-scan when transmit element = receive element')
-  xlabel('x [mm]')
-  ylabel('t [{\mu}s]')
-
-end
-
 num_elements = size(xo,2);
 Gt = [xo(:) zeros(num_elements,1) zeros(num_elements,1)];
-Gr = Gt;
+Gr = [zeros(num_elements,1) xo(:) zeros(num_elements,1)];
 
-%% Observation points for DAS
+
+%%
+%% 3D Observation points for DAS RCA
+%%
+
 x = -25:0.5:25;
-z = (0:63)/64*20; % Make sure its a factor of 64 (the OpenCL work group size).
-[X,Z] = meshgrid(x,z);
-Y = zeros(size(X));
+y = -25:0.5:25;
+Nz = 64*4; % Make sure its a factor of 64 (the OpenCL work group size).
+z = (0:(Nz-1))/Nz*20;
+[X,Y,Z] = meshgrid(x,y,z);
 Ro_tfm = [X(:) Y(:) Z(:)];
 
+Nx = length(x);
+Ny = length(y);
+
 delay = system_delay; % Compensate for the pulse/system (transducer) delay.
-Im_tfm = das(Yfmc, Gt, Gr, Ro_tfm, dt, delay, cp,'tfm');
+tic
+Im_tfm = das(Yfmc, Gt, Gr, Ro_tfm, dt, delay, cp,'rca');
+toc;
 
 if (exist('DO_PLOTTING'))
+
   figure(4);
   clf;
-  imagesc(x,z,reshape(Im_tfm,length(z),length(x)))
-  title('TFM Reconstruction')
-  xlabel('x [mm]')
-  ylabel('z [mm]')
+
+  O_cpu = reshape(Im_tfm, Nx*Ny, Nz)';
+  c_scan_cpu = reshape(max(abs(O_cpu)), Nx, Ny);
+  mx = max(max(c_scan_cpu));
+
+  imagesc(x, y, 20.0*log10(c_scan_cpu/mx));
+  h_cb = colorbar;
+  h_cb_title = get(h_cb,'Title');
+  set(h_cb_title,'String','Normalized Amplitude [dB]')
+  axis square;
+  xlabel('x [mm]');
+  ylabel('y [mm]');
+  title('C-scan RCA DAS beamformed data');
 end
 
-Im_tfm_gpu = das(Yfmc, Gt, Gr, Ro_tfm, dt, delay, cp,'tfm', 'ignore','gpu');
+tic
+Im_tfm_gpu = das(Yfmc, Gt, Gr, Ro_tfm, dt, delay, cp, 'rca','ignore','gpu');
+toc
 
 if (exist('DO_PLOTTING'))
   figure(5);
   clf;
-  imagesc(x,z,reshape(Im_tfm_gpu,length(z),length(x)))
-  title('TFM Reconstruction')
-  xlabel('x [mm]')
-  ylabel('z [mm]')
+
+  O_gpu = reshape(Im_tfm_gpu, Nx*Ny, Nz)';
+  c_scan_gpu = reshape(max(abs(O_gpu)), Nx, Ny);
+  mx = max(max(c_scan_gpu));
+
+  imagesc(x, y, 20.0*log10(c_scan_gpu/mx));
+  h_cb = colorbar;
+  h_cb_title = get(h_cb,'Title');
+  set(h_cb_title,'String','Normalized Amplitude [dB]')
+  axis square;
+  xlabel('x [mm]');
+  ylabel('y [mm]');
+  title('C-scan RCA GPU DAS beamformed data');
 end

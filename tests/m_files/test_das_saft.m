@@ -36,7 +36,7 @@ f0 = 2.5;                             % Center frequency [MHz].
 t0 = 0.55;                            % Time delay to max amplitude [us].
 a_n = 10;                             % Envelop parameter.
 
-system_delay = t0+0.05; % Delay to the max of the pulse.
+system_delay = t0+0.21; % Delay to the max of the pulse.
 
 h_e = -exp(-a_n.*(t-t0).^2).*cos(2.*pi.*f0.*t);
 
@@ -105,7 +105,7 @@ Y = zeros(size(X));
 Ro_saft = [X(:) Y(:) Z(:)];
 
 delay = system_delay; % Compensate for the pulse/system (transducer) delay.
-Im_saft = das(Ysaft, Gt, Gr, Ro_saft, dt, delay, cp);
+Im_saft = das(Ysaft, Gt, Gr, Ro_saft, dt, delay, cp,'saft');
 
 if (exist('DO_PLOTTING'))
   figure(3);

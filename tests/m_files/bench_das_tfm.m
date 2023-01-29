@@ -36,7 +36,7 @@ f0 = 2.5;                             % Center frequency [MHz].
 t0 = 0.55;                            % Time delay to max amplitude [us].
 a_n = 10;                             % Envelop parameter.
 
-system_delay = t0+0.21; % Delay to the max of the pulse.
+system_delay = t0+0.05; % Delay to the max of the pulse.
 
 h_e = -exp(-a_n.*(t-t0).^2).*cos(2.*pi.*f0.*t);
 
@@ -117,13 +117,16 @@ Gr = Gt;
 
 %% Observation points for DAS
 x = -25:0.5:25;
-z = (0:63)/64*20; % Make sure its a factor of 64 (the OpenCL work group size).
+N = 64*1000;  % Make sure its a factor of 64 (the OpenCL work group size).
+z = (0:(N-1))/N*20;
 [X,Z] = meshgrid(x,z);
 Y = zeros(size(X));
 Ro_tfm = [X(:) Y(:) Z(:)];
 
 delay = system_delay; % Compensate for the pulse/system (transducer) delay.
+tic
 Im_tfm = das(Yfmc, Gt, Gr, Ro_tfm, dt, delay, cp,'tfm');
+toc;
 
 if (exist('DO_PLOTTING'))
   figure(4);
@@ -134,7 +137,9 @@ if (exist('DO_PLOTTING'))
   ylabel('z [mm]')
 end
 
-Im_tfm_gpu = das(Yfmc, Gt, Gr, Ro_tfm, dt, delay, cp,'tfm', 'ignore','gpu');
+tic
+Im_tfm_gpu = das(Yfmc, Gt, Gr, Ro_tfm, dt, delay, cp, 'tfm','ignore','gpu');
+toc
 
 if (exist('DO_PLOTTING'))
   figure(5);

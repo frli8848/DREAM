@@ -118,12 +118,12 @@ __kernel void das_rca(__global const double *Y, // Size: a_scan_len x num_t_elem
       // Recieve
       DAS_DATATYPE gx_r;
       if ( (yo >= gr_x_min) && yo <= gr_x_max) {
-        gx_r = 0.0;               // We are inside the stripe aperture.
+        gx_r = 0.0;             // We are inside the stripe aperture.
       } else {    // Here we use the distance to the edge of the stripe.
         if (yo < gr_x_min) {
-          gx_r = gr_x_min - yo;
+          gx_r = gr_x_min - xo;
         } else { // yo > gt_y_max
-          gx_r = gr_x_max - yo;
+          gx_r = gr_x_max - xo;
         }
       }
       DAS_DATATYPE gy_r = ((DAS_DATATYPE) Gr[n_r + 1*num_r_elements]) - yo;

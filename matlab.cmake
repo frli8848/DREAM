@@ -5,11 +5,6 @@
 find_package (Matlab)
 message (STATUS "Matlab_MEX_EXTENSION = ${Matlab_MEX_EXTENSION}")
 
-# Build without FFTW support on macOS for now.
-if (MACOSX)
-  unset (FFTW_FOUND)
-endif (MACOSX)
-
 if (FFTW_FOUND)
   add_definitions( -DHAVE_FFTW )	# Build with FFTW support
 endif (FFTW_FOUND)

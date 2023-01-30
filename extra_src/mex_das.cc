@@ -40,8 +40,8 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
   // Check for proper number of arguments
 
-  if (!((nrhs == 8) || (nrhs == 9))) {
-    dream_err_msg("das requires 8 or 9 input arguments!");
+  if ((nrhs < 8) && (nrhs > 10)) {
+    dream_err_msg("das requires 8 to 10 input arguments!");
   }
 
   if (nlhs > 2) {
@@ -93,8 +93,8 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     dream_err_msg("Argument 4 must be a (number of observation points) x 3 matrix!");
   }
 
-  dream_idx_type no = mxGetM(prhs[3]); // Number of observation points.
-  double *ro = mxGetPr(prhs[3]);
+  dream_idx_type No = mxGetM(prhs[3]); // Number of observation points.
+  double *Ro = mxGetPr(prhs[3]);
 
   //
   // Temporal and spatial sampling parameters.
@@ -111,7 +111,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Start point of impulse response vector ([us]).
   //
 
-  ap.check_delay("das", prhs, 5, no);
+  ap.check_delay("das", prhs, 5, No);
   double *delay = mxGetPr(prhs[5]);
 
   DelayType delay_type = DelayType::single;  // delay is a scalar.
@@ -144,14 +144,29 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
   ErrorLevel err=ErrorLevel::none, err_level=ErrorLevel::stop;
 
-  if (nrhs == 9) {
+  if (nrhs >= 9) {
     ap.parse_error_arg("das", prhs, 8, err_level);
   } else {
     err_level = ErrorLevel::stop; // Default.
   }
 
+  //
+  // Compute device
+  //
+
+  std::string device;
+
+  if (nrhs == 10) {
+
+    if (!mxIsChar(prhs[9])) {
+      dream_err_msg("Argument 10 must be a string");
+    }
+
+    device =  ap.get_string_arg(prhs, 9);
+  }
+
   // Create an output matrix for the impulse response
-  plhs[0] = mxCreateDoubleMatrix(no,1,mxREAL);
+  plhs[0] = mxCreateDoubleMatrix(No,1,mxREAL);
   double *Im = mxGetPr(plhs[0]);
 
   DAS das;
@@ -159,16 +174,41 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Register signal handler.
   std::signal(SIGABRT, DAS::abort);
 
-  err = das.das(Y, a_scan_len,
-                ro,  no,
-                Gt, num_t_elements,
-                Gr, num_r_elements,
-                dt,
-                delay_type, delay,
-                cp,
-                das_type,
-                Im,
+#ifdef USE_OPENCL
+
+  // Check if we should use the GPU
+  if (device == "gpu" && num_r_elements > 0) { // SAFT is most likely fast enough on the CPU.
+
+    das.cl_das(Y, a_scan_len,
+               Ro,  No,
+               Gt, num_t_elements,
+               Gr, num_r_elements,
+               dt,
+               delay[0],
+               cp,
+               das_type,
+               Im);
+  } else { // Otherwise use the cpu
+#endif
+
+    if (device == "gpu") {
+      std::cout << "Warning: Compute device set to 'gpu' but DREAM is build without OpenCL support!" << std::endl;
+      std::cout << "Using the CPU backend!" << std::endl;
+    }
+
+    err = das.das(Y, a_scan_len,
+                  Ro,  No,
+                  Gt, num_t_elements,
+                  Gr, num_r_elements,
+                  dt,
+                  delay_type, delay,
+                  cp,
+                  das_type,
+                  Im,
                 err_level);
+#ifdef USE_OPENCL
+  }
+#endif
 
   if (!das.is_running()) {
     dream_err_msg("CTRL-C pressed!\n"); // Bail out.

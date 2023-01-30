@@ -571,9 +571,6 @@ public:
     return retval;
   };
 
-
-private:
-
 #ifdef DREAM_OCTAVE
 
   dream_idx_type get_m(args_t args, dream_idx_type arg_num) {

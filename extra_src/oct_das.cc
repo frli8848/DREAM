@@ -138,8 +138,6 @@ das is an oct-function that is a part of the DREAM Toolbox available at\n\
 Copyright @copyright{} 2008-2023 Fredrik Lingvall.\n\
 @end deftypefn")
 {
-  std::string device;
-
   octave_value_list oct_retval;
 
   int nrhs = args.length ();
@@ -149,7 +147,7 @@ Copyright @copyright{} 2008-2023 Fredrik Lingvall.\n\
   // Check for proper number of arguments
 
   if ((nrhs < 8) && (nrhs > 10)) {
-    error("das requires 7 to 10 input arguments!");
+    error("das requires 8 to 10 input arguments!");
     return oct_retval;
   }
 
@@ -283,6 +281,8 @@ Copyright @copyright{} 2008-2023 Fredrik Lingvall.\n\
   // Compute device
   //
 
+  std::string device;
+
   if (nrhs == 10) {
 
     if (!mxIsChar(9)) {
@@ -318,6 +318,12 @@ Copyright @copyright{} 2008-2023 Fredrik Lingvall.\n\
 
   } else { // Otherwise use the cpu
 #endif
+
+    if (device == "gpu") {
+      std::cout << "Warning: Compute device set to 'gpu' but DREAM is build without OpenCL support!" << std::endl;
+      std::cout << "Using the CPU backend!" << std::endl;
+    }
+
     err = das.das(Y, a_scan_len,
                   Ro,  No,
                   Gt, num_t_elements,

@@ -34,17 +34,18 @@ The DREAM Toolbox can be used using:
 
 * Computes spatial impulse responses (SIRs) directly in a discrete form,
 * Support for many common transducer and array types,
-* Support for parallel processing using threads,
-* Compute SIRs for lossy media.
+* Support for parallel processing using threads (and on the GPU on select functions),
+* Compute SIRs for lossy media,
+* Accelerated delay-and-sum (DAS) beamforming (SAFT, TFM and row-column adressed [RCA] array DAS).
 
 # Functions
 
 | Function  | Description  | MATLAB  | Octave  | Python  | Julia |
 |:--|:--|:--|:--|:--|:--|
 | dreamline | Strip/line transducer  | Yes  | Yes  | Yes  | Yes  |
-| dreamrect | Rectangular transducer  | Yes  |  Yes | Yes  | Yes  |
+| dreamrect | Rectangular transducer  | Yes  |  Yes (*) | Yes  | Yes  |
 | dreamrect_f | Focused rectangular transducer  | Yes  | Yes  | Yes  | Yes  |
-| dreamcirc | Circular transducer  | Yes  |Yes   | Yes  | Yes  |
+| dreamcirc | Circular transducer  | Yes  | Yes (*) | Yes  | Yes  |
 | dreamcirc_f | Focused circular transducer  | Yes  | Yes  |  Yes | Yes |
 | dreamsphere | Spherical concave/convex transducer (defocused/defocused)  | Yes  | Yes  | Yes  | Yes  |
 | dreamcylind | Cylindrical concave/convex transducer (focused/defocused)  | Yes  | Yes  | Yes  | Yes  |
@@ -55,9 +56,10 @@ The DREAM Toolbox can be used using:
 
 _Table 1. DR-based transducer functions._
 
+
 | Function  | Description  | MATLAB  | Octave  | Python  | Julia |
 |:--|:--|:--|:--|:--|:--|
-| rect_sir | time-continous (analytic) rectangual ransducer | Yes  | Yes  | N/A  | N/A |
+| rect_sir | time-continous (analytic) rectangual ransducer | Yes  | Yes (*) | N/A  | N/A |
 | circ_sir | time-continous (analytic) circular ransducer | Yes  | Yes  | N/A | N/A |
 | scirc_sir | sampled time-continous (analytic) circular transducer | Yes  | Yes  | N/A  | N/A  |
 
@@ -66,18 +68,15 @@ _Table 2. Analytic transducer functions._
 | Function  | Description  | MATLAB  | Octave  | Python  | Julia |
 |:--|:--|:--|:--|:--|:--|
 | conv_p | threaded one dimensional convolution | Yes  | Yes  | N/A  | N/A |
-| fftconv_p | threaded one dimensional FFT based convolutions | Yes (*)  | Yes  | N/A | N/A |
+| fftconv_p | threaded one dimensional FFT based convolutions | Yes (**)  | Yes  | N/A | N/A |
 | fftconv_ola | threaded one dimensional FFT based convolutions using overlap-and-add | Yes (*)  | Yes  | N/A | N/A |
-| sum_fftconv | threaded sum of one dimensional FFT based convolutions | Yes (*)  | Yes  | N/A | N/A |
-| das | threaded delay-and-sum (DAS) beamforming (SAFT and TFM) | Yes  | Yes  | N/A | N/A |
+| sum_fftconv | threaded sum of one dimensional FFT based convolutions | Yes (**)  | Yes  | N/A | N/A |
+| das | threaded delay-and-sum (DAS) beamforming (SAFT, TFM, and RCA) | Yes (*)(**) | Yes (*) | N/A | N/A |
 
 _Table 3. Threaded (parallel) signal processing algorithms._
 
-(*) To avoid (work-around) a conflict with the FFTW lib used by DREAM and the one bundeled with MATLAB one can
-(on Linux systems) pre-load the one used by DREAM using, for example
-```bash
- $ export LD_PRELOAD=/usr/lib64/libfftw3.so
-```
+(*) Experimental GPU support (OpenCL).
+(**) See known issues [here](KNOWN_ISSUES.md).
 
 # References
 

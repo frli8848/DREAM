@@ -525,7 +525,12 @@ if (Matlab_FOUND)
     extra_src/das.cc
     src/affinity.cc
     src/dream_error.cc
-    )
+  )
+
+  if (OpenCL_FOUND)
+    set (mex_das_SOURCE_FILES ${mex_das_SOURCE_FILES} "opencl/cl_das.cc")
+    file (COPY opencl/das.cl DESTINATION kernels)
+  endif (OpenCL_FOUND)
 
   add_library (mex_das MODULE
     ${mex_das_SOURCE_FILES}
@@ -534,6 +539,7 @@ if (Matlab_FOUND)
   target_link_libraries (mex_das
     ${Matlab_LIBRARIES}
     ${FFTW_LIBRARIES}
+    ${OpenCL_LIBRARIES}
     )
 
   set_target_properties (mex_das PROPERTIES

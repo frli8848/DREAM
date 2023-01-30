@@ -69,13 +69,14 @@ _Table 2. Analytic transducer functions._
 |:--|:--|:--|:--|:--|:--|
 | conv_p | threaded one dimensional convolution | Yes  | Yes  | N/A  | N/A |
 | fftconv_p | threaded one dimensional FFT based convolutions | Yes (**)  | Yes  | N/A | N/A |
-| fftconv_ola | threaded one dimensional FFT based convolutions using overlap-and-add | Yes (*)  | Yes  | N/A | N/A |
+| fftconv_ola | threaded one dimensional FFT based convolutions using overlap-and-add | Yes (**)  | Yes  | N/A | N/A |
 | sum_fftconv | threaded sum of one dimensional FFT based convolutions | Yes (**)  | Yes  | N/A | N/A |
 | das | threaded delay-and-sum (DAS) beamforming (SAFT, TFM, and RCA) | Yes (*)(**) | Yes (*) | N/A | N/A |
 
 _Table 3. Threaded (parallel) signal processing algorithms._
 
 (*) Experimental GPU support (OpenCL).
+
 (**) See known issues [here](KNOWN_ISSUES.md).
 
 # References

@@ -161,14 +161,14 @@ void sig_keyint_handler(int signum) {
 void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
   double *Ro,*geom_par, *s_par, *m_par;
-  size_t nt, No;
+  dream_idx_type nt, No;
   double r, dt;
   double *delay, v, cp;
   double *h;
   DATA   *D;
   size_t start, stop;
   std::thread *threads;
-  unsigned int thread_n, nthreads;
+  dream_idx_type thread_n, nthreads;
   sighandler_t  old_handler, old_handler_abrt, old_handler_keyint;
 
   ArgParser ap;
@@ -228,7 +228,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
   // Read DREAM_NUM_THREADS env var
   if(const char* env_p = std::getenv("DREAM_NUM_THREADS")) {
-    unsigned int dream_threads = std::stoul(env_p);
+    dream_idx_type dream_threads = (dream_idx_type) std::stoul(env_p);
     if (dream_threads < nthreads) {
       nthreads = dream_threads;
     }

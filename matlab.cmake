@@ -52,11 +52,12 @@ if (Matlab_FOUND)
     src/affinity.cc
     src/dreamline.cc
     src/dream_error.cc
-    )
+  )
 
-  add_library (mex_dreamline MODULE
-    ${mex_dreamline_SOURCE_FILES}
-    )
+  matlab_add_mex (NAME mex_dreamline MODULE
+    SRC ${mex_dreamline_SOURCE_FILES}
+    OUTPUT_NAME dreamline
+  )
 
   target_link_libraries (mex_dreamline
     ${Matlab_LIBRARIES}
@@ -80,16 +81,16 @@ if (Matlab_FOUND)
     src/affinity.cc
     src/dreamrect.cc
     src/dream_error.cc
-    )
+  )
 
-  add_library (mex_dreamrect MODULE
-    ${mex_dreamrect_SOURCE_FILES}
-    )
+  matlab_add_mex (NAME mex_dreamrect MODULE
+    SRC ${mex_dreamrect_SOURCE_FILES}
+  )
 
   target_link_libraries (mex_dreamrect
     ${Matlab_LIBRARIES}
     ${FFTW_LIBRARIES}
-    )
+  )
 
   set_target_properties (mex_dreamrect PROPERTIES
     CXX_STANDARD 14
@@ -108,11 +109,11 @@ if (Matlab_FOUND)
     src/affinity.cc
     src/dreamrect_f.cc
     src/dream_error.cc
-    )
+  )
 
-  add_library (mex_dreamrect_f MODULE
-    ${mex_dreamrect_f_SOURCE_FILES}
-    )
+  matlab_add_mex (NAME mex_dreamrect_f MODULE
+    SRC ${mex_dreamrect_f_SOURCE_FILES}
+  )
 
   target_link_libraries (mex_dreamrect_f
     ${Matlab_LIBRARIES}
@@ -137,16 +138,16 @@ if (Matlab_FOUND)
     src/affinity.cc
     src/dreamcirc.cc
     src/dream_error.cc
-    )
+  )
 
-  add_library (mex_dreamcirc MODULE
-    ${mex_dreamcirc_SOURCE_FILES}
-    )
+  matlab_add_mex (NAME mex_dreamcirc MODULE
+    SRC ${mex_dreamcirc_SOURCE_FILES}
+  )
 
   target_link_libraries (mex_dreamcirc
     ${Matlab_LIBRARIES}
     ${FFTW_LIBRARIES}
-    )
+  )
 
   set_target_properties (mex_dreamcirc PROPERTIES
     CXX_STANDARD 14
@@ -166,16 +167,16 @@ if (Matlab_FOUND)
     src/affinity.cc
     src/dreamcirc_f.cc
     src/dream_error.cc
-    )
+  )
 
-  add_library (mex_dreamcirc_f MODULE
-    ${mex_dreamcirc_f_SOURCE_FILES}
-    )
+  matlab_add_mex (NAME mex_dreamcirc_f MODULE
+    SRC ${mex_dreamcirc_f_SOURCE_FILES}
+  )
 
   target_link_libraries (mex_dreamcirc_f
     ${Matlab_LIBRARIES}
     ${FFTW_LIBRARIES}
-    )
+  )
 
   set_target_properties (mex_dreamcirc_f PROPERTIES
     CXX_STANDARD 14
@@ -195,16 +196,16 @@ if (Matlab_FOUND)
     src/affinity.cc
     src/dreamsphere.cc
     src/dream_error.cc
-    )
+  )
 
-  add_library (mex_dreamsphere MODULE
-    ${mex_dreamsphere_SOURCE_FILES}
-    )
+  matlab_add_mex (NAME mex_dreamsphere MODULE
+    SRC ${mex_dreamsphere_SOURCE_FILES}
+  )
 
   target_link_libraries (mex_dreamsphere
     ${Matlab_LIBRARIES}
     ${FFTW_LIBRARIES}
-    )
+  )
 
   set_target_properties (mex_dreamsphere PROPERTIES
     CXX_STANDARD 14
@@ -224,16 +225,16 @@ if (Matlab_FOUND)
     src/affinity.cc
     src/dreamcylind.cc
     src/dream_error.cc
-    )
+  )
 
-  add_library (mex_dreamcylind MODULE
-    ${mex_dreamcylind_SOURCE_FILES}
-    )
+  matlab_add_mex (NAME mex_dreamcylind MODULE
+    SRC ${mex_dreamcylind_SOURCE_FILES}
+  )
 
   target_link_libraries (mex_dreamcylind
     ${Matlab_LIBRARIES}
     ${FFTW_LIBRARIES}
-    )
+  )
 
   set_target_properties (mex_dreamcylind PROPERTIES
     CXX_STANDARD 14
@@ -255,16 +256,16 @@ if (Matlab_FOUND)
     src/dream_arr_rect.cc
     src/dreamrect.cc
     src/dream_error.cc
-    )
+  )
 
-  add_library (mex_dream_arr_rect MODULE
-    ${mex_dream_arr_rect_SOURCE_FILES}
-    )
+  matlab_add_mex (NAME mex_dream_arr_rect MODULE
+    SRC ${mex_dream_arr_rect_SOURCE_FILES}
+  )
 
   target_link_libraries (mex_dream_arr_rect
     ${Matlab_LIBRARIES}
     ${FFTW_LIBRARIES}
-    )
+  )
 
   set_target_properties (mex_dream_arr_rect PROPERTIES
     CXX_STANDARD 14
@@ -285,16 +286,16 @@ if (Matlab_FOUND)
     src/dream_arr_circ.cc
     src/dreamcirc.cc
     src/dream_error.cc
-    )
+  )
 
-  add_library (mex_dream_arr_circ MODULE
-    ${mex_dream_arr_circ_SOURCE_FILES}
-    )
+  matlab_add_mex (NAME mex_dream_arr_circ MODULE
+    SRC ${mex_dream_arr_circ_SOURCE_FILES}
+  )
 
   target_link_libraries (mex_dream_arr_circ
     ${Matlab_LIBRARIES}
     ${FFTW_LIBRARIES}
-    )
+  )
 
   set_target_properties (mex_dream_arr_circ PROPERTIES
     CXX_STANDARD 14
@@ -316,16 +317,16 @@ if (Matlab_FOUND)
     src/dream_arr_cylind.cc
     src/dreamcylind.cc
     src/dream_error.cc
-    )
+  )
 
-  add_library (mex_dream_arr_cylind MODULE
-    ${mex_dream_arr_cylind_SOURCE_FILES}
-    )
+  matlab_add_mex (NAME mex_dream_arr_cylind MODULE
+    SRC ${mex_dream_arr_cylind_SOURCE_FILES}
+  )
 
   target_link_libraries (mex_dream_arr_cylind
     ${Matlab_LIBRARIES}
     ${FFTW_LIBRARIES}
-    )
+  )
 
   set_target_properties (mex_dream_arr_cylind PROPERTIES
     CXX_STANDARD 14
@@ -347,16 +348,16 @@ if (Matlab_FOUND)
     src/dream_arr_annu.cc
     src/dreamcirc.cc
     src/dream_error.cc
-    )
+  )
 
-  add_library (mex_dream_arr_annu MODULE
-    ${mex_dream_arr_annu_SOURCE_FILES}
-    )
+  matlab_add_mex (NAME mex_dream_arr_annu MODULE
+    SRC ${mex_dream_arr_annu_SOURCE_FILES}
+  )
 
   target_link_libraries (mex_dream_arr_annu
     ${Matlab_LIBRARIES}
     ${FFTW_LIBRARIES}
-    )
+  )
 
   set_target_properties (mex_dream_arr_annu PROPERTIES
     CXX_STANDARD 14
@@ -380,16 +381,16 @@ if (Matlab_FOUND)
     mex/mex_dream_apodwin.cc
     src/arr_functions.cc
     src/dream_error.cc
-    )
+  )
 
-  add_library (mex_dream_apodwin MODULE
+  matlab_add_mex (NAME mex_dream_apodwin MODULE
     ${mex_dream_apodwin_SOURCE_FILES}
-    )
+  )
 
   target_link_libraries (mex_dream_apodwin
     ${Matlab_LIBRARIES}
     ${FFTW_LIBRARIES}
-    )
+  )
 
   set_target_properties (mex_dream_apodwin PROPERTIES
     CXX_STANDARD 14
@@ -408,7 +409,7 @@ if (Matlab_FOUND)
     src/attenuation.cc
     src/affinity.cc
     src/dream_error.cc
-    )
+  )
 
   add_library (mex_dream_att MODULE
     ${mex_dream_att_SOURCE_FILES}
@@ -438,15 +439,15 @@ if (Matlab_FOUND)
     src/affinity.cc
     extra_src/circ_sir.cc
     src/dream_error.cc
-    )
+  )
 
-  add_library (mex_circ_sir MODULE
+  matlab_add_mex (NAME mex_circ_sir MODULE
     ${mex_circ_sir_SOURCE_FILES}
-    )
+  )
 
   target_link_libraries (mex_circ_sir
     ${Matlab_LIBRARIES}
-    )
+  )
 
   set_target_properties (mex_circ_sir PROPERTIES
     CXX_STANDARD 14
@@ -462,15 +463,15 @@ if (Matlab_FOUND)
     extra_src/mex_scirc_sir.cc
     extra_src/scirc_sir.cc
     src/dream_error.cc
-    )
+  )
 
-  add_library (mex_scirc_sir MODULE
-    ${mex_scirc_sir_SOURCE_FILES}
-    )
+  matlab_add_mex (NAME mex_scirc_sir MODULE
+    SRC ${mex_scirc_sir_SOURCE_FILES}
+  )
 
   target_link_libraries (mex_scirc_sir
     ${Matlab_LIBRARIES}
-    )
+  )
 
   set_target_properties (mex_scirc_sir PROPERTIES
     CXX_STANDARD 14
@@ -487,15 +488,15 @@ if (Matlab_FOUND)
     extra_src/rect_sir.cc
     src/affinity.cc
     src/dream_error.cc
-    )
+  )
 
-  add_library (mex_rect_sir MODULE
+  matlab_add_mex (NAME mex_rect_sir MODULE
     ${mex_rect_sir_SOURCE_FILES}
-    )
+  )
 
   target_link_libraries (mex_rect_sir
     ${Matlab_LIBRARIES}
-    )
+  )
 
   set_target_properties (mex_rect_sir PROPERTIES
     CXX_STANDARD 14
@@ -523,15 +524,15 @@ if (Matlab_FOUND)
     file (COPY opencl/das.cl DESTINATION kernels)
   endif (OpenCL_FOUND)
 
-  add_library (mex_das MODULE
+  matlab_add_mex (NAME mex_das MODULE
     ${mex_das_SOURCE_FILES}
-    )
+  )
 
   target_link_libraries (mex_das
     ${Matlab_LIBRARIES}
     ${FFTW_LIBRARIES}
     ${OpenCL_LIBRARIES}
-    )
+  )
 
   set_target_properties (mex_das PROPERTIES
     CXX_STANDARD 14
@@ -552,15 +553,15 @@ if (Matlab_FOUND)
     src/affinity.cc
     extra_src/conv.cc
     src/dream_error.cc
-    )
+  )
 
-  add_library (mex_conv_p MODULE
-    ${mex_conv_p_SOURCE_FILES}
-    )
+  matlab_add_mex (NAME mex_conv_p MODULE
+    SRC ${mex_conv_p_SOURCE_FILES}
+  )
 
   target_link_libraries (mex_conv_p
     ${Matlab_LIBRARIES}
-    )
+  )
 
   set_target_properties (mex_conv_p PROPERTIES
     CXX_STANDARD 14
@@ -579,14 +580,14 @@ if (Matlab_FOUND)
     src/dream_error.cc
     )
 
-  add_library (mex_fftconv_p MODULE
+  matlab_add_mex (NAME mex_fftconv_p MODULE
     ${mex_fftconv_p_SOURCE_FILES}
-    )
+  )
 
   target_link_libraries (mex_fftconv_p
     ${Matlab_LIBRARIES}
     ${FFTW_LIBRARIES}
-    )
+  )
 
   set_target_properties (mex_fftconv_p PROPERTIES
     CXX_STANDARD 14
@@ -606,11 +607,11 @@ if (Matlab_FOUND)
       extra_src/fftconv.cc
       src/affinity.cc
       src/dream_error.cc
-      )
+    )
 
-    add_library (mex_sum_fftconv MODULE
-      ${mex_sum_fftconv_SOURCE_FILES}
-      )
+    matlab_add_mex (NAME mex_sum_fftconv MODULE
+      SRC ${mex_sum_fftconv_SOURCE_FILES}
+    )
 
     target_link_libraries (mex_sum_fftconv
       ${Matlab_LIBRARIES}
@@ -634,11 +635,11 @@ if (Matlab_FOUND)
     extra_src/fftconv.cc
     src/affinity.cc
     src/dream_error.cc
-    )
+  )
 
-  add_library (mex_fftconv_ola MODULE
-    ${mex_fftconv_ola_SOURCE_FILES}
-    )
+  matlab_add_mex (NAME mex_fftconv_ola MODULE
+    SRC ${mex_fftconv_ola_SOURCE_FILES}
+  )
 
   target_link_libraries (mex_fftconv_ola
     ${Matlab_LIBRARIES}
@@ -667,15 +668,15 @@ if (Matlab_FOUND)
     extra_src/mex_copy_p.cc
     src/affinity.cc
     src/dream_error.cc
-    )
+  )
 
-  add_library (mex_copy_p MODULE
-    ${mex_copy_p_SOURCE_FILES}
-    )
+  matlab_add_mex (NAME mex_copy_p MODULE
+    SRC ${mex_copy_p_SOURCE_FILES}
+  )
 
   target_link_libraries (mex_copy_p
     ${Matlab_LIBRARIES}
-    )
+  )
 
   set_target_properties (mex_copy_p PROPERTIES
     CXX_STANDARD 14

@@ -128,6 +128,28 @@ jobs:
     - name: CMake Build
       run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
 
+  windows-matlab:
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install deps
+      run: |
+        conda install -c conda-forge fftw
+
+    # Sets up MATLAB on the GitHub Actions runner
+    - name: Setup MATLAB
+      uses: matlab-actions/setup-matlab@v1
+
+    - name: CMake Configure
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DBUILD_MEX=on -DBUILD_OCT=off
+
+    - name: Build
+      # Build your program with the given configuration
+      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+
   linux-user-manual:
 
     runs-on: ubuntu-latest

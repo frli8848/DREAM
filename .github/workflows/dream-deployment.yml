@@ -115,7 +115,7 @@ jobs:
       shell: powershell
       run: |
         conda install -c conda-forge fftw
-        conda install -c conda-forge zip
+        conda install -c conda-forge m2-zip
 
     # Sets up MATLAB on the GitHub Actions runner
     - name: Setup MATLAB

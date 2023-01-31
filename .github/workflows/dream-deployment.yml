@@ -100,8 +100,6 @@ jobs:
 
   deploy-windows-matlab:
 
-    windows-matlab:
-
     runs-on: windows-latest
 
     steps:
@@ -149,7 +147,6 @@ jobs:
         asset_path: ${{github.workspace}}/dream-${{ github.event.release.tag_name }}-matlab-windows-x86_64.zip
         asset_name: dream-${{ github.event.release.tag_name }}-matlab-windows-x86_64.zip
         asset_content_type: binary/octet-stream
-
 
   linux-user-manual:
 

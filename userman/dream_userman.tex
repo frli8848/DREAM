@@ -1955,15 +1955,16 @@ P = fftconv_p(H,h_e); % Electrical impulse response.
 where we first compute the double-path SIRs and then add (convolve) the double-path
 electrical impulse response to get the (double-path) propagation response matrix \texttt{P}.
 
-\subsection{Delay-and-sum Imaging  --- SAFT and TFM}
+\subsection{Delay-and-sum Imaging  --- SAFT, TFM and RCA}
 \label{sec:das}
 
 The DREAM Toolbox contains two delay-and-sum based reconstruction methods:
 the \emph{synthetic aperture focusing} (SAFT) method and the \emph{total focusing method}
-(TFM).
+(TFM). The latter one has two modes: linear array TFM and one mode for so-called row-column
+addressed (RCA) arrays.
 %
-Both methods are special cases of methods based on so-called \emph{delay-and-sum} imaging (DAS).
-The idea is just to compensate for the double-path propagation delay from each transmitter/receiver to each
+These methods are all variants of \emph{delay-and-sum} imaging (DAS). The idea with DAS is just to
+compensate for the double-path propagation delay from each transmitter/receiver to each
 observation point and then perform a (coherent) summation. This operation is essentially based on an
 geometrical optics approach and is analogous to the operation of an acoustical lens~\cite{Kino1987}.
 
@@ -2022,12 +2023,13 @@ form~\cite{Frazier1998}
 %%
 where $\text{Im}(x_{\tilde{n}},z_m)$ is the beamformed image.
 
-The DREAM Toolbox has a function \texttt{das} which can operate in both SAFT and TFM mode.
+The DREAM Toolbox has a function \texttt{das} which can operate in both SAFT and TFM/RCA mode.
 The SAFT mode (transmit with one element - receive with one element) is activated by supplying
-an empty matrix for the receive element positions (the third arg to \texttt{das} is \texttt{[]}):
+an empty matrix for the receive element positions (the third arg to \texttt{das} is \texttt{[]}) and
+setting DAS mode string to \texttt{'saft'}:
 %
 \begin{verbatim}
-   Im = das(Y, G, [], Ro, dt, delay, cp);
+   Im = das(Y, G, [], Ro, dt, delay, cp, 'saft');
 \end{verbatim}
 %
 \noindent Input parameters in SAFT mode:
@@ -2041,20 +2043,31 @@ an empty matrix for the receive element positions (the third arg to \texttt{das}
  cp    - Sound speed [m/s].
 \end{verbatim}
 
-The difference between SAFT and TFM is that in SAFT one transmit with one element and receives
-with one element whereas one in TFM transmits with all elements and receives with all elements.
-The resulting dataset used in TFM is often called \emph{full matrix capture} (FMC) since one
+The difference between SAFT and TFM (or RCA) is that in SAFT one transmit with one element and receives
+with one element (the same element) whereas one in TFM/RCA transmits with all elements and receives with all
+elements. The resulting dataset used in TFM/RCA is often called \emph{full matrix capture} (FMC) since one
 have data from every receive element for every transmit element. The dataset is therefore an order
-of magnitude larger than the dataset used in sAFT.
+of magnitude larger than the dataset used in SAFT (which reduces the noise in the resulting image).
 
-In TFM mode one needs to supply both transmit element and receive element grid matrices
-(\texttt{Gt} and \texttt{Gr}) to \texttt{das}:
+The difference between TFM and RCA mode is that in RCA mode the elements are arranged in a crossed layout
+to form a 2D array whereas one in TFM mode a linear array is assumed; the datasets have the same size
+if we use the same number of transmit and receive elements in both methods.
+
+In TFM/RCA mode one needs to supply both transmit element and receive element grid matrices
+(\texttt{Gt} and \texttt{Gr}) to \texttt{das} and set the DAS mode string to \texttt{'tfm'}
+or \texttt{'rca'}:
 %
 \begin{verbatim}
-   Im = das(Y, Gt, Gr, Ro, dt, delay, cp);
+   Im = das(Y, Gt, Gr, Ro, dt, delay, cp, 'tfm');
 \end{verbatim}
 %
-\noindent Input parameters in TFM mode:
+or
+%
+\begin{verbatim}
+   Im = das(Y, Gt, Gr, Ro, dt, delay, cp, 'rca');
+\end{verbatim}
+%
+\noindent Input parameters in TFM/RCA mode:
 \begin{verbatim}
  Y     - K x L^2 Ultrasonic FMC B-scan data matrix.
          where K is the A-scan length and L is the number of transducer positions.

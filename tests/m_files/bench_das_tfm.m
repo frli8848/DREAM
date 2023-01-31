@@ -111,6 +111,7 @@ if (exist('DO_PLOTTING'))
 
 end
 
+%% Linear array TFM
 num_elements = size(xo,2);
 Gt = [xo(:) zeros(num_elements,1) zeros(num_elements,1)];
 Gr = Gt;
@@ -125,8 +126,10 @@ Ro_tfm = [X(:) Y(:) Z(:)];
 
 delay = system_delay; % Compensate for the pulse/system (transducer) delay.
 tic
-Im_tfm = das(Yfmc, Gt, Gr, Ro_tfm, dt, delay, cp,'tfm');
+Im_tfm = das(Yfmc, Gt, Gr, Ro_tfm, dt, delay, cp, 'tfm');
 toc;
+
+%% NB. The z dim may be too large for imagec to handle!?
 
 if (exist('DO_PLOTTING'))
   figure(4);
@@ -138,7 +141,7 @@ if (exist('DO_PLOTTING'))
 end
 
 tic
-Im_tfm_gpu = das(Yfmc, Gt, Gr, Ro_tfm, dt, delay, cp, 'tfm','ignore','gpu');
+Im_tfm_gpu = das(Yfmc, Gt, Gr, Ro_tfm, dt, delay, cp, 'tfm', 'ignore', 'gpu');
 toc
 
 if (exist('DO_PLOTTING'))

@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2022 Fredrik Lingvall
+# Copyright (C) 2022,2023 Fredrik Lingvall
 #
 
 find_package (Matlab)
@@ -362,6 +362,7 @@ if (Matlab_FOUND)
 
   matlab_add_mex (NAME mex_dream_att MODULE
     SRC ${mex_dream_att_SOURCE_FILES}
+    LINK_TO ${FFTW_LIBRARIES}
     OUTPUT_NAME "dream_att"
   )
 
@@ -518,8 +519,8 @@ if (Matlab_FOUND)
 
   # sum_fftconv
 
-  # This one fails on macOS
-  if(NOT MACOSX)
+  # This one fails on macOS and Windows
+  if(NOT MACOSX AND NOT WIN32)
 
     set (mex_sum_fftconv_SOURCE_FILES
       extra_src/mex_sum_fftconv.cc
@@ -541,7 +542,7 @@ if (Matlab_FOUND)
 
     target_compile_definitions(mex_sum_fftconv PUBLIC DREAM_MATLAB)
 
-  endif(NOT MACOSX)
+  endif(NOT MACOSX AND NOT WIN32)
 
   # fftconv_ola
 

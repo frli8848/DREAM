@@ -5,10 +5,6 @@
 # From http://www.coolprop.org/coolprop/wrappers/Octave/index.html
 find_package (Octave)
 
-if (FFTW_FOUND)
-  add_definitions( -DHAVE_FFTW )	# Build with FFTW support
-endif (FFTW_FOUND)
-
 if (OCTAVE_FOUND)
 
   # Octave oct flags.

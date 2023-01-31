@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2016, 2019, 2021,2022 Fredrik Lingvall
+# Copyright (C) 2016,2019,2021,2022,2023 Fredrik Lingvall
 #
 
 project (dream-toolbox)
@@ -87,6 +87,10 @@ endif (USE_OPENCL)
 
 # Check if we have FFTW installed
 find_package (FFTW)  # Will define FFTW_INCLUDE_DIR, FFTW_LIBRARIES, FFTW_STATIC_LIBRARIES, and FFTW_FOUND
+
+if (FFTW_FOUND)
+  add_definitions( -DHAVE_FFTW )	# Build with FFTW support
+endif (FFTW_FOUND)
 
 # Check if we have pthreads (for setting the thread affinity)
 find_package(Threads)

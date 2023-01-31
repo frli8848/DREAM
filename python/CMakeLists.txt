@@ -7,8 +7,6 @@ project(py_dream)
 find_package(Python COMPONENTS Interpreter Development REQUIRED)
 find_package(pybind11 CONFIG REQUIRED)
 
-find_package(FFTW)
-
 # Strip lead and trailing whitepasce
 #string(STRIP "${OCTAVE_INCLUDE_DIRS}" OCTAVE_INCLUDE_DIRS)
 

@@ -4,8 +4,6 @@
 
 project(jl_dream)
 
-find_package(FFTW)
-
 # Get the CxxWrap prefix and Julia module paths
 execute_process(COMMAND julia -E "using CxxWrap; CxxWrap.prefix_path()" OUTPUT_VARIABLE CXXWRAP_PREFIX)
 string (STRIP ${CXXWRAP_PREFIX} CXXWRAP_PREFIX)

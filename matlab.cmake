@@ -5,10 +5,6 @@
 find_package (Matlab)
 message (STATUS "Matlab_MEX_EXTENSION = ${Matlab_MEX_EXTENSION}")
 
-if (FFTW_FOUND)
-  add_definitions( -DHAVE_FFTW )	# Build with FFTW support
-endif (FFTW_FOUND)
-
 if (Matlab_FOUND)
 
   set (DREAM_MEX_FLAGS "-DDREAM_MATLAB")

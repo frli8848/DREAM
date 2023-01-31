@@ -27,9 +27,18 @@
 
 #include <memory>
 
-#ifdef _WIN32                   // Needed for M_PI def.
-#define _USE_MATH_DEFINES
+#if defined(_WIN32) || defined(_MSC_VER)
+#define _USE_MATH_DEFINES       // Needed for M_PI def.
 #include <cmath>
+#endif
+
+#ifdef _MSC_VER
+#define _CRT_SECURE_NO_WARNINGS
+#endif
+
+// Fallback def
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
 #endif
 
 enum class ErrorLevel {

@@ -15,7 +15,7 @@
 * for more details.
 *
 * You should have received a copy of the GNU General Public License
-* along with the DREAM Toolbox; see the file COPYING.  If not, write to the
+* along with the DREAM Toolbox; see the file COPYING.  If Not, write to the
 * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 * 02110-1301, USA.
 *
@@ -45,10 +45,10 @@ bool ArrCirc::is_running()
 // Thread data
 typedef struct
 {
-  dream_idx_type no;
   dream_idx_type start;
   dream_idx_type stop;
-  double *ro;
+  double *Ro;
+  dream_idx_type No;
   double R;
   double dx;
   double dy;
@@ -87,9 +87,9 @@ void* ArrCirc::smp_dream_arr_circ(void *arg)
   double xo, yo, zo;
   double *h = D.h;
   double R=D.R, dx=D.dx, dy=D.dy, dt=D.dt;
-  dream_idx_type no=D.no, nt=D.nt;
+  dream_idx_type No=D.No, nt=D.nt;
   ErrorLevel tmp_lev=ErrorLevel::none, err_level=D.err_level;
-  double *delay=D.delay, *ro=D.ro, v=D.v, cp=D.cp;
+  double *delay=D.delay, *Ro=D.Ro, v=D.v, cp=D.cp;
   Attenuation *att = D.att;
   dream_idx_type start=D.start, stop=D.stop;
   FocusMet foc_met=D.foc_met;
@@ -119,9 +119,9 @@ void* ArrCirc::smp_dream_arr_circ(void *arg)
   }
 
   for (dream_idx_type n=start; n<stop; n++) {
-    xo = ro[n];
-    yo = ro[n+1*no];
-    zo = ro[n+2*no];
+    xo = Ro[n];
+    yo = Ro[n+1*No];
+    zo = Ro[n+2*No];
 
     double dlay = 0.0;
     if (D.delay_type == DelayType::single) {
@@ -290,7 +290,7 @@ ErrorLevel ArrCirc::dream_arr_circ_serial(Attenuation &att, FFTCVec &xc_vec, FFT
  ***/
 
 ErrorLevel ArrCirc::dream_arr_circ(double alpha,
-                                   double *ro, dream_idx_type no,
+                                   double *Ro, dream_idx_type No,
                                    double R,
                                    double dx, double dy, double dt,
                                    dream_idx_type nt,
@@ -303,7 +303,7 @@ ErrorLevel ArrCirc::dream_arr_circ(double alpha,
                                    double *h, ErrorLevel err_level)
 {
   std::thread *threads;
-  unsigned int thread_n, nthreads;
+  dream_idx_type thread_n, nthreads;
   dream_idx_type start, stop;
   DATA *D;
 
@@ -318,15 +318,15 @@ ErrorLevel ArrCirc::dream_arr_circ(double alpha,
 
   // Read DREAM_NUM_THREADS env var
   if(const char* env_p = std::getenv("DREAM_NUM_THREADS")) {
-    unsigned int dream_threads = std::stoul(env_p);
+    dream_idx_type dream_threads = (dream_idx_type) std::stoul(env_p);
     if (dream_threads < nthreads) {
       nthreads = dream_threads;
     }
   }
 
   // nthreads can't be larger then the number of observation points.
-  if (nthreads > (unsigned int) no) {
-    nthreads = no;
+  if (nthreads > No) {
+    nthreads = No;
   }
 
   // Check if we have attenuation
@@ -344,14 +344,14 @@ ErrorLevel ArrCirc::dream_arr_circ(double alpha,
 
   for (thread_n = 0; thread_n < nthreads; thread_n++) {
 
-    start = thread_n * no/nthreads;
-    stop =  (thread_n+1) * no/nthreads;
+    start = thread_n * No/nthreads;
+    stop =  (thread_n+1) * No/nthreads;
 
     // Init local data.
     D[thread_n].start = start; // Local start index;
     D[thread_n].stop = stop; // Local stop index;
-    D[thread_n].no = no;
-    D[thread_n].ro = ro;
+    D[thread_n].No = No;
+    D[thread_n].Ro = Ro;
     D[thread_n].R = R;
     D[thread_n].dx = dx;
     D[thread_n].dy = dy;

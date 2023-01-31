@@ -1,25 +1,25 @@
 /***
-*
-* Copyright (C) 2003,2006,2007,2008,2009,2014,2015,2016,2019,2021 Fredrik Lingvall
-*
-* This file is part of the DREAM Toolbox.
-*
-* The DREAM Toolbox is free software; you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by the
-* Free Software Foundation; either version 2, or (at your option) any
-* later version.
-*
-* The DREAM Toolbox is distributed in the hope that it will be useful, but
-* WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-* FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
-* for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with the DREAM Toolbox; see the file COPYING.  If not, write to the
-* Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-* 02110-1301, USA.
-*
-***/
+ *
+ * Copyright (C) 2003,2006,2007,2008,2009,2014,2015,2016,2019,2021,2023 Fredrik Lingvall
+ *
+ * This file is part of the DREAM Toolbox.
+ *
+ * The DREAM Toolbox is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2, or (at your option) any
+ * later version.
+ *
+ * The DREAM Toolbox is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with the DREAM Toolbox; see the file COPYING.  If not, write to the
+ * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+ * 02110-1301, USA.
+ *
+ ***/
 
 #include <csignal>
 #include <iostream>
@@ -46,10 +46,10 @@ int running;
 
 typedef struct
 {
-  size_t no;
+  size_t No;
   size_t start;
   size_t stop;
-  double *ro;
+  double *Ro;
   double r;
   double dt;
   size_t nt;
@@ -77,9 +77,9 @@ void* smp_dream_circ_sir(void *arg)
   double xo, yo, zo;
   double *h = D.h;
   double r=D.r, dt=D.dt;
-  size_t n, no=D.no, nt=D.nt;
+  size_t n, No=D.No, nt=D.nt;
   //int    tmp_lev, err_level=D.err_level;
-  double *delay=D.delay, *ro=D.ro, v=D.v, cp=D.cp;// alpha=D.alpha;
+  double *delay=D.delay, *Ro=D.Ro, v=D.v, cp=D.cp;// alpha=D.alpha;
   size_t start=D.start, stop=D.stop;
 
   // Let the thread finish and then catch the error.
@@ -92,9 +92,9 @@ void* smp_dream_circ_sir(void *arg)
 
   if (D.delay_type == DelayType::single) {
     for (n=start; n<stop; n++) {
-      xo = ro[n];
-      yo = ro[n+1*no];
-      zo = ro[n+2*no];
+      xo = Ro[n];
+      yo = Ro[n+1*No];
+      zo = Ro[n+2*No];
 
       circ_sir(xo,yo,zo,r,dt,nt,delay[0],v,cp,&h[n*nt]); // TODO: Add attenuation.
 
@@ -106,9 +106,9 @@ void* smp_dream_circ_sir(void *arg)
     }
   } else { // DelayType::multiple.
     for (n=start; n<stop; n++) {
-      xo = ro[n];
-      yo = ro[n+1*no];
-      zo = ro[n+2*no];
+      xo = Ro[n];
+      yo = Ro[n+1*No];
+      zo = Ro[n+2*No];
 
       circ_sir(xo,yo,zo,r,dt,nt,delay[n],v,cp,&h[n*nt]); // TODO: Add attenuation.
 
@@ -160,8 +160,8 @@ void sig_keyint_handler(int signum) {
 
 void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
-  double *ro,*geom_par, *s_par, *m_par;
-  size_t nt, no;
+  double *Ro,*geom_par, *s_par, *m_par;
+  size_t nt, No;
   double r, dt;
   double *delay, v, cp;
   double *h;
@@ -183,8 +183,8 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   //
 
   ap.check_obs_points("circ_sir", prhs, 0);
-  no = mxGetM(prhs[0]); // Number of observation points.
-  ro = mxGetPr(prhs[0]);
+  No = mxGetM(prhs[0]); // Number of observation points.
+  Ro = mxGetPr(prhs[0]);
 
   //
   // Transducer geometry
@@ -207,7 +207,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Start point of impulse response vector ([us]).
   //
 
-  ap.check_delay("circ_sir", prhs, 3, no);
+  ap.check_delay("circ_sir", prhs, 3, No);
   delay = mxGetPr(prhs[3]);
 
   //
@@ -235,18 +235,18 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   }
 
   // nthreads can't be larger then the number of observation points.
-  if (nthreads > (unsigned int) no) {
-    nthreads = no;
+  if (nthreads > No) {
+    nthreads = No;
   }
 
   //
   // Create an output matrix for the impulse response(s).
   //
 
-  plhs[0] = mxCreateDoubleMatrix(nt,no,mxREAL);
+  plhs[0] = mxCreateDoubleMatrix(nt,No,mxREAL);
   h = mxGetPr(plhs[0]);
 
-  SIRData hsir(h, nt, no);
+  SIRData hsir(h, nt, No);
   hsir.clear();
 
   //
@@ -280,14 +280,14 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
   for (thread_n = 0; thread_n < nthreads; thread_n++) {
 
-    start = thread_n * no/nthreads;
-    stop =  (thread_n+1) * no/nthreads;
+    start = thread_n * No/nthreads;
+    stop =  (thread_n+1) * No/nthreads;
 
     // Init local data.
     D[thread_n].start = start; // Local start index;
     D[thread_n].stop = stop; // Local stop index;
-    D[thread_n].no = no;
-    D[thread_n].ro = ro;
+    D[thread_n].No = No;
+    D[thread_n].Ro = Ro;
     D[thread_n].r = r;
     D[thread_n].dt = dt;
     D[thread_n].nt = nt;

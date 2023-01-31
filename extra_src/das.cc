@@ -1,25 +1,25 @@
 /***
-*
-* Copyright (C) 2003,2006,2007,2008,2009,2014,2021 Fredrik Lingvall
-*
-* This file is part of the DREAM Toolbox.
-*
-* The DREAM Toolbox is free software; you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by the
-* Free Software Foundation; either version 2, or (at your option) any
-* later version.
-*
-* The DREAM Toolbox is distributed in the hope that it will be useful, but
-* WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-* FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
-* for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with the DREAM Toolbox; see the file COPYING.  If not, write to the
-* Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-* 02110-1301, USA.
-*
-***/
+ *
+ * Copyright (C) 2003,2006,2007,2008,2009,2014,2021,2023 Fredrik Lingvall
+ *
+ * This file is part of the DREAM Toolbox.
+ *
+ * The DREAM Toolbox is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2, or (at your option) any
+ * later version.
+ *
+ * The DREAM Toolbox is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with the DREAM Toolbox; see the file COPYING.  If not, write to the
+ * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+ * 02110-1301, USA.
+ *
+ ***/
 
 #include <cmath>
 #include <atomic>
@@ -171,7 +171,7 @@ ErrorLevel DAS::das(double *Y, dream_idx_type a_scan_len,
                     ErrorLevel err_level)
 {
   std::thread *threads;
-  unsigned int thread_n, nthreads;
+  dream_idx_type thread_n, nthreads;
   dream_idx_type start, stop;
   DATA *D;
 
@@ -191,14 +191,14 @@ ErrorLevel DAS::das(double *Y, dream_idx_type a_scan_len,
 
   // Read DREAM_NUM_THREADS env var
   if(const char* env_p = std::getenv("DREAM_NUM_THREADS")) {
-    unsigned int dream_threads = std::stoul(env_p);
+    dream_idx_type dream_threads = (dream_idx_type) std::stoul(env_p);
     if (dream_threads < nthreads) {
       nthreads = dream_threads;
     }
   }
 
   // nthreads can't be larger then the number of observation points.
-  if (nthreads > (unsigned int) No) {
+  if (nthreads > No) {
     nthreads = No;
   }
 

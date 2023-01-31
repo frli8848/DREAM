@@ -43,10 +43,10 @@ bool Rect_f::is_running()
 // Thread data.
 typedef struct
 {
-  dream_idx_type no;
   dream_idx_type start;
   dream_idx_type stop;
-  double *ro;
+  double *Ro;
+  dream_idx_type No;
   double a;
   double b;
   FocusMet foc_met;
@@ -77,9 +77,9 @@ void* Rect_f::smp_dream_rect_f(void *arg)
   double xo, yo, zo;
   double *h = D.h;
   double a=D.a, b=D.b, dx=D.dx, dy=D.dy, dt=D.dt;
-  dream_idx_type n, no=D.no, nt=D.nt;
+  dream_idx_type n, No=D.No, nt=D.nt;
   ErrorLevel tmp_lev=ErrorLevel::none, err_level=D.err_level;
-  double *delay=D.delay, *ro=D.ro, v=D.v, cp=D.cp, focal=D.focal;
+  double *delay=D.delay, *Ro=D.Ro, v=D.v, cp=D.cp, focal=D.focal;
   Attenuation *att = D.att;
   dream_idx_type start=D.start, stop=D.stop;
   FocusMet foc_met = D.foc_met;
@@ -100,9 +100,9 @@ void* Rect_f::smp_dream_rect_f(void *arg)
   }
 
   for (n=start; n<stop; n++) {
-    xo = ro[n];
-    yo = ro[n+1*no];
-    zo = ro[n+2*no];
+    xo = Ro[n];
+    yo = Ro[n+1*No];
+    zo = Ro[n+2*No];
 
     double dlay = 0.0;
     if (D.delay_type == DelayType::single) {
@@ -157,7 +157,7 @@ void* Rect_f::smp_dream_rect_f(void *arg)
  ***/
 
 ErrorLevel Rect_f::dreamrect_f(double alpha,
-                       double *ro, dream_idx_type no,
+                       double *Ro, dream_idx_type No,
                        double a, double b,
                        FocusMet foc_met, double focal,
                        double dx, double dy, double dt, dream_idx_type nt,
@@ -166,7 +166,7 @@ ErrorLevel Rect_f::dreamrect_f(double alpha,
                        double *h, ErrorLevel err_level)
 {
   std::thread *threads;
-  unsigned int thread_n, nthreads;
+  dream_idx_type thread_n, nthreads;
   dream_idx_type start, stop;
   DATA *D;
 
@@ -181,15 +181,15 @@ ErrorLevel Rect_f::dreamrect_f(double alpha,
 
   // Read DREAM_NUM_THREADS env var
   if(const char* env_p = std::getenv("DREAM_NUM_THREADS")) {
-    unsigned int dream_threads = std::stoul(env_p);
+    dream_idx_type dream_threads = (dream_idx_type) std::stoul(env_p);
     if (dream_threads < nthreads) {
       nthreads = dream_threads;
     }
   }
 
   // nthreads can't be larger then the number of observation points.
-  if (nthreads > (unsigned int) no) {
-    nthreads = no;
+  if (nthreads > No) {
+    nthreads = No;
   }
 
   // Check if we have attenuation
@@ -207,14 +207,14 @@ ErrorLevel Rect_f::dreamrect_f(double alpha,
 
   for (thread_n = 0; thread_n < nthreads; thread_n++) {
 
-    start = thread_n * no/nthreads;
-    stop =  (thread_n+1) * no/nthreads;
+    start = thread_n * No/nthreads;
+    stop =  (thread_n+1) * No/nthreads;
 
     // Init local data.
     D[thread_n].start = start; // Local start index;
     D[thread_n].stop = stop; // Local stop index;
-    D[thread_n].no = no;
-    D[thread_n].ro = ro;
+    D[thread_n].No = No;
+    D[thread_n].Ro = Ro;
     D[thread_n].a = a;
     D[thread_n].b = b;
     D[thread_n].foc_met = foc_met;

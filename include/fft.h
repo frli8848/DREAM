@@ -107,7 +107,7 @@ class FFT
 {
  public:
 
-  FFT(dream_idx_type fft_len, std::mutex *fft_mutex = nullptr, int plan_method = 4) {
+  FFT(dream_idx_type fft_len, std::mutex *fft_mutex = nullptr, unsigned plan_method = 4) {
 
     m_fft_len = fft_len;
     m_fft_mutex = fft_mutex;
@@ -143,13 +143,13 @@ class FFT
 
       const std::lock_guard<std::mutex> lock(m_fft_mutex[0]);
 
-      m_p_forward = fftw_plan_dft_r2c_1d(fft_len, x.get(), reinterpret_cast<fftw_complex*>(xc.get()), pm);
-      m_p_backward = fftw_plan_dft_c2r_1d(fft_len, reinterpret_cast<fftw_complex*>(xc.get()), x.get(), pm);
+      m_p_forward = fftw_plan_dft_r2c_1d( (int) fft_len, x.get(), reinterpret_cast<fftw_complex*>(xc.get()), pm);
+      m_p_backward = fftw_plan_dft_c2r_1d( (int) fft_len, reinterpret_cast<fftw_complex*>(xc.get()), x.get(), pm);
 
     } else { // Don't use a mutex
 
-      m_p_forward = fftw_plan_dft_r2c_1d(fft_len, x.get(), reinterpret_cast<fftw_complex*>(xc.get()), pm);
-      m_p_backward = fftw_plan_dft_c2r_1d(fft_len, reinterpret_cast<fftw_complex*>(xc.get()), x.get(), pm);
+      m_p_forward = fftw_plan_dft_r2c_1d( (int) fft_len, x.get(), reinterpret_cast<fftw_complex*>(xc.get()), pm);
+      m_p_backward = fftw_plan_dft_c2r_1d( (int)fft_len, reinterpret_cast<fftw_complex*>(xc.get()), x.get(), pm);
     }
   };
 
@@ -191,6 +191,6 @@ class FFT
 
 #endif
 
-#if defined DREAM_MATLAB && not defined HAVE_FFTW
+#if defined(DREAM_MATLAB) && not defined(HAVE_FFTW)
 #include "fft_matlab_no_fftw.h"
 #endif

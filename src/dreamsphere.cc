@@ -44,10 +44,10 @@ bool Sphere::is_running()
 // Thread data.
 typedef struct
 {
-  dream_idx_type no;
   dream_idx_type start;
   dream_idx_type stop;
-  double *ro;
+  double *Ro;
+  dream_idx_type No;
   double R;
   double Rcurv;
   double dx;
@@ -76,9 +76,9 @@ void* Sphere::smp_dream_sphere(void *arg)
   double xo, yo, zo;
   double *h = D.h;
   double R=D.R, Rcurv=D.Rcurv, dx=D.dx, dy=D.dy, dt=D.dt;
-  dream_idx_type n, no=D.no, nt=D.nt;
+  dream_idx_type n, No=D.No, nt=D.nt;
   ErrorLevel tmp_lev, err_level=D.err_level;
-  double *delay=D.delay, *ro=D.ro, v=D.v, cp=D.cp;
+  double *delay=D.delay, *Ro=D.Ro, v=D.v, cp=D.cp;
   Attenuation *att = D.att;
   dream_idx_type start=D.start, stop=D.stop;
 
@@ -98,9 +98,9 @@ void* Sphere::smp_dream_sphere(void *arg)
   }
 
   for (n=start; n<stop; n++) {
-    xo = ro[n];
-    yo = ro[n+1*no];
-    zo = ro[n+2*no];
+    xo = Ro[n];
+    yo = Ro[n+1*No];
+    zo = Ro[n+2*No];
 
     double dlay = 0.0;
     if (D.delay_type == DelayType::single) {
@@ -153,7 +153,7 @@ void* Sphere::smp_dream_sphere(void *arg)
  ***/
 
 ErrorLevel Sphere::dreamsphere(double alpha,
-                               double *ro, dream_idx_type no,
+                               double *Ro, dream_idx_type No,
                                double R, double Rcurv,
                                double dx, double dy, double dt, dream_idx_type nt,
                                DelayType delay_type, double *delay,
@@ -161,7 +161,7 @@ ErrorLevel Sphere::dreamsphere(double alpha,
                                double *h, ErrorLevel err_level)
 {
   std::thread *threads;
-  unsigned int thread_n, nthreads;
+  dream_idx_type thread_n, nthreads;
   dream_idx_type start, stop;
   DATA *D;
 
@@ -176,15 +176,15 @@ ErrorLevel Sphere::dreamsphere(double alpha,
 
   // Read DREAM_NUM_THREADS env var
   if(const char* env_p = std::getenv("DREAM_NUM_THREADS")) {
-    unsigned int dream_threads = std::stoul(env_p);
+    dream_idx_type dream_threads = (dream_idx_type) std::stoul(env_p);
     if (dream_threads < nthreads) {
       nthreads = dream_threads;
     }
   }
 
   // nthreads can't be larger then the number of observation points.
-  if (nthreads > (unsigned int) no) {
-    nthreads = no;
+  if (nthreads > (unsigned int) No) {
+    nthreads = No;
   }
 
   // Check if we have attenuation
@@ -202,14 +202,14 @@ ErrorLevel Sphere::dreamsphere(double alpha,
 
   for (thread_n = 0; thread_n < nthreads; thread_n++) {
 
-    start = thread_n * no/nthreads;
-    stop =  (thread_n+1) * no/nthreads;
+    start = thread_n * No/nthreads;
+    stop =  (thread_n+1) * No/nthreads;
 
     // Init local data.
     D[thread_n].start = start; // Local start index;
     D[thread_n].stop = stop; // Local stop index;
-    D[thread_n].no = no;
-    D[thread_n].ro = ro;
+    D[thread_n].No = No;
+    D[thread_n].Ro = Ro;
     D[thread_n].R = R;
     D[thread_n].Rcurv = Rcurv;
     D[thread_n].dx = dx;

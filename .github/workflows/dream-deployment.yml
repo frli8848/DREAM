@@ -1,4 +1,4 @@
-set-name: DREAM Deployment
+name: DREAM Deployment
 
 on:
   release:

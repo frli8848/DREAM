@@ -27,6 +27,11 @@
 
 #include <memory>
 
+#ifdef _WIN32                   // Needed for M_PI def.
+#define _USE_MATH_DEFINES
+#include <cmath>
+#endif
+
 enum class ErrorLevel {
   none,
   stop,

@@ -10,7 +10,7 @@ if (Matlab_FOUND)
   set (DREAM_MEX_FLAGS "-DDREAM_MATLAB")
 
   # mex libs
-  set (MEX_LD_FLAGS "${CMAKE_LD_FLAGS} ${Matlab_MEX_LIBRARY} ${Matlab_MX_LIBRARY} -lstdc++")
+  set (MEX_LD_FLAGS "${CMAKE_LD_FLAGS} ${Matlab_MEX_LIBRARY} ${Matlab_MX_LIBRARY}")
   message (STATUS "Matlab_ROOT_DIR ${Matlab_ROOT_DIR}")
   message (STATUS "Matlab_MAIN_PROGRAM ${Matlab_MAIN_PROGRAM}")
   message (STATUS "Matlab_INCLUDE_DIRS ${Matlab_INCLUDE_DIRS}")
@@ -56,7 +56,6 @@ if (Matlab_FOUND)
 
   matlab_add_mex (NAME mex_dreamline MODULE
     SRC ${mex_dreamline_SOURCE_FILES}
-    OUTPUT_NAME dreamline
   )
 
   target_link_libraries (mex_dreamline

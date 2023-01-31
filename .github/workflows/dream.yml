@@ -133,9 +133,16 @@ jobs:
     runs-on: windows-latest
 
     steps:
+
     - uses: actions/checkout@v3
 
+    - uses: conda-incubator/setup-miniconda@v2
+      with:
+        miniconda-version: latest
+        activate-environment: test
+
     - name: Install deps
+      shell: powershell
       run: |
         conda install -c conda-forge fftw
 

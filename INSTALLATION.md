@@ -62,7 +62,7 @@ and the Octave builds with`-DBUILD_OCT=on` flag (defaults to `on`).
 
 ## Linux
 
-We have currently build the DREAM Toolbox on two Linux distributions: Ubuntu 20.04 LTS
+We have currently build the DREAM Toolbox on two Linux distributions: Ubuntu 22.04 LTS
 and Gentoo Linux. We assume that a compiler tool chain is already installed, such as, `gcc`
 or `clang`.
 

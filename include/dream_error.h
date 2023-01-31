@@ -25,5 +25,5 @@
 
 #include "dream.h"
 
-ErrorLevel dream_out_of_bounds_err(const char *msg, int idx, ErrorLevel err_level);
+ErrorLevel dream_out_of_bounds_err(const char *msg, dream_idx_type idx, ErrorLevel err_level);
 void dream_err_msg(const char *msg);

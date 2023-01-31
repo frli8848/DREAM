@@ -37,7 +37,7 @@
  *
  ***/
 
-ErrorLevel dream_out_of_bounds_err(const char *msg, int idx, ErrorLevel err_level)
+ErrorLevel dream_out_of_bounds_err(const char *msg, dream_idx_type idx, ErrorLevel err_level)
 {
 
   switch(err_level) {

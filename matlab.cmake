@@ -7,10 +7,8 @@ message (STATUS "Matlab_MEX_EXTENSION = ${Matlab_MEX_EXTENSION}")
 
 if (Matlab_FOUND)
 
-  set (DREAM_MEX_FLAGS "-DDREAM_MATLAB")
-
   # mex libs
-  set (MEX_LD_FLAGS "${CMAKE_LD_FLAGS} ${Matlab_MEX_LIBRARY} ${Matlab_MX_LIBRARY}")
+  #set (MEX_LD_FLAGS "${CMAKE_LD_FLAGS} ${Matlab_MEX_LIBRARY} ${Matlab_MX_LIBRARY}")
   message (STATUS "Matlab_ROOT_DIR ${Matlab_ROOT_DIR}")
   message (STATUS "Matlab_MAIN_PROGRAM ${Matlab_MAIN_PROGRAM}")
   message (STATUS "Matlab_INCLUDE_DIRS ${Matlab_INCLUDE_DIRS}")
@@ -27,8 +25,6 @@ if (Matlab_FOUND)
 
   # Try static FFTW lib to avoid Matlab FFTW crashes
   #set (FFTW_LIBRARIES "${FFTW_STATIC_LIBRARIES}")
-
-  message (STATUS "MEX_LD_FLAGS ${MEX_LD_FLAGS}")
 
   #
   # Include paths
@@ -56,20 +52,16 @@ if (Matlab_FOUND)
 
   matlab_add_mex (NAME mex_dreamline MODULE
     SRC ${mex_dreamline_SOURCE_FILES}
+    LINK_TO ${FFTW_LIBRARIES}
     OUTPUT_NAME "dreamline"
   )
 
-  target_link_libraries (mex_dreamline
-    ${Matlab_LIBRARIES}
-    ${FFTW_LIBRARIES}
-    )
-
   set_target_properties (mex_dreamline PROPERTIES
     CXX_STANDARD 14
-    COMPILE_FLAGS "${DREAM_MEX_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
-    LINK_FLAGS ${MEX_LD_FLAGS}
   )
+
+  target_compile_definitions(mex_dreamline PUBLIC DREAM_MATLAB)
 
   #
   # dreamrect
@@ -85,20 +77,16 @@ if (Matlab_FOUND)
 
   matlab_add_mex (NAME mex_dreamrect MODULE
     SRC ${mex_dreamrect_SOURCE_FILES}
+    LINK_TO ${FFTW_LIBRARIES}
     OUTPUT_NAME "dreamrect"
-  )
-
-  target_link_libraries (mex_dreamrect
-    ${Matlab_LIBRARIES}
-    ${FFTW_LIBRARIES}
   )
 
   set_target_properties (mex_dreamrect PROPERTIES
     CXX_STANDARD 14
-    COMPILE_FLAGS "${DREAM_MEX_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
-    LINK_FLAGS ${MEX_LD_FLAGS}
   )
+
+  target_compile_definitions(mex_dreamrect PUBLIC DREAM_MATLAB)
 
   #
   # dreamrect_f
@@ -114,20 +102,16 @@ if (Matlab_FOUND)
 
   matlab_add_mex (NAME mex_dreamrect_f MODULE
     SRC ${mex_dreamrect_f_SOURCE_FILES}
+    LINK_TO ${FFTW_LIBRARIES}
     OUTPUT_NAME "dreamrect_f"
-  )
-
-  target_link_libraries (mex_dreamrect_f
-    ${Matlab_LIBRARIES}
-    ${FFTW_LIBRARIES}
   )
 
   set_target_properties (mex_dreamrect_f PROPERTIES
     CXX_STANDARD 14
-    COMPILE_FLAGS "${DREAM_MEX_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
-    LINK_FLAGS ${MEX_LD_FLAGS}
   )
+
+  target_compile_definitions(mex_dreamrect_f PUBLIC DREAM_MATLAB)
 
   #
   # dreamcirc
@@ -143,21 +127,16 @@ if (Matlab_FOUND)
 
   matlab_add_mex (NAME mex_dreamcirc MODULE
     SRC ${mex_dreamcirc_SOURCE_FILES}
+    LINK_TO ${FFTW_LIBRARIES}
     OUTPUT_NAME "dreamcirc"
-  )
-
-  target_link_libraries (mex_dreamcirc
-    ${Matlab_LIBRARIES}
-    ${FFTW_LIBRARIES}
   )
 
   set_target_properties (mex_dreamcirc PROPERTIES
     CXX_STANDARD 14
-    COMPILE_FLAGS "${DREAM_MEX_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
-    LINK_FLAGS ${MEX_LD_FLAGS}
-    SUFFIX ".${Matlab_MEX_EXTENSION}" PREFIX ""
   )
+
+  target_compile_definitions(mex_dreamcirc PUBLIC DREAM_MATLAB)
 
   #
   # dreamcirc_f
@@ -173,20 +152,16 @@ if (Matlab_FOUND)
 
   matlab_add_mex (NAME mex_dreamcirc_f MODULE
     SRC ${mex_dreamcirc_f_SOURCE_FILES}
+    LINK_TO ${FFTW_LIBRARIES}
     OUTPUT_NAME "dreamcirc_f"
-  )
-
-  target_link_libraries (mex_dreamcirc_f
-    ${Matlab_LIBRARIES}
-    ${FFTW_LIBRARIES}
   )
 
   set_target_properties (mex_dreamcirc_f PROPERTIES
     CXX_STANDARD 14
-    COMPILE_FLAGS "${DREAM_MEX_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
-    LINK_FLAGS ${MEX_LD_FLAGS}
   )
+
+  target_compile_definitions(mex_dreamcirc_f PUBLIC DREAM_MATLAB)
 
   #
   # dreamsphere
@@ -202,20 +177,16 @@ if (Matlab_FOUND)
 
   matlab_add_mex (NAME mex_dreamsphere MODULE
     SRC ${mex_dreamsphere_SOURCE_FILES}
+    LINK_TO ${FFTW_LIBRARIES}
     OUTPUT_NAME "dreamsphere"
-  )
-
-  target_link_libraries (mex_dreamsphere
-    ${Matlab_LIBRARIES}
-    ${FFTW_LIBRARIES}
   )
 
   set_target_properties (mex_dreamsphere PROPERTIES
     CXX_STANDARD 14
-    COMPILE_FLAGS "${DREAM_MEX_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
-    LINK_FLAGS ${MEX_LD_FLAGS}
   )
+
+  target_compile_definitions(mex_dreamsphere PUBLIC DREAM_MATLAB)
 
   #
   # dreamcylind
@@ -231,20 +202,16 @@ if (Matlab_FOUND)
 
   matlab_add_mex (NAME mex_dreamcylind MODULE
     SRC ${mex_dreamcylind_SOURCE_FILES}
+    LINK_TO ${FFTW_LIBRARIES}
     OUTPUT_NAME "dreamcylind"
-  )
-
-  target_link_libraries (mex_dreamcylind
-    ${Matlab_LIBRARIES}
-    ${FFTW_LIBRARIES}
   )
 
   set_target_properties (mex_dreamcylind PROPERTIES
     CXX_STANDARD 14
-    COMPILE_FLAGS "${DREAM_MEX_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
-    LINK_FLAGS ${MEX_LD_FLAGS}
   )
+
+  target_compile_definitions(mex_dreamcylind PUBLIC DREAM_MATLAB)
 
   #
   # dream_arr_rect
@@ -262,20 +229,16 @@ if (Matlab_FOUND)
 
   matlab_add_mex (NAME mex_dream_arr_rect MODULE
     SRC ${mex_dream_arr_rect_SOURCE_FILES}
+    LINK_TO ${FFTW_LIBRARIES}
     OUTPUT_NAME "dream_arr_rect"
-  )
-
-  target_link_libraries (mex_dream_arr_rect
-    ${Matlab_LIBRARIES}
-    ${FFTW_LIBRARIES}
   )
 
   set_target_properties (mex_dream_arr_rect PROPERTIES
     CXX_STANDARD 14
-    COMPILE_FLAGS "${DREAM_MEX_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
-    LINK_FLAGS ${MEX_LD_FLAGS}
   )
+
+  target_compile_definitions(mex_dream_arr_rect PUBLIC DREAM_MATLAB)
 
   #
   # dream_arr_circ
@@ -293,20 +256,16 @@ if (Matlab_FOUND)
 
   matlab_add_mex (NAME mex_dream_arr_circ MODULE
     SRC ${mex_dream_arr_circ_SOURCE_FILES}
+    LINK_TO ${FFTW_LIBRARIES}
     OUTPUT_NAME "dream_arr_circ"
-  )
-
-  target_link_libraries (mex_dream_arr_circ
-    ${Matlab_LIBRARIES}
-    ${FFTW_LIBRARIES}
   )
 
   set_target_properties (mex_dream_arr_circ PROPERTIES
     CXX_STANDARD 14
-    COMPILE_FLAGS "${DREAM_MEX_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
-    LINK_FLAGS ${MEX_LD_FLAGS}
   )
+
+  target_compile_definitions(mex_dream_arr_circ PUBLIC DREAM_MATLAB)
 
   #
   # dream_arr_cylind
@@ -324,20 +283,16 @@ if (Matlab_FOUND)
 
   matlab_add_mex (NAME mex_dream_arr_cylind MODULE
     SRC ${mex_dream_arr_cylind_SOURCE_FILES}
+    LINK_TO ${FFTW_LIBRARIES}
     OUTPUT_NAME "dream_arr_cylind"
-  )
-
-  target_link_libraries (mex_dream_arr_cylind
-    ${Matlab_LIBRARIES}
-    ${FFTW_LIBRARIES}
   )
 
   set_target_properties (mex_dream_arr_cylind PROPERTIES
     CXX_STANDARD 14
-    COMPILE_FLAGS "${DREAM_MEX_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
-    LINK_FLAGS ${MEX_LD_FLAGS}
   )
+
+  target_compile_definitions(mex_dream_arr_cylind PUBLIC DREAM_MATLAB)
 
   #
   # dream_arr_annu
@@ -355,20 +310,16 @@ if (Matlab_FOUND)
 
   matlab_add_mex (NAME mex_dream_arr_annu MODULE
     SRC ${mex_dream_arr_annu_SOURCE_FILES}
-  )
-
-  target_link_libraries (mex_dream_arr_annu
-    ${Matlab_LIBRARIES}
-    ${FFTW_LIBRARIES}
+    LINK_TO ${FFTW_LIBRARIES}
+    OUTPUT_NAME "dream_arr_annu"
   )
 
   set_target_properties (mex_dream_arr_annu PROPERTIES
     CXX_STANDARD 14
-    COMPILE_FLAGS "${DREAM_MEX_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
+  )
 
-    LINK_FLAGS ${MEX_LD_FLAGS}
-    SUFFIX ".${Matlab_MEX_EXTENSION}" PREFIX "" OUTPUT_NAME "dream_arr_annu")
+  target_compile_definitions(mex_dream_arr_annu PUBLIC DREAM_MATLAB)
 
   ############
   #
@@ -387,21 +338,16 @@ if (Matlab_FOUND)
   )
 
   matlab_add_mex (NAME mex_dream_apodwin MODULE
-    ${mex_dream_apodwin_SOURCE_FILES}
+    SRC ${mex_dream_apodwin_SOURCE_FILES}
     OUTPUT_NAME "dream_apodwin"
-  )
-
-  target_link_libraries (mex_dream_apodwin
-    ${Matlab_LIBRARIES}
-    ${FFTW_LIBRARIES}
   )
 
   set_target_properties (mex_dream_apodwin PROPERTIES
     CXX_STANDARD 14
-    COMPILE_FLAGS "${DREAM_MEX_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
-    LINK_FLAGS ${MEX_LD_FLAGS}
   )
+
+  target_compile_definitions(mex_dream_apodwin PUBLIC DREAM_MATLAB)
 
   #
   # dream_att
@@ -419,17 +365,12 @@ if (Matlab_FOUND)
     OUTPUT_NAME "dream_att"
   )
 
-  target_link_libraries (mex_dream_att
-    ${Matlab_LIBRARIES}
-    ${FFTW_LIBRARIES}
-  )
-
   set_target_properties (mex_dream_att PROPERTIES
     CXX_STANDARD 14
-    COMPILE_FLAGS "${DREAM_MEX_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
-    LINK_FLAGS ${MEX_LD_FLAGS}
   )
+
+  target_compile_definitions(mex_dream_att PUBLIC DREAM_MATLAB)
 
   #
   # Analytic SIRs.
@@ -449,16 +390,12 @@ if (Matlab_FOUND)
     OUTPUT_NAME "circ_sir"
   )
 
-  target_link_libraries (mex_circ_sir
-    ${Matlab_LIBRARIES}
-  )
-
   set_target_properties (mex_circ_sir PROPERTIES
     CXX_STANDARD 14
-    COMPILE_FLAGS "${DREAM_MEX_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
-    LINK_FLAGS ${MEX_LD_FLAGS}
   )
+
+  target_compile_definitions(mex_circ_sir PUBLIC DREAM_MATLAB)
 
   # Sampled analytic circ
 
@@ -473,16 +410,12 @@ if (Matlab_FOUND)
     OUTPUT_NAME "scirc_sir"
   )
 
-  target_link_libraries (mex_scirc_sir
-    ${Matlab_LIBRARIES}
-  )
-
   set_target_properties (mex_scirc_sir PROPERTIES
     CXX_STANDARD 14
-    COMPILE_FLAGS "${DREAM_MEX_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
-    LINK_FLAGS ${MEX_LD_FLAGS}
   )
+
+  target_compile_definitions(mex_scirc_sir PUBLIC DREAM_MATLAB)
 
   # Rect
 
@@ -498,16 +431,12 @@ if (Matlab_FOUND)
     OUTPUT_NAME "rect_sir"
   )
 
-  target_link_libraries (mex_rect_sir
-    ${Matlab_LIBRARIES}
-  )
-
   set_target_properties (mex_rect_sir PROPERTIES
     CXX_STANDARD 14
-    COMPILE_FLAGS "${DREAM_MEX_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
-    LINK_FLAGS ${MEX_LD_FLAGS}
   )
+
+  target_compile_definitions(mex_rect_sir PUBLIC DREAM_MATLAB)
 
   #
   # Delay-and-sum (DAS)
@@ -529,21 +458,16 @@ if (Matlab_FOUND)
 
   matlab_add_mex (NAME mex_das MODULE
     SRC ${mex_das_SOURCE_FILES}
+    LINK_TO ${OpenCL_LIBRARIES}
     OUTPUT_NAME "das"
-  )
-
-  target_link_libraries (mex_das
-    ${Matlab_LIBRARIES}
-    ${FFTW_LIBRARIES}
-    ${OpenCL_LIBRARIES}
   )
 
   set_target_properties (mex_das PROPERTIES
     CXX_STANDARD 14
-    COMPILE_FLAGS "${DREAM_MEX_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
-    LINK_FLAGS ${MEX_LD_FLAGS}
   )
+
+  target_compile_definitions(mex_das PUBLIC DREAM_MATLAB)
 
   #
   # Convolution algorithms
@@ -563,16 +487,12 @@ if (Matlab_FOUND)
     OUTPUT_NAME "conv_p"
   )
 
-  target_link_libraries (mex_conv_p
-    ${Matlab_LIBRARIES}
-  )
-
   set_target_properties (mex_conv_p PROPERTIES
     CXX_STANDARD 14
-    COMPILE_FLAGS "${DREAM_MEX_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
-    LINK_FLAGS ${MEX_LD_FLAGS}
   )
+
+  target_compile_definitions(mex_conv_p PUBLIC DREAM_MATLAB)
 
   # fftconv_p
 
@@ -585,20 +505,16 @@ if (Matlab_FOUND)
 
   matlab_add_mex (NAME mex_fftconv_p MODULE
     SRC ${mex_fftconv_p_SOURCE_FILES}
+    LINK_TO ${FFTW_LIBRARIES}
     OUTPUT_NAME "fftconv_p"
-  )
-
-  target_link_libraries (mex_fftconv_p
-    ${Matlab_LIBRARIES}
-    ${FFTW_LIBRARIES}
   )
 
   set_target_properties (mex_fftconv_p PROPERTIES
     CXX_STANDARD 14
-    COMPILE_FLAGS "${DREAM_MEX_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
-    LINK_FLAGS ${MEX_LD_FLAGS}
   )
+
+  target_compile_definitions(mex_fftconv_p PUBLIC DREAM_MATLAB)
 
   # sum_fftconv
 
@@ -614,20 +530,16 @@ if (Matlab_FOUND)
 
     matlab_add_mex (NAME mex_sum_fftconv MODULE
       SRC ${mex_sum_fftconv_SOURCE_FILES}
+      LINK_TO ${FFTW_LIBRARIES}
       OUTPUT_NAME "sum_fftconv"
     )
 
-    target_link_libraries (mex_sum_fftconv
-      ${Matlab_LIBRARIES}
-      ${FFTW_LIBRARIES}
-      )
-
     set_target_properties (mex_sum_fftconv PROPERTIES
       CXX_STANDARD 14
-      COMPILE_FLAGS "${DREAM_MEX_FLAGS}"
       INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
-      LINK_FLAGS ${MEX_LD_FLAGS}
     )
+
+    target_compile_definitions(mex_sum_fftconv PUBLIC DREAM_MATLAB)
 
   endif(NOT MACOSX)
 
@@ -642,20 +554,16 @@ if (Matlab_FOUND)
 
   matlab_add_mex (NAME mex_fftconv_ola MODULE
     SRC ${mex_fftconv_ola_SOURCE_FILES}
+    LINK_TO ${FFTW_LIBRARIES}
     OUTPUT_NAME "fftconv_ola"
   )
 
-  target_link_libraries (mex_fftconv_ola
-    ${Matlab_LIBRARIES}
-    ${FFTW_LIBRARIES}
-    )
-
   set_target_properties (mex_fftconv_ola PROPERTIES
     CXX_STANDARD 14
-    COMPILE_FLAGS "${DREAM_MEX_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
-    LINK_FLAGS ${MEX_LD_FLAGS}
   )
+
+  target_compile_definitions(mex_fftconv_ola PUBLIC DREAM_MATLAB)
 
   #
   # Add
@@ -675,18 +583,15 @@ if (Matlab_FOUND)
 
   matlab_add_mex (NAME mex_copy_p MODULE
     SRC ${mex_copy_p_SOURCE_FILES}
+    LINK_TO ${Matlab_LIBRARIES}
     OUTPUT_NAME "copy_p"
-  )
-
-  target_link_libraries (mex_copy_p
-    ${Matlab_LIBRARIES}
   )
 
   set_target_properties (mex_copy_p PROPERTIES
     CXX_STANDARD 14
-    COMPILE_FLAGS "${DREAM_MEX_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
-    LINK_FLAGS ${MEX_LD_FLAGS}
   )
+
+  target_compile_definitions(mex_copy_p PUBLIC DREAM_MATLAB)
 
 endif (Matlab_FOUND)

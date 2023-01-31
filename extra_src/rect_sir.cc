@@ -24,6 +24,7 @@
 #include <cmath>
 #include <atomic>
 #include <iostream>
+#include <string>
 
 #include "rect_sir.h"
 #include "affinity.h"

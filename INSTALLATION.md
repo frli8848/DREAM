@@ -1,22 +1,22 @@
 # Introduction
 
 The DREAM Toolbox can be installed both using pre-compiled binaries and from source code. Binaries are
-currently available for Linux (`x86_64`) and for macOS (Intel `x86_64` Macs). The binaries are compiled
-using generic compiler flags and should, therefore, run on most setups. If you want higher performance
+currently available for Linux (`x86_64`), Windows (`x86_64`), and for macOS (Intel `x86_64` Macs). The binaries
+are compiled using generic compiler flags and should, therefore, run on most setups. If you want higher performance
 then it is recommended that you compile DREAM from source as
 described below.
 
 # Binary Installation
 
-There is (experimental) binaries of the Matlab mex-files for Linux and macOS here:
+There is (experimental) binaries of the MATLAB mex-files for Linux and macOS here:
 
 https://github.com/frli8848/DREAM/releases
 
-## Linux Matlab Binaries
+## Linux MATLAB Binaries
 
 Nothing here yet.
 
-## macOS Matlab Binaries
+## macOS MATLAB Binaries
 
 We are using Miniconda packages when we build the macOS binaries so one first needs to install Miniconda from here:
 
@@ -35,7 +35,7 @@ error if one uses the GitHub builds on a standard Miniconda install. One can fix
  $ sudo ln -s /opt/miniconda3 /usr/local/miniconda
 ```
 
-## Windows Matlab Binaries
+## Windows MATLAB Binaries
 
 Nothing here yet.
 
@@ -57,7 +57,7 @@ found here: https://sourceforge.net/projects/dreamtoolbox/
 We aim to build the code and documentation on all platforms using `cmake` and one needs
 to install a compiler tool chain and CMake for the corresponding platform.
 
-The Matlab builds are enabled with `-DBUILD_MEX=on` CMake flag (defaults to `off`)
+The MATLAB builds are enabled with `-DBUILD_MEX=on` CMake flag (defaults to `off`)
 and the Octave builds with`-DBUILD_OCT=on` flag (defaults to `on`).
 
 ## Linux
@@ -102,7 +102,7 @@ DREAM $ mkdir build && cd build
 DREAM/build $ cmake -DCMAKE_CXX_FLAGS="-O3 -march=native" -DBUILD_OCT=on -DBUILD_MEX=on ..
 DREAM/build $ make -j8
 ```
-which will build DREAM with both Matlab and Octave support.
+which will build DREAM with both MATLAB and Octave support.
 
 ## macOS
 
@@ -118,7 +118,7 @@ Linked: '/usr/local/bin/cmake-gui' -> '/Applications/CMake.app/Contents/bin/cmak
 Linked: '/usr/local/bin/ccmake' -> '/Applications/CMake.app/Contents/bin/ccmake'
 
 ```
-Now, install FFTW using the Miniconda package manager (needed for Matlab only builds)
+Now, install FFTW using the Miniconda package manager (needed for MATLAB only builds)
 ```
  $ sudo conda install -c conda-forge fftw
 
@@ -129,7 +129,9 @@ in the Linux build section above.
 
 ## Windows
 
-Nothing here yet.
+We build the Windows binaries using FFTW from Minicoda.
+
+TODO: Add info on installing the compiler toolchain  and setup the build.
 
 ## Python (on Linux)
 
@@ -223,13 +225,13 @@ DREAM/build $ make -j8
 
 ## MATLAB and Octave
 
-After building/installing the Matlab mex-files and/or Octave oct-files add the build folder, or biniary install folder, to
-the Matlab/Octave path. That is, for Octave
+After building/installing the MATLAB mex-files and/or Octave oct-files add the build folder, or biniary install folder, to
+the MATLAB/Octave path. That is, for Octave
 add
 ```
 addpath('/<YOUR-HOME-DIR>/<PATH-TO-DREAM-SOURCES>/DREAM/build')
 ```
-to the `~/.octaverc` file, and for Matlab add it to the `~/Documents/MATLAB/startup.m` file.
+to the `~/.octaverc` file, and for MATLAB add it to the `~/Documents/MATLAB/startup.m` file.
 
 ## Python
 

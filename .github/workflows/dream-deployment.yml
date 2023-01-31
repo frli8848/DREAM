@@ -86,6 +86,7 @@ jobs:
       run: |
         mkdir dream-${{ github.event.release.tag_name }}-matlab-macos-x86_64
         cp -v ${{github.workspace}}/build/*.mexmaci64 dream-${{ github.event.release.tag_name }}-matlab-macos-x86_64/
+        cp -v /usr/local/miniconda/lib/libfftw3*.dylib dream-${{ github.event.release.tag_name }}-matlab-macos-x86_64/
         zip -r dream-${{ github.event.release.tag_name }}-matlab-macos-x86_64.zip dream-${{ github.event.release.tag_name }}-matlab-macos-x86_64
 
     - name: Upload DREAM MATLAB macOS release binary
@@ -109,7 +110,7 @@ jobs:
     - uses: conda-incubator/setup-miniconda@v2
       with:
         miniconda-version: latest
-        activate-environment: test
+        #activate-environment: test
 
     - name: Install deps
       shell: powershell
@@ -137,6 +138,7 @@ jobs:
       run: |
         mkdir dream-${{ github.event.release.tag_name }}-matlab-windows-x86_64
         cp -v ${{github.workspace}}/build/Release/*.mexw64 dream-${{ github.event.release.tag_name }}-matlab-windows-x86_64/
+        cp -v C:/Miniconda3/envs/Library/lib/fftw3*.* dream-${{ github.event.release.tag_name }}-matlab-windows-x86_64/
         zip -r dream-${{ github.event.release.tag_name }}-matlab-windows-x86_64.zip dream-${{ github.event.release.tag_name }}-matlab-windows-x86_64
 
     - name: Upload DREAM MATLAB Windows release binary

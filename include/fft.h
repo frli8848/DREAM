@@ -191,6 +191,8 @@ class FFT
 
 #endif
 
+/*
 #if defined(DREAM_MATLAB) && not defined(HAVE_FFTW)
 #include "fft_matlab_no_fftw.h"
 #endif
+*/

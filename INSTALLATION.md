@@ -8,13 +8,23 @@ described below.
 
 # Binary Installation
 
-There is (experimental) binaries of the MATLAB mex-files for Linux and macOS here:
+There is (experimental) binaries of the MATLAB mex-files for Windows, Linux, and macOS here:
 
 https://github.com/frli8848/DREAM/releases
 
+
+The zip-files can be found under the _Assets_ link for each release.
+
+## Windows MATLAB (mex) Binaries
+
+Download the zip-file for Windows, uncompress it and move the files to a suitable location.
+Also install the [MSVC++ redistributable][https://learn.microsoft.com/en-US/cpp/windows/latest-supported-vc-redist]
+Then, follow the instructions on the _Post Installation Setup_ section below.
+
 ## Linux MATLAB Binaries
 
-Nothing here yet.
+Download load the zip-file for Linux, uncompress it and move the files to a suitable location.
+Then, follow the instructions on the _Post Installation Setup_ section below.
 
 ## macOS MATLAB Binaries
 
@@ -35,9 +45,7 @@ error if one uses the GitHub builds on a standard Miniconda install. One can fix
  $ sudo ln -s /opt/miniconda3 /usr/local/miniconda
 ```
 
-## Windows MATLAB Binaries
-
-Nothing here yet.
+Then, follow the instructions on the _Post Installation Setup_ section below.
 
 # Building the DREAM Toolbox Source Code
 
@@ -127,11 +135,43 @@ Now, install FFTW using the Miniconda package manager (needed for MATLAB only bu
 And finally, build the optimized binaries for macOS by following the `git clone ...` and CMake build instructions
 in the Linux build section above.
 
-## Windows
+## Windows (mex Files)
 
-We build the Windows binaries using FFTW from Minicoda.
+First install the MSVC Toolchain (the community version works fine) and we assume that MATLAB is
+already installed. Then create a folder such as, for example,
+```
+C:\software
+```
+which do not have any white space in its path. Install these tools in that folder:
+* https://git-scm.com/download/win
+* https://cmake.org/download/
+* https://docs.conda.io/en/latest/miniconda.html
 
-TODO: Add info on installing the compiler toolchain  and setup the build.
+When you install `cmake` add it to the paths for all users. Then start the "Anaconda Powershell prompt" and
+run:
+```
+$ conda install fftw
+```
+
+Now start a "Git Bash" shell and build DREAM using:
+```
+```bash
+MINGW ~ git clone https://github.com/frli8848/DREAM.git
+MINGW ~ cd DREAM
+MINGW ~/DREAM (master) mkdir build && cd build
+MINGW ~/DREAM/build (master) cmake -DCMAKE_CXX_FLAGS="-O2" -DBUILD_MEX=on -DBUILD_OCT=off ..
+MINGW ~/DREAM/build (master) cmake --build . --config Relase
+```
+If everything works then the newly build mex-files should be located in the folder:
+```
+MINGW ~/DREAM/build/Release
+```
+Move these mex-files to a suitable folder and copy the FFTW dll:s which is installed in
+```
+C:\software\miniconda3\Library\bin
+```
+to the same folder and and it to your MATLAB path by adding it to the `startup.m` file (see the "Post Installation
+Setup" section below).
 
 ## Python (on Linux)
 

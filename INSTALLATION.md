@@ -154,12 +154,11 @@ $ conda install fftw
 ```
 
 Now start a "Git Bash" shell and build DREAM using:
-```
 ```bash
 MINGW ~ git clone https://github.com/frli8848/DREAM.git
 MINGW ~ cd DREAM
 MINGW ~/DREAM (master) mkdir build && cd build
-MINGW ~/DREAM/build (master) cmake -DCMAKE_CXX_FLAGS="-O2" -DBUILD_MEX=on -DBUILD_OCT=off ..
+MINGW ~/DREAM/build (master) cmake -DCMAKE_CXX_FLAGS="-O2 -EHsc" -DBUILD_MEX=on -DBUILD_OCT=off ..
 MINGW ~/DREAM/build (master) cmake --build . --config Relase
 ```
 If everything works then the newly build mex-files should be located in the folder:
@@ -260,6 +259,83 @@ DREAM $ mkdir build && cd build
 DREAM/build $ cmake -DCMAKE_CXX_FLAGS="-O3 -march=native" -DBUILD_JULIA=on ..
 DREAM/build $ make -j8
 ```
+
+# Building with GPU Acceleration Support - OpenCL Setup
+
+We have experimental OpenCL (GPU) support for a few functions which currently includes:
+* `das`
+* `dreamrect`
+* `dreamcirc`
+* `rect_sir`
+
+The support is enabled by using the cmake option `-DUSE_OPENCL=on`. One needs driver support for
+the type of GPU used (Nvidia, AMD, or Intel) which is normally provided by the GPU vendor tools
+like, for example, CUDA for Nvidia or the ROCm stack from AMD.
+
+We currently keep the OpenCL kernels in a folder `kernels` inside the build folder which is generated
+by cmake (NB. this setup will must likely change in the future). To run the corresponding function we
+read an enviroment variable `DREAM_CL_KERNELS` which must contain the path to that folder. That is,
+we must set something like,
+```bash
+$ export DREAM_CL_KERNELS=/home/<USER>/DREAM/build/kernels
+```
+on Linux or
+```bash
+MINGW64 ~ setx DREAM_CL_KERNELS "C:\Users\<USER>\DREAM\build\kernels"
+```
+on Windows (or run `sysdm.cpl` and add it using the GUI [a reboot may be needed]) before starting
+MATLAB or Octave (replace `<USER>` with the user building DREAM).
+
+## Linux
+
+On Gentoo first install the vendor specific OpenCL tools, for example CUDA (or ROCm etc.), and then
+the OpenCL C++ headers,
+```bash
+# emerge dev-util/nvidia-cuda-toolkit
+# emerge dev-util/opencl-headers dev-libs/clhpp
+```
+or on Ubuntu,
+```bash
+# apt install nvidia-cuda-toolkit-gcc
+# apt install opencl-c-headers opencl-clhpp-header
+```
+
+Now setup the build as described in the Linux build section above and add the cmake option `-DUSE_OPENCL=on`
+when configuring the build like, for example,
+```bash
+-snip-
+
+DREAM/build $ cmake -DCMAKE_CXX_FLAGS="-O3 -march=native" -DBUILD_OCT=on -DBUILD_MEX=on -DUSE_OPENCL=on ..
+
+-snip-
+```
+Then follow the build instructions in the Linux build section above.
+
+## macOS
+
+Nothing here yet.
+
+## Windows
+
+* Install CUDA (Nvidia), ROCm (AMD), or Intel tools depending of which GPU is in use.
+
+* Install the OpenCL headers. Start `Git Bash` and run
+```
+$ git clone https://github.com/KhronosGroup/OpenCL-Headers.git
+$ git clone https://github.com/KhronosGroup/OpenCL-CLHPP.git
+```
+Then create the folder `CL` in the `DREAM/include` folder and copy all OpnCL header
+files (both `.h` and `.hpp`) to that folder; they are located in `OpenCL-Headers/CL`
+and `OpenCL-CLHPP/include/CL`, respectively. Finally , configure the build using
+using,
+```bash
+-snip-
+
+MINGW ~/DREAM/build (master) cmake -DCMAKE_CXX_FLAGS="-O2 -EHsc" -DBUILD_MEX=on -DBUILD_OCT=off -USE_OPENCL=on ..
+
+-snip-
+```
+and and build as described in the Windows build section above (NB. only Windows mex-files has currently been tested).
 
 # Post Installation Setup
 

@@ -205,7 +205,7 @@ ErrorLevel ArrCylind::dream_arr_cylind_serial(Cylind &cylind,
     if (foc_met != FocusMet::ud) {
       focusing(foc_met, focal[0], gx[n], gy[n], x_max, y_max, r_max, cp, &foc_delay);
     } else {
-      focusing(foc_met, focal[n], gx[n], gy[n], x_max, y_max, r_max, cp, &foc_delay);
+      foc_delay  = focal[n];
     }
 
     double steer_delay = 0.0;
@@ -258,7 +258,7 @@ ErrorLevel ArrCylind::dream_arr_cylind_serial(Cylind &cylind,
     if (foc_met != FocusMet::ud) {
       focusing(foc_met, focal[0], gx[n], gy[n], x_max, y_max, r_max, cp, &foc_delay);
     } else {
-      focusing(foc_met, focal[n], gx[n], gy[n], x_max, y_max, r_max, cp, &foc_delay);
+      foc_delay  = focal[n];
     }
 
     double steer_delay = 0.0;

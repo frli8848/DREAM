@@ -40,7 +40,7 @@
 
 DEFUN_DLD (dream_arr_rect, args, nlhs,
            "-*- texinfo -*-\n\
-@deftypefn {Loadable Function} {} [H,err] = [H,err] = dream_arr_rect(Ro,geom_par,G,s_par,delay,m_par,foc_met,...\n\
+@deftypefn {Loadable Function} {} [H,err] = dream_arr_rect(Ro,geom_par,G,s_par,delay,m_par,foc_met,...\n\
                 focal,steer_met,steer_par,apod_met,apod,win_par,err_level);\n\
 \n\
 DREAM_ARR_RECT - Computes the spatial impulse response\n\

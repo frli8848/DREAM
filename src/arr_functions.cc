@@ -57,7 +57,7 @@ void center_pos(double *x, double *y, double *z, dream_idx_type i,
  *
  ***/
 
-void max_dim_arr(double *x_max, double *y_max, double *ramax,
+void max_dim_arr(double *x_max, double *y_max, double *r_max,
                  double *gx, double *gy, double *gz, dream_idx_type num_elements)
 {
   dream_idx_type i;
@@ -78,7 +78,7 @@ void max_dim_arr(double *x_max, double *y_max, double *ramax,
       *y_max = ret;
     }
   }
-  *ramax = std::sqrt(*x_max * *x_max + *y_max * *y_max);
+  *r_max = std::sqrt(*x_max * *x_max + *y_max * *y_max);
 
   return;
 }
@@ -92,7 +92,7 @@ void max_dim_arr(double *x_max, double *y_max, double *ramax,
  ***/
 
 void focusing(FocusMet foc_met, double focal, double gx, double gy,
-              double x_max, double y_max, double ramax, double cp, double *foc_delay)
+              double x_max, double y_max, double r_max, double cp, double *foc_delay)
 {
   switch(foc_met) {
 
@@ -118,7 +118,7 @@ void focusing(FocusMet foc_met, double focal, double gx, double gy,
 
   case FocusMet::xy:
     {
-      double rmax = std::sqrt(ramax*ramax + focal*focal);
+      double rmax = std::sqrt(r_max*r_max + focal*focal);
       double diff = rmax - std::sqrt(gx*gx + gy*gy + focal*focal);
       *foc_delay = diff*1.0e3/cp; // [us]
     }
@@ -126,7 +126,7 @@ void focusing(FocusMet foc_met, double focal, double gx, double gy,
 
   case FocusMet::x_y:
     {
-      double rmax = std::sqrt(ramax*ramax + focal*focal);
+      double rmax = std::sqrt(r_max*r_max + focal*focal);
       double retx = std::sqrt(gx*gx + focal*focal);
       double rety = std::sqrt(gy*gy + focal*focal);
       double diff = rmax - (retx + rety);
@@ -154,7 +154,7 @@ void focusing(FocusMet foc_met, double focal, double gx, double gy,
  ***/
 
 void beamsteering(SteerMet steer_met, double theta, double phi, double gx, double gy,
-                  double x_max, double y_max, double ramax, double cp, double *steer_delay)
+                  double x_max, double y_max, double r_max, double cp, double *steer_delay)
 {
   const double deg2rad = M_PI / (double) 180.0;
 
@@ -213,7 +213,7 @@ void beamsteering(SteerMet steer_met, double theta, double phi, double gx, doubl
  ***/
 
 void apodization(ApodMet apod_met, dream_idx_type n, double *apod_vec, double *weight,
-                 double gx, double gy, double ramax, double apod_par)
+                 double gx, double gy, double r_max, double apod_par)
 {
   double r = std::sqrt(gx*gx + gy*gy);
 
@@ -224,23 +224,23 @@ void apodization(ApodMet apod_met, dream_idx_type n, double *apod_vec, double *w
     break;
 
   case ApodMet::triangle:
-    *weight = 1.0 - fabs(r) / ramax;
+    *weight = 1.0 - fabs(r) / r_max;
     break;
 
   case ApodMet::gauss:
-    *weight = exp(-(apod_par * r*r) / (ramax*ramax));
+    *weight = exp(-(apod_par * r*r) / (r_max*r_max));
     break;
 
   case ApodMet::raised_cosine:
-    *weight = apod_par + std::cos(r*M_PI/ramax);
+    *weight = apod_par + std::cos(r*M_PI/r_max);
     break;
 
   case ApodMet::simply_supported:
-    *weight = 1.0 - r*r / (ramax*ramax);
+    *weight = 1.0 - r*r / (r_max*r_max);
     break;
 
   case ApodMet::clamped:
-    *weight = (1.0 - r*r / (ramax*ramax)) * (1.0  - r*r / (ramax*ramax));
+    *weight = (1.0 - r*r / (r_max*r_max)) * (1.0  - r*r / (r_max*r_max));
     break;
 
   default:

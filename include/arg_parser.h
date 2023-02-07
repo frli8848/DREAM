@@ -24,6 +24,8 @@
 
 #pragma once
 
+#include <iostream>
+
 #include <sstream>
 #include <cstring>
 #include <cstdarg>
@@ -344,15 +346,17 @@ public:
 
         // Vector of focusing delays.
         if (get_m(args, arg_num+1)*get_n(args, arg_num+1) != num_elements) {
-          s << func_name <<  " the time delay vector arg " << arg_num+1 << " for user defined ('ud') focusing\n!";
+          s << func_name <<  " the time delay vector arg " << arg_num+1 << " for user defined ('ud') focusing\n";
           s << "delays must have the same length as the number of array elements!";
-            retval=false;
+          dream_err_msg(s.str().c_str());
+          retval=false;
         } else { // Copy the user defined apodization weights.
           double *tmp_focal = get_data(args, arg_num+1);
           if (focal) {
             std::memcpy(focal, tmp_focal, num_elements*sizeof(double));
           } else {
             s << func_name << " focal vector not initialzed!";
+            dream_err_msg(s.str().c_str());
             retval=false;
           }
         }

@@ -57,7 +57,9 @@ enum class DelayType {
 enum class FocusMet {
   none,
   x,
+  negx,
   y,
+  negy,
   xy,
   x_y,
   ud

@@ -102,13 +102,13 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Focusing parameters.
   //
 
+  FocusMet foc_met=FocusMet::none;
+
   // Allocate memory for the user defined focusing delays
   std::unique_ptr<double[]> focal = std::make_unique<double[]>(num_elements);
 
-  FocusMet foc_met=FocusMet::none;
-
   if (nrhs >= 7) {
-    ap.parse_focus_args("dream_arr_rect", prhs, 6, foc_met, focal.get());
+    ap.parse_focus_args("dream_arr_rect", prhs, 6, foc_met, focal.get(), num_elements);
   } else {
     foc_met = FocusMet::none;
   }

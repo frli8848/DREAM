@@ -274,7 +274,7 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
   std::unique_ptr<double[]> focal = std::make_unique<double[]>(num_elements);
 
   if (nrhs >= 7) {
-    if (!ap.parse_focus_args("dream_arr_cylind", args, 6, foc_met, focal.get())) {
+    if (!ap.parse_focus_args("dream_arr_cylind", args, 6, foc_met, focal.get()), num_elements) {
       return oct_retval;
     }
   } else {

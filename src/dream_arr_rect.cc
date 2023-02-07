@@ -199,7 +199,7 @@ ErrorLevel ArrRect::dream_arr_rect_serial(double xo, double yo, double zo,
     if (foc_met != FocusMet::ud) {
       focusing(foc_met, focal[0], gx[n], gy[n], x_max, y_max, r_max, cp, &foc_delay);
     } else {
-      focusing(foc_met, focal[n], gx[n], gy[n], x_max, y_max, r_max, cp, &foc_delay);
+      foc_delay = focal[n];
     }
 
     double steer_delay = 0.0;
@@ -255,7 +255,7 @@ ErrorLevel ArrRect::dream_arr_rect_serial(Attenuation &att, FFTCVec &xc_vec, FFT
     if (foc_met != FocusMet::ud) {
       focusing(foc_met, focal[0], gx[n], gy[n], x_max, y_max, r_max, cp, &foc_delay);
     } else {
-      focusing(foc_met, focal[n], gx[n], gy[n], x_max, y_max, r_max, cp, &foc_delay);
+      foc_delay = focal[n];
     }
 
     double steer_delay = 0.0;

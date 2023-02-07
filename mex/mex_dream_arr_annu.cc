@@ -97,7 +97,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
   FocusMet foc_met=FocusMet::none;
   if (nrhs >= 6) {
-    ap.parse_focus_args("dream_arr_annu", prhs, 5, foc_met, focal.get());
+    ap.parse_focus_args("dream_arr_annu", prhs, 5, foc_met, focal.get(), num_elements);
   } else {
     foc_met = FocusMet::none;
   }

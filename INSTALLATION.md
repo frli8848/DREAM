@@ -155,13 +155,15 @@ $ conda install fftw
 
 Now start a "Git Bash" shell and build DREAM using:
 ```bash
-MINGW ~ git clone https://github.com/frli8848/DREAM.git
-MINGW ~ cd DREAM
-MINGW ~/DREAM (master) mkdir build && cd build
-MINGW ~/DREAM/build (master) cmake -DCMAKE_CXX_FLAGS="-O2 -EHsc" -DBUILD_MEX=on -DBUILD_OCT=off ..
-MINGW ~/DREAM/build (master) cmake --build . --config Relase
+MINGW ~ $ git clone https://github.com/frli8848/DREAM.git
+MINGW ~ $ cd DREAM
+MINGW ~/DREAM (master) $ mkdir build && cd build
+MINGW ~/DREAM/build (master) $ cmake -DCMAKE_CXX_FLAGS="-O2 -EHsc" -DBUILD_MEX=on -DBUILD_OCT=off ..
+MINGW ~/DREAM/build (master) $ cmake --build . --config Relase
 ```
-If everything works then the newly build mex-files should be located in the folder:
+The `"-EHsc"` flag is for silencing MSVC exaption handling warnings.
+
+If everything builds then the newly build mex-files should be located in the folder:
 ```
 MINGW ~/DREAM/build/Release
 ```
@@ -169,16 +171,16 @@ Move these mex-files to a suitable folder and copy the FFTW dll:s which is insta
 ```
 C:\software\miniconda3\Library\bin
 ```
-to the same folder and and it to your MATLAB path by adding it to the `startup.m` file (see the "Post Installation
+to the same folder and add it to your MATLAB path by adding it to the `startup.m` file (see the "Post Installation
 Setup" section below).
 
 ## Python (on Linux)
 
 First, one needs to install `pybind11`, `numpy` and `matplotlib` (to run the tests). On Gentoo Linux
 ```
-$ sudo dev-python/pybind11
+$ sudo emerge dev-python/pybind11
 $ sudo emerge dev-python/numpy
-$ dev-python/matplotlib
+$ sudo emerge dev-python/matplotlib
 ```
 and on Ubuntu Linux
 ```
@@ -206,7 +208,7 @@ A window should appear with the SIR plots.
 
 ## Julia (on Linux)
 
-First install Julia, where on Ubuntu (22.04 LTS) there is no package so one have to do somthing like
+First install Julia, where on Ubuntu (22.04 LTS) there is no package so one have to do something like
 ```bash
 $ wget https://julialang-s3.julialang.org/bin/linux/x64/1.8/julia-1.8.5-linux-x86_64.tar.gz
 $ tar xf julia-1.8.5-linux-x86_64.tar.gz
@@ -326,8 +328,7 @@ $ git clone https://github.com/KhronosGroup/OpenCL-CLHPP.git
 ```
 Then create the folder `CL` in the `DREAM/include` folder and copy all OpnCL header
 files (both `.h` and `.hpp`) to that folder; they are located in `OpenCL-Headers/CL`
-and `OpenCL-CLHPP/include/CL`, respectively. Finally , configure the build using
-using,
+and `OpenCL-CLHPP/include/CL`, respectively. Finally , configure the build using,
 ```bash
 -snip-
 

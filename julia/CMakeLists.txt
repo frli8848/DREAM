@@ -5,9 +5,14 @@
 project(jl_dream)
 
 # Get the CxxWrap prefix and Julia module paths
-execute_process(COMMAND julia -E "using CxxWrap; CxxWrap.prefix_path()" OUTPUT_VARIABLE CXXWRAP_PREFIX)
-string (STRIP ${CXXWRAP_PREFIX} CXXWRAP_PREFIX)
-string (REPLACE "\"" "" CXXWRAP_PREFIX ${CXXWRAP_PREFIX})
+if (NOT DEFINED CXXWRAP_PREFIX)
+  # NB. This does not work on Windows using julialauncher.exe
+  # so one needs to add the prefix manually.
+  execute_process(COMMAND julia -E "using CxxWrap; CxxWrap.prefix_path()" OUTPUT_VARIABLE CXXWRAP_PREFIX)
+  string (STRIP ${CXXWRAP_PREFIX} CXXWRAP_PREFIX)
+  string (REPLACE "\"" "" CXXWRAP_PREFIX ${CXXWRAP_PREFIX})
+endif (NOT DEFINED CXXWRAP_PREFIX)
+
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH};${CXXWRAP_PREFIX}/lib/cmake/JlCxx/)
 set (CXXWRAP_INCLUDE_DIR ${CXXWRAP_PREFIX}/include)
 

@@ -155,18 +155,14 @@ void* DAS::smp_das(void *arg)
 
 /***
  *
- * Delay-and-sum (DAS) processing using SAFT or TFM methods.
+ * Delay-and-sum (DAS) processing using SAFT or TFM ErrorLevel.
  *
  ***/
 
-ErrorLevel DAS::das(double *Y, dream_idx_type a_scan_len,
-                    double *Ro, dream_idx_type No,
-                    double *Gt, dream_idx_type num_t_elements,
-                    double *Gr, dream_idx_type num_r_elements, // SAFT if num_r_elements = 0;
+ErrorLevel DAS::das(double *Y, double *Ro, double *Gt, double *Gr,
                     double dt,
                     DelayType delay_type, double *delay,
                     double cp,
-                    DASType das_type,
                     double *Im,
                     ErrorLevel err_level)
 {
@@ -176,7 +172,8 @@ ErrorLevel DAS::das(double *Y, dream_idx_type a_scan_len,
   DATA *D;
 
   // Force SAFT if Gt is empty.
-  if (num_r_elements == 0) {
+  DASType das_type = m_das_type;
+  if (m_num_r_elements == 0) {
     das_type = DASType::saft;
   }
 
@@ -198,8 +195,8 @@ ErrorLevel DAS::das(double *Y, dream_idx_type a_scan_len,
   }
 
   // nthreads can't be larger then the number of observation points.
-  if (nthreads > No) {
-    nthreads = No;
+  if (nthreads > m_No) {
+    nthreads = m_No;
   }
 
   // Allocate local data.
@@ -210,21 +207,21 @@ ErrorLevel DAS::das(double *Y, dream_idx_type a_scan_len,
 
   for (thread_n = 0; thread_n < nthreads; thread_n++) {
 
-    start = thread_n * No/nthreads;
-    stop =  (thread_n+1) * No/nthreads;
+    start = thread_n * m_No/nthreads;
+    stop =  (thread_n+1) * m_No/nthreads;
 
     // Init local data.
     D[thread_n].start = start; // Local start index;
     D[thread_n].stop = stop; // Local stop index;
     D[thread_n].Y = Y;
-    D[thread_n].a_scan_len = a_scan_len;
+    D[thread_n].a_scan_len = m_a_scan_len;
     D[thread_n].Im = Im;
-    D[thread_n].No = No;
+    D[thread_n].No = m_No;
     D[thread_n].Ro = Ro;
     D[thread_n].Gt = Gt;
-    D[thread_n].num_t_elements = num_t_elements;
+    D[thread_n].num_t_elements = m_num_t_elements;
     D[thread_n].Gr = Gr;
-    D[thread_n].num_r_elements = num_r_elements;
+    D[thread_n].num_r_elements = m_num_r_elements;
     D[thread_n].dt = dt;
     D[thread_n].delay_type = delay_type;
     D[thread_n].delay = delay;

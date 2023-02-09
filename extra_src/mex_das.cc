@@ -169,7 +169,15 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   plhs[0] = mxCreateDoubleMatrix(No,1,mxREAL);
   double *Im = mxGetPr(plhs[0]);
 
-  DAS das;
+  std::unique_ptr<DAS> das;
+  try {
+    das = std::make_unique<DAS>(das_type, a_scan_len, No, num_t_elements, num_r_elements);
+  }
+
+  catch (std::runtime_error &err) {
+    std::cout << err.what();
+    return;
+  }
 
   // Register signal handler.
   std::signal(SIGABRT, DAS::abort);
@@ -179,16 +187,10 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Check if we should use the GPU
   if (device == "gpu" && num_r_elements > 0) { // SAFT is most likely fast enough on the CPU.
 
-    das.cl_das(Y, a_scan_len,
-               Ro,  No,
-               Gt, num_t_elements,
-               Gr, num_r_elements,
-               dt,
-               delay[0],
-               cp,
-               das_type,
-               Im);
+    das->cl_das(Y, Ro, Gt, Gr, dt, delay[0], cp, Im);
+
   } else { // Otherwise use the cpu
+
 #endif
 
     if (device == "gpu") {
@@ -196,21 +198,13 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       std::cout << "Using the CPU backend!" << std::endl;
     }
 
-    err = das.das(Y, a_scan_len,
-                  Ro,  No,
-                  Gt, num_t_elements,
-                  Gr, num_r_elements,
-                  dt,
-                  delay_type, delay,
-                  cp,
-                  das_type,
-                  Im,
-                err_level);
+    err = das->das(Y, Ro, Gt, Gr, dt, delay_type, delay, cp, Im, err_level);
+
 #ifdef USE_OPENCL
   }
 #endif
 
-  if (!das.is_running()) {
+  if (!das->is_running()) {
     dream_err_msg("CTRL-C pressed!\n"); // Bail out.
   }
 

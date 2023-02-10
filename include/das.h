@@ -59,7 +59,7 @@ public:
     , m_a_scan_len(a_scan_len)
     , m_No(No)
     , m_num_t_elements(num_t_elements)
-    , m_num_r_elements( num_r_elements)
+    , m_num_r_elements(num_r_elements)
   {
 #ifdef USE_OPENCL
     std::string kernel_str;
@@ -328,6 +328,7 @@ public:
 
   static void abort(int signum);
   bool is_running();
+  void set_running();
   bool das_setup_has_changed(DASType das_type, // Function to check if we need to resize buffers and re-init.
                              dream_idx_type a_scan_len,
                              dream_idx_type No,

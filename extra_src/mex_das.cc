@@ -192,6 +192,8 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     }
   }
 
+  das->set_running();
+
   // Register signal handler.
   std::signal(SIGABRT, DAS::abort);
 

@@ -30,6 +30,11 @@
 std::mutex err_mutex;
 std::atomic<bool> running;
 
+void DAS::set_running()
+{
+  running = true;
+}
+
 void DAS::abort(int signum)
 {
   running = false;
@@ -176,8 +181,6 @@ ErrorLevel DAS::das(double *Y, double *Ro, double *Gt, double *Gr,
   if (m_num_r_elements == 0) {
     das_type = DASType::saft;
   }
-
-  running = true;
 
   //
   // Number of threads.

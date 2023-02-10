@@ -320,6 +320,8 @@ Copyright @copyright{} 2008-2023 Fredrik Lingvall.\n\
     }
   }
 
+  das->set_running();
+
   // Register signal handler.
   std::signal(SIGABRT, DAS::abort);
 

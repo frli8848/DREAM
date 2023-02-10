@@ -28,6 +28,11 @@
 
 #include <octave/oct.h>
 
+// Persistent smart pointer to DAS object.
+// This one is only cleared when we do a
+// octave:1> clear das
+std::unique_ptr<DAS> das=nullptr;
+
 /***
  *
  * das - Octave (oct) gateway function for DAS (delay-and-sum).
@@ -297,14 +302,22 @@ Copyright @copyright{} 2008-2023 Fredrik Lingvall.\n\
   Matrix Im_mat(No,1);
   double *Im = (double*) Im_mat.data();
 
-  std::unique_ptr<DAS> das;
-  try {
-    das = std::make_unique<DAS>(das_type, a_scan_len, No, num_t_elements, num_r_elements);
+  bool init_das = true;
+  if (das) { // das object exist - check if we can reuse previous das init
+    if (!das->das_setup_has_changed(das_type, a_scan_len, No, num_t_elements, num_r_elements)) {
+      init_das = false;
+    }
   }
 
-  catch (std::runtime_error &err) {
-    std::cout << err.what();
-    return oct_retval;
+  if (init_das) {
+    try {
+      das = std::make_unique<DAS>(das_type, a_scan_len, No, num_t_elements, num_r_elements);
+    }
+
+    catch (std::runtime_error &err) {
+      std::cout << err.what();
+      return oct_retval;
+    }
   }
 
   // Register signal handler.

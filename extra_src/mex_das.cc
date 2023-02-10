@@ -28,6 +28,11 @@
 
 #include "mex.h"
 
+// Persistent smart pointer to DAS object.
+// This one is only cleared when we do a
+// >> clear das
+std::unique_ptr<DAS> das=nullptr;
+
 /***
  *
  * Matlab (MEX) gateway function for das (delay-and-sum).
@@ -169,14 +174,22 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   plhs[0] = mxCreateDoubleMatrix(No,1,mxREAL);
   double *Im = mxGetPr(plhs[0]);
 
-  std::unique_ptr<DAS> das;
-  try {
-    das = std::make_unique<DAS>(das_type, a_scan_len, No, num_t_elements, num_r_elements);
+  bool init_das = true;
+  if (das) { // das object exist - check if we can reuse previous das init
+    if (!das->das_setup_has_changed(das_type, a_scan_len, No, num_t_elements, num_r_elements)) {
+      init_das = false;
+    }
   }
 
-  catch (std::runtime_error &err) {
-    std::cout << err.what();
-    return;
+  if (init_das) {
+    try {
+      das = std::make_unique<DAS>(das_type, a_scan_len, No, num_t_elements, num_r_elements);
+    }
+
+    catch (std::runtime_error &err) {
+      std::cout << err.what();
+      return;
+    }
   }
 
   // Register signal handler.

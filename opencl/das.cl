@@ -4,8 +4,8 @@
 
 #define F_SFX(v) v##f // Suffix of numerical floating point float constants (= f suffix).
 
-#define DAS_DATATYPE double
-//#define DAS_DATATYPE float
+//#define DAS_DATATYPE double
+#define DAS_DATATYPE float
 
 __kernel void das_tfm(__global const double *Y, // Size: a_scan_len x num_t_elements*num_r_elements (=FMC)
                       const int a_scan_len,
@@ -27,8 +27,8 @@ __kernel void das_tfm(__global const double *Y, // Size: a_scan_len x num_t_elem
   const DAS_DATATYPE delay_ms = (DAS_DATATYPE) delay/1000.0;
 
   // Work on local data.
-  //DAS_DATATYPE im = F_SFX(0.0); // For float
-  DAS_DATATYPE im = 0.0; // For double
+  DAS_DATATYPE im = F_SFX(0.0); // For float
+  //DAS_DATATYPE im = 0.0; // For double
 
   __global double *y_p = (__global double *) Y;
 
@@ -61,7 +61,7 @@ __kernel void das_tfm(__global const double *Y, // Size: a_scan_len x num_t_elem
   }
 
   // Just write to global memory once!
-  Im[no] = im;
+  Im[no] = (double) im;
 }
 
 __kernel void das_rca(__global const double *Y, // Size: a_scan_len x num_t_elements*num_r_elements (=FMC)
@@ -90,8 +90,8 @@ __kernel void das_rca(__global const double *Y, // Size: a_scan_len x num_t_elem
   const double gr_x_max = Gt[num_r_elements-1];
 
   // Work on local data.
-  //DAS_DATATYPE im = F_SFX(0.0); // For float
-  DAS_DATATYPE im = 0.0; // For double
+  DAS_DATATYPE im = F_SFX(0.0); // For float
+  //DAS_DATATYPE im = 0.0; // For double
 
   __global double *y_p = (__global double *) Y;
 
@@ -142,5 +142,5 @@ __kernel void das_rca(__global const double *Y, // Size: a_scan_len x num_t_elem
   }
 
   // Just write to global memory once!
-  Im[no] = im;
+  Im[no] = (double) im;
 }

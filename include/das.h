@@ -56,6 +56,7 @@ public:
       dream_idx_type num_r_elements)  // SAFT if num_r_elements = 0;
     : m_out_err(ErrorLevel::none)
     , m_das_type(das_type)
+    , m_a_scan_len(a_scan_len)
     , m_No(No)
     , m_num_t_elements(num_t_elements)
     , m_num_r_elements( num_r_elements)
@@ -262,23 +263,59 @@ public:
 
   // Transmit elements
   m_buflen_gt = m_num_t_elements*3*sizeof(double);
-  m_cl_buf_gt = cl::Buffer(context, CL_MEM_READ_ONLY, m_buflen_gt);
+  try {
+    m_cl_buf_gt = cl::Buffer(context, CL_MEM_READ_ONLY, m_buflen_gt);
+  }
+
+  catch (const cl::Error &err) {
+    std::string the_err = "Error in das - OpenCL error - Buffer gt allocation failed: " ;
+    the_err += err.what();
+    the_err += "\n";
+    throw std::runtime_error(the_err);
+  }
 
   // Receive elements
   m_buflen_gr = m_num_r_elements*3*sizeof(double);
-  m_cl_buf_gr = cl::Buffer(context, CL_MEM_READ_ONLY, m_buflen_gr);
+  try {
+    m_cl_buf_gr = cl::Buffer(context, CL_MEM_READ_ONLY, m_buflen_gr);
+  }
+
+  catch (const cl::Error &err) {
+    std::string the_err = "Error in das - OpenCL error - Buffer gr allocation failed: " ;
+    the_err += err.what();
+    the_err += "\n";
+    throw std::runtime_error(the_err);
+  }
 
   // Observation points
   m_buflen_Ro  =  m_No*3*sizeof(double);
-  m_cl_buf_Ro = cl::Buffer(context, CL_MEM_READ_ONLY, m_buflen_Ro);
+  try {
+    m_cl_buf_Ro = cl::Buffer(context, CL_MEM_READ_ONLY, m_buflen_Ro);
+  }
+
+  catch (const cl::Error &err) {
+    std::string the_err = "Error in das - OpenCL error - Buffer Ro allocation failed: " ;
+    the_err += err.what();
+    the_err += "\n";
+    throw std::runtime_error(the_err);
+  }
 
   // Write buffer
 
   // Image
   m_buflen_Im  = m_No*sizeof(double);
-  m_cl_buf_Im = cl::Buffer(context, CL_MEM_WRITE_ONLY, m_buflen_Im);
+  try {
+    m_cl_buf_Im = cl::Buffer(context, CL_MEM_WRITE_ONLY, m_buflen_Im);
+  }
+
+  catch (const cl::Error &err) {
+    std::string the_err = "Error in das - OpenCL error - Buffer Im allocation failed: " ;
+    the_err += err.what();
+    the_err += "\n";
+    throw std::runtime_error(the_err);
+  }
 #endif
-    ;}
+  ;}
 
   ~DAS()  = default;
 

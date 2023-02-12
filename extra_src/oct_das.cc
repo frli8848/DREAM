@@ -236,7 +236,7 @@ Copyright @copyright{} 2008-2023 Fredrik Lingvall.\n\
   const float *Gr_f = nullptr;
   const double *Gr_d = nullptr;
 
-  if (mxGetM(2) != 0) { // Check if we do SAFT or TFM
+  if (mxGetM(2) != 0) {         // SAFT is using an empty Gr.
 
     if (mxGetN(2) != 3) {
       error("Argument 3 must be a (num recieve elements) x 3 matrix!");
@@ -287,9 +287,18 @@ Copyright @copyright{} 2008-2023 Fredrik Lingvall.\n\
     return oct_retval;
   }
 
-  const Matrix tmp4 = args(4).matrix_value();
-  double *s_par = (double*) tmp4.data();
-  double dt = s_par[0]; // Temporal discretization size (= 1/sampling freq).
+  float dt_f = 0.0;
+  double dt_d = 0.0;
+
+  if (use_float) {
+    const FloatMatrix tmp4f= args(4).float_matrix_value();
+    const float *s_par_f = tmp4f.data();
+    dt_f = s_par_f[0];
+  } else {
+    const Matrix tmp4d = args(4).matrix_value();
+    const double *s_par_d = (double*) tmp4d.data();
+    dt_d = s_par_d[0];
+  }
 
   //
   // Start point of impulse response vector ([us]).
@@ -298,7 +307,6 @@ Copyright @copyright{} 2008-2023 Fredrik Lingvall.\n\
   if (!ap.check_delay("das", args, 5, No)) {
     return oct_retval;
   }
-
 
   DelayType delay_type = DelayType::single;  // delay is a scalar.
   if (mxGetM(5) * mxGetN(5) != 1) {
@@ -313,8 +321,9 @@ Copyright @copyright{} 2008-2023 Fredrik Lingvall.\n\
     delay_f = tmp5f.data();
   } else {
     const Matrix tmp5d = args(5).matrix_value();
-    delay_d =tmp5d.data();
+    delay_d = tmp5d.data();
   }
+
 
   //
   // Material parameter
@@ -327,9 +336,19 @@ Copyright @copyright{} 2008-2023 Fredrik Lingvall.\n\
   }
 
   // Sound speed.
-  const Matrix tmp6 = args(6).matrix_value();
-  double *m_par = (double*) tmp6.data();
-  double cp = m_par[0]; // Sound speed.
+  float cp_f = 0.0;
+  double cp_d = 0.0;
+
+  if (use_float) {
+    const FloatMatrix tmp6f = args(6).float_matrix_value();
+    const float *m_par_f = tmp6f.data();
+    cp_f = m_par_f[0];
+  } else {
+    const Matrix tmp6d = args(6).matrix_value();
+    const double *m_par_d = (double*) tmp6d.data();
+    cp_d = m_par_d[0];
+  }
+
 
   //
   // DAS method
@@ -459,12 +478,12 @@ Copyright @copyright{} 2008-2023 Fredrik Lingvall.\n\
 #ifdef USE_OPENCL
 
   // Check if we should use the GPU
-  if (device == "gpu" && num_r_elements > 0) { // SAFT is most likely fast enough on the CPU.
+  if (device == "gpu") {
 
     if (use_float) { // Single precision
-      das_f->cl_das(Yf, Ro_f, Gt_f, Gr_f, dt, delay_f[0], cp, Im_f);
+      das_f->cl_das(Yf, Ro_f, Gt_f, Gr_f, dt_f, delay_f[0], cp_f, Im_f);
     } else { // Double precision
-      das_d->cl_das(Yd, Ro_d, Gt_d, Gr_d, dt, delay_d[0], cp, Im_d);
+      das_d->cl_das(Yd, Ro_d, Gt_d, Gr_d, dt_d, delay_d[0], cp_d, Im_d);
     }
 
   } else { // Otherwise use the cpu
@@ -478,7 +497,7 @@ Copyright @copyright{} 2008-2023 Fredrik Lingvall.\n\
 
     if (use_float) { // Single precision
 
-      err = das_f->das(Yf, Ro_f, Gt_f, Gr_f, (float) dt, delay_type, delay_f, (float) cp, Im_f, err_level);
+      err = das_f->das(Yf, Ro_f, Gt_f, Gr_f, dt_f, delay_type, delay_f, cp_f, Im_f, err_level);
       if (!das_f->is_running()) {
         error("CTRL-C pressed!\n"); // Bail out.
         return oct_retval;
@@ -486,7 +505,7 @@ Copyright @copyright{} 2008-2023 Fredrik Lingvall.\n\
 
     } else { // Double precision
 
-      err = das_d->das(Yd, Ro_d, Gt_d, Gr_d, dt, delay_type, delay_d, cp, Im_d, err_level);
+      err = das_d->das(Yd, Ro_d, Gt_d, Gr_d, dt_d, delay_type, delay_d, cp_d, Im_d, err_level);
       if (!das_d->is_running()) {
         error("CTRL-C pressed!\n"); // Bail out.
         return oct_retval;

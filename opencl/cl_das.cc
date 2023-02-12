@@ -33,6 +33,7 @@ template class DAS<float>;
  *
  ***/
 
+// SAFT (gr not used), TFM and RCA
 template <class T>
 int DAS<T>::cl_das(const T *Y, // Data
                    const T *Ro,
@@ -50,7 +51,9 @@ int DAS<T>::cl_das(const T *Y, // Data
 
   m_queue.enqueueWriteBuffer(m_cl_buf_Y, CL_TRUE, 0, m_buflen_Y, Y);
   m_queue.enqueueWriteBuffer(m_cl_buf_gt, CL_TRUE, 0, m_buflen_gt, gt);
-  m_queue.enqueueWriteBuffer(m_cl_buf_gr, CL_TRUE, 0, m_buflen_gr, gr);
+  if (m_num_r_elements > 0) { // SAFT do not use this one.
+    m_queue.enqueueWriteBuffer(m_cl_buf_gr, CL_TRUE, 0, m_buflen_gr, gr);
+  }
   m_queue.enqueueWriteBuffer(m_cl_buf_Ro, CL_TRUE, 0, m_buflen_Ro, Ro);
 
   //
@@ -71,10 +74,12 @@ int DAS<T>::cl_das(const T *Y, // Data
   m_kernel.setArg(arg_idx, (int) m_num_t_elements);
 
   // gr
-  arg_idx++;
-  m_kernel.setArg(arg_idx, m_cl_buf_gr);
-  arg_idx++;
-  m_kernel.setArg(arg_idx, (int) m_num_r_elements);
+  if (m_num_r_elements > 0) { // SAFT do not use this one.
+    arg_idx++;
+    m_kernel.setArg(arg_idx, m_cl_buf_gr);
+    arg_idx++;
+    m_kernel.setArg(arg_idx, (int) m_num_r_elements);
+  }
 
   // Ro
   arg_idx++;

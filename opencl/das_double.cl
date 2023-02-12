@@ -4,6 +4,52 @@
 
 #define DAS_DATATYPE double
 
+__kernel void das_saft(__global const DAS_DATATYPE *Y, // Size: a_scan_len x num_elements
+                       const int a_scan_len,
+                       __global const DAS_DATATYPE *G, const int num_elements, // Size: num_elements x 3
+                       __global const DAS_DATATYPE *Ro, const int No,  // Size: No x 3
+                       const DAS_DATATYPE dt,
+                       const DAS_DATATYPE delay,
+                       const DAS_DATATYPE cp,
+                       __global DAS_DATATYPE *Im)
+{
+  int no = get_global_id(0); // Each thread computes one image point.
+  const DAS_DATATYPE xo = Ro[no];
+  const DAS_DATATYPE yo = Ro[no + No*1];
+  const DAS_DATATYPE zo = Ro[no + No*2];
+
+  const DAS_DATATYPE Fs_khz = (1.0/dt)*1000.0;
+  const DAS_DATATYPE one_over_cp = 1.0/cp;
+  const DAS_DATATYPE delay_ms = delay/1000.0;
+
+  // Work on local data.
+  DAS_DATATYPE im = 0.0;
+
+  __global DAS_DATATYPE *y_p = (__global DAS_DATATYPE *) Y;
+
+  for (int n_tr=0; n_tr<num_elements; n_tr++) {
+
+    // Transmit/Receive
+    DAS_DATATYPE gx_tr = G[n_tr] - xo;
+    DAS_DATATYPE gy_tr = G[n_tr + 1*num_elements] - yo;
+    DAS_DATATYPE gz_tr = G[n_tr + 2*num_elements] - zo;
+    DAS_DATATYPE t_tr = native_sqrt(gx_tr*gx_tr + gy_tr*gy_tr + gz_tr*gz_tr) * one_over_cp; // [ms].
+    t_tr += delay_ms;           // Compensate for pulse system delay.
+
+    DAS_DATATYPE t_dp = 2.0*t_tr; // Double-path travel time.
+    int k = (int) (t_dp*Fs_khz);
+
+    if ((k < a_scan_len) && (k >= 0)) {
+      im += (DAS_DATATYPE) y_p[k];
+    }
+
+    y_p += a_scan_len; // Jump to the next A-scan
+  }
+
+  // Just write to global memory once!
+  Im[no] = im;
+}
+
 __kernel void das_tfm(__global const DAS_DATATYPE *Y, // Size: a_scan_len x num_t_elements*num_r_elements (=FMC)
                       const int a_scan_len,
                       __global const DAS_DATATYPE *Gt, const int num_t_elements, // Size: num_t_elements x 3

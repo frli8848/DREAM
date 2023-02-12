@@ -124,7 +124,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   const double *Gr_d = nullptr;
 
 
-  if (mxGetN(prhs[2]) != 0) { // Check if we do SAFT or TFM
+  if (mxGetN(prhs[2]) != 0) {   // SAFT is using an empty Gr.
 
     if (mxGetN(prhs[2]) != 3) {
       dream_err_msg("Argument 3 must be a (num recieve elements) x 3 matrix!");
@@ -167,8 +167,16 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     dream_err_msg("Argument 5 must be a scalar!");
   }
 
-  double *s_par = mxGetPr(prhs[4]);
-  double dt = s_par[0]; // Temporal discretization size (= 1/sampling freq).
+  float dt_f = 0.0;
+  double dt_d = 0.0;
+
+  if (use_float) {
+    float *s_par_f = (float*) mxGetData(prhs[4]);
+    dt_f = s_par_f[0];
+  } else {
+    double *s_par_d = mxGetPr(prhs[4]);
+    dt_d = s_par_d[0];
+  }
 
   //
   // Start point of impulse response vector ([us]).
@@ -199,8 +207,16 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     dream_err_msg("Argument 7 must be a scalar!");
   }
 
-  double *m_par = mxGetPr(prhs[6]);
-  double cp = m_par[0]; // Sound speed.
+  float cp_f = 0.0;
+  double cp_d = 0.0;
+
+  if (use_float) {
+    float *m_par_f = (float*) mxGetData(prhs[6]);
+    cp_f = m_par_f[0];
+  } else {
+    double *s_par_d = mxGetPr(prhs[6]);
+    cp_d = s_par_d[0];
+  }
 
   //
   // DAS method
@@ -323,12 +339,12 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 #ifdef USE_OPENCL
 
   // Check if we should use the GPU
-  if (device == "gpu" && num_r_elements > 0) { // SAFT is most likely fast enough on the CPU.
+  if (device == "gpu") {
 
     if (use_float) { // Single precision
-      das_f->cl_das(Yf, Ro_f, Gt_f, Gr_f, dt, delay_f[0], cp, Im_f);
+      das_f->cl_das(Yf, Ro_f, Gt_f, Gr_f, dt_f, delay_f[0], cp_f, Im_f);
     } else { // Double precision
-      das_d->cl_das(Yd, Ro_d, Gt_d, Gr_d, dt, delay_d[0], cp, Im_d);
+      das_d->cl_das(Yd, Ro_d, Gt_d, Gr_d, dt_d, delay_d[0], cp_d, Im_d);
     }
 
   } else { // Otherwise use the cpu
@@ -342,7 +358,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
     if (use_float) { // Single precision
 
-      err = das_f->das(Yf, Ro_f, Gt_f, Gr_f, (float) dt, delay_type, delay_f, (float) cp, Im_f, err_level);
+      err = das_f->das(Yf, Ro_f, Gt_f, Gr_f, dt_f, delay_type, delay_f, cp_f, Im_f, err_level);
       if (!das_f->is_running()) {
         dream_err_msg("CTRL-C pressed!\n"); // Bail out.
         return;
@@ -350,7 +366,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
     } else { // Double precision
 
-      err = das_d->das(Yd, Ro_d, Gt_d, Gr_d, dt, delay_type, delay_d, cp, Im_d, err_level);
+      err = das_d->das(Yd, Ro_d, Gt_d, Gr_d, dt_d, delay_type, delay_d, cp_d, Im_d, err_level);
       if (!das_d->is_running()) {
         dream_err_msg("CTRL-C pressed!\n"); // Bail out.
         return;

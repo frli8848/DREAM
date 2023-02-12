@@ -270,7 +270,7 @@ ErrorLevel DAS<T>::das(const T *Y, const T *Ro, const T *Gt, const T *Gr,
 
 /***
  *
- *  das-saft - Delay-and-sum synthetic focusing method (SAFT)
+ *  das-saft - Delay-and-sum synthetic aperture focusing method (SAFT)
  *
  ***/
 
@@ -287,6 +287,8 @@ ErrorLevel DAS<T>::das_saft_serial(const T *Y, // Size: a_scan_len x num_element
   const T one_over_cp = 1.0/cp;
   const T delay_ms = delay/1000.0;
 
+  std::cout << dt << " " << delay << " "  << cp << " "
+            << Fs_khz << " " <<  one_over_cp << " " << delay_ms << std::endl;
   //
   //  Transmit with one element - receive with one element.
   //

@@ -66,6 +66,11 @@ public:
     std::string kernel_str;
     std::string kernel_name="das_tfm"; // Default function name of the OpenCL kernel
 
+    if (m_das_type == DASType::saft) {
+      kernel_name="das_saft";
+      m_num_r_elements = 0;
+    }
+
     if (m_das_type == DASType::tfm) {
       kernel_name="das_tfm";
     }
@@ -254,7 +259,13 @@ public:
   // Read buffers
 
   // Data
-  m_buflen_Y = m_a_scan_len*m_num_t_elements*m_num_r_elements*sizeof(T);
+
+  dream_idx_type n_r_el = m_num_r_elements;
+  if (m_das_type == DASType::saft) {
+    n_r_el = 1; // So we do not multiply by 0.
+  }
+
+  m_buflen_Y = m_a_scan_len*m_num_t_elements*n_r_el*sizeof(T);
   try {
     m_cl_buf_Y = cl::Buffer(context, CL_MEM_READ_ONLY, m_buflen_Y);
   }
@@ -280,16 +291,20 @@ public:
   }
 
   // Receive elements
-  m_buflen_gr = m_num_r_elements*3*sizeof(T);
-  try {
-    m_cl_buf_gr = cl::Buffer(context, CL_MEM_READ_ONLY, m_buflen_gr);
-  }
+  if (m_num_r_elements > 0) { // SAFT do not use this one.
 
-  catch (const cl::Error &err) {
-    std::string the_err = "Error in das - OpenCL error - Buffer gr allocation failed: " ;
-    the_err += err.what();
-    the_err += "\n";
-    throw std::runtime_error(the_err);
+    m_buflen_gr = m_num_r_elements*3*sizeof(T);
+    try {
+      m_cl_buf_gr = cl::Buffer(context, CL_MEM_READ_ONLY, m_buflen_gr);
+    }
+
+    catch (const cl::Error &err) {
+      std::string the_err = "Error in das - OpenCL error - Buffer gr allocation failed: " ;
+      the_err += err.what();
+      the_err += "\n";
+      throw std::runtime_error(the_err);
+    }
+
   }
 
   // Observation points
@@ -352,6 +367,7 @@ public:
   }
 
 #ifdef USE_OPENCL
+
   int cl_das(const T *Y, // Data
              const T *Ro,
              const T *gt,

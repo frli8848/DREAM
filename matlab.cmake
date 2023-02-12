@@ -454,7 +454,8 @@ if (Matlab_FOUND)
 
   if (OpenCL_FOUND)
     set (mex_das_SOURCE_FILES ${mex_das_SOURCE_FILES} "opencl/cl_das.cc")
-    file (COPY opencl/das.cl DESTINATION kernels)
+    file (COPY opencl/das_float.cl DESTINATION kernels)
+    file (COPY opencl/das_double.cl DESTINATION kernels)
   endif (OpenCL_FOUND)
 
   matlab_add_mex (NAME mex_das MODULE

@@ -61,23 +61,29 @@ if (exist('DO_PLOTTING'))
   xlabel('f [MHz]')
 end
 
-% Geometrical parameters.
-a = 0.4;                        % x-size.
-b = 15;				% y-size.
-geom_par = [a b];
-
 %%
-%% TFM data (full matrix capture - a.k.a FMC)
+%% RCA TFM data (full matrix capture - a.k.a FMC)
 %%
 
 d  = 0.5;                       % Array pitch
 xo = (-25:d:25);
 yo = zeros(length(xo),1);
 zo = z_pt*ones(length(xo),1);
-Ro = [xo(:) yo(:) zo(:)];
+Ro_t = [xo(:) yo(:) zo(:)];
+
+%% Crossed transmit and receve elemets.
+
+% Geometrical parameters.
+a = 0.4;                        % x-size.
+b = 50;				% y-size.
+geom_par_t = [a b];
 
 delay = 0.0;
-[H,err] = dreamrect(Ro,geom_par,s_par,delay,m_par,'stop');
+[Ht,err] = dreamrect(Ro_t,geom_par_t,s_par,delay,m_par,'stop');
+
+geom_par_r = [b a];
+Ro_r = [yo(:) xo(:) zo(:)];
+[Hr,err] = dreamrect(Ro_r,geom_par_r,s_par,delay,m_par,'stop');
 
 L = length(xo);
 Yfmc = zeros(nt+nt-1+nt_he-1,L^2);
@@ -85,7 +91,7 @@ Yfmc = zeros(nt+nt-1+nt_he-1,L^2);
 %% Loop over all transmit elements
 n_t=1;
 for n=1:L:L^2
-  Hdp = fftconv_p(H,H(:,n_t)); % Double-path SIRs for the n_t:th transmit
+  Hdp = fftconv_p(Hr,Ht(:,n_t)); % Double-path SIRs for the n_t:th transmit
   Yfmc(:,n:(n+L-1)) = fftconv_p(Hdp,h_e);
   n_t = n_t+1;
 end
@@ -97,7 +103,7 @@ if (exist('DO_PLOTTING'))
   clf;
   t_dp = 0:Ts:Ts*(size(Yfmc,1)-1);
   imagesc(1:L^2,t_dp,Yfmc)
-  title('FMC B-scan')
+  title('FMC RCA B-scan')
   xlabel('A-scan index')
   ylabel('t [{\mu}s]')
 
@@ -105,7 +111,7 @@ if (exist('DO_PLOTTING'))
   clf;
   t_dp = 0:Ts:Ts*(size(Yfmc,1)-1);
   imagesc(xo,t_dp,Yfmc(:,1:L:end))
-  title('FMC B-scan when transmit element = receive element')
+  title('FMC RCA B-scan when transmit element = receive element')
   xlabel('x [mm]')
   ylabel('t [{\mu}s]')
 
@@ -113,34 +119,34 @@ end
 
 num_elements = size(xo,2);
 Gt = [xo(:) zeros(num_elements,1) zeros(num_elements,1)];
-Gr = Gt;
+Gr = [zeros(num_elements,1) xo(:) zeros(num_elements,1)];
 
 %% Observation points for DAS
 x = -25:0.5:25;
 z = (0:63)/64*20; % Make sure its a factor of 64 (the OpenCL work group size).
 [X,Z] = meshgrid(x,z);
 Y = zeros(size(X));
-Ro_tfm = [X(:) Y(:) Z(:)];
+Ro_rca = [X(:) Y(:) Z(:)];
 
 delay = system_delay; % Compensate for the pulse/system (transducer) delay.
-Im_tfm = das(Yfmc, Gt, Gr, Ro_tfm, dt, delay, cp,'tfm');
+Im_rca = das(Yfmc, Gt, Gr, Ro_rca, dt, delay, cp,'rca');
 
 if (exist('DO_PLOTTING'))
   figure(4);
   clf;
-  imagesc(x,z,reshape(Im_tfm,length(z),length(x)))
-  title('TFM Reconstruction')
+  imagesc(x,z,reshape(Im_rca,length(z),length(x)))
+  title('RCA Reconstruction')
   xlabel('x [mm]')
   ylabel('z [mm]')
 end
 
-Im_tfm_gpu = das(Yfmc, Gt, Gr, Ro_tfm, dt, delay, cp,'tfm', 'ignore','gpu');
+Im_rca_gpu = das(Yfmc, Gt, Gr, Ro_rca, dt, delay, cp, 'rca', 'ignore','gpu');
 
 if (exist('DO_PLOTTING'))
   figure(5);
   clf;
-  imagesc(x,z,reshape(Im_tfm_gpu,length(z),length(x)))
-  title('TFM Reconstruction')
+  imagesc(x,z,reshape(Im_rca_gpu,length(z),length(x)))
+  title('RCA Reconstruction')
   xlabel('x [mm]')
   ylabel('z [mm]')
 end
@@ -154,26 +160,26 @@ disp('Single precision');
 Yfmc_f = single(Yfmc);
 Gt_f = single(Gt);
 Gr_f = single(Gr);
-Ro_tfm_f = single(Ro_tfm);
+Ro_rca_f = single(Ro_rca);
 
-Im_tfm_f = das(Yfmc_f, Gt_f, Gr_f, Ro_tfm_f, single(dt), single(delay), single(cp), 'tfm');
+Im_rca_f = das(Yfmc_f, Gt_f, Gr_f, Ro_rca_f, single(dt), single(delay), single(cp), 'rca');
 
 if (exist('DO_PLOTTING'))
   figure(5);
   clf;
-  imagesc(x,z,reshape(Im_tfm_f,length(z),length(x)))
-  title('TFM CPU Single Reconstruction')
+  imagesc(x,z,reshape(Im_rca_f,length(z),length(x)))
+  title('RCA CPU Single Reconstruction')
   xlabel('x [mm]')
   ylabel('z [mm]')
 end
 
-Im_tfm_f_gpu = das(Yfmc_f, Gt_f, Gr_f, Ro_tfm_f, single(dt), single(delay), single(cp), 'tfm', 'ignore', 'gpu');
+Im_rca_f_gpu = das(Yfmc_f, Gt_f, Gr_f, Ro_rca_f, single(dt), single(delay), single(cp), 'rca', 'ignore', 'gpu');
 
 if (exist('DO_PLOTTING'))
   figure(6);
   clf;
-  imagesc(x,z,reshape(Im_tfm_f_gpu,length(z),length(x)))
-  title('TFM GPU Single Reconstruction')
+  imagesc(x,z,reshape(Im_rca_f_gpu,length(z),length(x)))
+  title('RCA GPU Single Reconstruction')
   xlabel('x [mm]')
   ylabel('z [mm]')
 end

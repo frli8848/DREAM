@@ -94,6 +94,7 @@ if (exist('DO_PLOTTING'))
 end
 
 num_elements = size(xo,2);
+
 Gt = [xo(:) zeros(num_elements,1) zeros(num_elements,1)];
 Gr = [];
 
@@ -111,10 +112,23 @@ if (exist('DO_PLOTTING'))
   figure(3);
   clf;
   imagesc(x,z,reshape(Im_saft,length(z),length(x)))
-  title('SAFT Reconstruction')
+  title('SAFT CPU Reconstruction')
   xlabel('x [mm]')
   ylabel('z [mm]')
 end
+
+delay = system_delay; % Compensate for the pulse/system (transducer) delay.
+Im_saft_gpu = das(Ysaft, Gt, Gr, Ro_saft, dt, delay, cp, 'saft', 'ignore', 'gpu');
+
+if (exist('DO_PLOTTING'))
+  figure(4);
+  clf;
+  imagesc(x,z,reshape(Im_saft_gpu,length(z),length(x)))
+  title('SAFT GPU Reconstruction')
+  xlabel('x [mm]')
+  ylabel('z [mm]')
+end
+
 
 %%
 %% Single precision
@@ -124,7 +138,29 @@ disp('Single precision');
 
 Ysaft_f = single(Ysaft);
 Gt_f = single(Gt);
-Gr_f = Gr;
+Gr_f = single(Gr);
 Ro_saft_f = single(Ro_saft);
 
-Im_saft_f = das(Ysaft_f, Gt_f, Gr_, Ro_saft, single(dt), delay, cp,'saft');
+delay = system_delay; % Compensate for the pulse/system (transducer) delay.
+Im_saft_f = das(Ysaft_f, Gt_f, Gr_f, Ro_saft_f, single(dt), single(delay), single(cp),'saft');
+
+if (exist('DO_PLOTTING'))
+  figure(5);
+  clf;
+  imagesc(x,z,reshape(Im_saft_f,length(z),length(x)))
+  title('SAFT CPU Single Reconstruction')
+  xlabel('x [mm]')
+  ylabel('z [mm]')
+end
+
+delay = system_delay; % Compensate for the pulse/system (transducer) delay.
+Im_saft_f_gpu = das(Ysaft_f, Gt_f, Gr_f, Ro_saft_f, single(dt), single(delay), single(cp), 'saft', 'ignore', 'gpu');
+
+if (exist('DO_PLOTTING'))
+  figure(6);
+  clf;
+  imagesc(x,z,reshape(Im_saft_f_gpu,length(z),length(x)))
+  title('SAFT GPU Single Reconstruction')
+  xlabel('x [mm]')
+  ylabel('z [mm]')
+end

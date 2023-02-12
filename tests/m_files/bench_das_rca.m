@@ -112,14 +112,14 @@ y = -25:0.5:25;
 Nz = 64*4; % Make sure its a factor of 64 (the OpenCL work group size).
 z = (0:(Nz-1))/Nz*20;
 [X,Y,Z] = meshgrid(x,y,z);
-Ro_tfm = [X(:) Y(:) Z(:)];
+Ro_rca = [X(:) Y(:) Z(:)];
 
 Nx = length(x);
 Ny = length(y);
 
 delay = system_delay; % Compensate for the pulse/system (transducer) delay.
 tic
-Im_tfm = das(Yfmc, Gt, Gr, Ro_tfm, dt, delay, cp,'rca');
+Im_rca = das(Yfmc, Gt, Gr, Ro_rca, dt, delay, cp,'rca');
 toc;
 
 if (exist('DO_PLOTTING'))
@@ -127,7 +127,7 @@ if (exist('DO_PLOTTING'))
   figure(4);
   clf;
 
-  O_cpu = reshape(Im_tfm, Nx*Ny, Nz)';
+  O_cpu = reshape(Im_rca, Nx*Ny, Nz)';
   c_scan_cpu = reshape(max(abs(O_cpu)), Nx, Ny);
   mx = max(max(c_scan_cpu));
 
@@ -142,14 +142,14 @@ if (exist('DO_PLOTTING'))
 end
 
 tic
-Im_tfm_gpu = das(Yfmc, Gt, Gr, Ro_tfm, dt, delay, cp, 'rca','ignore','gpu');
+Im_rca_gpu = das(Yfmc, Gt, Gr, Ro_rca, dt, delay, cp, 'rca','ignore','gpu');
 toc
 
 if (exist('DO_PLOTTING'))
   figure(5);
   clf;
 
-  O_gpu = reshape(Im_tfm_gpu, Nx*Ny, Nz)';
+  O_gpu = reshape(Im_rca_gpu, Nx*Ny, Nz)';
   c_scan_gpu = reshape(max(abs(O_gpu)), Nx, Ny);
   mx = max(max(c_scan_gpu));
 
@@ -162,3 +162,22 @@ if (exist('DO_PLOTTING'))
   ylabel('y [mm]');
   title('C-scan RCA GPU DAS beamformed data');
 end
+
+%%
+%% Single precision
+%%
+
+disp('Single precision');
+
+Yfmc_f = single(Yfmc);
+Gt_f = single(Gt);
+Gr_f = single(Gr);
+Ro_rca_f = single(Ro_rca);
+
+tic
+Im_rca_f = das(Yfmc_f, Gt_f, Gr_f, Ro_rca_f, single(dt), single(delay), single(cp), 'rca');
+toc;
+
+tic
+Im_rca_gpu_f = das(Yfmc_f, Gt_f, Gr_f, Ro_rca_f, single(dt), single(delay), single(cp), 'rca', 'ignore', 'gpu');
+toc;

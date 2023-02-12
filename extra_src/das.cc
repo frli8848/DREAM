@@ -30,42 +30,50 @@
 std::mutex err_mutex;
 std::atomic<bool> running;
 
-void DAS::set_running()
+// Support doubles and floats
+template class DAS<double>;
+template class DAS<float>;
+
+template <class T>
+void DAS<T>::set_running()
 {
   running = true;
 }
 
-void DAS::abort(int signum)
+template <class T>
+void DAS<T>::abort(int signum)
 {
   running = false;
 }
 
-bool DAS::is_running()
+template <class T>
+bool DAS<T>::is_running()
 {
   return running;
 }
 
 // Thread data.
-typedef struct
+template <typename T>
+struct DATA
 {
+  const T *Y;
+  dream_idx_type a_scan_len;
   dream_idx_type start;
   dream_idx_type stop;
-  double *Ro;
+  const T *Ro;
   dream_idx_type No;
-  double *Gt;                   // Transmit
+  const T *Gt;                   // Transmit
   dream_idx_type num_t_elements;
-  double *Gr;                   // Recieve
+  const T *Gr;                   // Recieve
   dream_idx_type num_r_elements;
-  double dt;
+  T dt;
   DelayType delay_type;
-  double *delay;
-  double cp;
-  double *Y;
-  dream_idx_type a_scan_len;
-  double *Im;
+  const T *delay;
+  T cp;
+  T *Im;
   DASType das_type;
   ErrorLevel err_level;
-} DATA;
+};
 
 /***
  *
@@ -73,20 +81,23 @@ typedef struct
  *
  ***/
 
-void* DAS::smp_das(void *arg)
+template <class T>
+void* DAS<T>::smp_das(void *arg)
 {
-  DATA D = *(DATA *)arg;
-  double *Y = D.Y;
+  DATA<T> D = *(DATA<T> *)arg;
+  const T *Y = D.Y;
   dream_idx_type a_scan_len=D.a_scan_len;
-  double *Im = D.Im;
-  double *Gt = D.Gt;
+  const T *Gt = D.Gt;
   dream_idx_type num_t_elements = D.num_t_elements;
-  double *Gr = D.Gr;
+  const T *Gr = D.Gr;
   dream_idx_type num_r_elements  = D.num_r_elements;
-  double dt=D.dt;
+  T dt=D.dt;
   dream_idx_type No=D.No;
-  double *delay=D.delay, *Ro=D.Ro, cp=D.cp;
+  const T *delay=D.delay;
+  const T *Ro=D.Ro;
+  T cp=D.cp;
   DASType das_type=D.das_type;
+  T *Im = D.Im;
   dream_idx_type start=D.start, stop=D.stop;
   ErrorLevel tmp_lev=ErrorLevel::none, err_level=D.err_level;
   ErrorLevel tmp_err=ErrorLevel::none, err=ErrorLevel::none;
@@ -99,11 +110,11 @@ void* DAS::smp_das(void *arg)
   }
 
   for (dream_idx_type no=start; no<stop; no++) {
-    double xo = Ro[no];
-    double yo = Ro[no+1*No];
-    double zo = Ro[no+2*No];
+    T xo = Ro[no];
+    T yo = Ro[no+1*No];
+    T zo = Ro[no+2*No];
 
-    double dlay = 0.0;
+    T dlay = 0.0;
     if (D.delay_type == DelayType::single) {
       dlay = delay[0];
     } else { // DelayType::multiple.
@@ -164,17 +175,18 @@ void* DAS::smp_das(void *arg)
  *
  ***/
 
-ErrorLevel DAS::das(double *Y, double *Ro, double *Gt, double *Gr,
-                    double dt,
-                    DelayType delay_type, double *delay,
-                    double cp,
-                    double *Im,
-                    ErrorLevel err_level)
+template <class T>
+ErrorLevel DAS<T>::das(const T *Y, const T *Ro, const T *Gt, const T *Gr,
+                       T dt,
+                       DelayType delay_type, const T *delay,
+                       T cp,
+                       T *Im,
+                       ErrorLevel err_level)
 {
   std::thread *threads;
   dream_idx_type thread_n, nthreads;
   dream_idx_type start, stop;
-  DATA *D;
+  DATA<T> *D;
 
   // Force SAFT if Gt is empty.
   DASType das_type = m_das_type;
@@ -203,7 +215,7 @@ ErrorLevel DAS::das(double *Y, double *Ro, double *Gt, double *Gr,
   }
 
   // Allocate local data.
-  D = (DATA*) malloc(nthreads*sizeof(DATA));
+  D = (DATA<T>*) malloc(nthreads*sizeof(DATA<T>));
 
   // Allocate mem for the threads.
   threads = new std::thread[nthreads]; // Init thread data.
@@ -262,34 +274,35 @@ ErrorLevel DAS::das(double *Y, double *Ro, double *Gt, double *Gr,
  *
  ***/
 
-ErrorLevel DAS::das_saft_serial(double *Y, // Size: a_scan_len x num_elements
-                                dream_idx_type a_scan_len,
-                                double *g, dream_idx_type num_elements,
-                                double xo, double yo, double zo,
-                                double dt, double delay,
-                                double cp, double &im, ErrorLevel err_level)
+template <class T>
+ErrorLevel DAS<T>::das_saft_serial(const T *Y, // Size: a_scan_len x num_elements
+                                   dream_idx_type a_scan_len,
+                                   const T *g, dream_idx_type num_elements,
+                                   T xo, T yo, T zo,
+                                   T dt, T delay,
+                                   T cp, T &im, ErrorLevel err_level)
 {
   ErrorLevel err = ErrorLevel::none;
-  const double Fs_khz = (1.0/dt)*1000.0;
-  const double one_over_cp = 1.0/cp;
-  const double delay_ms = delay/1000.0;
+  const T Fs_khz = (1.0/dt)*1000.0;
+  const T one_over_cp = 1.0/cp;
+  const T delay_ms = delay/1000.0;
 
   //
   //  Transmit with one element - receive with one element.
   //
 
   im = 0.0;
-  double *y_p = Y;
+  const T *y_p = Y;
   for (dream_idx_type n_tr=0; n_tr<num_elements; n_tr++) {
 
     // Transmit/Receive
-    double gx_tr = g[n_tr] - xo;
-    double gy_tr = g[n_tr + 1*num_elements] - yo;
-    double gz_tr = g[n_tr + 2*num_elements] - zo;
-    double t_tr =  std::sqrt(gx_tr*gx_tr + gy_tr*gy_tr + gz_tr*gz_tr) * one_over_cp;
+    T gx_tr = g[n_tr] - xo;
+    T gy_tr = g[n_tr + 1*num_elements] - yo;
+    T gz_tr = g[n_tr + 2*num_elements] - zo;
+    T t_tr =  std::sqrt(gx_tr*gx_tr + gy_tr*gy_tr + gz_tr*gz_tr) * one_over_cp;
     t_tr += delay_ms;           // Compensate for pulse system delay.
 
-    double t_dp = 2.0*t_tr; // Double-path travel time.
+    T t_dp = 2.0*t_tr; // Double-path travel time.
     auto k = dream_idx_type(t_dp*Fs_khz);
 
     if ((k < a_scan_len) && (k >= 0)) {
@@ -314,43 +327,44 @@ ErrorLevel DAS::das_saft_serial(double *Y, // Size: a_scan_len x num_elements
  *
  ***/
 
-ErrorLevel DAS::das_tfm_serial(double *Y, // Size: a_scan_len x num_t_elements*num_r_elements (=FMC)
-                               dream_idx_type a_scan_len,
-                               double *Gt, dream_idx_type num_t_elements,
-                               double *Gr, dream_idx_type num_r_elements,
-                               double xo, double yo, double zo,
-                               double dt, double delay,
-                               double cp, double &im, ErrorLevel err_level)
+template <class T>
+ErrorLevel DAS<T>::das_tfm_serial(const T *Y, // Size: a_scan_len x num_t_elements*num_r_elements (=FMC)
+                                  dream_idx_type a_scan_len,
+                                  const T *Gt, dream_idx_type num_t_elements,
+                                  const T *Gr, dream_idx_type num_r_elements,
+                                  T xo, T yo, T zo,
+                                  T dt, T delay,
+                                  T cp, T &im, ErrorLevel err_level)
 {
   ErrorLevel err = ErrorLevel::none;
-  const double Fs_khz = (1.0/dt)*1000.0;
-  const double one_over_cp = 1.0/cp;
-  const double delay_ms = delay/1000.0;
+  const T Fs_khz = (1.0/dt)*1000.0;
+  const T one_over_cp = 1.0/cp;
+  const T delay_ms = delay/1000.0;
 
   //
   //  Transmit with all - receive with all elements.
   //
 
   im = 0.0;
-  double *y_p = Y;
+  const T *y_p = Y;
   for (dream_idx_type n_t=0; n_t<num_t_elements; n_t++) {
 
     // Transmit
-    double gx_t = Gt[n_t] - xo;
-    double gy_t = Gt[n_t + 1*num_t_elements] - yo;
-    double gz_t = Gt[n_t + 2*num_t_elements] - zo;
-    double t_t =  std::sqrt(gx_t*gx_t + gy_t*gy_t + gz_t*gz_t) * one_over_cp;
+    T gx_t = Gt[n_t] - xo;
+    T gy_t = Gt[n_t + 1*num_t_elements] - yo;
+    T gz_t = Gt[n_t + 2*num_t_elements] - zo;
+    T t_t =  std::sqrt(gx_t*gx_t + gy_t*gy_t + gz_t*gz_t) * one_over_cp;
     t_t += delay_ms;            // Compensate for pulse system delay.
 
     for (dream_idx_type n_r=0; n_r<num_r_elements; n_r++) {
 
       // Recieve
-      double gx_r = Gr[n_r] - xo;
-      double gy_r = Gr[n_r + 1*num_r_elements] - yo;
-      double gz_r = Gr[n_r + 2*num_r_elements] - zo;
-      double t_r =  std::sqrt(gx_r*gx_r + gy_r*gy_r + gz_r*gz_r) * one_over_cp;
+      T gx_r = Gr[n_r] - xo;
+      T gy_r = Gr[n_r + 1*num_r_elements] - yo;
+      T gz_r = Gr[n_r + 2*num_r_elements] - zo;
+      T t_r =  std::sqrt(gx_r*gx_r + gy_r*gy_r + gz_r*gz_r) * one_over_cp;
 
-      double t_dp = t_t + t_r; // Double-path travel time.
+      T t_dp = t_t + t_r; // Double-path travel time.
       auto k = dream_idx_type(t_dp*Fs_khz);
 
       //if (n_r == n_t) { // For comparing with SAFT (for testing)
@@ -378,18 +392,19 @@ ErrorLevel DAS::das_tfm_serial(double *Y, // Size: a_scan_len x num_t_elements*n
  *
  ***/
 
-ErrorLevel DAS::das_rca_serial(double *Y, // Size: a_scan_len x num_t_elements*num_r_elements (=FMC)
-                               dream_idx_type a_scan_len,
-                               double *Gt, dream_idx_type num_t_elements,
-                               double *Gr, dream_idx_type num_r_elements,
-                               double xo, double yo, double zo,
-                               double dt, double delay,
-                               double cp, double &im, ErrorLevel err_level)
+template <class T>
+ErrorLevel DAS<T>::das_rca_serial(const T *Y, // Size: a_scan_len x num_t_elements*num_r_elements (=FMC)
+                                  dream_idx_type a_scan_len,
+                                  const T *Gt, dream_idx_type num_t_elements,
+                                  const T *Gr, dream_idx_type num_r_elements,
+                                  T xo, T yo, T zo,
+                                  T dt, T delay,
+                                  T cp, T &im, ErrorLevel err_level)
 {
   ErrorLevel err = ErrorLevel::none;
-  const double Fs_khz = (1.0/dt)*1000.0;
-  const double one_over_cp = 1.0/cp;
-  const double delay_ms = delay/1000.0;
+  const T Fs_khz = (1.0/dt)*1000.0;
+  const T one_over_cp = 1.0/cp;
+  const T delay_ms = delay/1000.0;
 
   // Here we have crossed striped electrodes and the length of the transmit element stripe
   // is determined by the two edge positions of the receive elements and vice versa.
@@ -403,22 +418,22 @@ ErrorLevel DAS::das_rca_serial(double *Y, // Size: a_scan_len x num_t_elements*n
   //   (y-dim edge positions).
 
   // Element (stripe) lengths
-  const double gt_y_min = Gr[0 + 1*num_t_elements];
-  const double gt_y_max = Gr[num_t_elements-1 + 1*num_t_elements];
-  const double gr_x_min = Gt[0];
-  const double gr_x_max = Gt[num_r_elements-1];
+  const T gt_y_min = Gr[0 + 1*num_t_elements];
+  const T gt_y_max = Gr[num_t_elements-1 + 1*num_t_elements];
+  const T gr_x_min = Gt[0];
+  const T gr_x_max = Gt[num_r_elements-1];
 
   //
   //  Transmit with all - receive with all elements.
   //
 
   im = 0.0;
-  double *y_p = Y;
+  const T *y_p = Y;
   for (dream_idx_type n_t=0; n_t<num_t_elements; n_t++) {
 
     // Transmit
-    double gx_t = Gt[n_t] - xo;
-    double gy_t;
+    T gx_t = Gt[n_t] - xo;
+    T gy_t;
     if ( (yo >= gt_y_min) && yo <= gt_y_max) {
       gy_t = 0.0;               // We are inside the stripe aperture.
     } else {    // Here we use the distance to the edge of the stripe.
@@ -428,14 +443,14 @@ ErrorLevel DAS::das_rca_serial(double *Y, // Size: a_scan_len x num_t_elements*n
         gy_t = gt_y_max - yo;
       }
     }
-    double gz_t = Gt[n_t + 2*num_t_elements] - zo;
-    double t_t =  std::sqrt(gx_t*gx_t + gy_t*gy_t + gz_t*gz_t) * one_over_cp;
+    T gz_t = Gt[n_t + 2*num_t_elements] - zo;
+    T t_t =  std::sqrt(gx_t*gx_t + gy_t*gy_t + gz_t*gz_t) * one_over_cp;
     t_t += delay_ms;            // Compensate for system pulse delay.
 
     for (dream_idx_type n_r=0; n_r<num_r_elements; n_r++) {
 
       // Recieve
-      double gx_r;
+      T gx_r;
       if ( (yo >= gr_x_min) && yo <= gr_x_max) {
         gx_r = 0.0;               // We are inside the stripe aperture.
       } else {    // Here we use the distance to the edge of the stripe.
@@ -445,11 +460,11 @@ ErrorLevel DAS::das_rca_serial(double *Y, // Size: a_scan_len x num_t_elements*n
           gx_r = gr_x_max - xo;
         }
       }
-      double gy_r = Gr[n_r + 1*num_r_elements] - yo;
-      double gz_r = Gr[n_r + 2*num_r_elements] - zo;
-      double t_r =  std::sqrt(gx_r*gx_r + gy_r*gy_r + gz_r*gz_r) * one_over_cp;
+      T gy_r = Gr[n_r + 1*num_r_elements] - yo;
+      T gz_r = Gr[n_r + 2*num_r_elements] - zo;
+      T t_r =  std::sqrt(gx_r*gx_r + gy_r*gy_r + gz_r*gz_r) * one_over_cp;
 
-      double t_dp = t_t + t_r; // Double-path travel time.
+      T t_dp = t_t + t_r; // Double-path travel time.
       auto k = dream_idx_type(t_dp*Fs_khz);
 
       if ((k < a_scan_len) && (k >= 0)) {

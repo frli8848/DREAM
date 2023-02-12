@@ -144,3 +144,17 @@ if (exist('DO_PLOTTING'))
   xlabel('x [mm]')
   ylabel('z [mm]')
 end
+
+%%
+%% Single precision
+%%
+
+disp('Single precision');
+
+Yfmc_f = single(Yfmc);
+Gt_f = single(Gt);
+Gr_f = single(Gr);
+Ro_tfm_f = single(Ro_tfm);
+
+Im_tfm_f = das(Yfmc_f, Gt_f, Gr_f, Ro_tfm_f, single(dt), single(delay), single(cp), 'tfm');
+Im_tfm_gpu_f = das(Yfmc_f, Gt_f, Gr_f, Ro_tfm_f, single(dt), single(delay), single(cp), 'tfm', 'ignore', 'gpu');

@@ -115,3 +115,16 @@ if (exist('DO_PLOTTING'))
   xlabel('x [mm]')
   ylabel('z [mm]')
 end
+
+%%
+%% Single precision
+%%
+
+disp('Single precision');
+
+Ysaft_f = single(Ysaft);
+Gt_f = single(Gt);
+Gr_f = Gr;
+Ro_saft_f = single(Ro_saft);
+
+Im_saft_f = das(Ysaft_f, Gt_f, Gr_, Ro_saft, single(dt), delay, cp,'saft');

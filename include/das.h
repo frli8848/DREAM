@@ -45,6 +45,7 @@
 #include <CL/opencl.hpp>
 #endif
 
+template <class T>
 class DAS
 {
 public:
@@ -85,7 +86,11 @@ public:
     }
 
     std::string das_kernel = dream_cl_kernel;
-    das_kernel += "/das.cl";
+    if (sizeof(T) == sizeof(float) ) {
+      das_kernel += "/das_float.cl";
+    } else {
+      das_kernel += "/das_double.cl";
+    }
     std::ifstream f_kernel(das_kernel);
     f_kernel.seekg(0, std::ios::end);
     kernel_str.reserve(f_kernel.tellg());
@@ -249,7 +254,7 @@ public:
   // Read buffers
 
   // Data
-  m_buflen_Y = m_a_scan_len*m_num_t_elements*m_num_r_elements*sizeof(double);
+  m_buflen_Y = m_a_scan_len*m_num_t_elements*m_num_r_elements*sizeof(T);
   try {
     m_cl_buf_Y = cl::Buffer(context, CL_MEM_READ_ONLY, m_buflen_Y);
   }
@@ -262,7 +267,7 @@ public:
   }
 
   // Transmit elements
-  m_buflen_gt = m_num_t_elements*3*sizeof(double);
+  m_buflen_gt = m_num_t_elements*3*sizeof(T);
   try {
     m_cl_buf_gt = cl::Buffer(context, CL_MEM_READ_ONLY, m_buflen_gt);
   }
@@ -275,7 +280,7 @@ public:
   }
 
   // Receive elements
-  m_buflen_gr = m_num_r_elements*3*sizeof(double);
+  m_buflen_gr = m_num_r_elements*3*sizeof(T);
   try {
     m_cl_buf_gr = cl::Buffer(context, CL_MEM_READ_ONLY, m_buflen_gr);
   }
@@ -288,7 +293,7 @@ public:
   }
 
   // Observation points
-  m_buflen_Ro  =  m_No*3*sizeof(double);
+  m_buflen_Ro  =  m_No*3*sizeof(T);
   try {
     m_cl_buf_Ro = cl::Buffer(context, CL_MEM_READ_ONLY, m_buflen_Ro);
   }
@@ -303,7 +308,7 @@ public:
   // Write buffer
 
   // Image
-  m_buflen_Im  = m_No*sizeof(double);
+  m_buflen_Im  = m_No*sizeof(T);
   try {
     m_cl_buf_Im = cl::Buffer(context, CL_MEM_WRITE_ONLY, m_buflen_Im);
   }
@@ -319,11 +324,11 @@ public:
 
   ~DAS()  = default;
 
-  ErrorLevel das(double *Y, double *Ro, double *gt, double *gr,
-                 double dt,
-                 DelayType delay_type, double *delay,
-                 double cp,
-                 double *Im,
+  ErrorLevel das(const T *Y, const T *Ro, const T *gt, const T *gr,
+                 T dt,
+                 DelayType delay_type, const T *delay,
+                 T cp,
+                 T *Im,
                  ErrorLevel err_level);
 
   static void abort(int signum);
@@ -347,14 +352,14 @@ public:
   }
 
 #ifdef USE_OPENCL
-  int cl_das(const double *Y, // Data
-             const double *Ro,
-             const double *gt,
-             const double *gr,
-             double dt,
-             double delay,
-             double cp,
-             double *Im);
+  int cl_das(const T *Y, // Data
+             const T *Ro,
+             const T *gt,
+             const T *gr,
+             T dt,
+             T delay,
+             T cp,
+             T *Im);
 #endif
 
 private:
@@ -364,28 +369,28 @@ std::thread das_thread(void *arg) {
     return std::thread(&DAS::smp_das, this, arg);
   }
 
-  ErrorLevel das_saft_serial(double *Y, // Size: nt x num_elements
+  ErrorLevel das_saft_serial(const T *Y, // Size: nt x num_elements
                              dream_idx_type a_scan_len,
-                             double *g, dream_idx_type num_elements,
-                             double xo, double yo, double zo,
-                             double dt, double delay,
-                             double cp, double &im, ErrorLevel err_level);
+                             const T *g, dream_idx_type num_elements,
+                             T xo, T yo, T zo,
+                             T dt, T delay,
+                             T cp, T &im, ErrorLevel err_level);
 
-  ErrorLevel das_tfm_serial(double *Y, // Size: nt x num_t_elements*num_r_elements (=FMC)
+  ErrorLevel das_tfm_serial(const T *Y, // Size: nt x num_t_elements*num_r_elements (=FMC)
                             dream_idx_type a_scan_len,
-                            double *gt, dream_idx_type num_t_elements,
-                            double *gr, dream_idx_type num_r_elements,
-                            double xo, double yo, double zo,
-                            double dt, double delay,
-                            double cp, double &im, ErrorLevel err_level);
+                            const T *gt, dream_idx_type num_t_elements,
+                            const T *gr, dream_idx_type num_r_elements,
+                            T xo, T yo, T zo,
+                            T dt, T delay,
+                            T cp, T &im, ErrorLevel err_level);
 
-  ErrorLevel das_rca_serial(double *Y, // Size: a_scan_len x num_t_elements*num_r_elements (=FMC)
+  ErrorLevel das_rca_serial(const T *Y, // Size: a_scan_len x num_t_elements*num_r_elements (=FMC)
                             dream_idx_type a_scan_len,
-                            double *Gt, dream_idx_type num_t_elements,
-                            double *Gr, dream_idx_type num_r_elements,
-                            double xo, double yo, double zo,
-                            double dt, double delay,
-                            double cp, double &im, ErrorLevel err_level);
+                            const T *Gt, dream_idx_type num_t_elements,
+                            const T *Gr, dream_idx_type num_r_elements,
+                            T xo, T yo, T zo,
+                            T dt, T delay,
+                            T cp, T &im, ErrorLevel err_level);
 
   DASType m_das_type;
   dream_idx_type m_a_scan_len;

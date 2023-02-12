@@ -31,7 +31,8 @@
 // Persistent smart pointer to DAS object.
 // This one is only cleared when we do a
 // octave:1> clear das
-std::unique_ptr<DAS> das=nullptr;
+std::unique_ptr<DAS<double>> das_d=nullptr;
+std::unique_ptr<DAS<float>> das_f=nullptr;
 
 /***
  *
@@ -41,7 +42,7 @@ std::unique_ptr<DAS> das=nullptr;
 
 DEFUN_DLD (das, args, nlhs,
            "-*- texinfo -*-\n\
-@deftypefn {Loadable Function} {}  [Im] = das(Y,Gt,Gr,Ro,s_par,delay,m_par,method,err_level,device).\n \
+@deftypefn {Loadable Function} {}  [Im] = das(Y,Gt,Gr,Ro,dt,delay,cp,method,err_level,device).\n \
 \n\
 DAS Computes the delay-and-sum processed reconstruction (beamformed image) for\n\
 three different array geometries: SAFT, TFM, and RCA. In the synthtic aperture\n\
@@ -149,7 +150,9 @@ Copyright @copyright{} 2008-2023 Fredrik Lingvall.\n\
 
   ArgParser ap;
 
+  //
   // Check for proper number of arguments
+  //
 
   if ((nrhs < 8) && (nrhs > 10)) {
     error("das requires 8 to 10 input arguments!");
@@ -162,13 +165,46 @@ Copyright @copyright{} 2008-2023 Fredrik Lingvall.\n\
   }
 
   //
+  // Check if we are using single or double precision processsing
+  //
+
+  // Args 1, 2, 3, 4, and 6 must have the same datatype (float or double).
+  bool use_float = args(0).is_single_type();
+  if (use_float) {
+    if (args(1).is_single_type() != use_float ||
+        args(2).is_single_type() != use_float ||
+        args(3).is_single_type() != use_float ||
+        args(5).is_single_type() != use_float) {
+      error("First arg is single precision but one of arg 2, 3, 4, or 6 is not!");
+      return oct_retval;
+    }
+  } else {
+    if (!(args(1).is_double_type() &&
+          args(2).is_double_type() &&
+          args(3).is_double_type() &&
+          args(5).is_double_type()) ) {
+      error("First arg is double precision but one of arg 2, 3, 4, or 6 is not!");
+      return oct_retval;
+    }
+  }
+
+  //
   // Data
   //
 
   dream_idx_type a_scan_len = mxGetM(0); // A-scan length
   dream_idx_type num_a_scans = mxGetN(0);
-  const Matrix tmp0 = args(0).matrix_value();
-  double *Y = (double*) tmp0.data();
+
+  float *Yf = nullptr;
+  double *Yd = nullptr;
+
+  if (use_float) {
+    const FloatMatrix tmp0f= args(0).float_matrix_value();
+    Yf = (float*) tmp0f.data();
+  } else {
+    const Matrix tmp0d = args(0).matrix_value();
+    Yd = (double*) tmp0d.data();
+  }
 
   //
   // Transmit array
@@ -180,15 +216,25 @@ Copyright @copyright{} 2008-2023 Fredrik Lingvall.\n\
   }
 
   dream_idx_type num_t_elements = mxGetM(1);
-  const Matrix tmp1 = args(1).matrix_value();
-  double *Gt = (double*) tmp1.data();
+
+  const float *Gt_f=nullptr;
+  const double *Gt_d=nullptr;
+
+  if (use_float) {
+    const FloatMatrix tmp1f = args(1).float_matrix_value();
+    Gt_f = tmp1f.data();
+  } else {
+    const Matrix tmp1d = args(1).matrix_value();
+    Gt_d = tmp1d.data();
+  }
 
   //
   // Recieve array
   //
 
   dream_idx_type num_r_elements = 0;
-  double *Gr = nullptr;
+  const float *Gr_f = nullptr;
+  const double *Gr_d = nullptr;
 
   if (mxGetM(2) != 0) { // Check if we do SAFT or TFM
 
@@ -198,8 +244,15 @@ Copyright @copyright{} 2008-2023 Fredrik Lingvall.\n\
     }
 
     num_r_elements = mxGetM(2);
-    const Matrix tmp2 = args(2).matrix_value();
-    Gr = (double*) tmp2.data();
+
+    if (use_float) {
+      const FloatMatrix tmp2f = args(2).float_matrix_value();
+      Gr_f = tmp2f.data();
+    } else {
+      const Matrix tmp2d = args(2).matrix_value();
+      Gr_d = tmp2d.data();
+    }
+
   }
 
   //
@@ -213,11 +266,20 @@ Copyright @copyright{} 2008-2023 Fredrik Lingvall.\n\
   }
 
   dream_idx_type No = mxGetM(3); // Number of observation points.
-  const Matrix tmp3 = args(3).matrix_value();
-  double *Ro = (double*) tmp3.data();
+
+  const float *Ro_f = nullptr;
+  const double *Ro_d = nullptr;
+
+  if (use_float) {
+    const FloatMatrix tmp3f= args(3).float_matrix_value();
+    Ro_f = tmp3f.data();
+  } else {
+    const Matrix tmp3d = args(3).matrix_value();
+    Ro_d = tmp3d.data();
+  }
 
   //
-  // Temporal and spatial sampling parameters.
+  // Temporal sampling parameter.
   //
 
   if (!(mxGetM(4) == 1 && mxGetN(4) == 1) ) {
@@ -237,16 +299,25 @@ Copyright @copyright{} 2008-2023 Fredrik Lingvall.\n\
     return oct_retval;
   }
 
-  const Matrix tmp5 = args(5).matrix_value();
-  double *delay = (double*) tmp5.data();
 
   DelayType delay_type = DelayType::single;  // delay is a scalar.
   if (mxGetM(5) * mxGetN(5) != 1) {
     delay_type = DelayType::multiple; // delay is a vector.
   }
 
+  const float *delay_f = nullptr;
+  const double *delay_d = nullptr;
+
+  if (use_float) {
+    const FloatMatrix tmp5f = args(5).float_matrix_value();
+    delay_f = tmp5f.data();
+  } else {
+    const Matrix tmp5d = args(5).matrix_value();
+    delay_d =tmp5d.data();
+  }
+
   //
-  // Material parameters
+  // Material parameter
   //
 
   // Check that arg 7 is a scalar.
@@ -255,6 +326,7 @@ Copyright @copyright{} 2008-2023 Fredrik Lingvall.\n\
     return oct_retval;
   }
 
+  // Sound speed.
   const Matrix tmp6 = args(6).matrix_value();
   double *m_par = (double*) tmp6.data();
   double cp = m_par[0]; // Sound speed.
@@ -298,39 +370,102 @@ Copyright @copyright{} 2008-2023 Fredrik Lingvall.\n\
     device = args(9).string_value();
   }
 
-  // Create an output matrix for the impulse response.
-  Matrix Im_mat(No,1);
-  double *Im = (double*) Im_mat.data();
+  //
+  // Init DAS and output arg.
+  //
+
+  Matrix Im_mat_d;
+  FloatMatrix Im_mat_f;
+  float *Im_f = nullptr;
+  double *Im_d = nullptr;
 
   bool init_das = true;
-  if (das) { // das object exist - check if we can reuse previous das init
-    if (!das->das_setup_has_changed(das_type, a_scan_len, No, num_t_elements, num_r_elements)) {
-      init_das = false;
+
+  if (use_float) {
+
+    // Create an output matrix for the impulse response.
+    Im_mat_f = FloatMatrix(No,1);
+    Im_f = (float*) Im_mat_f.data();
+
+    //
+    // Single precision DAS
+    //
+
+    if (das_f) { // das (float) object exist - check if we can reuse previous das init
+      if (!das_f->das_setup_has_changed(das_type, a_scan_len, No, num_t_elements, num_r_elements)) {
+        init_das = false;
+      }
     }
+
+    if (init_das) {
+
+      if (das_d) {
+        das_d = nullptr; // Release the double obejct if it exist to free, in particular, GPU resources (call destructor).
+      }
+
+      try {
+        das_f = std::make_unique<DAS<float>>(das_type, a_scan_len, No, num_t_elements, num_r_elements);
+      }
+
+      catch (std::runtime_error &err) {
+        std::cout << err.what();
+        return oct_retval;
+      }
+    }
+
+    das_d->set_running();
+
+    // Register signal handler.
+    std::signal(SIGABRT, DAS<float>::abort);
+
+  } else {
+
+    //
+    // Double precision DAS
+    //
+
+    // Create an output matrix for the impulse response.
+    Im_mat_d = Matrix(No,1);
+    Im_d = (double*) Im_mat_d.data();
+
+    if (das_d) { // das (double) object exist - check if we can reuse previous das init
+      if (!das_d->das_setup_has_changed(das_type, a_scan_len, No, num_t_elements, num_r_elements)) {
+        init_das = false;
+      }
+    }
+
+    if (init_das) {
+
+      if (das_f) {
+        das_f = nullptr; // Release the float object if it exist to free, in particular, GPU resources (call destructor).
+      }
+
+      try {
+        das_d = std::make_unique<DAS<double>>(das_type, a_scan_len, No, num_t_elements, num_r_elements);
+      }
+
+      catch (std::runtime_error &err) {
+        std::cout << err.what();
+        return oct_retval;
+      }
+    }
+
+    das_d->set_running();
+
+    // Register signal handler.
+    std::signal(SIGABRT, DAS<double>::abort);
   }
-
-  if (init_das) {
-    try {
-      das = std::make_unique<DAS>(das_type, a_scan_len, No, num_t_elements, num_r_elements);
-    }
-
-    catch (std::runtime_error &err) {
-      std::cout << err.what();
-      return oct_retval;
-    }
-  }
-
-  das->set_running();
-
-  // Register signal handler.
-  std::signal(SIGABRT, DAS::abort);
 
 #ifdef USE_OPENCL
 
   // Check if we should use the GPU
   if (device == "gpu" && num_r_elements > 0) { // SAFT is most likely fast enough on the CPU.
 
-    das->cl_das(Y, Ro, Gt, Gr, dt, delay[0], cp, Im);
+    if (use_float) { // Single precision
+      das_f->cl_das(Yf, Ro_f, Gt_f, Gr_f, dt, delay_f[0], cp, Im_f);
+    } else { // Double precision
+      das_d->cl_das(Yd, Ro_d, Gt_d, Gr_d, dt, delay_d[0], cp, Im_d);
+    }
 
   } else { // Otherwise use the cpu
 
@@ -341,11 +476,22 @@ Copyright @copyright{} 2008-2023 Fredrik Lingvall.\n\
       std::cout << "Using the CPU backend!" << std::endl;
     }
 
-    err = das->das(Y, Ro, Gt, Gr, dt, delay_type, delay, cp, Im, err_level);
+    if (use_float) { // Single precision
 
-    if (!das->is_running()) {
-      error("CTRL-C pressed!\n"); // Bail out.
-      return oct_retval;
+      err = das_f->das(Yf, Ro_f, Gt_f, Gr_f, (float) dt, delay_type, delay_f, (float) cp, Im_f, err_level);
+      if (!das_f->is_running()) {
+        error("CTRL-C pressed!\n"); // Bail out.
+        return oct_retval;
+      }
+
+    } else { // Double precision
+
+      err = das_d->das(Yd, Ro_d, Gt_d, Gr_d, dt, delay_type, delay_d, cp, Im_d, err_level);
+      if (!das_d->is_running()) {
+        error("CTRL-C pressed!\n"); // Bail out.
+        return oct_retval;
+      }
+
     }
 
 #ifdef USE_OPENCL
@@ -357,7 +503,11 @@ Copyright @copyright{} 2008-2023 Fredrik Lingvall.\n\
     return oct_retval;
   }
 
-  oct_retval.append(Im_mat);
+  if (use_float) {
+    oct_retval.append(Im_mat_f);
+  } else {
+    oct_retval.append(Im_mat_d);
+  }
 
   // Return error.
   if (nlhs == 2) {

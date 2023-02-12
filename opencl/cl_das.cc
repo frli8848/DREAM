@@ -23,20 +23,25 @@
 
 #include "das.h"
 
+// Support doubles and floats
+template class DAS<double>;
+template class DAS<float>;
+
 /***
  *
  * OpenCL version of das
  *
  ***/
 
-int DAS::cl_das(const double *Y, // Data
-                const double *Ro,
-                const double *gt,
-                const double *gr,
-                double dt,
-                double delay,
-                double cp,
-                double *Im)
+template <class T>
+int DAS<T>::cl_das(const T *Y, // Data
+                   const T *Ro,
+                   const T *gt,
+                   const T *gr,
+                   T dt,
+                   T delay,
+                   T cp,
+                   T *Im)
 {
 
   //

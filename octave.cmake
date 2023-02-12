@@ -515,7 +515,8 @@ if (OCTAVE_FOUND)
 
   if (OpenCL_FOUND)
     set (oct_das_SOURCE_FILES ${oct_das_SOURCE_FILES} "opencl/cl_das.cc")
-    file (COPY opencl/das.cl DESTINATION kernels)
+    file (COPY opencl/das_float.cl DESTINATION kernels)
+    file (COPY opencl/das_double.cl DESTINATION kernels)
   endif (OpenCL_FOUND)
 
   add_library (oct_das MODULE

@@ -31,7 +31,8 @@
 // Persistent smart pointer to DAS object.
 // This one is only cleared when we do a
 // >> clear das
-std::unique_ptr<DAS> das=nullptr;
+std::unique_ptr<DAS<double>> das_d=nullptr;
+std::unique_ptr<DAS<float>> das_f=nullptr;
 
 /***
  *
@@ -54,12 +55,45 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   }
 
   //
+  // Check if we are using single or double precision processsing
+  //
+
+  // Args 1, 2, 3, 4, and 6 must have the same datatype (float or double).
+  bool use_float = mxIsSingle(prhs[0]);
+  if (use_float) {
+    if (mxIsSingle(prhs[1]) != use_float ||
+        mxIsSingle(prhs[2]) != use_float ||
+        mxIsSingle(prhs[3]) != use_float ||
+        mxIsSingle(prhs[5]) != use_float) {
+      dream_err_msg("First arg is single precision but one of arg 2, 3, 4, or 6 is not!");
+      return;
+    }
+  } else {
+    if (!(mxIsDouble(prhs[1]) &&
+          mxIsDouble(prhs[2]) &&
+          mxIsDouble(prhs[3]) &&
+          mxIsDouble(prhs[5])) ) {
+      dream_err_msg("First arg is double precision but one of arg 2, 3, 4, or 6 is not!");
+      return;
+    }
+  }
+
+
+  //
   // Data
   //
 
   dream_idx_type a_scan_len = mxGetM(prhs[0]); // A-scan length
   dream_idx_type num_a_scans = mxGetN(prhs[0]);
-  double *Y = mxGetPr(prhs[0]);
+
+  float *Yf = nullptr;
+  double *Yd = nullptr;
+
+  if (use_float) {
+    Yf = (float*) mxGetData(prhs[0]);
+  } else {
+    Yd = mxGetPr(prhs[0]);
+  }
 
   //
   // Transmit array
@@ -70,14 +104,25 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   }
 
   dream_idx_type num_t_elements = mxGetM(prhs[1]);
-  double *Gt = mxGetPr(prhs[1]);
+
+  const float *Gt_f=nullptr;
+  const double *Gt_d=nullptr;
+
+  if (use_float) {
+    Gt_f = (float*) mxGetData(prhs[1]);
+  } else {
+    Gt_d = mxGetPr(prhs[1]);
+  }
 
   //
   // Recieve array
   //
 
   dream_idx_type num_r_elements = 0;
-  double *Gr = nullptr;
+
+  const float *Gr_f = nullptr;
+  const double *Gr_d = nullptr;
+
 
   if (mxGetN(prhs[2]) != 0) { // Check if we do SAFT or TFM
 
@@ -86,7 +131,12 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     }
 
     num_r_elements = mxGetM(prhs[2]);
-    Gr = mxGetPr(prhs[2]);
+
+    if (use_float) {
+      Gr_f = (float*) mxGetData(prhs[2]);
+    } else {
+      Gr_d = mxGetPr(prhs[2]);
+    }
   }
 
   //
@@ -99,10 +149,18 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   }
 
   dream_idx_type No = mxGetM(prhs[3]); // Number of observation points.
-  double *Ro = mxGetPr(prhs[3]);
+
+  const float *Ro_f = nullptr;
+  const double *Ro_d = nullptr;
+
+  if (use_float) {
+    Ro_f = (float*) mxGetData(prhs[3]);
+  } else {
+    Ro_d = mxGetPr(prhs[3]);
+  }
 
   //
-  // Temporal and spatial sampling parameters.
+  // Temporal sampling parameter.
   //
 
   if (!(mxGetM(prhs[4]) == 1 && mxGetN(prhs[4]) == 1)) {
@@ -117,15 +175,23 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   //
 
   ap.check_delay("das", prhs, 5, No);
-  double *delay = mxGetPr(prhs[5]);
 
   DelayType delay_type = DelayType::single;  // delay is a scalar.
   if (mxGetM(prhs[5]) * mxGetN(prhs[5]) != 1) {
     delay_type = DelayType::multiple; // delay is a vector.
   }
 
+  const float *delay_f = nullptr;
+  const double *delay_d = nullptr;
+
+  if (use_float) {
+    delay_f = (float*) mxGetData(prhs[5]);
+  } else {
+    delay_d = mxGetPr(prhs[5]);
+  }
+
   //
-  // Material parameters
+  // Material parameter
   //
 
   // Check that arg 7 is a scalar.
@@ -170,39 +236,100 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     device =  ap.get_string_arg(prhs, 9);
   }
 
-  // Create an output matrix for the impulse response
-  plhs[0] = mxCreateDoubleMatrix(No,1,mxREAL);
-  double *Im = mxGetPr(plhs[0]);
+  //
+  // Init DAS and output arg.
+  //
+
+  float *Im_f = nullptr;
+  double *Im_d = nullptr;
 
   bool init_das = true;
-  if (das) { // das object exist - check if we can reuse previous das init
-    if (!das->das_setup_has_changed(das_type, a_scan_len, No, num_t_elements, num_r_elements)) {
-      init_das = false;
+
+  if (use_float) {
+
+    // Create an output matrix for the impulse response.
+    plhs[0] = mxCreateNumericMatrix(No, 1, mxSINGLE_CLASS , mxREAL);
+    Im_f = (float*) mxGetData(plhs[0]);
+
+    //
+    // Single precision DAS
+    //
+
+    if (das_f) { // das (float) object exist - check if we can reuse previous das init
+      if (!das_f->das_setup_has_changed(das_type, a_scan_len, No, num_t_elements, num_r_elements)) {
+        init_das = false;
+      }
     }
+
+    if (init_das) {
+
+      if (das_d) {
+        das_d = nullptr; // Release the double obejct if it exist to free, in particular, GPU resources (call destructor).
+      }
+
+      try {
+        das_f = std::make_unique<DAS<float>>(das_type, a_scan_len, No, num_t_elements, num_r_elements);
+      }
+
+      catch (std::runtime_error &err) {
+        std::cout << err.what();
+        return;
+      }
+    }
+
+    das_d->set_running();
+
+    // Register signal handler.
+    std::signal(SIGABRT, DAS<float>::abort);
+
+  } else {
+
+    //
+    // Double precision DAS
+    //
+
+    // Create an output matrix for the impulse response.
+    plhs[0] = mxCreateDoubleMatrix(No,1,mxREAL);
+    Im_d = mxGetPr(plhs[0]);
+
+    if (das_d) { // das (double) object exist - check if we can reuse previous das init
+      if (!das_d->das_setup_has_changed(das_type, a_scan_len, No, num_t_elements, num_r_elements)) {
+        init_das = false;
+      }
+    }
+
+    if (init_das) {
+
+      if (das_f) {
+        das_f = nullptr; // Release the float object if it exist to free, in particular, GPU resources (call destructor).
+      }
+
+      try {
+        das_d = std::make_unique<DAS<double>>(das_type, a_scan_len, No, num_t_elements, num_r_elements);
+      }
+
+      catch (std::runtime_error &err) {
+        std::cout << err.what();
+        return;
+      }
+    }
+
+    das_d->set_running();
+
+    // Register signal handler.
+    std::signal(SIGABRT, DAS<double>::abort);
   }
-
-  if (init_das) {
-    try {
-      das = std::make_unique<DAS>(das_type, a_scan_len, No, num_t_elements, num_r_elements);
-    }
-
-    catch (std::runtime_error &err) {
-      std::cout << err.what();
-      return;
-    }
-  }
-
-  das->set_running();
-
-  // Register signal handler.
-  std::signal(SIGABRT, DAS::abort);
 
 #ifdef USE_OPENCL
 
   // Check if we should use the GPU
   if (device == "gpu" && num_r_elements > 0) { // SAFT is most likely fast enough on the CPU.
 
-    das->cl_das(Y, Ro, Gt, Gr, dt, delay[0], cp, Im);
+    if (use_float) { // Single precision
+      das_f->cl_das(Yf, Ro_f, Gt_f, Gr_f, dt, delay_f[0], cp, Im_f);
+    } else { // Double precision
+      das_d->cl_das(Yd, Ro_d, Gt_d, Gr_d, dt, delay_d[0], cp, Im_d);
+    }
 
   } else { // Otherwise use the cpu
 
@@ -213,15 +340,27 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       std::cout << "Using the CPU backend!" << std::endl;
     }
 
-    err = das->das(Y, Ro, Gt, Gr, dt, delay_type, delay, cp, Im, err_level);
+    if (use_float) { // Single precision
+
+      err = das_f->das(Yf, Ro_f, Gt_f, Gr_f, (float) dt, delay_type, delay_f, (float) cp, Im_f, err_level);
+      if (!das_f->is_running()) {
+        dream_err_msg("CTRL-C pressed!\n"); // Bail out.
+        return;
+      }
+
+    } else { // Double precision
+
+      err = das_d->das(Yd, Ro_d, Gt_d, Gr_d, dt, delay_type, delay_d, cp, Im_d, err_level);
+      if (!das_d->is_running()) {
+        dream_err_msg("CTRL-C pressed!\n"); // Bail out.
+        return;
+      }
+
+    }
 
 #ifdef USE_OPENCL
   }
 #endif
-
-  if (!das->is_running()) {
-    dream_err_msg("CTRL-C pressed!\n"); // Bail out.
-  }
 
   if (err == ErrorLevel::stop) {
     dream_err_msg("Error in DAS"); // Bail out if error.

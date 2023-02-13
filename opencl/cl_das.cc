@@ -23,10 +23,6 @@
 
 #include "das.h"
 
-// Support doubles and floats
-template class DAS<double>;
-template class DAS<float>;
-
 /***
  *
  * OpenCL version of das
@@ -133,3 +129,7 @@ int DAS<T>::cl_das(const T *Y, // Data
 
   return retval;
 }
+
+// Support doubles and floats
+template class DAS<double>;
+template class DAS<float>;

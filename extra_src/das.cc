@@ -30,10 +30,6 @@
 std::mutex err_mutex;
 std::atomic<bool> running;
 
-// Support doubles and floats
-template class DAS<double>;
-template class DAS<float>;
-
 template <class T>
 void DAS<T>::set_running()
 {
@@ -484,3 +480,7 @@ ErrorLevel DAS<T>::das_rca_serial(const T *Y, // Size: a_scan_len x num_t_elemen
 
   return err;
 };
+
+// Support doubles and floats
+template class DAS<double>;
+template class DAS<float>;

@@ -116,9 +116,9 @@ __kernel void das_uni_tfm(__global const DAS_DATATYPE *Y, // Size: a_scan_len x 
   int z_quot = x_quot / Nz;
   int nz = x_quot - z_quot*Nz;
 
-  DAS_DATATYPE xo = x_min + ((float) nx)*dx;
-  DAS_DATATYPE yo = y_min + ((float) ny)*dy;
-  DAS_DATATYPE zo = z_min + ((float) nz)*dz;
+  DAS_DATATYPE xo = x_min + ((DAS_DATATYPE xo) nx)*dx;
+  DAS_DATATYPE yo = y_min + ((DAS_DATATYPE xo) ny)*dy;
+  DAS_DATATYPE zo = z_min + ((DAS_DATATYPE xo) nz)*dz;
 
   // Pre-compute this to avoid divisions in the inner loops.
   const DAS_DATATYPE Fs_khz = (F_SFX(1.0)/dt)*F_SFX(1000.0);

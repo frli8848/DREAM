@@ -1,5 +1,6 @@
 //
-// OpenCL delay-and-sum beamforming kernel
+// OpenCL delay-and-sum synthetic aperture imaging beamforming kernels
+// using arbitrary array element and observation point locations.
 //
 
 #define F_SFX(v) v##f // Suffix of numerical floating point float constants (= f suffix).

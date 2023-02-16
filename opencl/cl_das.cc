@@ -130,6 +130,8 @@ int DAS<T>::cl_das(const T *Y, // Data
   return retval;
 }
 
+// https://bytefreaks.net/programming-2/c/c-undefined-reference-to-templated-class-function
+
 // Support doubles and floats
 template class DAS<double>;
 template class DAS<float>;

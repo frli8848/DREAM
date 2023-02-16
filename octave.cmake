@@ -536,6 +536,37 @@ if (OCTAVE_FOUND)
     SUFFIX ".oct" PREFIX "" OUTPUT_NAME "das")
 
   #
+  # Delay-and-sum (DAS) using uniform grids (OpenCL/GPU only)
+  #
+
+  if (OpenCL_FOUND)
+
+    set (oct_das_uni_SOURCE_FILES
+      extra_src/oct_das_uni.cc
+    )
+
+    file (COPY opencl/das_uni_float.cl DESTINATION kernels)
+    file (COPY opencl/das_uni_double.cl DESTINATION kernels)
+
+    add_library (oct_das_uni MODULE
+      ${oct_das_uni_SOURCE_FILES}
+    )
+
+    target_link_libraries (oct_das_uni
+      ${OCTAVE_LIBRARIES}
+      ${OpenCL_LIBRARIES}
+    )
+
+    set_target_properties (oct_das_uni PROPERTIES
+      CXX_STANDARD 14
+      COMPILE_FLAGS "${DREAM_OCT_FLAGS}"
+      INCLUDE_DIRECTORIES "${DREAM_OCT_INCLUDE_DIRS}"
+      LINK_FLAGS ${OCT_LD_FLAGS}
+      SUFFIX ".oct" PREFIX "" OUTPUT_NAME "das_uni")
+
+  endif (OpenCL_FOUND)
+
+  #
   # Convolution algorithms
   #
 

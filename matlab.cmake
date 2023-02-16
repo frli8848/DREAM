@@ -472,6 +472,35 @@ if (Matlab_FOUND)
   target_compile_definitions(mex_das PUBLIC DREAM_MATLAB)
 
   #
+  # Delay-and-sum (DAS) using uniform grids (OpenCL/GPU only)
+  #
+
+  if (OpenCL_FOUND)
+
+    set (mex_das_uni_SOURCE_FILES
+      extra_src/mex_das_uni.cc
+      src/dream_error.cc
+    )
+
+    file (COPY opencl/das_uni_float.cl DESTINATION kernels)
+    file (COPY opencl/das_uni_double.cl DESTINATION kernels)
+
+    matlab_add_mex (NAME mex_das_uni MODULE
+      SRC ${mex_das_uni_SOURCE_FILES}
+      LINK_TO ${OpenCL_LIBRARIES}
+      OUTPUT_NAME "das_uni"
+    )
+
+    set_target_properties (mex_das_uni PROPERTIES
+      CXX_STANDARD 14
+      INCLUDE_DIRECTORIES "${DREAM_MEX_INCLUDE_DIRS}"
+    )
+
+    target_compile_definitions(mex_das_uni PUBLIC DREAM_MATLAB)
+
+  endif (OpenCL_FOUND)
+
+  #
   # Convolution algorithms
   #
 

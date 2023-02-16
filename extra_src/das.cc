@@ -363,16 +363,16 @@ ErrorLevel DAS<T>::das_tfm_serial(const T *Y, // Size: a_scan_len x num_t_elemen
       T t_r =  std::sqrt(gx_r*gx_r + gy_r*gy_r + gz_r*gz_r) * one_over_cp;
 
       T t_dp = t_t + t_r; // Double-path travel time.
-      auto k = dream_idx_type(t_dp*Fs_khz);
+      auto k = int(t_dp*Fs_khz);
 
       //if (n_r == n_t) { // For comparing with SAFT (for testing)
       if ((k < a_scan_len) && (k >= 0)) {
         im += y_p[k];
       } else {
         if (k >= 0) {
-          err = dream_out_of_bounds_err("DAS out of bounds",k-a_scan_len+1,err_level);
+          err = dream_out_of_bounds_err("DAS out of bounds +",k-a_scan_len+1,err_level);
         } else {
-          err = dream_out_of_bounds_err("DAS out of bounds",k,err_level);
+          err = dream_out_of_bounds_err("DAS out of bounds -",k,err_level);
         }
       }
       //} // SAFT testing
@@ -463,15 +463,15 @@ ErrorLevel DAS<T>::das_rca_serial(const T *Y, // Size: a_scan_len x num_t_elemen
       T t_r =  std::sqrt(gx_r*gx_r + gy_r*gy_r + gz_r*gz_r) * one_over_cp;
 
       T t_dp = t_t + t_r; // Double-path travel time.
-      auto k = dream_idx_type(t_dp*Fs_khz);
+      auto k = int(t_dp*Fs_khz);
 
       if ((k < a_scan_len) && (k >= 0)) {
         im += y_p[k];
       } else {
         if (k >= 0) {
-          err = dream_out_of_bounds_err("DAS out of bounds",k-a_scan_len+1,err_level);
+          err = dream_out_of_bounds_err("DAS out of bounds +",k-a_scan_len+1,err_level);
         } else {
-          err = dream_out_of_bounds_err("DAS out of bounds",k,err_level);
+          err = dream_out_of_bounds_err("DAS out of bounds -",k,err_level);
         }
       }
       y_p += a_scan_len; // Jump to the next A-scan
@@ -480,6 +480,8 @@ ErrorLevel DAS<T>::das_rca_serial(const T *Y, // Size: a_scan_len x num_t_elemen
 
   return err;
 };
+
+// https://bytefreaks.net/programming-2/c/c-undefined-reference-to-templated-class-function
 
 // Support doubles and floats
 template class DAS<double>;

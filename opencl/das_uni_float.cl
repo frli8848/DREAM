@@ -33,15 +33,15 @@ __kernel void das_uni_saft(__global const DAS_DATATYPE *Y, // Size: a_scan_len x
   int y_quot = no / Ny;
   int ny = no - y_quot*Ny;
 
-  int x_quot = y_quot / Nx;
-  int nx = y_quot - x_quot*Nx;
+  int z_quot = y_quot / Nz;
+  int nz = z_quot - z_quot*Nz;
 
-  int z_quot = x_quot / Nz;
-  int nz = x_quot - z_quot*Nz;
+  int x_quot = z_quot / Nx;
+  int nx = z_quot - x_quot*Nx;
 
-  DAS_DATATYPE xo = x_min + ((float) nx)*dx;
-  DAS_DATATYPE yo = y_min + ((float) ny)*dy;
-  DAS_DATATYPE zo = z_min + ((float) nz)*dz;
+  DAS_DATATYPE xo = min_Rx + ((DAS_DATATYPE) nx)*dx;
+  DAS_DATATYPE yo = min_Ry + ((DAS_DATATYPE) ny)*dy;
+  DAS_DATATYPE zo = min_Rz + ((DAS_DATATYPE) nz)*dz;
 
   // Pre-compute this to avoid divisions in the inner loops.
   const DAS_DATATYPE Fs_khz = (F_SFX(1.0)/dt)*F_SFX(1000.0);
@@ -56,7 +56,7 @@ __kernel void das_uni_saft(__global const DAS_DATATYPE *Y, // Size: a_scan_len x
   for (int n_tr=0; n_tr<num_elements; n_tr++) {
 
     // Transmit/Receive
-    DAS_DATATYPE x_tr = min_t + ((DAS_DATATYPE) num_t_elements)*pitch_t;
+    DAS_DATATYPE x_tr = min_tr + ((DAS_DATATYPE) num_elements)*pitch;
     DAS_DATATYPE gx_tr = x_tr - xo;
     //DAS_DATATYPE gy_tr = yo; // Assume y_tr = 0.0;
     //DAS_DATATYPE gz_tr = zo; // Assume z_tr = 0.0;
@@ -110,15 +110,15 @@ __kernel void das_uni_tfm(__global const DAS_DATATYPE *Y, // Size: a_scan_len x 
   int y_quot = no / Ny;
   int ny = no - y_quot*Ny;
 
-  int x_quot = y_quot / Nx;
-  int nx = y_quot - x_quot*Nx;
+  int z_quot = y_quot / Nz;
+  int nz = y_quot - z_quot*Nz;
 
-  int z_quot = x_quot / Nz;
-  int nz = x_quot - z_quot*Nz;
+  int x_quot = z_quot / Nx;
+  int nx = z_quot - x_quot*Nx;
 
-  DAS_DATATYPE xo = x_min + ((DAS_DATATYPE xo) nx)*dx;
-  DAS_DATATYPE yo = y_min + ((DAS_DATATYPE xo) ny)*dy;
-  DAS_DATATYPE zo = z_min + ((DAS_DATATYPE xo) nz)*dz;
+  DAS_DATATYPE xo = min_Rx + ((DAS_DATATYPE) nx)*dx;
+  DAS_DATATYPE yo = min_Ry + ((DAS_DATATYPE) ny)*dy;
+  DAS_DATATYPE zo = min_Rz + ((DAS_DATATYPE) nz)*dz;
 
   // Pre-compute this to avoid divisions in the inner loops.
   const DAS_DATATYPE Fs_khz = (F_SFX(1.0)/dt)*F_SFX(1000.0);
@@ -133,8 +133,8 @@ __kernel void das_uni_tfm(__global const DAS_DATATYPE *Y, // Size: a_scan_len x 
   for (int n_t=0; n_t<num_t_elements; n_t++) {
 
     // Transmit
-    DAS_DATATYPE xt = min_t + ((DAS_DATATYPE) num_t_elements)*pitch_t;
-    DAS_DATATYPE gx_t = Gt[n_t] - xo;
+    DAS_DATATYPE xt = min_t + ((DAS_DATATYPE) n_t)*pitch_t;
+    DAS_DATATYPE gx_t = xt - xo;
     //DAS_DATATYPE gy_t = yo; // Assume yt = 0.0;
     //DAS_DATATYPE gz_t = zo; // Assume zt = 0.0;
     //DAS_DATATYPE t_t = native_sqrt(gx_t*gx_t + gy_t*gy_t + gz_t*gz_t) * one_over_cp; // [ms].
@@ -144,7 +144,7 @@ __kernel void das_uni_tfm(__global const DAS_DATATYPE *Y, // Size: a_scan_len x 
     for (int n_r=0; n_r<num_r_elements; n_r++) {
 
       // Recieve
-      DAS_DATATYPE xr = min_r + ((DAS_DATATYPE) num_r_elements)*pitch_r;
+      DAS_DATATYPE xr = min_r + ((DAS_DATATYPE) n_r)*pitch_r;
       DAS_DATATYPE gx_r = xr - xo;
       //DAS_DATATYPE gy_r = yo;  // Assume yr = 0.0;
       //DAS_DATATYPE gz_r = zo;  // Assume zt = 0.0;
@@ -199,15 +199,15 @@ __kernel void das_uni_rca(__global const DAS_DATATYPE *Y, // Size: a_scan_len x 
   int y_quot = no / Ny;
   int ny = no - y_quot*Ny;
 
-  int x_quot = y_quot / Nx;
-  int nx = y_quot - x_quot*Nx;
+  int z_quot = y_quot / Nz;
+  int nz = y_quot - z_quot*Nz;
 
-  int z_quot = x_quot / Nz;
-  int nz = x_quot - z_quot*Nz;
+  int x_quot = z_quot / Nx;
+  int nx = z_quot - x_quot*Nx;
 
-  DAS_DATATYPE xo = x_min + ((float) nx)*dx;
-  DAS_DATATYPE yo = y_min + ((float) ny)*dy;
-  DAS_DATATYPE zo = z_min + ((float) nz)*dz;
+  DAS_DATATYPE xo = min_Rx + ((DAS_DATATYPE) nx)*dx;
+  DAS_DATATYPE yo = min_Ry + ((DAS_DATATYPE) ny)*dy;
+  DAS_DATATYPE zo = min_Rz + ((DAS_DATATYPE) nz)*dz;
 
   // Element (stripe) lengths
   const DAS_DATATYPE gt_y_min = min_r;
@@ -228,7 +228,7 @@ __kernel void das_uni_rca(__global const DAS_DATATYPE *Y, // Size: a_scan_len x 
   for (int n_t=0; n_t<num_t_elements; n_t++) {
 
     // Transmit
-    DAS_DATATYPE xt = min_t + ((DAS_DATATYPE) num_t_elements)*pitch_t;
+    DAS_DATATYPE xt = min_t + ((DAS_DATATYPE) n_t)*pitch_t;
     DAS_DATATYPE gx_t = xt - xo;
     DAS_DATATYPE gy_t;
     if ( (yo >= gt_y_min) && yo <= gt_y_max) {
@@ -258,7 +258,7 @@ __kernel void das_uni_rca(__global const DAS_DATATYPE *Y, // Size: a_scan_len x 
           gx_r = gr_x_max - xo;
         }
       }
-      DAS_DATATYPE yr = min_r + ((DAS_DATATYPE) num_r_elements)*pitch_r;
+      DAS_DATATYPE yr = min_r + ((DAS_DATATYPE) n_r)*pitch_r;
       DAS_DATATYPE gy_r = yr - yo;
       //DAS_DATATYPE gz_r = zo; // Assume zr = 0.0;
       DAS_DATATYPE t_r = native_sqrt(gx_r*gx_r + gy_r*gy_r + zo*zo) * one_over_cp;

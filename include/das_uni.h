@@ -59,6 +59,16 @@ class DAS_UNI
    , m_das_type(das_type)
    , m_a_scan_len(a_scan_len)
   {
+    // Array dims
+    m_num_t_elements = (dream_idx_type) ((max_t - min_t)/pitch_t+1.0);
+    m_num_r_elements = (dream_idx_type) ((max_r - min_r)/pitch_r+1.0);
+
+    // Image dims
+    dream_idx_type Nx = (dream_idx_type) ((max_Rx - min_Rx)/dx+1.0);
+    dream_idx_type Ny = (dream_idx_type) ((max_Ry - min_Ry)/dy+1.0);
+    dream_idx_type Nz = (dream_idx_type) ((max_Rz - min_Rz)/dz+1.0);
+    m_No = Nx*Ny*Nz;
+
     std::string kernel_str;
     std::string kernel_name="das_uni_tfm"; // Default function name of the OpenCL kernel
 
@@ -74,16 +84,6 @@ class DAS_UNI
     if (m_das_type == DASType::rca) {
       kernel_name="das_uni_rca";
     }
-
-    // Array dims
-    m_num_t_elements = (dream_idx_type) ((max_t - min_t)/pitch_t+1.0);
-    m_num_r_elements = (dream_idx_type) ((max_r - min_r)/pitch_r+1.0);
-
-    // Image dims
-    dream_idx_type Nx = (dream_idx_type) ((max_Rx - min_Rx)/dx+1.0);
-    dream_idx_type Ny = (dream_idx_type) ((max_Ry - min_Ry)/dy+1.0);
-    dream_idx_type Nz = (dream_idx_type) ((max_Rz - min_Rz)/dz+1.0);
-    m_No = Nx*Ny*Nz;
 
     //
     // Read OpenCL kernel file

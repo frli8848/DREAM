@@ -34,7 +34,7 @@ __kernel void das_uni_saft(__global const DAS_DATATYPE *Y, // Size: a_scan_len x
   int ny = no - y_quot*Ny;
 
   int z_quot = y_quot / Nz;
-  int nz = z_quot - z_quot*Nz;
+  int nz = y_quot - z_quot*Nz;
 
   int x_quot = z_quot / Nx;
   int nx = z_quot - x_quot*Nx;
@@ -56,7 +56,7 @@ __kernel void das_uni_saft(__global const DAS_DATATYPE *Y, // Size: a_scan_len x
   for (int n_tr=0; n_tr<num_elements; n_tr++) {
 
     // Transmit/Receive
-    DAS_DATATYPE x_tr = min_tr + ((DAS_DATATYPE) num_elements)*pitch;
+    DAS_DATATYPE x_tr = min_tr + ((DAS_DATATYPE) n_tr)*pitch;
     DAS_DATATYPE gx_tr = x_tr - xo;
     //DAS_DATATYPE gy_tr = yo; // Assume y_tr = 0.0;
     //DAS_DATATYPE gz_tr = zo; // Assume z_tr = 0.0;

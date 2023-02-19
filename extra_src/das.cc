@@ -449,10 +449,10 @@ ErrorLevel DAS<T>::das_rca_serial(const T *Y, // Size: a_scan_len x num_t_elemen
 
       // Recieve
       T gx_r;
-      if ( (yo >= gr_x_min) && yo <= gr_x_max) {
+      if ( (xo >= gr_x_min) && xo <= gr_x_max) {
         gx_r = 0.0;               // We are inside the stripe aperture.
       } else {    // Here we use the distance to the edge of the stripe.
-        if (yo < gr_x_min) {
+        if (xo < gr_x_min) {
           gx_r = gr_x_min - xo;
         } else { // yo > gt_y_max
           gx_r = gr_x_max - xo;

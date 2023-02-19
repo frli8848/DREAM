@@ -160,10 +160,10 @@ __kernel void das_rca(__global const DAS_DATATYPE *Y, // Size: a_scan_len x num_
 
       // Recieve
       DAS_DATATYPE gx_r = F_SFX(0.0);
-      if ( (yo < gr_x_min) || yo > gr_x_max) {
+      if ( (xo < gr_x_min) || xo > gr_x_max) {
         // We are outside the stripe aperture and
         // we use the distance to the edge of the stripe.
-        if (yo < gr_x_min) {
+        if (xo < gr_x_min) {
           gx_r = gr_x_min - xo;
         } else { // yo > gt_y_max
           gx_r = gr_x_max - xo;

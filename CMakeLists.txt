@@ -80,7 +80,43 @@ if (USE_OPENCL)
   find_package (OpenCL 1.2)
 
   if (OpenCL_FOUND)
+
     add_definitions(-DUSE_OPENCL)
+
+    # Generate header files from the cl kernels so we can embed them
+    # in the binaries directly.
+
+    find_program(XXD xxd REQUIRED)
+
+    #file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/opencl")
+
+    file(GLOB cl_files "opencl/*.cl")
+    foreach(file ${cl_files})
+      string(REGEX REPLACE "${CMAKE_CURRENT_SOURCE_DIR}/opencl/" "" rel_path_file ${file})
+
+      message (STATUS "${file} -> ${CMAKE_CURRENT_SOURCE_DIR}/include/${rel_path_file}.h")
+
+      #file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/${rel_path_file}.h" "const char* cl_kernel_string[] =\n")
+
+      # This one eats all new lines...
+      #file(STRINGS ${file} CL_SOURCES)
+      #file(APPEND "${CMAKE_CURRENT_BINARY_DIR}/opencl/${rel_path_file}.h" ${CL_SOURCES})
+
+      # This one do not work with lines ending in "//"
+      #file(READ ${file} CL_SOURCES)
+      #foreach(line ${CL_SOURCES})
+      #  file(APPEND "${CMAKE_CURRENT_BINARY_DIR}/${rel_path_file}.h" "\"${line}\\n\"\n")
+      #endforeach()
+      #file(APPEND "${CMAKE_CURRENT_BINARY_DIR}/${rel_path_file}.h" ";\n")
+
+      # Use external xxd program (part of app-editors/vim-core) # FIXME: Make cross-platform solution (preferable cmake only)
+      set (TMP_VAR_NAME "__${rel_path_file}")
+      string(REPLACE "." "_" C_VAR_NAME ${TMP_VAR_NAME})
+      execute_process(COMMAND ${XXD} -i -n "${C_VAR_NAME}" ${file} "${CMAKE_CURRENT_SOURCE_DIR}/include/${rel_path_file}.h")
+      # FIXME: Its not ideal to write generated files in ${CMAKE_CURRENT_SOURCE_DIR}/include!
+
+    endforeach()
+
   endif (OpenCL_FOUND)
 
 endif (USE_OPENCL)

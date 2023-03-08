@@ -54,15 +54,43 @@ public:
       dream_idx_type a_scan_len,
       dream_idx_type No,
       dream_idx_type num_t_elements,
-      dream_idx_type num_r_elements)  // SAFT if num_r_elements = 0;
-    : m_out_err(ErrorLevel::none)
-    , m_das_type(das_type)
-    , m_a_scan_len(a_scan_len)
-    , m_No(No)
-    , m_num_t_elements(num_t_elements)
-    , m_num_r_elements(num_r_elements)
-  {
+      dream_idx_type num_r_elements, // SAFT if num_r_elements = 0;
+      unsigned char *cl_kernel_str=nullptr,
+      unsigned int cl_kernel_str_len=0);
+
+  ~DAS()  = default;
+
+  ErrorLevel das(const T *Y, const T *Ro, const T *gt, const T *gr,
+                 T dt,
+                 DelayType delay_type, const T *delay,
+                 T cp,
+                 T *Im,
+                 ErrorLevel err_level);
+
+  static void abort(int signum);
+  bool is_running();
+  void set_running();
+  bool das_setup_has_changed(DASType das_type, // Function to check if we need to resize buffers and re-init.
+                             dream_idx_type a_scan_len,
+                             dream_idx_type No,
+                             dream_idx_type num_t_elements,
+                             dream_idx_type num_r_elements) {
+    bool retval = false;
+    if ( das_type != m_das_type ||
+         a_scan_len != m_a_scan_len ||
+         No != m_No ||
+         num_t_elements != m_num_t_elements ||
+         num_r_elements != m_num_r_elements) {
+      retval = true;
+    }
+
+    return retval;
+  }
+
 #ifdef USE_OPENCL
+
+  void init_opencl(unsigned char *cl_kernel_str, unsigned int cl_kernel_str_len)
+  {
     std::string kernel_str;
     std::string kernel_name="das_tfm"; // Default function name of the OpenCL kernel
 
@@ -80,28 +108,33 @@ public:
     }
 
     //
-    // Read OpenCL kernel file
+    // Read OpenCL kernels
     //
 
-    std::string dream_cl_kernel = "";
-    if(const char* env_p = std::getenv("DREAM_CL_KERNELS")) {
-      dream_cl_kernel += env_p;
-    } else {
-      throw std::runtime_error("Error in das - DREAM_CL_KERNELS env variable not set!");
-    }
+    if (cl_kernel_str_len == 0)  { // Fallback to read kernels from file when no xxd:ed kernel header files exist.
+      std::string dream_cl_kernel = "";
+      if(const char* env_p = std::getenv("DREAM_CL_KERNELS")) {
+        dream_cl_kernel += env_p;
+      } else {
+        throw std::runtime_error("Error in das - DREAM_CL_KERNELS env variable not set!");
+      }
 
-    std::string das_kernel = dream_cl_kernel;
-    if (sizeof(T) == sizeof(float) ) {
-      das_kernel += "/das_float.cl";
+      std::string das_kernel = dream_cl_kernel;
+      if (sizeof(T) == sizeof(float) ) {
+        das_kernel += "/das_float.cl";
+      } else {
+        das_kernel += "/das_double.cl";
+      }
+      std::ifstream f_kernel(das_kernel);
+      f_kernel.seekg(0, std::ios::end);
+      kernel_str.reserve(f_kernel.tellg());
+      f_kernel.seekg(0, std::ios::beg);
+      kernel_str.assign((std::istreambuf_iterator<char>(f_kernel)),
+                        std::istreambuf_iterator<char>());
+
     } else {
-      das_kernel += "/das_double.cl";
+      kernel_str = std::string((char *) cl_kernel_str, cl_kernel_str_len);
     }
-    std::ifstream f_kernel(das_kernel);
-    f_kernel.seekg(0, std::ios::end);
-    kernel_str.reserve(f_kernel.tellg());
-    f_kernel.seekg(0, std::ios::beg);
-    kernel_str.assign((std::istreambuf_iterator<char>(f_kernel)),
-                      std::istreambuf_iterator<char>());
 
     //
     // Get platform
@@ -163,210 +196,178 @@ public:
       devices = context.getInfo<CL_CONTEXT_DEVICES>();
     }
 
-  catch (const cl::Error &err) {
-    std::string the_err = "Error in das - Failed to get OpenCL context info: ";
-    the_err += err.what();
-    the_err += "\n";
-    throw std::runtime_error(the_err);
-  }
-
-  size_t dev_idx = 0;
-  /*
-  if (dev_idx >= devices.size()) {
-   std::cerr << "Selected OpenCL device not found! Using the first device!";
-    dev_idx = 0;
-  }
-  */
-
-  if (devices.empty()) {
-    throw std::runtime_error("Error in das - OpenCL error: Found no devices(s)!");
-  } else {
-    std::cout << "Found " <<  devices.size() << " devices(s)." << std::endl;
-    size_t deviceIndex = 0;
-    for(auto &device : devices) {
-      std::cout << "Device[" << deviceIndex++ << "]:" << std::endl;
-      std::cout << "  Name: " << device.getInfo<CL_DEVICE_NAME>() << std::endl;
-      if (device.getInfo<CL_DEVICE_TYPE>() == CL_DEVICE_TYPE_GPU) {
-        std::cout << "  Type: GPU" << std::endl;
-      }
-      if (device.getInfo<CL_DEVICE_TYPE>() == CL_DEVICE_TYPE_CPU) {
-        std::cout << "  Type: CPU" << std::endl;
-      }
-      std::cout << "  Vendor: " << device.getInfo<CL_DEVICE_VENDOR>() << std::endl;
-      std::cout << "  Max Compute Units: " << device.getInfo<CL_DEVICE_MAX_COMPUTE_UNITS>() << std::endl;
-      std::cout << "  Global Memory: " << device.getInfo<CL_DEVICE_GLOBAL_MEM_SIZE>()<< std::endl;
-      std::cout << "  Max Clock Frequency: " << device.getInfo<CL_DEVICE_MAX_CLOCK_FREQUENCY>() << std::endl;
-      std::cout << "  Max Allocatable Memory: " << device.getInfo<CL_DEVICE_MAX_MEM_ALLOC_SIZE>() << std::endl;
-      std::cout << "  Local Memory: " << device.getInfo<CL_DEVICE_LOCAL_MEM_SIZE>() << std::endl;
-      std::cout << "  Available: " << device.getInfo<CL_DEVICE_AVAILABLE>() << std::endl;
-    }
-  }
-
-  //
-  // Create a command queue and use the first device.
-  //
-
-  try {
-    m_queue = cl::CommandQueue(context, devices[dev_idx]);
-  }
-
-  catch (const cl::Error &err) {
-    std::string the_err = "Error in das - OpenCL error: ";
-    the_err += err.what();
-    the_err += "\n";
-    throw std::runtime_error(the_err);
-  }
-
-  // Add the sources
-  cl::Program::Sources source;
-  source = cl::Program::Sources(1, std::make_pair(kernel_str.c_str(), kernel_str.length()+1));
-
-  // Make program of the source code in the context
-  cl::Program program;
-  program = cl::Program(context, source);
-
-  // Build program for these specific devices
-  try {
-    program.build(devices);
-  }
-
-  catch (const cl::Error &err) {
-    std::string the_err = "Error in das - OpenCL error - kernel build failed: ";
-    the_err += err.what();
-    the_err += "\n";
-    std::cout << "Build log:" << std::endl << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(devices[dev_idx]) << std::endl;
-    throw std::runtime_error(the_err);
-  }
-
-  // Make kernel
-
-  try {
-    m_kernel = cl::Kernel(program, kernel_name.c_str());
-  }
-
-  catch (const cl::Error &err) {
-    std::string the_err = "";
-    std::cerr << "Error in das - OpenCL error - Kernel: " << kernel_name << " creation failed: " << err.what();
-    the_err += err.what();
-    the_err += "\n";
-    throw std::runtime_error(the_err);
-  }
-
-  //
-  // Create memory buffers on the device for vector/matrix arguments to the kernel
-  //
-
-  // Read buffers
-
-  // Data
-
-  dream_idx_type n_r_el = m_num_r_elements;
-  if (m_das_type == DASType::saft) {
-    n_r_el = 1; // So we do not multiply by 0.
-  }
-
-  m_buflen_Y = m_a_scan_len*m_num_t_elements*n_r_el*sizeof(T);
-  try {
-    m_cl_buf_Y = cl::Buffer(context, CL_MEM_READ_ONLY, m_buflen_Y);
-  }
-
-  catch (const cl::Error &err) {
-    std::string the_err = "Error in das - OpenCL error - Buffer Y allocation failed: " ;
-    the_err += err.what();
-    the_err += "\n";
-    throw std::runtime_error(the_err);
-  }
-
-  // Transmit elements
-  m_buflen_gt = m_num_t_elements*3*sizeof(T);
-  try {
-    m_cl_buf_gt = cl::Buffer(context, CL_MEM_READ_ONLY, m_buflen_gt);
-  }
-
-  catch (const cl::Error &err) {
-    std::string the_err = "Error in das - OpenCL error - Buffer gt allocation failed: " ;
-    the_err += err.what();
-    the_err += "\n";
-    throw std::runtime_error(the_err);
-  }
-
-  // Receive elements
-  if (m_num_r_elements > 0) { // SAFT do not use this one.
-
-    m_buflen_gr = m_num_r_elements*3*sizeof(T);
-    try {
-      m_cl_buf_gr = cl::Buffer(context, CL_MEM_READ_ONLY, m_buflen_gr);
-    }
-
     catch (const cl::Error &err) {
-      std::string the_err = "Error in das - OpenCL error - Buffer gr allocation failed: " ;
+      std::string the_err = "Error in das - Failed to get OpenCL context info: ";
       the_err += err.what();
       the_err += "\n";
       throw std::runtime_error(the_err);
     }
 
-  }
+    size_t dev_idx = 0;
+    /*
+      if (dev_idx >= devices.size()) {
+      std::cerr << "Selected OpenCL device not found! Using the first device!";
+      dev_idx = 0;
+      }
+    */
 
-  // Observation points
-  m_buflen_Ro  =  m_No*3*sizeof(T);
-  try {
-    m_cl_buf_Ro = cl::Buffer(context, CL_MEM_READ_ONLY, m_buflen_Ro);
-  }
-
-  catch (const cl::Error &err) {
-    std::string the_err = "Error in das - OpenCL error - Buffer Ro allocation failed: " ;
-    the_err += err.what();
-    the_err += "\n";
-    throw std::runtime_error(the_err);
-  }
-
-  // Write buffer
-
-  // Image
-  m_buflen_Im  = m_No*sizeof(T);
-  try {
-    m_cl_buf_Im = cl::Buffer(context, CL_MEM_WRITE_ONLY, m_buflen_Im);
-  }
-
-  catch (const cl::Error &err) {
-    std::string the_err = "Error in das - OpenCL error - Buffer Im allocation failed: " ;
-    the_err += err.what();
-    the_err += "\n";
-    throw std::runtime_error(the_err);
-  }
-#endif
-  ;}
-
-  ~DAS()  = default;
-
-  ErrorLevel das(const T *Y, const T *Ro, const T *gt, const T *gr,
-                 T dt,
-                 DelayType delay_type, const T *delay,
-                 T cp,
-                 T *Im,
-                 ErrorLevel err_level);
-
-  static void abort(int signum);
-  bool is_running();
-  void set_running();
-  bool das_setup_has_changed(DASType das_type, // Function to check if we need to resize buffers and re-init.
-                             dream_idx_type a_scan_len,
-                             dream_idx_type No,
-                             dream_idx_type num_t_elements,
-                             dream_idx_type num_r_elements) {
-    bool retval = false;
-    if ( das_type != m_das_type ||
-         a_scan_len != m_a_scan_len ||
-         No != m_No ||
-         num_t_elements != m_num_t_elements ||
-         num_r_elements != m_num_r_elements) {
-      retval = true;
+    if (devices.empty()) {
+      throw std::runtime_error("Error in das - OpenCL error: Found no devices(s)!");
+    } else {
+      std::cout << "Found " <<  devices.size() << " devices(s)." << std::endl;
+      size_t deviceIndex = 0;
+      for(auto &device : devices) {
+        std::cout << "Device[" << deviceIndex++ << "]:" << std::endl;
+        std::cout << "  Name: " << device.getInfo<CL_DEVICE_NAME>() << std::endl;
+        if (device.getInfo<CL_DEVICE_TYPE>() == CL_DEVICE_TYPE_GPU) {
+          std::cout << "  Type: GPU" << std::endl;
+        }
+        if (device.getInfo<CL_DEVICE_TYPE>() == CL_DEVICE_TYPE_CPU) {
+          std::cout << "  Type: CPU" << std::endl;
+        }
+        std::cout << "  Vendor: " << device.getInfo<CL_DEVICE_VENDOR>() << std::endl;
+        std::cout << "  Max Compute Units: " << device.getInfo<CL_DEVICE_MAX_COMPUTE_UNITS>() << std::endl;
+        std::cout << "  Global Memory: " << device.getInfo<CL_DEVICE_GLOBAL_MEM_SIZE>()<< std::endl;
+        std::cout << "  Max Clock Frequency: " << device.getInfo<CL_DEVICE_MAX_CLOCK_FREQUENCY>() << std::endl;
+        std::cout << "  Max Allocatable Memory: " << device.getInfo<CL_DEVICE_MAX_MEM_ALLOC_SIZE>() << std::endl;
+        std::cout << "  Local Memory: " << device.getInfo<CL_DEVICE_LOCAL_MEM_SIZE>() << std::endl;
+        std::cout << "  Available: " << device.getInfo<CL_DEVICE_AVAILABLE>() << std::endl;
+      }
     }
 
-    return retval;
-  }
+    //
+    // Create a command queue and use the first device.
+    //
 
-#ifdef USE_OPENCL
+    try {
+      m_queue = cl::CommandQueue(context, devices[dev_idx]);
+    }
+
+    catch (const cl::Error &err) {
+      std::string the_err = "Error in das - OpenCL error: ";
+      the_err += err.what();
+      the_err += "\n";
+      throw std::runtime_error(the_err);
+    }
+
+    // Add the sources
+    cl::Program::Sources source;
+    source = cl::Program::Sources(1, std::make_pair(kernel_str.c_str(), kernel_str.length()+1));
+
+    // Make program of the source code in the context
+    cl::Program program;
+    program = cl::Program(context, source);
+
+    // Build program for these specific devices
+    try {
+      program.build(devices);
+    }
+
+    catch (const cl::Error &err) {
+      std::string the_err = "Error in das - OpenCL error - kernel build failed: ";
+      the_err += err.what();
+      the_err += "\n";
+      std::cout << "Build log:" << std::endl << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(devices[dev_idx]) << std::endl;
+      throw std::runtime_error(the_err);
+    }
+
+    // Make kernel
+
+    try {
+      m_kernel = cl::Kernel(program, kernel_name.c_str());
+    }
+
+    catch (const cl::Error &err) {
+      std::string the_err = "";
+      std::cerr << "Error in das - OpenCL error - Kernel: " << kernel_name << " creation failed: " << err.what();
+      the_err += err.what();
+      the_err += "\n";
+      throw std::runtime_error(the_err);
+    }
+
+    //
+    // Create memory buffers on the device for vector/matrix arguments to the kernel
+    //
+
+    // Read buffers
+
+    // Data
+
+    dream_idx_type n_r_el = m_num_r_elements;
+    if (m_das_type == DASType::saft) {
+      n_r_el = 1; // So we do not multiply by 0.
+    }
+
+    m_buflen_Y = m_a_scan_len*m_num_t_elements*n_r_el*sizeof(T);
+    try {
+      m_cl_buf_Y = cl::Buffer(context, CL_MEM_READ_ONLY, m_buflen_Y);
+    }
+
+    catch (const cl::Error &err) {
+      std::string the_err = "Error in das - OpenCL error - Buffer Y allocation failed: " ;
+      the_err += err.what();
+      the_err += "\n";
+      throw std::runtime_error(the_err);
+    }
+
+    // Transmit elements
+    m_buflen_gt = m_num_t_elements*3*sizeof(T);
+    try {
+      m_cl_buf_gt = cl::Buffer(context, CL_MEM_READ_ONLY, m_buflen_gt);
+    }
+
+    catch (const cl::Error &err) {
+      std::string the_err = "Error in das - OpenCL error - Buffer gt allocation failed: " ;
+      the_err += err.what();
+      the_err += "\n";
+      throw std::runtime_error(the_err);
+    }
+
+    // Receive elements
+    if (m_num_r_elements > 0) { // SAFT do not use this one.
+
+      m_buflen_gr = m_num_r_elements*3*sizeof(T);
+      try {
+        m_cl_buf_gr = cl::Buffer(context, CL_MEM_READ_ONLY, m_buflen_gr);
+      }
+
+      catch (const cl::Error &err) {
+        std::string the_err = "Error in das - OpenCL error - Buffer gr allocation failed: " ;
+        the_err += err.what();
+        the_err += "\n";
+        throw std::runtime_error(the_err);
+      }
+
+    }
+
+    // Observation points
+    m_buflen_Ro  =  m_No*3*sizeof(T);
+    try {
+      m_cl_buf_Ro = cl::Buffer(context, CL_MEM_READ_ONLY, m_buflen_Ro);
+    }
+
+    catch (const cl::Error &err) {
+      std::string the_err = "Error in das - OpenCL error - Buffer Ro allocation failed: " ;
+      the_err += err.what();
+      the_err += "\n";
+      throw std::runtime_error(the_err);
+    }
+
+    // Write buffer
+
+    // Image
+    m_buflen_Im  = m_No*sizeof(T);
+    try {
+      m_cl_buf_Im = cl::Buffer(context, CL_MEM_WRITE_ONLY, m_buflen_Im);
+    }
+
+    catch (const cl::Error &err) {
+      std::string the_err = "Error in das - OpenCL error - Buffer Im allocation failed: " ;
+      the_err += err.what();
+      the_err += "\n";
+      throw std::runtime_error(the_err);
+    }
+  }
 
   int cl_das(const T *Y, // Data
              const T *Ro,
@@ -380,8 +381,8 @@ public:
 
 private:
 
-void* smp_das(void *arg);
-std::thread das_thread(void *arg) {
+  void* smp_das(void *arg);
+  std::thread das_thread(void *arg) {
     return std::thread(&DAS::smp_das, this, arg);
   }
 

@@ -54,10 +54,16 @@ class DAS_UNI
          T min_r, T pitch_r, T max_r, // Receive
          T min_Rx, T dx, T max_Rx,    // Observation points
          T min_Ry, T dy, T max_Ry,
-         T min_Rz, T dz, T max_Rz)
-   : m_out_err(ErrorLevel::none)
-   , m_das_type(das_type)
-   , m_a_scan_len(a_scan_len)
+         T min_Rz, T dz, T max_Rz,
+         unsigned char *cl_kernel_str=nullptr,
+         unsigned int cl_kernel_str_len=0);
+
+  void init_opencl(T min_t, T pitch_t, T max_t, // Transmit
+                   T min_r, T pitch_r, T max_r, // Receive
+                   T min_Rx, T dx, T max_Rx,    // Observation points
+                   T min_Ry, T dy, T max_Ry,
+                   T min_Rz, T dz, T max_Rz,
+                   unsigned char *cl_kernel_str, unsigned int cl_kernel_str_len)
   {
     // Array dims
     m_num_t_elements = (dream_idx_type) ((max_t - min_t)/pitch_t+1.0);
@@ -86,28 +92,33 @@ class DAS_UNI
     }
 
     //
-    // Read OpenCL kernel file
+    // Read OpenCL kernels
     //
 
-    std::string dream_cl_kernel = "";
-    if(const char* env_p = std::getenv("DREAM_CL_KERNELS")) {
-      dream_cl_kernel += env_p;
+    if (cl_kernel_str_len == 0)  { // Fallback to read kernels from file when no xxd:ed kernel header files exist.
+      std::string dream_cl_kernel = "";
+      if(const char* env_p = std::getenv("DREAM_CL_KERNELS")) {
+        dream_cl_kernel += env_p;
+      } else {
+        throw std::runtime_error("Error in das_uni - DREAM_CL_KERNELS env variable not set!");
+      }
+
+      std::string das_kernel = dream_cl_kernel;
+      if (sizeof(T) == sizeof(float) ) {
+        das_kernel += "/das_uni_float.cl";
+      } else {
+        das_kernel += "/das_uni_double.cl";
+      }
+      std::ifstream f_kernel(das_kernel);
+      f_kernel.seekg(0, std::ios::end);
+      kernel_str.reserve(f_kernel.tellg());
+      f_kernel.seekg(0, std::ios::beg);
+      kernel_str.assign((std::istreambuf_iterator<char>(f_kernel)),
+                        std::istreambuf_iterator<char>());
     } else {
-      throw std::runtime_error("Error in das_uni - DREAM_CL_KERNELS env variable not set!");
+      kernel_str = std::string((char *) cl_kernel_str, cl_kernel_str_len);
     }
 
-    std::string das_kernel = dream_cl_kernel;
-    if (sizeof(T) == sizeof(float) ) {
-      das_kernel += "/das_uni_float.cl";
-    } else {
-      das_kernel += "/das_uni_double.cl";
-    }
-    std::ifstream f_kernel(das_kernel);
-    f_kernel.seekg(0, std::ios::end);
-    kernel_str.reserve(f_kernel.tellg());
-    f_kernel.seekg(0, std::ios::beg);
-    kernel_str.assign((std::istreambuf_iterator<char>(f_kernel)),
-                      std::istreambuf_iterator<char>());
 
     //
     // Get platform

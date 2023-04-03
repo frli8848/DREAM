@@ -310,6 +310,10 @@ Apodization parameters: apod_met, apod, and win_par. The apod_met (apodization m
    Gaussian (bell-shaped) window.\n\
 \"raised\"\n\
    Raised cosine.\n\
+\"hann\"\n\
+   Hann window.\n\
+\"hamming\"\n\
+   Hamming window.\n\
 \"simply\"\n\
    Simply supported.\n\
 \"clamped\"\n\

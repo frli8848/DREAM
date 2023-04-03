@@ -474,6 +474,18 @@ public:
       apod_met = ApodMet::raised_cosine;
       is_set = true;
     }
+    
+    if (apod_str == "hann") {
+      do_apod = true;
+      apod_met = ApodMet::hann;
+      is_set = true;
+    }
+    
+    if (apod_str == "hamming") {
+      do_apod = true;
+      apod_met = ApodMet::hamming;
+      is_set = true;
+    }
 
     if (apod_str == "simply") {
       do_apod = true;

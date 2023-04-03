@@ -135,6 +135,10 @@ Triangle window.\n\
 Gaussian (bell-shaped) window.\n\
 @item 'raised'\n\
 Raised cosine.\n\
+@item 'hann'\n\
+Hann window.\n\
+@item 'hamming'\n\
+Hamming window.\n\
 @item 'simply'\n\
 Simply supported.\n\
 @item 'clamped'\n\
@@ -170,12 +174,6 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
 @seealso {dreamcirc}\n\
 @end deftypefn")
 {
-  FocusMet foc_met=FocusMet::none;
-  SteerMet steer_met=SteerMet::none;
-  bool    do_apod=false;
-  ApodMet apod_met=ApodMet::gauss;
-  double *h;
-
   octave_value_list oct_retval;
 
   int nrhs = args.length();
@@ -268,6 +266,7 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
 
   // Allocate space for the user defined focusing delays
   std::unique_ptr<double[]> focal = std::make_unique<double[]>(num_elements);
+  FocusMet foc_met=FocusMet::none;
 
   if (nrhs >= 7) {
     if (!ap.parse_focus_args("dream_arr_circ", args, 6, foc_met, focal.get()), num_elements) {
@@ -281,7 +280,9 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
   // Beam steering.
   //
 
+  SteerMet steer_met=SteerMet::none;
   double theta=0.0, phi=0.0;
+
   if (nrhs >= 9) {
     if (!ap.parse_steer_args("dream_arr_circ", args, 8, steer_met, theta, phi)) {
       return oct_retval;
@@ -296,8 +297,10 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
 
   // Allocate space for the user defined apodization weights
   std::unique_ptr<double[]> apod = std::make_unique<double[]>(num_elements);
-
+  bool    do_apod=false;
+  ApodMet apod_met=ApodMet::gauss;
   double apod_par=0.0;
+
   if (nrhs >= 11) {
     if (!ap.parse_apod_args("dream_arr_circ", args, 10, num_elements,
                             do_apod, apod.get(), apod_met, apod_par)) {
@@ -323,7 +326,7 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
 
   // Create an output matrix for the impulse response
   Matrix h_mat(nt, no);
-  h = (double*) h_mat.data();
+  double *h = (double*) h_mat.data();
 
   SIRData hsir(h, nt, no);
   hsir.clear();

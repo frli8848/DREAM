@@ -138,6 +138,10 @@ Triangle window.\n\
 @item 'gauss'\n\
 Gaussian (bell-shaped) window.\n\
 @item 'raised'\n\
+@item 'hann'\n\
+Hann window.\n\
+@item 'hamming'\n\
+Hamming window.\n\
 Raised cosine.\n\
 @item 'simply'\n\
 Simply supported.\n\
@@ -171,15 +175,9 @@ dream_arr_cylind is an oct-function that is a part of the DREAM Toolbox availabl
 @url{https://github.com/frli8848/DREAM}.\n\
 \n\
 Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
-@seealso {dream_arr_cylind_d, dreamcylind}\n\
+@seealso {dreamcylind}\n\
 @end deftypefn")
 {
-  FocusMet foc_met=FocusMet::none;
-  SteerMet steer_met=SteerMet::none;
-  bool    do_apod=false;
-  ApodMet apod_met=ApodMet::gauss;
-  double *h;
-
   octave_value_list oct_retval;
 
   int nrhs = args.length();
@@ -272,6 +270,7 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
 
   // Allocate space for the user defined focusing delays
   std::unique_ptr<double[]> focal = std::make_unique<double[]>(num_elements);
+  FocusMet foc_met=FocusMet::none;
 
   if (nrhs >= 7) {
     if (!ap.parse_focus_args("dream_arr_cylind", args, 6, foc_met, focal.get()), num_elements) {
@@ -285,7 +284,9 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
   // Beam steering.
   //
 
+  SteerMet steer_met=SteerMet::none;
   double theta=0.0, phi=0.0;
+
   if (nrhs >= 9) {
     if (!ap.parse_steer_args("dream_arr_cylind", args, 8, steer_met, theta, phi)) {
       return oct_retval;
@@ -300,8 +301,10 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
 
   // Allocate space for the user defined apodization weights
   std::unique_ptr<double[]> apod = std::make_unique<double[]>(num_elements);
-
+  bool    do_apod=false;
+  ApodMet apod_met=ApodMet::gauss;
   double apod_par=0.0;
+
   if (nrhs >= 11) {
     if (!ap.parse_apod_args("dream_arr_cylind", args, 10, num_elements,
                             do_apod, apod.get(), apod_met, apod_par)) {
@@ -327,7 +330,7 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
 
   // Create an output matrix for the impulse response
   Matrix h_mat(nt, no);
-  h = (double*) h_mat.data();
+  double *h = (double*) h_mat.data();
 
   SIRData hsir(h, nt, no);
   hsir.clear();
@@ -342,16 +345,16 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
   //
 
   err = arr_cylind.dream_arr_cylind(alpha,
-                                ro, no,
-                                a, b, Rcurv,
-                                dx, dy,  dt, nt,
-                                delay_type, delay,
-                                v, cp,
-                                num_elements, G,
-                                foc_met,  focal.get(),
-                                steer_met, theta, phi,
-                                apod.get(), do_apod, apod_met, apod_par,
-                                h, err_level);
+                                    ro, no,
+                                    a, b, Rcurv,
+                                    dx, dy,  dt, nt,
+                                    delay_type, delay,
+                                    v, cp,
+                                    num_elements, G,
+                                    foc_met,  focal.get(),
+                                    steer_met, theta, phi,
+                                    apod.get(), do_apod, apod_met, apod_par,
+                                    h, err_level);
 
   if (!arr_cylind.is_running()) {
     error("CTRL-C pressed!\n"); // Bail out.

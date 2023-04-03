@@ -113,6 +113,10 @@ Triangle window.\n\
 @item 'gauss'\n\
 Gaussian (bell-shaped) window.\n\
 @item 'raised'\n\
+@item 'hann'\n\
+Hann window.\n\
+@item 'hamming'\n\
+Hamming window.\n\
 Raised cosine.\n\
 @item 'simply'\n\
 Simply supported.\n\

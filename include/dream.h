@@ -76,6 +76,8 @@ enum class ApodMet {
   triangle,
   gauss,
   raised_cosine,
+  hann,
+  hamming,
   simply_supported,
   clamped,
   ud

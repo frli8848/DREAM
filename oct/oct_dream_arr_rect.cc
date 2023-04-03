@@ -137,6 +137,10 @@ Triangle window.\n\
 Gaussian (bell-shaped) window.\n\
 @item 'raised'\n\
 Raised cosine.\n\
+@item 'hann'\n\
+Hann window.\n\
+@item 'hamming'\n\
+Hamming window.\n\
 @item 'simply'\n\
 Simply supported.\n\
 @item 'clamped'\n\
@@ -262,10 +266,9 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
   // Focusing parameters.
   //
 
-  FocusMet foc_met=FocusMet::none;
-
   // Allocate space for the user defined focusing delays
   std::unique_ptr<double[]> focal = std::make_unique<double[]>(num_elements);
+  FocusMet foc_met=FocusMet::none;
 
   if (nrhs >= 7) {
     if (!ap.parse_focus_args("dream_arr_rect", args, 6, foc_met, focal.get(), num_elements)) {
@@ -280,8 +283,8 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
   //
 
   SteerMet steer_met=SteerMet::none;
-
   double theta=0.0, phi=0.0;
+
   if (nrhs >= 9) {
     if (!ap.parse_steer_args("dream_arr_rect", args, 8, steer_met, theta, phi)) {
       return oct_retval;
@@ -294,13 +297,12 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
   // Apodization.
   //
 
-  bool    do_apod=false;
-  ApodMet apod_met=ApodMet::gauss;
-
   // Allocate space for the user defined apodization weights
   std::unique_ptr<double[]> apod = std::make_unique<double[]>(num_elements);
-
+  bool    do_apod=false;
+  ApodMet apod_met=ApodMet::gauss;
   double apod_par=0.0;
+
   if (nrhs >= 11) {
     if (!ap.parse_apod_args("dream_arr_rect", args, 10, num_elements,
                             do_apod, apod.get(), apod_met, apod_par)) {

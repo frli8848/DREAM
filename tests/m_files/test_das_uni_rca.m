@@ -140,7 +140,7 @@ ro_rca = [min_Rx, dx,  max_Rx;
 
 delay = system_delay; % Compensate for the pulse/system (transducer) delay.
 
-Im_rca_gpu = das_uni(Yfmc, gt, gr, ro_rca, dt, delay, cp, 'rca'); % NB. There is no CPU version
+Im_rca_gpu = das_uni(Yfmc, gt, gr, ro_rca, dt, delay, cp, 'rca_coltx'); % NB. There is no CPU version
 
 if (exist('DO_PLOTTING'))
   figure(5);
@@ -163,7 +163,7 @@ gr_f = single(gr);
 ro_rca_f = single(ro_rca);
 
 
-Im_rca_f_gpu = das_uni(Yfmc_f, gt_f, gr_f, ro_rca_f, single(dt), single(delay), single(cp), 'rca');
+Im_rca_f_gpu = das_uni(Yfmc_f, gt_f, gr_f, ro_rca_f, single(dt), single(delay), single(cp), 'rca_coltx');
 
 if (exist('DO_PLOTTING'))
   figure(6);

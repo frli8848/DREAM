@@ -543,6 +543,7 @@ if (OCTAVE_FOUND)
 
     set (oct_das_uni_SOURCE_FILES
       extra_src/oct_das_uni.cc
+      opencl/cl_das_uni.cc
     )
 
     file (COPY opencl/das_uni_float.cl DESTINATION kernels)

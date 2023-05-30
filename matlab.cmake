@@ -479,6 +479,7 @@ if (Matlab_FOUND)
 
     set (mex_das_uni_SOURCE_FILES
       extra_src/mex_das_uni.cc
+      opencl/cl_das_uni.cc
       src/dream_error.cc
     )
 

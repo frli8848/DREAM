@@ -113,7 +113,7 @@ When SAFT is selected data Y must be an K x Lt (SAFT is also selected if Gr=[]).
 @item 'tfm'\n\
 When TFM is selected a linear array is assumed and data Y must be a \n\
 K x Lt*Lr matrix.\n\
-@item 'rca'\n\
+@item 'rca_coltx' or 'rca_rowtx'\n\
 When RCA is selected a 2D RCA array is assumed and data Y must be a \n\
 K x Lt*Lr matrix.\n\
 @end table\n\

@@ -166,28 +166,29 @@ __kernel void das_uni_tfm(__global const DAS_DATATYPE *Y, // Size: a_scan_len x 
   Im[no] = im;
 }
 
-__kernel void das_uni_rca(__global const DAS_DATATYPE *Y, // Size: a_scan_len x num_t_elements*num_r_elements (=FMC)
-                          const int a_scan_len,
-                          DAS_DATATYPE min_t, DAS_DATATYPE pitch_t, DAS_DATATYPE max_t,
-                          DAS_DATATYPE min_r, DAS_DATATYPE pitch_r, DAS_DATATYPE max_r,
-                          DAS_DATATYPE min_Rx, DAS_DATATYPE dx, DAS_DATATYPE max_Rx,
-                          DAS_DATATYPE min_Ry, DAS_DATATYPE dy, DAS_DATATYPE max_Ry,
-                          DAS_DATATYPE min_Rz, DAS_DATATYPE dz, DAS_DATATYPE max_Rz,
-                          const DAS_DATATYPE dt,
-                          const DAS_DATATYPE delay,
-                          const DAS_DATATYPE cp,
-                          __global DAS_DATATYPE *Im)
+// Transmit with columns - receive with rows
+__kernel void das_uni_rca_coltx(__global const DAS_DATATYPE *Y, // Size: a_scan_len x num_cols*num_rows (=FMC)
+                                const int a_scan_len,
+                                DAS_DATATYPE min_c, DAS_DATATYPE pitch_c, DAS_DATATYPE max_c, // Columns
+                                DAS_DATATYPE min_r, DAS_DATATYPE pitch_r, DAS_DATATYPE max_r, // Rows
+                                DAS_DATATYPE min_Rx, DAS_DATATYPE dx, DAS_DATATYPE max_Rx,
+                                DAS_DATATYPE min_Ry, DAS_DATATYPE dy, DAS_DATATYPE max_Ry,
+                                DAS_DATATYPE min_Rz, DAS_DATATYPE dz, DAS_DATATYPE max_Rz,
+                                const DAS_DATATYPE dt,
+                                const DAS_DATATYPE delay,
+                                const DAS_DATATYPE cp,
+                                __global DAS_DATATYPE *Im)
 {
   int no = get_global_id(0); // Each thread computes one image point.
 
   //
-  // Get coordinates for the obervarion (image) point, ro, at
+  // Get coordinates for the observarion (image) point, ro, at
   // at linear index no.
   //
 
   // Array dims
-  int num_t_elements = (int) ((max_t - min_t)/pitch_t+1.0);
-  int num_r_elements = (int) ((max_r - min_r)/pitch_r+1.0);
+  int num_cols = (int) ((max_c - min_c)/pitch_c+1.0);
+  int num_rows = (int) ((max_r - min_r)/pitch_r+1.0);
 
   // Image dims
   int Nx = (int) ((max_Rx - min_Rx)/dx+1.0);
@@ -212,8 +213,8 @@ __kernel void das_uni_rca(__global const DAS_DATATYPE *Y, // Size: a_scan_len x 
   // Element (stripe) lengths
   const DAS_DATATYPE gt_y_min = min_r;
   const DAS_DATATYPE gt_y_max = max_r;
-  const DAS_DATATYPE gr_x_min = min_t;
-  const DAS_DATATYPE gr_x_max = max_t;
+  const DAS_DATATYPE gr_x_min = min_c;
+  const DAS_DATATYPE gr_x_max = max_c;
 
   // Pre-compute this to avoid divisions in the inner loops.
   const DAS_DATATYPE Fs_khz = (F_SFX(1.0)/dt)*F_SFX(1000.0);
@@ -225,29 +226,30 @@ __kernel void das_uni_rca(__global const DAS_DATATYPE *Y, // Size: a_scan_len x 
 
   __global DAS_DATATYPE *y_p = (__global DAS_DATATYPE *) Y;
 
-  for (int n_t=0; n_t<num_t_elements; n_t++) {
+  for (int n_c=0; n_c<num_cols; n_c++) {
 
-    // Transmit
-    DAS_DATATYPE xt = min_t + ((DAS_DATATYPE) n_t)*pitch_t;
-    DAS_DATATYPE gx_t = xt - xo;
-    DAS_DATATYPE gy_t;
+    // Columns
+    DAS_DATATYPE xc = min_c + ((DAS_DATATYPE) n_c)*pitch_c;
+    DAS_DATATYPE gx_c = xc - xo;
+    DAS_DATATYPE gy_c;
     if ( (yo >= gt_y_min) && yo <= gt_y_max) {
-      gy_t = 0.0;               // We are inside the stripe aperture.
+      gy_c = F_SFX(0.0);        // We are inside the stripe aperture.
     } else {    // Here we use the distance to the edge of the stripe.
       if (yo < gt_y_min) {
-        gy_t = gt_y_min - yo;
+        gy_c = gt_y_min - yo;
       } else { // yo > gt_y_max
-        gy_t = gt_y_max - yo;
+        gy_c = gt_y_max - yo;
       }
     }
 
-    //DAS_DATATYPE gz_t = zo; // Assume zt = 0.0;
-    DAS_DATATYPE t_t = native_sqrt(gx_t*gx_t + gy_t*gy_t + zo*zo) * one_over_cp; // [ms].
-    t_t += delay_ms;            // Compensate for pulse system delay.
+    //DAS_DATATYPE gz_c = zo; // Assume zc = 0.0;
+    DAS_DATATYPE t_c = native_sqrt(gx_c*gx_c + gy_c*gy_c + zo*zo) * one_over_cp; // [ms].
 
-    for (int n_r=0; n_r<num_r_elements; n_r++) {
+    t_c += delay_ms;            // Compensate for pulse system delay.
 
-      // Recieve
+    for (int n_r=0; n_r<num_rows; n_r++) {
+
+      // Rows
       DAS_DATATYPE gx_r = F_SFX(0.0);
       if ( (xo < gr_x_min) || xo > gr_x_max) {
         // We are outside the stripe aperture and
@@ -263,7 +265,121 @@ __kernel void das_uni_rca(__global const DAS_DATATYPE *Y, // Size: a_scan_len x 
       //DAS_DATATYPE gz_r = zo; // Assume zr = 0.0;
       DAS_DATATYPE t_r = native_sqrt(gx_r*gx_r + gy_r*gy_r + zo*zo) * one_over_cp;
 
-      DAS_DATATYPE t_dp = t_t + t_r; // Double-path travel time.
+      DAS_DATATYPE t_dp = t_c + t_r; // Double-path travel time.
+      int k = (int) (t_dp*Fs_khz);
+
+      if ((k < a_scan_len) && (k >= 0)) {
+        im += (DAS_DATATYPE) y_p[k];
+      }
+
+      y_p += a_scan_len; // Jump to the next A-scan
+    }
+  }
+
+  // Just write to global memory once!
+  Im[no] = im;
+}
+
+// Transmit with rows - receive with columns
+__kernel void das_uni_rca_rowtx(__global const DAS_DATATYPE *Y, // Size: a_scan_len x num_cols*num_rows (=FMC)
+                                const int a_scan_len,
+                                DAS_DATATYPE min_c, DAS_DATATYPE pitch_c, DAS_DATATYPE max_c, // Columns
+                                DAS_DATATYPE min_r, DAS_DATATYPE pitch_r, DAS_DATATYPE max_r, // Rows
+                                DAS_DATATYPE min_Rx, DAS_DATATYPE dx, DAS_DATATYPE max_Rx,
+                                DAS_DATATYPE min_Ry, DAS_DATATYPE dy, DAS_DATATYPE max_Ry,
+                                DAS_DATATYPE min_Rz, DAS_DATATYPE dz, DAS_DATATYPE max_Rz,
+                                const DAS_DATATYPE dt,
+                                const DAS_DATATYPE delay,
+                                const DAS_DATATYPE cp,
+                                __global DAS_DATATYPE *Im)
+{
+  int no = get_global_id(0); // Each thread computes one image point.
+
+  //
+  // Get coordinates for the observarion (image) point, ro, at
+  // at linear index no.
+  //
+
+  // Array dims
+  int num_cols = (int) ((max_c - min_c)/pitch_c+1.0);
+  int num_rows = (int) ((max_r - min_r)/pitch_r+1.0);
+
+  // Image dims
+  int Nx = (int) ((max_Rx - min_Rx)/dx+1.0);
+  int Ny = (int) ((max_Ry - min_Ry)/dy+1.0);
+  int Nz = (int) ((max_Rz - min_Rz)/dz+1.0);
+
+  // Convert linear indices to subscripts
+  // (cf. the in2sub function in Octave/MATLAB).
+  int y_quot = no / Ny;
+  int ny = no - y_quot*Ny;
+
+  int z_quot = y_quot / Nz;
+  int nz = y_quot - z_quot*Nz;
+
+  int x_quot = z_quot / Nx;
+  int nx = z_quot - x_quot*Nx;
+
+  DAS_DATATYPE xo = min_Rx + ((DAS_DATATYPE) nx)*dx;
+  DAS_DATATYPE yo = min_Ry + ((DAS_DATATYPE) ny)*dy;
+  DAS_DATATYPE zo = min_Rz + ((DAS_DATATYPE) nz)*dz;
+
+  // Element (stripe) lengths
+  const DAS_DATATYPE gt_y_min = min_r;
+  const DAS_DATATYPE gt_y_max = max_r;
+  const DAS_DATATYPE gr_x_min = min_c;
+  const DAS_DATATYPE gr_x_max = max_c;
+
+  // Pre-compute this to avoid divisions in the inner loops.
+  const DAS_DATATYPE Fs_khz = (F_SFX(1.0)/dt)*F_SFX(1000.0);
+  const DAS_DATATYPE one_over_cp = F_SFX(1.0)/cp;
+  const DAS_DATATYPE delay_ms = delay/F_SFX(1000.0);
+
+  // Work on local data.
+  DAS_DATATYPE im = F_SFX(0.0); // For float
+
+  __global DAS_DATATYPE *y_p = (__global DAS_DATATYPE *) Y;
+
+  for (int n_r=0; n_r<num_rows; n_r++) {
+
+    // Rows
+    DAS_DATATYPE gx_r = F_SFX(0.0);
+    if ( (xo < gr_x_min) || xo > gr_x_max) {
+      // We are outside the stripe aperture and
+      // we use the distance to the edge of the stripe.
+      if (xo < gr_x_min) {
+          gx_r = gr_x_min - xo;
+      } else { // yo > gt_y_max
+        gx_r = gr_x_max - xo;
+      }
+    }
+    DAS_DATATYPE yr = min_r + ((DAS_DATATYPE) n_r)*pitch_r;
+    DAS_DATATYPE gy_r = yr - yo;
+    //DAS_DATATYPE gz_r = zo; // Assume zr = 0.0;
+    DAS_DATATYPE t_r = native_sqrt(gx_r*gx_r + gy_r*gy_r + zo*zo) * one_over_cp;
+
+    t_r += delay_ms;            // Compensate for pulse system delay.
+
+    for (int n_c=0; n_c<num_cols; n_c++) {
+
+      // Columns
+      DAS_DATATYPE xc = min_c + ((DAS_DATATYPE) n_c)*pitch_c;
+      DAS_DATATYPE gx_c = xc - xo;
+      DAS_DATATYPE gy_c;
+      if ( (yo >= gt_y_min) && yo <= gt_y_max) {
+        gy_c = F_SFX(0.0);      // We are inside the stripe aperture.
+      } else {    // Here we use the distance to the edge of the stripe.
+        if (yo < gt_y_min) {
+          gy_c = gt_y_min - yo;
+        } else { // yo > gt_y_max
+          gy_c = gt_y_max - yo;
+        }
+      }
+
+      //DAS_DATATYPE gz_c = zo; // Assume zc = 0.0;
+      DAS_DATATYPE t_c = native_sqrt(gx_c*gx_c + gy_c*gy_c + zo*zo) * one_over_cp; // [ms].
+
+      DAS_DATATYPE t_dp = t_c + t_r; // Double-path travel time.
       int k = (int) (t_dp*Fs_khz);
 
       if ((k < a_scan_len) && (k >= 0)) {

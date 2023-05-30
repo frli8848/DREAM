@@ -103,8 +103,12 @@ public:
       kernel_name="das_tfm";
     }
 
-    if (m_das_type == DASType::rca) {
-      kernel_name="das_rca";
+    if (m_das_type == DASType::rca_coltx) {
+      kernel_name="das_rca_coltx";
+    }
+
+    if (m_das_type == DASType::rca_rowtx) {
+      kernel_name="das_rca_rowtx";
     }
 
     //
@@ -401,13 +405,21 @@ private:
                             T dt, T delay,
                             T cp, T &im, ErrorLevel err_level);
 
-  ErrorLevel das_rca_serial(const T *Y, // Size: a_scan_len x num_t_elements*num_r_elements (=FMC)
-                            dream_idx_type a_scan_len,
-                            const T *Gt, dream_idx_type num_t_elements,
-                            const T *Gr, dream_idx_type num_r_elements,
-                            T xo, T yo, T zo,
-                            T dt, T delay,
-                            T cp, T &im, ErrorLevel err_level);
+  ErrorLevel das_rca_serial_coltx(const T *Y, // Size: a_scan_len x num_cols*num_rows (=FMC)
+                                  dream_idx_type a_scan_len,
+                                  const T *G_col, dream_idx_type num_cols,
+                                  const T *G_row, dream_idx_type num_rows,
+                                  T xo, T yo, T zo,
+                                  T dt, T delay,
+                                  T cp, T &im, ErrorLevel err_level);
+
+  ErrorLevel das_rca_serial_rowtx(const T *Y, // Size: a_scan_len x num_cols*num_rows (=FMC)
+                                  dream_idx_type a_scan_len,
+                                  const T *G_col, dream_idx_type num_cols,
+                                  const T *G_row, dream_idx_type num_rows,
+                                  T xo, T yo, T zo,
+                                  T dt, T delay,
+                                  T cp, T &im, ErrorLevel err_level);
 
   DASType m_das_type;
   dream_idx_type m_a_scan_len;

@@ -486,11 +486,11 @@ public:
         apod_met = ApodMet::hann;
         is_set = true;
       }
-      
+
       if (apod_str == "hamming") {
-	do_apod = true;
-	apod_met = ApodMet::hamming;
-	is_set = true;
+        do_apod = true;
+        apod_met = ApodMet::hamming;
+        is_set = true;
       }
 
       if (apod_str == "simply") {
@@ -570,8 +570,13 @@ public:
         is_set = true;
       }
 
-      if (das_str == "rca") {
-        das_type = DASType::rca;
+      if ( (das_str == "rca") || (das_str == "rca_coltx") ) { // Default to column transmit.
+        das_type = DASType::rca_coltx;
+        is_set = true;
+      }
+
+      if (das_str == "rca_rowtx") {
+        das_type = DASType::rca_rowtx;
         is_set = true;
       }
 

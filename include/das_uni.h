@@ -87,8 +87,12 @@ class DAS_UNI
       kernel_name="das_uni_tfm";
     }
 
-    if (m_das_type == DASType::rca) {
-      kernel_name="das_uni_rca";
+    if (m_das_type == DASType::rca_coltx) {
+      kernel_name="das_uni_rca_coltx";
+    }
+
+    if (m_das_type == DASType::rca_rowtx) {
+      kernel_name="das_uni_rca_rowtx";
     }
 
     //

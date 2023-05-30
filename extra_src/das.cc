@@ -134,14 +134,24 @@ void* DAS<T>::smp_das(void *arg)
                            cp, Im[no], tmp_lev);
     }
 
-    if (das_type == DASType::rca) {
-      err = das_rca_serial(Y, a_scan_len,
-                           Gt, num_t_elements,
-                           Gr, num_r_elements,
-                           xo, yo, zo,
-                           dt, dlay,
-                           cp, Im[no], tmp_lev);
+    if (das_type == DASType::rca_coltx) {
+      err = das_rca_serial_coltx(Y, a_scan_len,
+                                 Gt, num_t_elements, // Gt = G_col
+                                 Gr, num_r_elements, // Gr = G_row
+                                 xo, yo, zo,
+                                 dt, dlay,
+                                 cp, Im[no], tmp_lev);
     }
+
+    if (das_type == DASType::rca_rowtx) {
+      err = das_rca_serial_rowtx(Y, a_scan_len,
+                                 Gt, num_t_elements, // Gt = G_col
+                                 Gr, num_r_elements, // Gr = G_row
+                                 xo, yo, zo,
+                                 dt, dlay,
+                                 cp, Im[no], tmp_lev);
+    }
+
 
     if (err != ErrorLevel::none || m_out_err ==  ErrorLevel::parallel_stop) {
       tmp_err = err;
@@ -283,8 +293,6 @@ ErrorLevel DAS<T>::das_saft_serial(const T *Y, // Size: a_scan_len x num_element
   const T one_over_cp = 1.0/cp;
   const T delay_ms = delay/1000.0;
 
-  std::cout << dt << " " << delay << " "  << cp << " "
-            << Fs_khz << " " <<  one_over_cp << " " << delay_ms << std::endl;
   //
   //  Transmit with one element - receive with one element.
   //
@@ -386,18 +394,19 @@ ErrorLevel DAS<T>::das_tfm_serial(const T *Y, // Size: a_scan_len x num_t_elemen
 
 /***
  *
- *  das-rca - Delay-and-sum for the row-column addressed 2D array variant of TFM
+ *  das-rca - Delay-and-sum for the row-column addressed 2D array variant of TFM.
  *
  ***/
 
+// Transmit with columns - receive with rows.
 template <class T>
-ErrorLevel DAS<T>::das_rca_serial(const T *Y, // Size: a_scan_len x num_t_elements*num_r_elements (=FMC)
-                                  dream_idx_type a_scan_len,
-                                  const T *Gt, dream_idx_type num_t_elements,
-                                  const T *Gr, dream_idx_type num_r_elements,
-                                  T xo, T yo, T zo,
-                                  T dt, T delay,
-                                  T cp, T &im, ErrorLevel err_level)
+ErrorLevel DAS<T>::das_rca_serial_coltx(const T *Y, // Size: a_scan_len x num_cols*num_rows (=FMC)
+                                        dream_idx_type a_scan_len,
+                                        const T *G_col, dream_idx_type num_cols,
+                                        const T *G_row, dream_idx_type num_rows,
+                                        T xo, T yo, T zo,
+                                        T dt, T delay,
+                                        T cp, T &im, ErrorLevel err_level)
 {
   ErrorLevel err = ErrorLevel::none;
   const T Fs_khz = (1.0/dt)*1000.0;
@@ -409,43 +418,40 @@ ErrorLevel DAS<T>::das_rca_serial(const T *Y, // Size: a_scan_len x num_t_elemen
   //
   // We assume:
   //
-  // * the transmit elements are distributed along the x-dimension and
-  //   the receive elements are distributed along the y-dimension,
-  // * Gt[0] < Gt[num_t_elements-1] (x-dim edge positions) and
-  //   Gr[0 + 1*num_t_elements] < Gt[num_t_elements-1 + 1*num_t_elements]
+  // * the transmit elements are distributed along the x-dimension (transmit with columns)
+  //   and the receive elements are distributed along the y-dimension (rows),
+  // * G_col[0] < G_col[num_cols-1] (x-dim edge positions) and
+  //   G_row[0 + 1*num_cols] < G_col[num_cols-1 + 1*num_cols]
   //   (y-dim edge positions).
 
   // Element (stripe) lengths
-  const T gt_y_min = Gr[0 + 1*num_t_elements];
-  const T gt_y_max = Gr[num_t_elements-1 + 1*num_t_elements];
-  const T gr_x_min = Gt[0];
-  const T gr_x_max = Gt[num_r_elements-1];
-
-  //
-  //  Transmit with all - receive with all elements.
-  //
+  const T gc_y_min = G_row[0 + 1*num_cols];
+  const T gc_y_max = G_row[num_cols-1 + 1*num_cols];
+  const T gr_x_min = G_col[0];
+  const T gr_x_max = G_col[num_rows-1];
 
   im = 0.0;
   const T *y_p = Y;
-  for (dream_idx_type n_t=0; n_t<num_t_elements; n_t++) {
+
+  for (dream_idx_type n_c=0; n_c<num_cols; n_c++) {
 
     // Transmit
-    T gx_t = Gt[n_t] - xo;
-    T gy_t;
-    if ( (yo >= gt_y_min) && yo <= gt_y_max) {
-      gy_t = 0.0;               // We are inside the stripe aperture.
+    T gx_c = G_col[n_c] - xo;
+    T gy_c;
+    if ( (yo >= gc_y_min) && yo <= gc_y_max) {
+      gy_c = 0.0;               // We are inside the stripe aperture.
     } else {    // Here we use the distance to the edge of the stripe.
-      if (yo < gt_y_min) {
-        gy_t = gt_y_min - yo;
-      } else { // yo > gt_y_max
-        gy_t = gt_y_max - yo;
+      if (yo < gc_y_min) {
+        gy_c = gc_y_min - yo;
+      } else { // yo > gc_y_max
+        gy_c = gc_y_max - yo;
       }
     }
-    T gz_t = Gt[n_t + 2*num_t_elements] - zo;
-    T t_t =  std::sqrt(gx_t*gx_t + gy_t*gy_t + gz_t*gz_t) * one_over_cp;
-    t_t += delay_ms;            // Compensate for system pulse delay.
+    T gz_c = G_col[n_c + 2*num_cols] - zo;
+    T t_c =  std::sqrt(gx_c*gx_c + gy_c*gy_c + gz_c*gz_c) * one_over_cp;
+    t_c += delay_ms;            // Compensate for system pulse delay.
 
-    for (dream_idx_type n_r=0; n_r<num_r_elements; n_r++) {
+    for (dream_idx_type n_r=0; n_r<num_rows; n_r++) {
 
       // Recieve
       T gx_r;
@@ -454,15 +460,15 @@ ErrorLevel DAS<T>::das_rca_serial(const T *Y, // Size: a_scan_len x num_t_elemen
       } else {    // Here we use the distance to the edge of the stripe.
         if (xo < gr_x_min) {
           gx_r = gr_x_min - xo;
-        } else { // yo > gt_y_max
+        } else { // yo > gc_y_max
           gx_r = gr_x_max - xo;
         }
       }
-      T gy_r = Gr[n_r + 1*num_r_elements] - yo;
-      T gz_r = Gr[n_r + 2*num_r_elements] - zo;
+      T gy_r = G_row[n_r + 1*num_rows] - yo;
+      T gz_r = G_row[n_r + 2*num_rows] - zo;
       T t_r =  std::sqrt(gx_r*gx_r + gy_r*gy_r + gz_r*gz_r) * one_over_cp;
 
-      T t_dp = t_t + t_r; // Double-path travel time.
+      T t_dp = t_c + t_r; // Double-path travel time.
       auto k = int(t_dp*Fs_khz);
 
       if ((k < a_scan_len) && (k >= 0)) {
@@ -480,6 +486,98 @@ ErrorLevel DAS<T>::das_rca_serial(const T *Y, // Size: a_scan_len x num_t_elemen
 
   return err;
 };
+
+
+// Transmit with rows - receive with cols.
+template <class T>
+ErrorLevel DAS<T>::das_rca_serial_rowtx(const T *Y, // Size: a_scan_len x num_cols*num_rows (=FMC)
+                                        dream_idx_type a_scan_len,
+                                        const T *G_col, dream_idx_type num_cols,
+                                        const T *G_row, dream_idx_type num_rows,
+                                        T xo, T yo, T zo,
+                                        T dt, T delay,
+                                        T cp, T &im, ErrorLevel err_level)
+{
+  ErrorLevel err = ErrorLevel::none;
+  const T Fs_khz = (1.0/dt)*1000.0;
+  const T one_over_cp = 1.0/cp;
+  const T delay_ms = delay/1000.0;
+
+  // Here we have crossed striped electrodes and the length of the transmit element stripe
+  // is determined by the two edge positions of the receive elements and vice versa.
+  //
+  // We assume:
+  //
+  // * the transmit elements are distributed along the y-dimension (transmit with rows)
+  //   and the receive elements are distributed along the x-dimension (cols),
+  // * G_col[0] < G_col[num_cols-1] (x-dim edge positions) and
+  //   G_row[0 + 1*num_cols] < G_col[num_cols-1 + 1*num_cols]
+  //   (y-dim edge positions).
+
+  // Element (stripe) lengths
+  const T gc_y_min = G_row[0 + 1*num_cols];
+  const T gc_y_max = G_row[num_cols-1 + 1*num_cols];
+  const T gr_x_min = G_col[0];
+  const T gr_x_max = G_col[num_rows-1];
+
+  im = 0.0;
+  const T *y_p = Y;
+
+  for (dream_idx_type n_r=0; n_r<num_rows; n_r++) {
+
+    // Rows
+    T gx_r;
+    if ( (xo >= gr_x_min) && xo <= gr_x_max) {
+      gx_r = 0.0;               // We are inside the stripe aperture.
+    } else {    // Here we use the distance to the edge of the stripe.
+      if (xo < gr_x_min) {
+        gx_r = gr_x_min - xo;
+      } else { // yo > gc_y_max
+        gx_r = gr_x_max - xo;
+      }
+    }
+    T gy_r = G_row[n_r + 1*num_rows] - yo;
+    T gz_r = G_row[n_r + 2*num_rows] - zo;
+    T t_r =  std::sqrt(gx_r*gx_r + gy_r*gy_r + gz_r*gz_r) * one_over_cp;
+
+    for (dream_idx_type n_c=0; n_c<num_cols; n_c++) {
+
+      // Cols
+      T gx_c = G_col[n_c] - xo;
+      T gy_c;
+      if ( (yo >= gc_y_min) && yo <= gc_y_max) {
+        gy_c = 0.0;               // We are inside the stripe aperture.
+      } else {    // Here we use the distance to the edge of the stripe.
+        if (yo < gc_y_min) {
+          gy_c = gc_y_min - yo;
+        } else { // yo > gc_y_max
+          gy_c = gc_y_max - yo;
+        }
+      }
+
+      T gz_c = G_col[n_c + 2*num_cols] - zo;
+      T t_c =  std::sqrt(gx_c*gx_c + gy_c*gy_c + gz_c*gz_c) * one_over_cp;
+      t_c += delay_ms;            // Compensate for system pulse delay.
+
+      T t_dp = t_c + t_r; // Double-path travel time.
+      auto k = int(t_dp*Fs_khz);
+
+      if ((k < a_scan_len) && (k >= 0)) {
+        im += y_p[k];
+      } else {
+        if (k >= 0) {
+          err = dream_out_of_bounds_err("DAS out of bounds +",k-a_scan_len+1,err_level);
+        } else {
+          err = dream_out_of_bounds_err("DAS out of bounds -",k,err_level);
+        }
+      }
+      y_p += a_scan_len; // Jump to the next A-scan
+    }
+  }
+
+  return err;
+};
+
 
 // https://bytefreaks.net/programming-2/c/c-undefined-reference-to-templated-class-function
 

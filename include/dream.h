@@ -92,7 +92,8 @@ enum class ConvMode {
 enum class DASType {
   saft,
   tfm,
-  rca
+  rca_coltx,
+  rca_rowtx
 };
 
 #ifdef DREAM_OCTAVE

@@ -25,6 +25,7 @@ if (OCTAVE_FOUND)
 
   set (DREAM_OCT_INCLUDE_DIRS
     "${PROJECT_BINARY_DIR};"
+    "${PROJECT_BINARY_DIR}/opencl;"
     "${PROJECT_SOURCE_DIR}/include;"
     "${FFTW_INCLUDE_DIR};"
     "${OCTAVE_INCLUDE_DIRS}"

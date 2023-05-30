@@ -32,6 +32,7 @@ if (Matlab_FOUND)
 
   set (DREAM_MEX_INCLUDE_DIRS
     #${PROJECT_BINARY_DIR};"
+    "${PROJECT_BINARY_DIR}/opencl;"
     "${PROJECT_SOURCE_DIR}/include;"
     "${FFTW_INCLUDE_DIR};"
     "${Matlab_INCLUDE_DIRS}"

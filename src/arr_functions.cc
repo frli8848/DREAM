@@ -235,6 +235,17 @@ void apodization(ApodMet apod_met, dream_idx_type n, double *apod_vec, double *w
     *weight = apod_par + std::cos(r*M_PI/r_max);
     break;
 
+  case ApodMet::hann:
+    *weight = 0.5 * (1.0 - std::cos((r+r_max)*M_PI/r_max));
+    break;
+
+  case ApodMet::hamming:
+    {
+      double a0 = 25.0/46.0;
+      *weight = a0 - (1.0 - a0) * std::cos((r+r_max)*M_PI/r_max);
+    }
+    break;
+
   case ApodMet::simply_supported:
     *weight = 1.0 - r*r / (r_max*r_max);
     break;

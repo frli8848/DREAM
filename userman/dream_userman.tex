@@ -27,8 +27,9 @@
   An ultrasound simulation software for use with
   \href{http://www.mathworks.com}{\textsc{Matlab}},
   \href{http://www.octave.org}{\textsc{GNU Octave}},
+  \href{https://www.python.org/}{\textsc{Python}},
   and
-  \textsc{Python}}
+  \href{https://julialang.org}{\textsc{Julia}}}
 
 \author{Fredrik Lingvall\footnote{\texttt{https://github.com/frli8848/DREAM}}}
 
@@ -1341,7 +1342,6 @@ and the focusing is described in Section~\ref{sec:focus}.
     R - Radius of the curvature.
 \end{verbatim}
 
-
 \subsubsection{Cylindrical Convex Transducer}
 \label{sec:cyl_d}
 
@@ -1431,24 +1431,15 @@ The DREAM toolbox has five pre-defined apodization windows that can be used
 for the array functions:
 %
 %\begin{equation}
-\ifthenelse{\boolean{TEX4HT}}
-{
-  \begin{eqnarray}
-    w_{{triangle}}(r) & = & 1 - \frac{|r|}{r_{{max}}} \\
-    w_{{gauss}}(r;p) & = &\exp(-p r^2) / r_{{max}}^2 \\
-    w _{{raised}}(r;p) & = & p + \cos(r \pi/r_{{max}}) \\
-    w_{{simply}}(r) & = & 1 - r^2 / r_{{max}}^2 \\
-    w_{{clamped}}(r) & = & (1 - r^2 / r_{{max}}^2)^2.
-  \end{eqnarray}
-}{
-  \begin{eqnarray}
-    w_{\text{triangle}}(r) & = & 1 - \frac{|r|}{r_{\text{max}}} \\
-    w_{\text{gauss}}(r;p) & = &\exp(-p r^2) / r_{\text{max}}^2 \\
-    w _{\text{raised}}(r;p) & = & p + \cos(r \pi/r_{\text{max}}) \\
-    w_{\text{simply}}(r) & = & 1 - r^2 / r_{\text{max}}^2 \\
-    w_{\text{clamped}}(r) & = & (1 - r^2 / r_{\text{max}}^2)^2.
-  \end{eqnarray}
-}
+\begin{eqnarray}
+  w_{\text{triangle}}(r) & = & 1 - \frac{|r|}{r_{\text{max}}} \\
+  w_{\text{gauss}}(r;p) & = &\exp(-p r^2) / r_{\text{max}}^2 \\
+  w _{\text{raised}}(r;p) & = & p + \cos(r \pi/r_{\text{max}}) \\
+  w _{\text{hann}}(r) & = & 0.5 - 0.5 \cos(r \pi/r_{\text{max}}) \\
+  w _{\text{hann}}(r) & = & 25/46 - (1 - 25/46) \cos(r \pi/r_{\text{max}}) \\
+  w_{\text{simply}}(r) & = & 1 - r^2 / r_{\text{max}}^2 \\
+  w_{\text{clamped}}(r) & = & (1 - r^2 / r_{\text{max}}^2)^2.
+\end{eqnarray}
 %\end{equation}
 %
 Additionally to the pre-defined apodizations one can have a user defined apodization weights.
@@ -1478,6 +1469,8 @@ options are:
 \item[\texttt{'triangle'}] - Triangular window
 \item[\texttt{'gauss'}]    - Gaussian (bell-shaped) window
 \item[\texttt{'raised'}]   - Raised cosine window
+\item[\texttt{'hann'}]   - Hann window
+\item[\texttt{'hamming'}]   - Hamming window
 \item[\texttt{'simply'}]   - Simply supported
 \item[\texttt{'clamped'}]  - Clamped.
 \end{description}
@@ -1907,7 +1900,6 @@ In-place, threaded copy of data into a matrix:
  col_idx = [c1 c2] - Two element vector defining columns in B where
                      the data is copied.
  B                 - Input matrix of size (r2-r1)x(c2-c1);
- n_cpus            - Number of threads to use, n_cpus must be greater or equal to 1.
 \end{verbatim}
 
 \subsection{The Speed of Sound in Water}
@@ -1947,19 +1939,19 @@ and \texttt{fftconv\_p} that can be used to speed up this operation.
 A typical example is:
 %
 \begin{verbatim}
-H = fftconv_p(H_t,H_r); % Double-path.
+H = fftconv_p(H_t, H_r); % Double-path.
 
-P = fftconv_p(H,h_e); % Electrical impulse response.
+P = fftconv_p(H, h_e); % Electrical impulse response.
 \end{verbatim}
 %
 where we first compute the double-path SIRs and then add (convolve) the double-path
 electrical impulse response to get the (double-path) propagation response matrix \texttt{P}.
 
-\subsection{Delay-and-sum Imaging  --- SAFT, TFM and RCA}
+\subsection{Delay-and-sum Synthetic Aperture Imaging --- SAFT, TFM and RCA}
 \label{sec:das}
 
-The DREAM Toolbox contains two delay-and-sum based reconstruction methods:
-the \emph{synthetic aperture focusing} (SAFT) method and the \emph{total focusing method}
+The DREAM Toolbox contains two delay-and-sum based synthetic apertue imaging (SAI) reconstruction
+methods: the \emph{synthetic aperture focusing technique} (SAFT) and the \emph{total focusing method}
 (TFM). The latter one has two modes: linear array TFM and one mode for so-called row-column
 addressed (RCA) arrays.
 %
@@ -2021,9 +2013,14 @@ form~\cite{Frazier1998}
   \end{equation}
 }
 %%
-where $\text{Im}(x_{\tilde{n}},z_m)$ is the beamformed image.
+where $\text{Im}(x_{\tilde{n}},z_m)$ is the beamformed (or reconstructed) image.
 
 The DREAM Toolbox has a function \texttt{das} which can operate in both SAFT and TFM/RCA mode.
+%
+\begin{verbatim}
+   Im = das(Y, Gt, Gr, Ro, dt, delay, cp, method, err_level, device);
+\end{verbatim}
+%
 The SAFT mode (transmit with one element - receive with one element) is activated by supplying
 an empty matrix for the receive element positions (the third arg to \texttt{das} is \texttt{[]}) and
 setting DAS mode string to \texttt{'saft'}:
@@ -2032,16 +2029,18 @@ setting DAS mode string to \texttt{'saft'}:
    Im = das(Y, G, [], Ro, dt, delay, cp, 'saft');
 \end{verbatim}
 %
-\noindent Input parameters in SAFT mode:
-\begin{verbatim}
- Y     - K x L Ultrasonic B-scan data matrix.
-         where K is the A-scan length and L is the number of transducer positions.
- G     - An L x 3 transducer position grid matrix [x1 y1 z2; x2 y2 z2; ... xL yL zL];
- Ro    - A matrix of the form  [xo1 yo1 zo2; xo2 yo2 zo2; ... xoN yoN zoN];
-         where N is the number of obervation (reconstruction) points.
- delay - A scalar (or vector) of starting point(s) of the A-scans in Y.
- cp    - Sound speed [m/s].
-\end{verbatim}
+\noindent Input parameters in SAFT mode:\\
+\begin{tabular}{ l  l }
+  %\hline
+  \texttt{Y}  &  A $K\times L$ Ultrasonic B-scan data matrix where $K$ is the A-scan length \\
+              & and $L$ is the number of transducer positions.\\
+  \texttt{G}     & An $L\times 3$ transducer position grid matrix $[x_1 y_1 z_2; x_2 y_2 z_2; \cdots x_L y_L z_L]$; \\
+  \texttt{Ro}    & A matrix of the form  $[xo_1 yo_1 zo_2; xo_2 yo_2 zo_2; \cdots xo_N yo_N zo_N]$; \\
+              & where $N$ is the number of obervation (reconstruction) points.\\
+  \texttt{delay} & A scalar (or vector) of starting point(s) of the A-scans in \texttt{Y}. \\
+  \texttt{cp}    & Sound speed [m/s]. \\
+  %\hline
+\end{tabular}
 
 The difference between SAFT and TFM (or RCA) is that in SAFT one transmit with one element and receives
 with one element (the same element) whereas one in TFM/RCA transmits with all elements and receives with all
@@ -2067,24 +2066,33 @@ or
    Im = das(Y, Gt, Gr, Ro, dt, delay, cp, 'rca');
 \end{verbatim}
 %
-\noindent Input parameters in TFM/RCA mode:
-\begin{verbatim}
- Y     - K x L^2 Ultrasonic FMC B-scan data matrix.
-         where K is the A-scan length and L is the number of transducer positions.
- Gt     - An L_t x 3 transmit element position grid matrix
-          Gt = [xt1 yt1 zt2; xt2 yt2 zt2; ... xtL_t ytL_t ztL_t];
-          where L_t is the number of transmit element positions.
- Gr     - An L_r x 3 receive element position grid matrix
-          Gr = [xr1 yr1 zr2; xr2 yr2 zr2; ... xrL_r yrL_r zrL_r];
-          where L_r is the number of receive element positions.
- Ro    - A matrix of the form  [xo1 yo1 zo2; xo2 yo2 zo2; ... xoN yoN zoN];
-         where N is the number of obervation (reconstruction) points.
- delay - A scalar (or vector) of starting point(s) of the A-scans in Y.
- cp    - Sound speed [m/s].
-\end{verbatim}
+\noindent Input parameters in TFM/RCA mode:\\
+\begin{tabular}{ l  l }
+  \texttt{Y}     & $K\times L_t L_r$ Ultrasonic FMC B-scan data matrix. \\
+                 & where $K$ is the A-scan length and $L_t $ and $L_r$ are the number of transmit \\
+                 & (or column) and recieve (or row) transducer positions. \\
+  \texttt{Gt}    & An $L_t$ x 3 transmit (or column) element position grid matrix \\
+                 & Gt = $[xt1 yt1 zt2; xt2 yt2 zt2; ... xtL_t ytL_t ztL_t]$; \\
+                 & where $L_t$ is the number of transmit element positions. \\
+  \texttt{Gr}    & An $L_r \times 3$ receive (or row) element position grid matrix \\
+                 & Gr = $[xr_1 yr_1 zr_2; xr_2 yr_2 zr_2; ... xr_{L_r} yr_{L_r} zr_{L_r}]$; \\
+                 & where $L_r$ is the number of receive element positions. \\
+  \texttt{Ro}    & A matrix of the form  [$xo_1 yo_1 zo_2; xo_2 yo_2 zo_2; \cdots xo_N yo_N zo_N$]; \\
+                 & where $N$ is the number of obervation (reconstruction) points. \\
+  \texttt{delay} & A scalar (or vector) of starting point(s) of the A-scans in \texttt{Y}. \\
+  \texttt{cp}    & Sound speed [m/s]. \\
+\end{tabular}
+
+For RCA arrays \texttt{Gt} is the center positions of the columns and \texttt{Gr} is the center position of the
+rows, respectively.
 
 NB. The \texttt{das} function outputs a vector, \texttt{Im}, which one needs to reshape if one, for example,
 wants to present the results as an image.
+
+If one have build DREAM with OpenCL (GPU) support then there is also a function \texttt{das\_uni} which assume \emph{uniform}
+grids both for the array element positions and the observation (image) points. This reduces the amount of data
+transfered aand stored on the GPU since we do not transfer the \texttt{Ro}, \texttt{Gt}, and \texttt{Gr} matrices
+to the GPU.
 
 %, or read the
 %parameters and process SIR data in the \Matlab\ command window.

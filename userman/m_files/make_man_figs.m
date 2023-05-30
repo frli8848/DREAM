@@ -1,13 +1,7 @@
-%
-% Fredrik Lingvall 2002-11-08
-% Fredrik Lingvall 2003-09-15
-% Fredrik Lingvall 2005-10-18
-% Fredrik Lingvall 2007-02-12
 
-
-%
-% Front page.
-%
+%%
+%% Front page.
+%%
 
 PRINT=0;
 
@@ -67,8 +61,8 @@ if 1
     % Geometrical parameters.
     a = 20;				% x-width of the transducer.
     b = 20;				% y-width of the transducer.
-    r = 100;				% Radius of the curvature.
-    geom_par = [a b r];
+    R = 100;				% Radius of the curvature.
+    geom_par = [a b R];
 
     % Sampling parameters.
     s_par = [dx dy dt nt];
@@ -82,18 +76,18 @@ if 1
 
     n = 1;
     H = [];
-    %for d=-50:0.5:50
-    % xo = d;
-    %h = dreamcylind_f([xo yo zo],geom_par,s_par,delay,m_par,'stop');
-    %H(:,n)  = h(:);
-    % n = n+1;
-    %end
+    %%for d=-50:0.5:50
+    %% xo = d;
+    %%h = dreamcylind([xo yo zo],geom_par,s_par,delay,m_par,'stop');
+    %%H(:,n)  = h(:);
+    %% n = n+1;
+    %%end
 
     xo = -50:0.5:50;
     yo = zeros(size(xo));
     zo = z*ones(size(xo));
     Ro = [xo(:) yo(:) zo(:)];
-    H = dreamcylind_f(Ro,geom_par,s_par,delay,m_par,'ignore');
+    H = dreamcylind(Ro,geom_par,s_par,delay,m_par,'ignore');
     %H = dreamrect(Ro,[a b],s_par,delay,m_par,'ignore');
 
     [I,J] = find(H == 0);
@@ -112,20 +106,20 @@ if 1
     X=1:size(H,2);
     Y=1:size(H,1);
 
-    %sp = mesh(H)
-    %sp =surfl(X,Y,H,[0 1 0],[0 1 0 0])
-    %sp =surfl(H)
-    sp =surf(H2)
-    %colormap gray
-    %colormap hot
+    %%sp = mesh(H)
+    %%sp =surfl(X,Y,H,[0 1 0],[0 1 0 0])
+    %%sp =surfl(H)
+    sp = surf(H2);
+    %%colormap gray
+    %%colormap hot
     colormap jet
-    %colormap summer
-    %colormap winter
+    %%colormap summer
+    %%colormap winter
     axis(ax);
     axis off
     view([135 32])
-    %set(sp,'FaceColor','grey');
-    %set(sp,'EdgeColor','none');
+    %%set(sp,'FaceColor','grey');
+    %%set(sp,'EdgeColor','none');
     set(sp,'FaceLighting','phong');
     light('Position',[0 1 0],'Style','infinite');
     shading interp;
@@ -139,21 +133,21 @@ if 1
     figure(2)
     clf
 
-    subplot 221
+    subplot(221)
     plot(H(:,round(size(H,2)/2)));
     %title('Focused cylindrical transducer')
     %xlabel('t [\mus]')
     axis off
 
-    subplot 222
+    subplot(222)
     plot(H(:,round(size(H,2)/3)));
     axis off
 
-    subplot 223
+    subplot(223)
     plot(H(:,round(size(H,2)/5)));
     axis off
 
-    subplot 224
+    subplot(224)
     plot(H(:,round(size(H,2)/10)));
     axis off
 
@@ -187,7 +181,7 @@ if 1
   xlabel('Normalized width','FontSize',18)
 
   if PRINT
-    print -depsc eps/triangle.eps
+    print -depsc ../eps/triangle.eps
   end
 
   figure(5)
@@ -229,10 +223,10 @@ if 1
   xlabel('Normalized width','FontSize',18)
 
   if PRINT
-    print -depsc eps/gauss.eps
+    print -depsc ../eps/gauss.eps
   end
 
-  figure(3)
+  figure(6)
   clf
 
   w = dream_apodwin('raised',N,0);
@@ -258,14 +252,47 @@ if 1
   h=text(0.35,0.5,'p=1');
   set(h,'FontSize',16);
 
-
   axis([-0.5 0.5 -1 2]);
   grid
   xlabel('Normalized width','FontSize',18)
 
-  print -depsc eps/raised.eps
+  if PRINT
+    print -depsc ../eps/raised.eps
+  end
+  
+  figure(7)
+  clf
 
-  figure(6)
+  w = dream_apodwin('hann',N,0);
+  plot(n,w);
+  set(gca,'FontSize',16);
+  set(gca,'XTick',xt);
+  axis([-0.5 0.5 0 1]);
+  grid
+
+  xlabel('Normalized width','FontSize',18)
+
+  if PRINT
+    print -depsc ../eps/hann.eps
+  end
+
+  figure(8)
+  clf
+
+  w = dream_apodwin('hamming',N,0);
+  plot(n,w);
+  set(gca,'FontSize',16);
+  set(gca,'XTick',xt);
+  axis([-0.5 0.5 0 1]);
+  grid
+
+  xlabel('Normalized width','FontSize',18)
+
+  if PRINT
+    print -depsc ../eps/hamming.eps
+  end
+
+  figure(9)
   clf
 
   w = dream_apodwin('simply',N,0);
@@ -278,10 +305,10 @@ if 1
   xlabel('Normalized width','FontSize',18)
 
   if PRINT
-    print -depsc eps/simply.eps
+    print -depsc ../eps/simply.eps
   end
 
-  figure(7)
+  figure(10)
   clf
 
   w = dream_apodwin('clamped',N,0);
@@ -293,7 +320,7 @@ if 1
   xlabel('Normalized width','FontSize',18)
 
   if PRINT
-    print -depsc eps/clamped.eps
+    print -depsc ../eps/clamped.eps
   end
 
 end

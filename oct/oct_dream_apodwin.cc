@@ -69,6 +69,10 @@ Triangle window,\n\
 Gaussian (bell-shaped) window.\n\
 @item 'raised'\n\
 Raised cosine,\n\
+@item 'hann'\n\
+Hann window,\n\
+@item 'hamming'\n\
+Hamming window,\n\
 @item 'simply'\n\
 Simply supported.\n\
 @item 'clamped'\n\
@@ -111,7 +115,7 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
 
   double apod_par;
   if (!ap.parse_apod_args("dream_apodwin", args, 0, num_elements,
-                            do_apod, apod.get(), apod_met, apod_par)) {
+			  do_apod, apod.get(), apod_met, apod_par)) {
     return oct_retval;
   }
 
@@ -119,7 +123,7 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
   Matrix h_mat(num_elements,1);
   h = (double*) h_mat.data();
 
-  double weight=1.0;
+  double weight = 1.0;
   double ramax = 1.0;
   double ys = 0.0;
   if (do_apod) {

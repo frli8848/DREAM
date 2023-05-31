@@ -91,7 +91,7 @@ A string which can be one of 'cpu' or 'gpu'.\n\
 rect_sir is an oct-function that is a part of the DREAM Toolbox available at\n\
 @url{https://github.com/frli8848/DREAM}.\n\
 \n\
-Copyright @copyright{} 2008-2020 Fredrik Lingvall.\n\
+Copyright @copyright{} 2008-2023 Fredrik Lingvall.\n\
 @seealso {dreamrect,circ_sir}\n\
 @end deftypefn")
 {
@@ -122,7 +122,7 @@ Copyright @copyright{} 2008-2020 Fredrik Lingvall.\n\
 
   dream_idx_type no = mxGetM(0); // Number of observation points.
   const Matrix tmp0 = args(0).matrix_value();
-  double *ro = (double*) tmp0.fortran_vec();
+  double *ro = (double*) tmp0.data();
 
   //
   // Transducer geometry
@@ -145,7 +145,7 @@ Copyright @copyright{} 2008-2020 Fredrik Lingvall.\n\
   }
 
   const Matrix tmp2 = args(2).matrix_value();
-  double *s_par = (double*) tmp2.fortran_vec();
+  double *s_par = (double*) tmp2.data();
   double dt = s_par[0]; // Temporal discretization size (= 1/sampling freq).
   dream_idx_type nt = (dream_idx_type) s_par[1];	// Length of SIR.
 
@@ -158,7 +158,7 @@ Copyright @copyright{} 2008-2020 Fredrik Lingvall.\n\
   }
 
   const Matrix tmp3 = args(3).matrix_value();
-  double *delay = (double*) tmp3.fortran_vec();
+  double *delay = (double*) tmp3.data();
 
   DelayType delay_type = DelayType::single;  // delay is a scalar.
   if (mxGetM(3) * mxGetN(3) != 1) {
@@ -177,7 +177,7 @@ Copyright @copyright{} 2008-2020 Fredrik Lingvall.\n\
   }
 
   const Matrix tmp4 = args(4).matrix_value();
-  double *m_par = (double*) tmp4.fortran_vec();
+  double *m_par = (double*) tmp4.data();
   double v  = m_par[0];      // Normal velocity of transducer surface.
   double cp = m_par[1];      // Sound speed.
 
@@ -216,7 +216,7 @@ Copyright @copyright{} 2008-2020 Fredrik Lingvall.\n\
   //
 
   Matrix h_mat(nt, no);
-  double *h = h_mat.fortran_vec();
+  double *h = (double*) h_mat.data();
 
   SIRData hsir(h, nt, no);
   hsir.clear();

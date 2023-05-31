@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2006,2007,2008,2009,2010,2012,2014,2016,2021,2022 Fredrik Lingvall
+* Copyright (C) 2006,2007,2008,2009,2010,2012,2014,2016,2021,2022,2023 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -236,7 +236,7 @@ where the 'mode' is a string which can be '=', '+=', or '-='.\n\
 fftconv_p is a part of the DREAM Toolbox available at\n\
 @url{https://github.com/frli8848/DREAM}.\n\
 \n\
-Copyright @copyright{} 2006-2022 Fredrik Lingvall.\n\
+Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
 @seealso {conv, conv_p, fftconv, fftw_wisdom}\n\
 @end deftypefn")
 {
@@ -288,12 +288,12 @@ Copyright @copyright{} 2006-2022 Fredrik Lingvall.\n\
   const Matrix tmp0 = args(0).matrix_value();
   A_M = tmp0.rows();
   A_N = tmp0.cols();
-  A = (double*) tmp0.fortran_vec();
+  A = (double*) tmp0.data();
 
   const Matrix tmp1 = args(1).matrix_value();
   B_M = tmp1.rows();
   B_N = tmp1.cols();
-  B = (double*) tmp1.fortran_vec();
+  B = (double*) tmp1.data();
 
   // Check dims of arg 2.
   if ( B_M != 1 && B_N !=1 && B_N != A_N) {
@@ -466,11 +466,10 @@ Copyright @copyright{} 2006-2022 Fredrik Lingvall.\n\
   // Normal (non in-place) mode.
   //
 
-
   if (nrhs == 2 || (nrhs == 3 && load_wisdom)) { // Normal mode.
 
     Matrix Ymat(A_M+B_M-1, A_N);
-    Y = Ymat.fortran_vec();
+    Y = (double*) Ymat.data();
 
     SIRData ymat(Y, A_M+B_M-1, A_N);
     ymat.clear();
@@ -495,7 +494,7 @@ Copyright @copyright{} 2006-2022 Fredrik Lingvall.\n\
     }
 
     const Matrix Ymat = args(2).matrix_value();
-    Y = (double*) Ymat.fortran_vec(); // NB. Do  not clear data here!
+    Y = (double*) Ymat.data(); // NB. Do  not clear data here!
   }
 
   //

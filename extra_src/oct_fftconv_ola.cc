@@ -386,12 +386,12 @@ Copyright @copyright{} 2010-2021 Fredrik Lingvall.\n\
   const Matrix tmp0 = args(0).matrix_value();
   dream_idx_type A_M = tmp0.rows();
   dream_idx_type A_N = tmp0.cols();
-  double *A = (double*) tmp0.fortran_vec();
+  double *A = (double*) tmp0.data();
 
   const Matrix tmp1 = args(1).matrix_value();
   dream_idx_type B_M = tmp1.rows();
   dream_idx_type B_N = tmp1.cols();
-  double *B = (double*) tmp1.fortran_vec();
+  double *B = (double*) tmp1.data();
 
   // Check dims of arg 2.
   if ( B_M != 1 && B_N !=1 && B_N != A_N) {
@@ -591,7 +591,7 @@ Copyright @copyright{} 2010-2021 Fredrik Lingvall.\n\
 
     // Allocate mamory for the output matrix.
     Matrix Ymat(A_M+B_M-1, A_N);
-    Y = Ymat.fortran_vec();
+    Y = (double*) Ymat.data();
 
     SIRData ymat(Y, A_M+B_M-1, A_N);
     ymat.clear();

@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2008,2009,2015,2016,2021 Fredrik Lingvall
+* Copyright (C) 2008,2009,2015,2016,2021,2023 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -212,7 +212,7 @@ Sound velocity [m/s].\n\
 circ_sir is an oct-function that is a part of the DREAM Toolbox available at\n\
 @url{https://github.com/frli8848/DREAM}.\n\
 \n\
-Copyright @copyright{} 2008-2021 Fredrik Lingvall.\n\
+Copyright @copyright{} 2008-2023 Fredrik Lingvall.\n\
 @seealso {dreamcirc, scirc_sir}\n\
 @end deftypefn")
 {
@@ -252,7 +252,7 @@ Copyright @copyright{} 2008-2021 Fredrik Lingvall.\n\
 
   no = mxGetM(0); // Number of observation points.
   const Matrix tmp0 = args(0).matrix_value();
-  ro = (double*) tmp0.fortran_vec();
+  ro = (double*) tmp0.data();
 
   //
   // Transducer geometry
@@ -263,7 +263,7 @@ Copyright @copyright{} 2008-2021 Fredrik Lingvall.\n\
   }
 
   const Matrix tmp1 = args(1).matrix_value();
-  geom_par = (double*) tmp1.fortran_vec();
+  geom_par = (double*) tmp1.data();
   r = geom_par[0];		// Radius of the transducer.
 
   //
@@ -275,7 +275,7 @@ Copyright @copyright{} 2008-2021 Fredrik Lingvall.\n\
   }
 
   const Matrix tmp2 = args(2).matrix_value();
-  s_par = (double*) tmp2.fortran_vec();
+  s_par = (double*) tmp2.data();
   dt    = s_par[0]; // Temporal discretization size (= 1/sampling freq).
   nt    = (dream_idx_type) s_par[1];	// Length of SIR.
 
@@ -288,7 +288,7 @@ Copyright @copyright{} 2008-2021 Fredrik Lingvall.\n\
   }
 
   const Matrix tmp3 = args(3).matrix_value();
-  delay = (double*) tmp3.fortran_vec();
+  delay = (double*) tmp3.data();
 
   //
   // Material parameters
@@ -299,7 +299,7 @@ Copyright @copyright{} 2008-2021 Fredrik Lingvall.\n\
   }
 
   const Matrix tmp4 = args(4).matrix_value();
-  m_par = (double*) tmp4.fortran_vec();
+  m_par = (double*) tmp4.data();
   v     = m_par[0]; // Normal velocity of transducer surface.
   cp    = m_par[1]; // Sound speed.
 
@@ -328,7 +328,7 @@ Copyright @copyright{} 2008-2021 Fredrik Lingvall.\n\
   //
 
   Matrix h_mat(nt, no);
-  h = h_mat.fortran_vec();
+  h = (double*) h_mat.data();
 
   SIRData hsir(h, nt, no);
   hsir.clear();

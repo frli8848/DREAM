@@ -1,6 +1,6 @@
 /***
 *
-* copyright (C) 2006,2007,2008,2009,2014,2015,2016,2022 Fredrik Lingvall
+* copyright (C) 2006,2007,2008,2009,2014,2015,2016,2022,2023 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -153,7 +153,7 @@ The (M+K-1)xN output matrix.\n\
 conv_p is an oct-function that is a part of the DREAM Toolbox available at\n\
  @url{https://github.com/frli8848/DREAM}.\n\
 \n\
-Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
+Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
 @seealso {fftconv_p, fftconv, conv}\n\
 @end deftypefn")
 {
@@ -237,12 +237,12 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
   const Matrix tmp0 = args(0).matrix_value();
   A_M = tmp0.rows();
   A_N = tmp0.cols();
-  A = (double*) tmp0.fortran_vec();
+  A = (double*) tmp0.data();
 
   const Matrix tmp1 = args(1).matrix_value();
   B_M = tmp1.rows();
   B_N = tmp1.cols();
-  B = (double*) tmp1.fortran_vec();
+  B = (double*) tmp1.data();
 
   // Check that arg 2.
   if ( B_M != 1 && B_N !=1 && B_N != A_N) {
@@ -298,7 +298,7 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
     //
 
     Matrix Ymat(A_M+B_M-1, A_N);
-    Y = Ymat.fortran_vec();
+    Y = (double*) Ymat.data();
 
     oct_retval.append(Ymat);
 
@@ -320,7 +320,7 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
 
     const Matrix Ytmp = args(2).matrix_value();
 
-    Y = (double*) Ytmp.fortran_vec();
+    Y = (double*) Ytmp.data();
   }
 
   //

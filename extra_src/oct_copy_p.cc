@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2006,2007,2008,2009,2011,2012,2015,2016,2021 Fredrik Lingvall
+* Copyright (C) 2006,2007,2008,2009,2011,2012,2015,2016,2021,2023 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -156,7 +156,7 @@ There are no output arguments for @code{copy_p}.\n\
 \n\
 @code{copy_p} is an oct-function that is a part of the DREAM Toolbox available at @url{https://github.com/frli8848/DREAM}.\n\
 \n\
-Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
+Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
 @end deftypefn")
 {
   double         *A,*B;
@@ -186,22 +186,22 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
   const Matrix tmp = args(0).matrix_value();
   A_M = tmp.rows();
   A_N = tmp.cols();
-  A = (double*) tmp.fortran_vec();
+  A = (double*) tmp.data();
 
   const Matrix tmp2 = args(1).matrix_value();
   r_M = tmp2.rows();
   r_N = tmp2.cols();
-  r = (double*) tmp2.fortran_vec();
+  r = (double*) tmp2.data();
 
   const Matrix tmp3 = args(2).matrix_value();
   k_M = tmp3.rows();
   k_N = tmp3.cols();
-  k = (double*) tmp3.fortran_vec();
+  k = (double*) tmp3.data();
 
   const Matrix tmp4 = args(3).matrix_value();
   B_M = tmp4.rows();
   B_N = tmp4.cols();
-  B = (double*) tmp4.fortran_vec();
+  B = (double*) tmp4.data();
 
   // Check that arg 2.
   if ( r_M * r_N !=2 ) {

@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2006,2007,2008,2009,2014,2015,2016,2021,2022 Fredrik Lingvall
+* Copyright (C) 2006,2007,2008,2009,2014,2015,2016,2021,2022,2023 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -256,7 +256,7 @@ in Y2 unless Y2 is changed before the sum_fftconv call).\n\
 sum_fftconv is a part of the DREAM Toolbox available at\n\
 @url{https://github.com/frli8848/DREAM}.\n\
 \n\
-Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
+Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
 @seealso {conv, conv_p, fftconv, fftconv_p, fftw_wisdom}")
 {
   sighandler_t old_handler, old_handler_abrt, old_handler_keyint;
@@ -320,13 +320,13 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
   // Store pointers to the L A-matrices in a vector.
   double **H = (double**) malloc(H_L*sizeof(double*));
   for (dream_idx_type k=0; k<H_L; k++) {
-    H[k] = (double*) &(tmp0.fortran_vec()[H_M*H_N*k]);
+    H[k] = (double*) &(tmp0.data()[H_M*H_N*k]);
   }
 
   const Matrix tmp1 = args(1).matrix_value();
   U_M = tmp1.rows();
   U_N = tmp1.cols();
-  double *U = (double*) tmp1.fortran_vec();
+  double *U = (double*) tmp1.data();
 
   if (H_L != U_N) {
     dream_err_msg("3rd dimension of arg 1 must match the number of columns in arg 2\n");
@@ -454,7 +454,7 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
   if (nrhs == 2 ||  (nrhs == 3 && load_wisdom)) {
 
     Matrix Ymat(fft_len, H_N);
-    Y = Ymat.fortran_vec();
+    Y = (double*) Ymat.data();
 
     // Clear output in normal mode
     SIRData ymat(Y, fft_len, H_N);
@@ -482,7 +482,7 @@ Copyright @copyright{} 2006-2021 Fredrik Lingvall.\n\
     }
 
     const Matrix Ytmp = args(2).matrix_value(); // This will make it stay in scope.
-    Y = (double*) Ytmp.fortran_vec();
+    Y = (double*) Ytmp.data();
   }
 
   //

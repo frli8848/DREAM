@@ -88,6 +88,10 @@ if (USE_OPENCL)
 
     find_program(XXD xxd REQUIRED)
 
+    # The Windows version of xxd in Conda does not have the -n option
+    # so we use sed to clean up the variable names in the xxd:ed files.
+    find_program(SED sed REQUIRED)
+
     # Put xxd:ed OpenCL kernel sources in the build folder
     file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/opencl")
 
@@ -111,9 +115,16 @@ if (USE_OPENCL)
       #file(APPEND "${CMAKE_CURRENT_BINARY_DIR}/${rel_path_file}.h" ";\n")
 
       # Use external xxd program (part of app-editors/vim-core) # FIXME: Make cross-platform solution (preferable cmake only)
-      set (TMP_VAR_NAME "__${rel_path_file}")
-      string(REPLACE "." "_" C_VAR_NAME ${TMP_VAR_NAME})
-      execute_process(COMMAND ${XXD} -i -n "${C_VAR_NAME}" ${file} "${CMAKE_CURRENT_BINARY_DIR}/opencl/${rel_path_file}.h")
+
+      # NB. This does not work on the Windows version of xxd
+      #set (TMP_VAR_NAME "__${rel_path_file}")
+      #string(REPLACE "." "_" C_VAR_NAME ${TMP_VAR_NAME})
+      #execute_process(COMMAND ${XXD} -i -n "${C_VAR_NAME}" ${file} "${CMAKE_CURRENT_BINARY_DIR}/opencl/${rel_path_file}.h")
+
+      # Works on both Linux and Windows (when using a Git Bash shell which has sed)
+      string(REPLACE "/" "_" WIN_PATH_VAR_NAME ${CMAKE_CURRENT_SOURCE_DIR})
+      execute_process(COMMAND ${XXD} -i ${file} "${CMAKE_CURRENT_BINARY_DIR}/opencl/${rel_path_file}.h")
+      execute_process(COMMAND ${SED} -i "s/${WIN_PATH_VAR_NAME}_opencl/_/g"  "${CMAKE_CURRENT_BINARY_DIR}/opencl/${rel_path_file}.h")
 
     endforeach()
 

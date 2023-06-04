@@ -93,7 +93,7 @@ jobs:
 
   macos-octave:
 
-    runs-on: macos-11
+    runs-on: macos-12
 
     steps:
     - uses: actions/checkout@v3
@@ -110,7 +110,7 @@ jobs:
 
   macos-matlab:
 
-    runs-on: macos-11
+    runs-on: macos-12
 
     steps:
     - uses: actions/checkout@v3
@@ -145,6 +145,7 @@ jobs:
       shell: powershell
       run: |
         conda install -c conda-forge fftw
+        conda install -c conda-forge vim
 
     # Sets up MATLAB on the GitHub Actions runner
     - name: Setup MATLAB

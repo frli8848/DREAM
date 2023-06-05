@@ -23,6 +23,7 @@
 
 #include "das.h"
 
+// xxd:ed kernel sources
 #include "das_float.cl.h"
 #include "das_double.cl.h"
 
@@ -42,13 +43,16 @@ DAS<T>::DAS(DASType das_type,
   , m_num_r_elements(num_r_elements)
 {
 #ifdef USE_OPENCL
-  if (sizeof(T) == sizeof(float) ) {
-    init_opencl(__das_float_cl, __das_float_cl_len);
-  } else {
-    init_opencl(__das_double_cl, __das_double_cl_len);
+  if (cl_kernel_str_len > 0) { // We do not want to run the OpenCL init func when we use the CPU.
+    if (sizeof(T) == sizeof(float) ) {
+      init_opencl(__das_float_cl, __das_float_cl_len);
+    } else {
+      init_opencl(__das_double_cl, __das_double_cl_len);
+    }
   }
 #endif
-  ;}
+  ;
+}
 
 /***
  *

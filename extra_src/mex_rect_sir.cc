@@ -69,7 +69,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
   double *s_par = mxGetPr(prhs[2]);
   double dt = s_par[0];		// Temporal discretization size (= 1/sampling freq).
-  double nt = (size_t) s_par[1];	// Length of SIR.
+  dream_idx_type nt = (dream_idx_type) s_par[1];	// Length of SIR.
 
   //
   // Start point of impulse response vector ([us]).

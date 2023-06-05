@@ -50,10 +50,10 @@ int running;
 
 typedef struct
 {
-  octave_idx_type no;
+  octave_idx_type No;
   octave_idx_type start;
   octave_idx_type stop;
-  double *ro;
+  double *Ro;
   double r;
   double dt;
   octave_idx_type nt;
@@ -81,9 +81,9 @@ void* smp_dream_circ_sir(void *arg)
   double xo, yo, zo;
   double *h = D.h;
   double r=D.r, dt=D.dt;
-  octave_idx_type n, no=D.no, nt=D.nt;
+  octave_idx_type n, No=D.No, nt=D.nt;
   //int    tmp_lev, err_level=D.err_level;
-  double *delay=D.delay, *ro=D.ro, v=D.v, cp=D.cp;// alpha=D.alpha;
+  double *delay=D.delay, *Ro=D.Ro, v=D.v, cp=D.cp;// alpha=D.alpha;
   octave_idx_type start=D.start, stop=D.stop;
 
   // Let the thread finish and then catch the error.
@@ -96,9 +96,9 @@ void* smp_dream_circ_sir(void *arg)
 
   if (D.delay_type == DelayType::single) {
     for (n=start; n<stop; n++) {
-      xo = ro[n];
-      yo = ro[n+1*no];
-      zo = ro[n+2*no];
+      xo = Ro[n];
+      yo = Ro[n+1*No];
+      zo = Ro[n+2*No];
 
       circ_sir(xo,yo,zo,r,dt,nt,delay[0],v,cp,&h[n*nt]); // TODO: Add attenuation.
 
@@ -110,9 +110,9 @@ void* smp_dream_circ_sir(void *arg)
     }
   } else { // DelayType::multiple.
     for (n=start; n<stop; n++) {
-      xo = ro[n];
-      yo = ro[n+1*no];
-      zo = ro[n+2*no];
+      xo = Ro[n];
+      yo = Ro[n+1*No];
+      zo = Ro[n+2*No];
 
       circ_sir(xo,yo,zo,r,dt,nt,delay[n],v,cp,&h[n*nt]); // TODO: Add attenuation.
 
@@ -216,8 +216,8 @@ Copyright @copyright{} 2008-2023 Fredrik Lingvall.\n\
 @seealso {dreamcirc, scirc_sir}\n\
 @end deftypefn")
 {
-  double *ro,*geom_par,*s_par,*m_par;
-  dream_idx_type nt, no;
+  double *Ro,*geom_par,*s_par,*m_par;
+  dream_idx_type nt, No;
   double r, dt;
   double *delay,v,cp;
   double *h;
@@ -250,9 +250,9 @@ Copyright @copyright{} 2008-2023 Fredrik Lingvall.\n\
     return oct_retval;
   }
 
-  no = mxGetM(0); // Number of observation points.
+  No = mxGetM(0); // Number of observation points.
   const Matrix tmp0 = args(0).matrix_value();
-  ro = (double*) tmp0.data();
+  Ro = (double*) tmp0.data();
 
   //
   // Transducer geometry
@@ -283,7 +283,7 @@ Copyright @copyright{} 2008-2023 Fredrik Lingvall.\n\
   // Start point of impulse response vector ([us]).
   //
 
-  if (!ap.check_delay("circ_sir", args, 3, no)) {
+  if (!ap.check_delay("circ_sir", args, 3, No)) {
     return oct_retval;
   }
 
@@ -319,18 +319,18 @@ Copyright @copyright{} 2008-2023 Fredrik Lingvall.\n\
   }
 
   // nthreads can't be larger then the number of observation points.
-  if (nthreads > (unsigned int) no) {
-    nthreads = no;
+  if (nthreads > (unsigned int) No) {
+    nthreads = No;
   }
 
   //
   // Create an output matrix for the impulse response(s).
   //
 
-  Matrix h_mat(nt, no);
+  Matrix h_mat(nt, No);
   h = (double*) h_mat.data();
 
-  SIRData hsir(h, nt, no);
+  SIRData hsir(h, nt, No);
   hsir.clear();
 
   //
@@ -364,14 +364,14 @@ Copyright @copyright{} 2008-2023 Fredrik Lingvall.\n\
 
   for (thread_n = 0; thread_n < nthreads; thread_n++) {
 
-    start = thread_n * no/nthreads;
-    stop =  (thread_n+1) * no/nthreads;
+    start = thread_n * No/nthreads;
+    stop =  (thread_n+1) * No/nthreads;
 
     // Init local data.
     D[thread_n].start = start; // Local start index;
     D[thread_n].stop = stop; // Local stop index;
-    D[thread_n].no = no;
-    D[thread_n].ro = ro;
+    D[thread_n].No = No;
+    D[thread_n].Ro = Ro;
     D[thread_n].r = r;
     D[thread_n].dt = dt;
     D[thread_n].nt = nt;

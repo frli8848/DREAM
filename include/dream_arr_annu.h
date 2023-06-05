@@ -41,7 +41,7 @@ class ArrAnnu
   ~ArrAnnu()  = default;
 
   ErrorLevel dream_arr_annu(double alpha,
-                            double *ro, dream_idx_type no,
+                            double *Ro, dream_idx_type No,
                             double dx, double dy, double dt, dream_idx_type nt,
                             DelayType delay_type, double *delay,
                             double v, double cp,

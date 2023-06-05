@@ -41,7 +41,7 @@ class Rect_f
   ~Rect_f()  = default;
 
 ErrorLevel dreamrect_f(double alpha,
-                       double *ro, dream_idx_type no,
+                       double *Ro, dream_idx_type No,
                        double a, double b,
                        FocusMet foc_met, double focal,
                        double dx, double dy, double dt, dream_idx_type nt,

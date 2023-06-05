@@ -40,7 +40,7 @@ class Line
   ~Line()  = default;
 
   ErrorLevel dreamline(double alpha,
-                       double *ro, dream_idx_type no,
+                       double *Ro, dream_idx_type No,
                        double a,
                        double dx, double dy, double dt, dream_idx_type nt,
                        DelayType delay_type, double *delay,

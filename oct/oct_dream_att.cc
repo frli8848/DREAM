@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2006,2007,2008,2009,2012,2015,2016 Fredrik Lingvall
+* Copyright (C) 2006,2007,2008,2009,2012,2015,2016,2023 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -86,8 +86,8 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
 @seealso {all transducer functions: dreamline, dreamrect, dreamcirc, etc}\n\
 @end deftypefn")
 {
-  double *ro,*s_par,*m_par;
-  int    it,nt,no,n;
+  double *Ro,*s_par,*m_par;
+  int    it,nt,No,n;
   double xo,yo,zo,dt;
   double *delay,cp,alpha,r;
   double *h;
@@ -115,9 +115,9 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
     return oct_retval;
   }
 
-  no = mxGetM(0); // Number of observation points.
+  No = mxGetM(0); // Number of observation points.
   const Matrix tmp0 = args(0).matrix_value();
-  ro = (double*) tmp0.data();
+  Ro = (double*) tmp0.data();
 
   //
   // Temporal and spatial sampling parameters.
@@ -136,7 +136,7 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
   // Start point of impulse response vector ([us]).
   //
 
-  if (!ap.check_delay("dream_att", args, 2, no)) {
+  if (!ap.check_delay("dream_att", args, 2, No)) {
     return oct_retval;
   }
 
@@ -162,10 +162,10 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
   //
 
   // Create an output matrix for the impulse response(s)
-  Matrix h_mat(nt, no);
+  Matrix h_mat(nt, No);
   h = (double*) h_mat.data();
 
-  SIRData hsir(h, nt, no);
+  SIRData hsir(h, nt, No);
   hsir.clear();
 
   {
@@ -178,20 +178,20 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
     //
 
     if (mxGetM((2)) * mxGetN(2) == 1) {
-      for (n=0; n<no; n++) {
-        xo = ro[n];
-        yo = ro[n+1*no];
-        zo = ro[n+2*no];
+      for (n=0; n<No; n++) {
+        xo = Ro[n];
+        yo = Ro[n+1*No];
+        zo = Ro[n+2*No];
 
         r = std::sqrt(xo*xo + yo*yo + zo*zo);
         it = (int) ( (r * 1.0e3/cp - delay[0])/dt + 1);
         att.att(xc, x, r, it, &h[n*nt], 1.0);
       }
     } else {
-      for (n=0; n<no; n++) {
-        xo = ro[n];
-        yo = ro[n+1*no];
-        zo = ro[n+2*no];
+      for (n=0; n<No; n++) {
+        xo = Ro[n];
+        yo = Ro[n+1*No];
+        zo = Ro[n+2*No];
 
         r = std::sqrt(xo*xo + yo*yo + zo*zo);
         it = (int) ( (r*1.0e3/cp - delay[n])/dt + 1);

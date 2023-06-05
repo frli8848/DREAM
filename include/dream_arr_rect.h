@@ -41,7 +41,7 @@ class ArrRect
   ~ArrRect()  = default;
 
   ErrorLevel dream_arr_rect(double alpha,
-                            double *ro, dream_idx_type no,
+                            double *Ro, dream_idx_type No,
                             double a, double b,
                             double dx, double dy, double dt,
                             dream_idx_type nt,

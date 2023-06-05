@@ -40,7 +40,7 @@ class Circ_f
   ~Circ_f()  = default;
 
   ErrorLevel dreamcirc_f(double alpha,
-                         double *ro, dream_idx_type no,
+                         double *Ro, dream_idx_type No,
                          double R,
                          FocusMet foc_met, double focal,
                          double dx, double dy, double dt, dream_idx_type nt,

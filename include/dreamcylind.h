@@ -43,7 +43,7 @@ class Cylind
   ~Cylind()  = default;
 
   ErrorLevel dreamcylind(double alpha,
-                         double *ro, dream_idx_type no,
+                         double *Ro, dream_idx_type No,
                          double a, double b, double Rcurv,
                          double dx, double dy, double dt, dream_idx_type nt,
                          DelayType delay_type, double *delay,

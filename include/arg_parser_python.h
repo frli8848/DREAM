@@ -255,12 +255,12 @@ public:
 
 
   // Check that the delay is a scalar or vector of length no.
-  bool check_delay(const char *func_name, py::array_t<double,py::array::f_style> *py_focal, dream_idx_type no) {
+  bool check_delay(const char *func_name, py::array_t<double,py::array::f_style> *py_focal, dream_idx_type No) {
     bool retval=true;
     std::ostringstream s;
 
     dream_idx_type delay_len = get_m(py_focal)*get_n(py_focal);
-    if ( (delay_len > 1) && (delay_len != no) ) { // delay is a vector
+    if ( (delay_len > 1) && (delay_len != No) ) { // delay is a vector
 
       if (!((get_m(py_focal) == delay_len && get_n(py_focal) == 1) ||
             (get_m(py_focal) == 1 && get_n(py_focal) == delay_len))) {
@@ -474,13 +474,13 @@ public:
       apod_met = ApodMet::raised_cosine;
       is_set = true;
     }
-    
+
     if (apod_str == "hann") {
       do_apod = true;
       apod_met = ApodMet::hann;
       is_set = true;
     }
-    
+
     if (apod_str == "hamming") {
       do_apod = true;
       apod_met = ApodMet::hamming;

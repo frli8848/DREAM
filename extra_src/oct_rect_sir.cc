@@ -120,9 +120,9 @@ Copyright @copyright{} 2008-2023 Fredrik Lingvall.\n\
     return oct_retval;
   }
 
-  dream_idx_type no = mxGetM(0); // Number of observation points.
+  dream_idx_type No = mxGetM(0); // Number of observation points.
   const Matrix tmp0 = args(0).matrix_value();
-  double *ro = (double*) tmp0.data();
+  double *Ro = (double*) tmp0.data();
 
   //
   // Transducer geometry
@@ -153,7 +153,7 @@ Copyright @copyright{} 2008-2023 Fredrik Lingvall.\n\
   // Start point of impulse response vector ([us]).
   //
 
-  if (!ap.check_delay("rect_sir", args, 3, no)) {
+  if (!ap.check_delay("rect_sir", args, 3, No)) {
     return oct_retval;
   }
 
@@ -215,10 +215,10 @@ Copyright @copyright{} 2008-2023 Fredrik Lingvall.\n\
   // Create an output matrix for the impulse response(s).
   //
 
-  Matrix h_mat(nt, no);
+  Matrix h_mat(nt, No);
   double *h = (double*) h_mat.data();
 
-  SIRData hsir(h, nt, no);
+  SIRData hsir(h, nt, No);
   hsir.clear();
 
   RectSir rect_sir;
@@ -234,12 +234,12 @@ Copyright @copyright{} 2008-2023 Fredrik Lingvall.\n\
 
 #ifdef USE_OPENCL
   if (device == "gpu") {
-    rect_sir.cl_rect_sir(ro, no, a, b, dt, nt, delay[0], v, cp, h);
+    rect_sir.cl_rect_sir(Ro, No, a, b, dt, nt, delay[0], v, cp, h);
 
   } else { // Otherwise use the cpu
 #endif
 
-    ErrorLevel err = rect_sir.rect_sir(ro, no,
+    ErrorLevel err = rect_sir.rect_sir(Ro, No,
                                        a, b,
                                        dt, nt,
                                        delay_type, delay,

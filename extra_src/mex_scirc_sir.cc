@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2003,2004,2006,2007,2008,2009,2014,2015,2016,2021 Fredrik Lingvall
+* Copyright (C) 2003,2004,2006,2007,2008,2009,2014,2015,2016,2021,2023 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -26,6 +26,7 @@
 #include <string>
 #include <thread>
 
+#include "affinity.h"
 #include "scirc_sir.h"
 #include "arg_parser.h"
 
@@ -45,10 +46,10 @@ int running;
 
 typedef struct
 {
-  size_t no;
+  size_t No;
   size_t start;
   size_t stop;
-  double *ro;
+  double *Ro;
   double r;
   double dt;
   size_t nt;
@@ -77,9 +78,9 @@ void* smp_dream_scirc_sir(void *arg)
   double xo, yo, zo;
   double *h = D.h;
   double r=D.r, dt=D.dt;
-  size_t n, no=D.no, nt=D.nt, int_len=D.int_len;
+  size_t n, No=D.No, nt=D.nt, int_len=D.int_len;
   //int    tmp_lev, err_level=D.err_level;
-  double *delay=D.delay, *ro=D.ro, v=D.v, cp=D.cp;// alpha=D.alpha;
+  double *delay=D.delay, *Ro=D.Ro, v=D.v, cp=D.cp;// alpha=D.alpha;
   size_t start=D.start, stop=D.stop;
 
   // Let the thread finish and then catch the error.
@@ -92,9 +93,9 @@ void* smp_dream_scirc_sir(void *arg)
 
   if (D.delay_type == DelayType::single) {
     for (n=start; n<stop; n++) {
-      xo = ro[n];
-      yo = ro[n+1*no];
-      zo = ro[n+2*no];
+      xo = Ro[n];
+      yo = Ro[n+1*No];
+      zo = Ro[n+2*No];
 
       scirc_sir(xo,yo,zo,r,dt,nt,delay[0],v,cp,int_len,&h[n*nt]); // TODO: Add attenuation.
 
@@ -106,9 +107,9 @@ void* smp_dream_scirc_sir(void *arg)
     }
   } else { // DelayType::multiple.
     for (n=start; n<stop; n++) {
-      xo = ro[n];
-      yo = ro[n+1*no];
-      zo = ro[n+2*no];
+      xo = Ro[n];
+      yo = Ro[n+1*No];
+      zo = Ro[n+2*No];
 
       scirc_sir(xo,yo,zo,r,dt,nt,delay[n],v,cp,int_len,&h[n*nt]); // TODO: Add attenuation.
 
@@ -160,8 +161,8 @@ void sig_keyint_handler(int signum) {
 
 void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
-  double *ro,*geom_par, *s_par, *m_par;
-  size_t nt, no, int_len;
+  double *Ro,*geom_par, *s_par, *m_par;
+  size_t nt, No, int_len;
   double r, dt;
   double *delay, v, cp;
   double *h;
@@ -183,8 +184,8 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   //
 
   ap.check_obs_points("scirc_sir", prhs, 0);
-  no = mxGetM(prhs[0]); // Number of observation points.
-  ro = mxGetPr(prhs[0]);
+  No = mxGetM(prhs[0]); // Number of observation points.
+  Ro = mxGetPr(prhs[0]);
 
   //
   // Transducer geometry
@@ -207,7 +208,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Start point of impulse response vector ([us]).
   //
 
-  ap.check_delay("scirc_sir", prhs, 3, no);
+  ap.check_delay("scirc_sir", prhs, 3, No);
   delay = mxGetPr(prhs[3]);
 
   //
@@ -242,25 +243,25 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
   // Read DREAM_NUM_THREADS env var
   if(const char* env_p = std::getenv("DREAM_NUM_THREADS")) {
-    dream_idx_type dream_threads = std::stoul(env_p);
+    dream_idx_type dream_threads = (dream_idx_type) std::stoul(env_p);
     if (dream_threads < nthreads) {
       nthreads = dream_threads;
     }
   }
 
   // nthreads can't be larger then the number of observation points.
-  if (nthreads > no) {
-    nthreads = no;
+  if (nthreads > No) {
+    nthreads = No;
   }
 
   //
   // Create an output matrix for the impulse response(s).
   //
 
-  plhs[0] = mxCreateDoubleMatrix(nt, no, mxREAL);
+  plhs[0] = mxCreateDoubleMatrix(nt, No, mxREAL);
   h = mxGetPr(plhs[0]);
 
-  SIRData hsir(h, nt, no);
+  SIRData hsir(h, nt, No);
   hsir.clear();
 
   //
@@ -294,21 +295,21 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
   for (thread_n = 0; thread_n < nthreads; thread_n++) {
 
-    start = thread_n * no/nthreads;
-    stop =  (thread_n+1) * no/nthreads;
+    start = thread_n * No/nthreads;
+    stop =  (thread_n+1) * No/nthreads;
 
     // Init local data.
     D[thread_n].start = start; // Local start index;
     D[thread_n].stop = stop; // Local stop index;
-    D[thread_n].no = no;
-    D[thread_n].ro = ro;
+    D[thread_n].No = No;
+    D[thread_n].Ro = Ro;
     D[thread_n].r = r;
     D[thread_n].dt = dt;
     D[thread_n].nt = nt;
 
     if (mxGetM(prhs[3]) * mxGetN(prhs[3]) == 1) {
       D[thread_n].delay_type = DelayType::single; // delay is a scalar.
-    } else{
+    } else {
       D[thread_n].delay_type = DelayType::multiple; // delay is a vector.
     }
 
@@ -322,7 +323,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
     // Starts the threads.
     threads[thread_n] = std::thread(smp_dream_scirc_sir, &D[thread_n]); // Start the threads.
-
+    set_dream_thread_affinity(thread_n, nthreads, threads);
   } // for (thread_n = 0; thread_n < nthreads; thread_n++)
 
   // Wait for all threads to finish.

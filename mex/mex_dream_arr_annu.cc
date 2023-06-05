@@ -49,8 +49,8 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   //
 
   ap.check_obs_points("dream_arr_annu", prhs, 0);
-  dream_idx_type no = mxGetM(prhs[0]); // Number of observation points.
-  double *ro = mxGetPr(prhs[0]);
+  dream_idx_type No = mxGetM(prhs[0]); // Number of observation points.
+  double *Ro = mxGetPr(prhs[0]);
 
   //
   // Grid function (radii vectors of the elements).
@@ -73,7 +73,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Start point of impulse response vector ([us]).
   //
 
-  ap.check_delay("dream_arr_annu", prhs, 3, no);
+  ap.check_delay("dream_arr_annu", prhs, 3, No);
   double *delay = mxGetPr(prhs[3]);
 
   DelayType delay_type = DelayType::single;  // delay is a scalar.
@@ -132,10 +132,10 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   }
 
   // Create an output matrix for the impulse response
-  plhs[0] = mxCreateDoubleMatrix(nt,no,mxREAL);
+  plhs[0] = mxCreateDoubleMatrix(nt,No,mxREAL);
   double *h = mxGetPr(plhs[0]);
 
-  SIRData hsir(h, nt, no);
+  SIRData hsir(h, nt, No);
   hsir.clear();
 
   ArrAnnu arr_annu;
@@ -145,7 +145,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   //
 
   err = arr_annu.dream_arr_annu(alpha,
-                                ro, no,
+                                Ro, No,
                                 dx, dy,  dt, nt,
                                 delay_type, delay,
                                 v, cp,

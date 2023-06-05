@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2002,2003,2006,2007,2008,2009,2014,2016,2021 Fredrik Lingvall
+* Copyright (C) 2002,2003,2006,2007,2008,2009,2014,2016,2021,2023 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -48,8 +48,8 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   //
 
   ap.check_obs_points("dream_att", prhs, 0);
-  dream_idx_type no = mxGetM(prhs[0]); // Number of observation points.
-  double *ro = mxGetPr(prhs[0]);
+  dream_idx_type No = mxGetM(prhs[0]); // Number of observation points.
+  double *Ro = mxGetPr(prhs[0]);
 
   //
   // Temporal and spatial sampling parameters.
@@ -68,7 +68,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Start point of impulse response vector ([us]).
   //
 
-  ap.check_delay("dream_att", prhs, 2, no);
+  ap.check_delay("dream_att", prhs, 2, No);
   double *delay = mxGetPr(prhs[2]);
 
   //
@@ -88,10 +88,10 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Create an output matrix for the impulse response
   //
 
-  plhs[0] = mxCreateDoubleMatrix(nt,no,mxREAL);
+  plhs[0] = mxCreateDoubleMatrix(nt,No,mxREAL);
   double *h = mxGetPr(plhs[0]);
 
-  SIRData hsir(h, nt, no);
+  SIRData hsir(h, nt, No);
   hsir.clear();
 
   //
@@ -103,20 +103,20 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   FFTVec x(nt);
 
   if (mxGetM(prhs[2]) * mxGetN(prhs[2]) == 1) {
-    for (dream_idx_type n=0; n<no; n++) {
-      double xo = ro[n];
-      double yo = ro[n+1*no];
-      double zo = ro[n+2*no];
+    for (dream_idx_type n=0; n<No; n++) {
+      double xo = Ro[n];
+      double yo = Ro[n+1*No];
+      double zo = Ro[n+2*No];
 
       double r = std::sqrt(xo*xo + yo*yo + zo*zo);
       dream_idx_type it = (dream_idx_type) ( (r * 1.0e3/cp - delay[0])/dt + 1);
       att.att(xc, x, r, it, &h[n*nt], 1.0);
     }
   } else {
-    for (dream_idx_type n=0; n<no; n++) {
-      double xo = ro[n];
-      double yo = ro[n+1*no];
-      double zo = ro[n+2*no];
+    for (dream_idx_type n=0; n<No; n++) {
+      double xo = Ro[n];
+      double yo = Ro[n+1*No];
+      double zo = Ro[n+2*No];
 
       double r = std::sqrt(xo*xo + yo*yo + zo*zo);
       dream_idx_type it = (dream_idx_type) ( (r * 1.0e3/cp - delay[n])/dt + 1);

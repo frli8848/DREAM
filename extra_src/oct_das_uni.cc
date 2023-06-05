@@ -42,7 +42,7 @@ std::unique_ptr<DAS_UNI<float>> das_uni_f=nullptr;
 
 DEFUN_DLD (das_uni, args, nlhs,
            "-*- texinfo -*-\n\
-@deftypefn {Loadable Function} {}  [Im] = das_uni(Y,gt,gr,ro,dt,delay,cp,method).\n \
+@deftypefn {Loadable Function} {}  [Im] = das_uni(Y,gt,gr,Ro,dt,delay,cp,method).\n \
 \n\
 DAS_UNI Computes the delay-and-sum processed reconstruction (beamformed image) for\n\
 three different array geometries: SAFT, TFM, and RCA using uniform grids both for the\n\
@@ -80,8 +80,8 @@ A 3 element vector, gr = [min_r, pitch_r, max_r].\n\
 Observation (image) point matrix [mm]:\n\
 \n\
 @table @code\n\
-@item ro\n\
-A 3 x 3 matrix, ro = [min_Rx, dx, max_Rx; min_Ry, dy, max_Ry; min_Rz, dz, max_Rz].\n\
+@item Ro\n\
+A 3 x 3 matrix, Ro = [min_Rx, dx, max_Rx; min_Ry, dy, max_Ry; min_Rz, dz, max_Rz].\n\
 @end table\n\
 \n\
 Sampling parameter dt: \n\

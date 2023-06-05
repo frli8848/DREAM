@@ -142,11 +142,11 @@ class SIRData
 {
  public:
 
-  SIRData(dream_idx_type len, dream_idx_type no) {
+  SIRData(dream_idx_type len, dream_idx_type No) {
     m_size = len;
     m_len = len;
-    m_no = no;
-    m_H = std::make_unique<double[]>(len*no);
+    m_No = No;
+    m_H = std::make_unique<double[]>(len*No);
     m_h = m_H.get();
   }
 
@@ -154,14 +154,14 @@ class SIRData
     m_h = h;
     m_size = len;
     m_len = len;
-    m_no = 1;
+    m_No = 1;
   }
 
-  SIRData(double *h, dream_idx_type len, dream_idx_type no) {
+  SIRData(double *h, dream_idx_type len, dream_idx_type No) {
     m_h = h;
-    m_size = len*no;
+    m_size = len*No;
     m_len = len;
-    m_no = no;
+    m_No = No;
   }
 
   ~SIRData() = default;
@@ -180,8 +180,8 @@ class SIRData
     return m_len;
   };
 
-  dream_idx_type get_no() {
-    return m_no;
+  dream_idx_type get_No() {
+    return m_No;
   };
 
  private:
@@ -190,7 +190,7 @@ class SIRData
   double *m_h;
   dream_idx_type m_size;
   dream_idx_type m_len;
-  dream_idx_type m_no;
+  dream_idx_type m_No;
 
 };
 

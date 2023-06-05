@@ -41,7 +41,7 @@ class ArrCirc
   ~ArrCirc()  = default;
 
   ErrorLevel dream_arr_circ(double alpha,
-                            double *ro, dream_idx_type no,
+                            double *Ro, dream_idx_type No,
                             double R,
                             double dx, double dy, double dt,
                             dream_idx_type nt,

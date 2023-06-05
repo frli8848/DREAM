@@ -141,9 +141,9 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
     return oct_retval;
   }
 
-  dream_idx_type no = mxGetM(0); // Number of observation points.
+  dream_idx_type No = mxGetM(0); // Number of observation points.
   const Matrix tmp0 = args(0).matrix_value();
-  double *ro = (double*) tmp0.data();
+  double *Ro = (double*) tmp0.data();
 
   //
   // Transducer geometry
@@ -168,7 +168,7 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
   // Start point of impulse response vector ([us]).
   //
 
-  if (!ap.check_delay("dreamcylind", args, 3, no)) {
+  if (!ap.check_delay("dreamcylind", args, 3, No)) {
     return oct_retval;
   }
 
@@ -204,10 +204,10 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
   }
 
   // Create an output matrix for the impulse response
-  Matrix h_mat(nt, no);
+  Matrix h_mat(nt, No);
   double *h = (double*) h_mat.data();
 
-  SIRData hsir(h, nt, no);
+  SIRData hsir(h, nt, No);
   hsir.clear();
 
   Cylind cylind;
@@ -220,7 +220,7 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
   //
 
   err = cylind.dreamcylind(alpha,
-                    ro, no,
+                    Ro, No,
                     a,  b,  Rcurv,
                     dx,  dy,  dt,  nt,
                     delay_type,  delay,

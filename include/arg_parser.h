@@ -232,14 +232,13 @@ public:
     return retval;
   };
 
-
-  // Check that the delay is a scalar or vector of length no.
-  bool check_delay(const char *func_name, args_t args, dream_idx_type arg_num, dream_idx_type no) {
+  // Check that the delay is a scalar or vector of length No.
+  bool check_delay(const char *func_name, args_t args, dream_idx_type arg_num, dream_idx_type No) {
     bool retval=true;
     std::ostringstream s;
 
     dream_idx_type delay_len = get_m(args, arg_num)*get_n(args, arg_num);
-    if ( (delay_len > 1) && (delay_len != no) ) { // delay is a vector
+    if ( (delay_len > 1) && (delay_len != No) ) { // delay is a vector
 
       if (!((get_m(args, arg_num)==delay_len && get_n(args, arg_num)==1) || (get_m(args, arg_num)==1 && get_n(args, arg_num)==delay_len))) {
         s << func_name <<  " requires that arg " << arg_num+1 << " (delay) must be a " << delay_len << " element vector";

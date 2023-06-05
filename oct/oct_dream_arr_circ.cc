@@ -40,7 +40,7 @@
 
 DEFUN_DLD (dream_arr_circ, args, nlhs,
            "-*- texinfo -*-\n\
-@deftypefn {Loadable Function} {} [H,err] = dream_arr_circ(ro,a,G,s_par,delay,m_par,foc_met,focal,...\n\
+@deftypefn {Loadable Function} {} [H,err] = dream_arr_circ(Ro,a,G,s_par,delay,m_par,foc_met,focal,...\n\
                      steer_met,steer_par,apod_met,apod,win_par,err_level);\n\
 \n\
 DREAM_ARR_CIRC -  Computes the spatial impulse response\n\
@@ -198,9 +198,9 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
     return oct_retval;
   }
 
-  dream_idx_type no = mxGetM(0); // Number of observation points.
+  dream_idx_type No = mxGetM(0); // Number of observation points.
   const Matrix tmp0 = args(0).matrix_value();
-  double *ro = (double*) tmp0.data();
+  double *Ro = (double*) tmp0.data();
 
   //
   // Transducer geometry
@@ -239,7 +239,7 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
   // Start point of impulse response vector ([us]).
   //
 
-  if (!ap.check_delay("dream_arr_circ", args, 4, no)) {
+  if (!ap.check_delay("dream_arr_circ", args, 4, No)) {
     return oct_retval;
   }
 
@@ -325,10 +325,10 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
   }
 
   // Create an output matrix for the impulse response
-  Matrix h_mat(nt, no);
+  Matrix h_mat(nt, No);
   double *h = (double*) h_mat.data();
 
-  SIRData hsir(h, nt, no);
+  SIRData hsir(h, nt, No);
   hsir.clear();
 
   ArrCirc arr_circ;
@@ -341,7 +341,7 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
   //
 
   err = arr_circ.dream_arr_circ(alpha,
-                                ro, no,
+                                Ro, No,
                                 R,
                                 dx, dy,  dt, nt,
                                 delay_type, delay,

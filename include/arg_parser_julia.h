@@ -262,13 +262,13 @@ public:
 
 
   // 1D Array / Vector or scalar
-  bool check_delay(const char *func_name,jl::ArrayRef<double> &jl_focal, dream_idx_type no) {
+  bool check_delay(const char *func_name,jl::ArrayRef<double> &jl_focal, dream_idx_type No) {
     bool retval=true;
     std::ostringstream s;
 
     //dream_idx_type delay_len = get_m(jl_focal)*get_n(jl_focal);
     dream_idx_type delay_len = get_len(jl_focal);
-    if ( (delay_len > 1) && (delay_len != no) ) { // delay is a vector
+    if ( (delay_len > 1) && (delay_len != No) ) { // delay is a vector
       s << func_name <<  " requires that delay arg must be a " << delay_len << " element vector";
       s << " (with a length equal to the number of observation points) or a scalar!";
       dream_err_msg(s.str().c_str());
@@ -483,7 +483,7 @@ public:
       apod_met = ApodMet::hann;
       is_set = true;
     }
-    
+
     if (apod_str == "hamming") {
       do_apod = true;
       apod_met = ApodMet::hamming;

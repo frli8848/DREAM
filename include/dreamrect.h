@@ -40,7 +40,7 @@ class Rect
   ~Rect()  = default;
 
 ErrorLevel dreamrect(double alpha,
-                     double *ro, dream_idx_type no,
+                     double *Ro, dream_idx_type No,
                      double a, double b,
                      double dx, double dy, double dt, dream_idx_type nt,
                      DelayType delay_type, double *delay,

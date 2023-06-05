@@ -39,7 +39,7 @@ class RectSir
 
   ~RectSir()  = default;
 
-ErrorLevel rect_sir(double *ro, dream_idx_type no,
+ErrorLevel rect_sir(double *Ro, dream_idx_type No,
                     double a, double b,
                     double dt, dream_idx_type nt,
                     DelayType delay_type, double *delay,
@@ -47,8 +47,8 @@ ErrorLevel rect_sir(double *ro, dream_idx_type no,
                     double *h);
 
 #ifdef USE_OPENCL
-  int cl_rect_sir(const double *ro,
-                  int no,
+  int cl_rect_sir(const double *Ro,
+                  int No,
                   double a,
                   double b,
                   double dt,

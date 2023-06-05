@@ -243,7 +243,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Create an output matrix for the impulse response(s).
   //
 
-  plhs[0] = mxCreateDoubleMatrix(nt,No,mxREAL);
+  plhs[0] = mxCreateDoubleMatrix(nt, No, mxREAL);
   h = mxGetPr(plhs[0]);
 
   SIRData hsir(h, nt, No);
@@ -292,10 +292,11 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     D[thread_n].dt = dt;
     D[thread_n].nt = nt;
 
-    if (mxGetM(prhs[3]) * mxGetN(prhs[3]) == 1)
+    if (mxGetM(prhs[3]) * mxGetN(prhs[3]) == 1) {
       D[thread_n].delay_type = DelayType::single; // delay is a scalar.
-    else
+    } else {
       D[thread_n].delay_type = DelayType::multiple; // delay is a vector.
+    }
 
     D[thread_n].delay = delay;
     D[thread_n].v = v;

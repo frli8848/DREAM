@@ -40,7 +40,7 @@ class Sphere
   ~Sphere()  = default;
 
   ErrorLevel dreamsphere(double alpha,
-                         double *ro, dream_idx_type no,
+                         double *Ro, dream_idx_type No,
                          double R, double Rcurv,
                          double dx, double dy, double dt, dream_idx_type nt,
                          DelayType delay_type, double *delay,

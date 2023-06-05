@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2004,2006,2007,2008,2009,2014,2015,2016,2019,2021 Fredrik Lingvall
+* Copyright (C) 2004,2006,2007,2008,2009,2014,2015,2016,2019,2021,2023 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -47,8 +47,8 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   //
 
   ap.check_obs_points("rect_sir", prhs, 0);
-  dream_idx_type no = mxGetM(prhs[0]); // Number of observation points.
-  double *ro = mxGetPr(prhs[0]);
+  dream_idx_type No = mxGetM(prhs[0]); // Number of observation points.
+  double *Ro = mxGetPr(prhs[0]);
 
   //
   // Transducer geometry
@@ -75,7 +75,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Start point of impulse response vector ([us]).
   //
 
-  ap.check_delay("rect_sir", prhs, 3, no);
+  ap.check_delay("rect_sir", prhs, 3, No);
   double *delay = mxGetPr(prhs[3]);
 
   DelayType delay_type = DelayType::single;  // delay is a scalar.
@@ -101,10 +101,10 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Create an output matrix for the impulse response(s).
   //
 
-  plhs[0] = mxCreateDoubleMatrix(nt,no,mxREAL);
+  plhs[0] = mxCreateDoubleMatrix(nt,No,mxREAL);
   double *h = mxGetPr(plhs[0]);
 
-  SIRData hsir(h, nt, no);
+  SIRData hsir(h, nt, No);
   hsir.clear();
 
   RectSir rect_sir;
@@ -116,7 +116,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Call the analytic rect_sir subroutine.
   //
 
-  ErrorLevel err = rect_sir.rect_sir(ro, no,
+  ErrorLevel err = rect_sir.rect_sir(Ro, No,
                                      a, b,
                                      dt, nt,
                                      delay_type, delay,

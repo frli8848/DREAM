@@ -403,6 +403,7 @@ if (Matlab_FOUND)
 
   set (mex_scirc_sir_SOURCE_FILES
     extra_src/mex_scirc_sir.cc
+    src/affinity.cc
     extra_src/scirc_sir.cc
     src/dream_error.cc
   )

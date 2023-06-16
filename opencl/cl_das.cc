@@ -33,25 +33,23 @@ DAS<T>::DAS(DASType das_type,
             dream_idx_type No,
             dream_idx_type num_t_elements,
             dream_idx_type num_r_elements, // SAFT if num_r_elements = 0;
-            unsigned char *cl_kernel_str,
-            unsigned int cl_kernel_str_len)
+            bool use_gpu)
   : m_out_err(ErrorLevel::none)
   , m_das_type(das_type)
   , m_a_scan_len(a_scan_len)
   , m_No(No)
   , m_num_t_elements(num_t_elements)
   , m_num_r_elements(num_r_elements)
+  , m_use_gpu(use_gpu)
 {
-#ifdef USE_OPENCL
-  if (cl_kernel_str_len > 0) { // We do not want to run the OpenCL init func when we use the CPU.
+  std::cout <<  "m_use_gpu = " <<  m_use_gpu <<  " use_gpu = " <<  use_gpu << std::endl;
+  if (m_use_gpu) { // We do not want to run the OpenCL init func when we use the CPU.
     if (sizeof(T) == sizeof(float) ) {
       init_opencl(__das_float_cl, __das_float_cl_len);
     } else {
       init_opencl(__das_double_cl, __das_double_cl_len);
     }
   }
-#endif
-  ;
 }
 
 /***

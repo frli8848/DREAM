@@ -55,8 +55,7 @@ public:
       dream_idx_type No,
       dream_idx_type num_t_elements,
       dream_idx_type num_r_elements, // SAFT if num_r_elements = 0;
-      unsigned char *cl_kernel_str=nullptr,
-      unsigned int cl_kernel_str_len=0);
+      bool use_gpu=false);
 
   ~DAS()  = default;
 
@@ -74,13 +73,15 @@ public:
                              dream_idx_type a_scan_len,
                              dream_idx_type No,
                              dream_idx_type num_t_elements,
-                             dream_idx_type num_r_elements) {
+                             dream_idx_type num_r_elements,
+                             bool use_gpu) {
     bool retval = false;
     if ( das_type != m_das_type ||
          a_scan_len != m_a_scan_len ||
          No != m_No ||
          num_t_elements != m_num_t_elements ||
-         num_r_elements != m_num_r_elements) {
+         num_r_elements != m_num_r_elements ||
+         m_use_gpu != use_gpu) {
       retval = true;
     }
 
@@ -427,6 +428,7 @@ private:
   dream_idx_type m_num_t_elements;
   dream_idx_type m_num_r_elements;
   ErrorLevel m_out_err;
+  bool m_use_gpu;
 
 #ifdef USE_OPENCL
   cl::CommandQueue m_queue;

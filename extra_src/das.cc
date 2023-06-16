@@ -37,15 +37,17 @@ DAS<T>::DAS(DASType das_type,
             dream_idx_type No,
             dream_idx_type num_t_elements,
             dream_idx_type num_r_elements, // SAFT if num_r_elements = 0;
-            unsigned char *cl_kernel_str,
-            unsigned int cl_kernel_str_len)
+            bool use_gpu)
   : m_out_err(ErrorLevel::none)
   , m_das_type(das_type)
   , m_a_scan_len(a_scan_len)
   , m_No(No)
   , m_num_t_elements(num_t_elements)
   , m_num_r_elements(num_r_elements)
-{;}
+{
+  // Here we have not build with OpenCL support so switch off GPU support.
+  m_use_gpu = false;
+}
 #endif
 
 template <class T>

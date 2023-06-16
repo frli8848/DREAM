@@ -400,6 +400,15 @@ Copyright @copyright{} 2008-2023 Fredrik Lingvall.\n\
 
   bool init_das = true;
 
+  // We use this to make the GPU init code run
+  bool use_gpu = false;
+#ifdef USE_OPENCL
+  if (device == "gpu") {
+    use_gpu = true;
+  }
+#endif
+  std::cout << " oct: use_gpu = " <<  use_gpu << std::endl;
+
   if (use_float) {
 
     // Create an output matrix for the impulse response.
@@ -411,7 +420,7 @@ Copyright @copyright{} 2008-2023 Fredrik Lingvall.\n\
     //
 
     if (das_f) { // das (float) object exist - check if we can reuse previous das init
-      if (!das_f->das_setup_has_changed(das_type, a_scan_len, No, num_t_elements, num_r_elements)) {
+      if (!das_f->das_setup_has_changed(das_type, a_scan_len, No, num_t_elements, num_r_elements, use_gpu)) {
         init_das = false;
       }
     }
@@ -419,11 +428,11 @@ Copyright @copyright{} 2008-2023 Fredrik Lingvall.\n\
     if (init_das) {
 
       if (das_d) {
-        das_d = nullptr; // Release the double obejct if it exist to free, in particular, GPU resources (call destructor).
+        das_d = nullptr; // Release the double object if it exist to free, in particular, GPU resources (call destructor).
       }
 
       try {
-        das_f = std::make_unique<DAS<float>>(das_type, a_scan_len, No, num_t_elements, num_r_elements);
+        das_f = std::make_unique<DAS<float>>(das_type, a_scan_len, No, num_t_elements, num_r_elements, use_gpu);
       }
 
       catch (std::runtime_error &err) {
@@ -448,7 +457,7 @@ Copyright @copyright{} 2008-2023 Fredrik Lingvall.\n\
     Im_d = (double*) Im_mat_d.data();
 
     if (das_d) { // das (double) object exist - check if we can reuse previous das init
-      if (!das_d->das_setup_has_changed(das_type, a_scan_len, No, num_t_elements, num_r_elements)) {
+      if (!das_d->das_setup_has_changed(das_type, a_scan_len, No, num_t_elements, num_r_elements, use_gpu)) {
         init_das = false;
       }
     }
@@ -460,7 +469,7 @@ Copyright @copyright{} 2008-2023 Fredrik Lingvall.\n\
       }
 
       try {
-        das_d = std::make_unique<DAS<double>>(das_type, a_scan_len, No, num_t_elements, num_r_elements);
+        das_d = std::make_unique<DAS<double>>(das_type, a_scan_len, No, num_t_elements, num_r_elements, use_gpu);
       }
 
       catch (std::runtime_error &err) {

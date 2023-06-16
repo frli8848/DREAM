@@ -261,6 +261,14 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
   bool init_das = true;
 
+  // We use this to make the GPU init code run
+  bool use_gpu = false;
+#ifdef USE_OPENCL
+  if (device == "gpu") {
+    use_gpu = true;
+  }
+#endif
+
   if (use_float) {
 
     // Create an output matrix for the impulse response.
@@ -272,7 +280,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     //
 
     if (das_f) { // das (float) object exist - check if we can reuse previous das init
-      if (!das_f->das_setup_has_changed(das_type, a_scan_len, No, num_t_elements, num_r_elements)) {
+      if (!das_f->das_setup_has_changed(das_type, a_scan_len, No, num_t_elements, num_r_elements, use_gpu)) {
         init_das = false;
       }
     }
@@ -284,7 +292,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       }
 
       try {
-        das_f = std::make_unique<DAS<float>>(das_type, a_scan_len, No, num_t_elements, num_r_elements);
+        das_f = std::make_unique<DAS<float>>(das_type, a_scan_len, No, num_t_elements, num_r_elements, use_gpu);
       }
 
       catch (std::runtime_error &err) {
@@ -309,7 +317,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     Im_d = mxGetPr(plhs[0]);
 
     if (das_d) { // das (double) object exist - check if we can reuse previous das init
-      if (!das_d->das_setup_has_changed(das_type, a_scan_len, No, num_t_elements, num_r_elements)) {
+      if (!das_d->das_setup_has_changed(das_type, a_scan_len, No, num_t_elements, num_r_elements, use_gpu)) {
         init_das = false;
       }
     }
@@ -321,7 +329,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       }
 
       try {
-        das_d = std::make_unique<DAS<double>>(das_type, a_scan_len, No, num_t_elements, num_r_elements);
+        das_d = std::make_unique<DAS<double>>(das_type, a_scan_len, No, num_t_elements, num_r_elements, use_gpu);
       }
 
       catch (std::runtime_error &err) {

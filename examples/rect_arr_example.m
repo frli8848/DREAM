@@ -1,36 +1,17 @@
-
-% Are we running on a Linux machine?
-tmp_str = computer;
-if size(strfind(tmp_str,'linux')) > 0 | ...
-      size(strfind(tmp_str,'GLN')) > 0
-
-  % How many CPUs do we have?
-  [dummy,tmp_str]= system('cat /proc/cpuinfo | grep model | grep name');
-
-  n_cpus = size(strfind(tmp_str,'model'),2);
-
-  fprintf('\n*** Detected a %d cpu system ***\n\n',n_cpus);
-
-else
-  % Default to one cpu.
-  n_cpus = 1;
-end
-
-
-%
-% 2D Rectangular Array Transducer Example 1.
-%
+%%
+%% 2D Rectangular Array Transducer Example 1.
+%%
 
 Fs = 10;   % Sampling freq. in MHz.
 Ts = 1/Fs;
 
-% Snapshot point
+%% Snapshot point
 z = 50;
 dz = 2; % Average field over dz mm.
 
-%
-% Observation point(s).
-%
+%%
+%% Observation point(s).
+%%
 
 d  = 0.5;                               % [mm]
 
@@ -130,8 +111,8 @@ apod = ones(length(gx),1);              % Apodization weights for 'ud'.
 win_par = 1;                            % Parameter for raised cos and Gaussian apodization functions.
 
 fprintf('Computing array responses...');
-H = dream_arr_rect_p(Ro,geom_par,G,s_par,delay,m_par,foc_met,...
-                     focal,steer_met,steer_par,apod_met,apod,win_par,n_cpus,'ignore');
+H = dream_arr_rect(Ro,geom_par,G,s_par,delay,m_par,foc_met,...
+                   focal,steer_met,steer_par,apod_met,apod,win_par,'ignore');
 fprintf('done\n');
 
 figure(1);
@@ -183,9 +164,7 @@ u = 1; % A unit pulse.
 %
 
 h = conv(h_e,u);
-
-n_cpus = 1;
-Ht = fftconv_p(H,h,n_cpus);
+Ht = fftconv_p(H,h);
 
 
 %

@@ -4,28 +4,6 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%
-% Set number of CPUs
-%
-
-% Are we running on a Linux machine?
-tmp_str = computer;
-if size(strfind(tmp_str,'linux')) > 0 | size(strfind(tmp_str,'GLN')) > 0
-
-  % How many CPUs do we have?
-  [dummy,tmp_str]= system('cat /proc/cpuinfo | grep model | grep name');
-
-  n_cpus = size(strfind(tmp_str,'model'),2);
-
-  fprintf('*** Detected a %d cpu system ***\n\n',n_cpus);
-
-else
-  % Default to one cpu.
-  n_cpus = 1;
-end
-
-n_cpus = 1;
-
 NN = [];
 T0 = [];
 T00 = [];
@@ -80,7 +58,7 @@ for n=[1 10:10:100 200:100:2000]
   t1 = 0;
   for m=1:M
     eval('tic');
-    Z = conv_p(X,Y,n_cpus);
+    Z = conv_p(X, Y);
     t1 = t1 + toc;
   end
   t = t1/M;
@@ -89,7 +67,7 @@ for n=[1 10:10:100 200:100:2000]
   t2 = 0;
   for m=1:M
     eval('tic');
-    [Z2,wisdom] = fftconv_p(X,Y,n_cpus);
+    [Z2,wisdom] = fftconv_p(X, Y);
     t2 = t2+toc;
   end
   t2 = t2/M;
@@ -97,7 +75,7 @@ for n=[1 10:10:100 200:100:2000]
   t3 = 0;
   for m=1:M
     eval('tic');
-    Z3 = fftconv_p(X,Y,n_cpus,wisdom);
+    Z3 = fftconv_p(X, Y, wisdom);
     t3 = t3 + toc;
   end
   t3 = t3/M;

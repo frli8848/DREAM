@@ -18,13 +18,6 @@ if findstr(computer,'linux') && exist('OCTAVE_VERSION')
   disp('*');
   disp('***************************************************************');
   pause(4);
-
-  % Detect the number of CPUs/Cores on the system.
-  [dummy,tmp_str]= system('cat /proc/cpuinfo | grep model | grep name');
-  n_cpus = size(strfind(tmp_str,'model'),2);
-  fprintf('\n*** Detected a %d cpu system ***\n\n',n_cpus);
-else
-  n_cpus = 1;
 end
 
 % Paths to eps, png, and jpegs.
@@ -236,15 +229,9 @@ if COMPUTE_SIR
 
   eval('tic');
 
-  if n_cpus == 1
-    % Serial.
-    H_t = dream_arr_rect(Ro,geom_par,G,s_par,delay,m_par,foc_met,...
-                         focal,steer_met,steer_par,apod_met,apod,win_par,'stop');
-  else
-    % Parallel.
-    H_t = dream_arr_rect_p(Ro,geom_par,G,s_par,delay,m_par,foc_met,...
-                           focal,steer_met,steer_par,apod_met,apod,win_par,n_cpus,'stop');
-  end
+  %% Serial.
+  H_t = dream_arr_rect(Ro,geom_par,G,s_par,delay,m_par,foc_met,...
+                       focal,steer_met,steer_par,apod_met,apod,win_par,'stop');
 
   t = toc;
   if t > 60
@@ -253,14 +240,14 @@ if COMPUTE_SIR
     fprintf('elapsed time: dream_arr_rect = %1.1f [s]\n',t);
   end
 
-  %
-  % Compute pressure response (i.e., convolve with electro-acoustical impulse response).
-  %
+  %%
+  %% Compute pressure response (i.e., convolve with electro-acoustical impulse response).
+  %%
 
   eval('tic');
 
-  %P_t = conv_p(H_t,h_e,n_cpus);
-  P_t = fftconv_p(H_t,h_e,n_cpus); % If you have fftw 3.x on your system.
+  %%P_t = conv_p(H_t,h_e);
+  P_t = fftconv_p(H_t,h_e);
 
   t = toc;
   if t > 60

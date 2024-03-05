@@ -2,31 +2,13 @@
 %
 % Run all transducer functions.
 %
-% Copyright (C) 2005,2006,2008,2009,2019,2021 Fredrik Lingvall
+% Copyright (C) 2005,2006,2008,2009,2019,2021,2024 Fredrik Lingvall
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 ONE_POINT = 1;
 %ONE_POINT = 0; %Many points.
-
-
-% Are we running on a Linux machine?
-tmp_str = computer;
-if size(strfind(tmp_str,'linux')) > 0 | ...
-      size(strfind(tmp_str,'GLN')) > 0
-
-  % How many CPUs do we have?
-  [dummy,tmp_str]= system('cat /proc/cpuinfo | grep model | grep name');
-
-  n_cpus = size(strfind(tmp_str,'model'),2);
-
-  fprintf('\n*** Detected a %d cpu system ***\n\n',n_cpus);
-
-else
-  % Default to one cpu.
-  n_cpus = 1;
-end
 
 figure(1);
 clf

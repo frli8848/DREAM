@@ -3,8 +3,14 @@
 # FFTW_FOUND = true if FFTW3 is found
 
 if (WIN32)
-  set(CMAKE_PREFIX_PATH "C:/FFTW64")
-  #set(CMAKE_PREFIX_PATH "C:/FFTW")
+
+  # Check if we use Anaconda for packages on Windows
+  if (DEFINED ENV{CONDA_PREFIX})
+    set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH};$ENV{CONDA_PREFIX}/Library")
+  else ()
+    set(CMAKE_PREFIX_PATH "C:/FFTW64")
+  endif()
+
 endif(WIN32)
 
 if (MACOSX)

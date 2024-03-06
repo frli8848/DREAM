@@ -35,6 +35,7 @@ set (DREAM_FUNC_LIST
   dream_arr_circ
   dream_arr_cylind
   dream_arr_annu
+  conv_p
 )
 
 # FIXME: There must be a cleaner way than having a separate file for each Julia module!?
@@ -355,4 +356,25 @@ set_target_properties(jl_dream_arr_annu PROPERTIES
   INCLUDE_DIRECTORIES "${DREAM_JULIA_INCLUDE_DIRS}"
   LINK_FLAGS ${JULIA_LD_FLAGS}
   PREFIX "" OUTPUT_NAME "dream_arr_annu"
+)
+
+#
+# conv_p
+#
+
+set (jl_conv_p_SOURCE_FILES
+  src/jl_conv_p.cc
+  ../extra_src/conv.cc
+  ../src/affinity.cc
+)
+
+add_library(jl_conv_p MODULE ${jl_conv_p_SOURCE_FILES})
+target_link_libraries(jl_conv_p)
+
+set_target_properties(jl_conv_p PROPERTIES
+  CXX_STANDARD 17
+  COMPILE_FLAGS "${DREAM_JULIA_FLAGS}"
+  INCLUDE_DIRECTORIES "${DREAM_JULIA_INCLUDE_DIRS}"
+  LINK_FLAGS ${JULIA_LD_FLAGS}
+  PREFIX "" OUTPUT_NAME "conv_p"
 )

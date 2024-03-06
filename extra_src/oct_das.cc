@@ -407,7 +407,6 @@ Copyright @copyright{} 2008-2023 Fredrik Lingvall.\n\
     use_gpu = true;
   }
 #endif
-  std::cout << " oct: use_gpu = " <<  use_gpu << std::endl;
 
   if (use_float) {
 

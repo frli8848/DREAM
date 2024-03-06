@@ -42,7 +42,6 @@ DAS<T>::DAS(DASType das_type,
   , m_num_r_elements(num_r_elements)
   , m_use_gpu(use_gpu)
 {
-  std::cout <<  "m_use_gpu = " <<  m_use_gpu <<  " use_gpu = " <<  use_gpu << std::endl;
   if (m_use_gpu) { // We do not want to run the OpenCL init func when we use the CPU.
     if (sizeof(T) == sizeof(float) ) {
       init_opencl(__das_float_cl, __das_float_cl_len);

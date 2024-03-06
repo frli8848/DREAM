@@ -26,7 +26,7 @@ ELSE()
     set(OCTAVE_BIN $ENV{OCTAVE_ROOT}/bin)
 ENDIF()
 
-# Ubuntu have the Octave libs at two locations
+# Ubuntu have the Octave libs at two different locations
 if ("${LINUX_DISTRO}" STREQUAL "UBUNTU")
   set (UBUNTU_LDIRS "/usr/lib/x86_64-linux-gnu/")
 else ("${LINUX_DISTRO}" STREQUAL "UBUNTU")

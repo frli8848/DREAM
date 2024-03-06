@@ -52,6 +52,8 @@ add_test(test_fftconv_p_run ${CMAKE_CURRENT_BINARY_DIR}/test_fftconv_p)
 # Octave tests
 #
 
+#"C:\Program Files\GNU Octave\Octave-8.4.0\octave-launch.exe" --gui
+
 if (BUILD_OCT)
 
   add_test(test_octave_dreamline_run octave --path "${PROJECT_SOURCE_DIR}/tests/m_files/" --eval test_dreamline)
@@ -82,6 +84,8 @@ endif (BUILD_OCT)
 # Matlab tests
 #
 
+# NB. We need a relatively new MATLAB version that has the -batch flag.
+
 if (BUILD_MEX)
 
   add_test(test_matlab_dreamline_run matlab -sd "${PROJECT_SOURCE_DIR}/tests/m_files/" -batch test_dreamline)
@@ -107,3 +111,29 @@ if (BUILD_MEX)
   add_test(test_matlab_das_tfm_run matlab -sd "${PROJECT_SOURCE_DIR}/tests/m_files/" -batch test_das_tfm)
 
 endif (BUILD_MEX)
+
+#
+# Julia tests
+#
+
+if (BUILD_JULIA)
+
+  add_test(test_julia_dreamline_run julia "${PROJECT_SOURCE_DIR}/julia/tests/test_dreamline.jl")
+  add_test(test_julia_dreamcirc_run julia "${PROJECT_SOURCE_DIR}/julia/tests/test_dreamcirc.jl")
+  add_test(test_julia_dreamcirc_f_run julia "${PROJECT_SOURCE_DIR}/julia/tests/test_dreamcirc_f.jl")
+  add_test(test_julia_dreamrect_run julia "${PROJECT_SOURCE_DIR}/julia/tests/test_dreamrect.jl")
+  add_test(test_julia_dreamrect_f_run julia "${PROJECT_SOURCE_DIR}/julia/tests/test_dreamrect_f.jl")
+  add_test(test_julia_dreamsphere_run julia "${PROJECT_SOURCE_DIR}/julia/tests/test_dreamsphere.jl")
+
+  add_test(test_julia_dream_arr_cylind_run julia "${PROJECT_SOURCE_DIR}/julia/tests/test_dream_arr_cylind.jl")
+  add_test(test_julia_dream_arr_circ_run julia "${PROJECT_SOURCE_DIR}/julia/tests/test_dream_arr_circ.jl")
+  add_test(test_julia_dream_arr_rect_run julia "${PROJECT_SOURCE_DIR}/julia/tests/test_dream_arr_rect.jl")
+  add_test(test_julia_dreamcylind_run julia "${PROJECT_SOURCE_DIR}/julia/tests/test_dreamcylind.jl")
+  add_test(test_julia_dream_arr_annu_run julia "${PROJECT_SOURCE_DIR}/julia/tests/test_dream_arr_annu.jl")
+
+  add_test(test_julia_conv_run julia "${PROJECT_SOURCE_DIR}/julia/tests/test_conv.jl")
+
+  #add_test(test_julia_das_saft_run julia "${PROJECT_SOURCE_DIR}/julia/tests/test_das_saft.jl")
+  #add_test(test_julia_das_tfm_run julia "${PROJECT_SOURCE_DIR}/julia/tests/test_das_tfm.jl")
+
+endif (BUILD_JULIA)

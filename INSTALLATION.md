@@ -243,7 +243,8 @@ $ julia
 
 julia>
 (@v1.8) pkg> add Plots
-(@v1.8) pkg> add GR
+(@v1.8) pkg> add TickTock
+(@v1.8) pkg> add DSP
 (@v1.8) pkg> add https://github.com/barche/libcxxwrap_julia_jll.jl.git
 (@v1.8) pkg> add CxxWrap
 ```

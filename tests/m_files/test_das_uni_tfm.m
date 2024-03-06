@@ -124,6 +124,7 @@ dx = 0.5;
 max_Rx = 25.0;
 x = min_Rx:dx:max_Rx;
 z = (0:63)/64*20; % Make sure its a factor of 64 (the OpenCL work group size).
+
 min_Rz = min(z);
 dz = z(2)-z(1);
 max_Rz = max(z);

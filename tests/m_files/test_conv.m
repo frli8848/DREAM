@@ -4,9 +4,9 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-L1 = 10000;
-L2 = 4000;
-N = 1000;
+L1 = 1000;
+L2 = 400;
+N = 50;
 X = randn(L1,N);
 Y = randn(L2,N);
 
@@ -58,7 +58,7 @@ fprintf('Numerical error: ||conv-fftconv_p|| = %e\n\n', sum(sum((Z0-Z2).^2)));
 %%
 
 if (exist('fftconv_ola'))
-  block_len = 2*4096+1 - L2; % Make the FFT length a power of 2 (radix-2).
+  block_len = 2*256+1 - L2; % Make the FFT length a power of 2 (radix-2).
   eval('tic')
   Z3 = fftconv_ola(X, Y, block_len);
   t3= toc;

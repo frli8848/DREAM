@@ -36,7 +36,7 @@ The DREAM Toolbox can be used using:
 * Support for many common transducer and array types,
 * Support for parallel processing using threads (and on the GPU on select functions),
 * Compute SIRs for lossy media,
-* Accelerated delay-and-sum (DAS) beamforming (SAFT, TFM and row-column adressed [RCA] array DAS).
+* Accelerated delay-and-sum (DAS) synthetic aperture imaging beamforming (SAFT, TFM and row-column adressed [RCA] array DAS).
 
 # Functions
 
@@ -68,16 +68,17 @@ _Table 2. Analytic transducer functions._
 | Function  | Description  | MATLAB  | Octave  | Python  | Julia |
 |:--|:--|:--|:--|:--|:--|
 | conv_p | threaded one dimensional convolution | Yes  | Yes  | N/A  | N/A |
-| fftconv_p | threaded one dimensional FFT based convolutions | Yes (**)  | Yes  | N/A | N/A |
-| fftconv_ola | threaded one dimensional FFT based convolutions using overlap-and-add | Yes (**)  | Yes  | N/A | N/A |
-| sum_fftconv | threaded sum of one dimensional FFT based convolutions | Yes (**)  | Yes  | N/A | N/A |
-| das | threaded delay-and-sum (DAS) beamforming (SAFT, TFM, and RCA) | Yes (*)(**) | Yes (*) | N/A | N/A |
+| fftconv_p | threaded one dimensional FFT based convolutions | Yes | Yes  | N/A | N/A |
+| fftconv_ola | threaded one dimensional FFT based convolutions using overlap-and-add | Yes | Yes  | N/A | N/A |
+| sum_fftconv | threaded sum of one dimensional FFT based convolutions | Yes  | Yes  | N/A | N/A |
+| das | threaded delay-and-sum (DAS) beamforming (SAFT, TFM, and RCA) | Yes (*) | Yes (*) | N/A | N/A |
+| das_uni | (OpenCL only) DAS beamforming using uniform grids (SAFT, TFM, and RCA) | Yes (*) | Yes (*) | N/A | N/A |
 
 _Table 3. Threaded (parallel) signal processing algorithms._
 
 (*) Experimental GPU support (OpenCL).
 
-(**) See known issues [here](KNOWN_ISSUES.md).
+See also known issues [here](KNOWN_ISSUES.md).
 
 # References
 

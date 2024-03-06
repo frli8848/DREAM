@@ -138,54 +138,50 @@ in the Linux build section above.
 ## Windows (mex Files)
 
 First install the MSVC Toolchain (the community version works fine) and we assume that MATLAB is
-already installed. Then create a folder such as, for example,
-```
-C:\software
-```
-which do not have any white space in its path. Install these tools in that folder:
+already installed. Then install `git`, `cmake` and `Miniconda` or `Anaconda`:
+
 * https://git-scm.com/download/win
 * https://cmake.org/download/
-* https://docs.conda.io/en/latest/miniconda.html
+* https://docs.conda.io/en/latest/miniconda.html or https://www.anaconda.com/download
 
 When you install `cmake` add it to the paths for all users. Then start the "Anaconda Powershell prompt" and
 run:
 ```
-$ conda install fftw
+ >  conda install fftw
 ```
 
-Now start a "Git Bash" shell and build DREAM using:
+Now start a "Git Bash" shell and clone the DREAM sources using:
 ```bash
 MINGW ~ $ git clone https://github.com/frli8848/DREAM.git
 MINGW ~ $ cd DREAM
-MINGW ~/DREAM (master) $ mkdir build && cd build
-MINGW ~/DREAM/build (master) $ cmake -DCMAKE_CXX_FLAGS="-O2 -EHsc" -DBUILD_MEX=on -DBUILD_OCT=off ..
-MINGW ~/DREAM/build (master) $ cmake --build . --config Relase
+MINGW ~/DREAM (master) $ mkdir build
 ```
-The `"-EHsc"` flag is for silencing MSVC exaption handling warnings.
+
+Then start an Anaconda Powershell and run
+```
+ > cd DREAM/build
+ > cmake -DCMAKE_CXX_FLAGS="-O2 -EHsc" -DBUILD_MEX=on -DBUILD_OCT=off ..
+ > cmake --build . --config Release
+```
+The `"-EHsc"` flag is for silencing MSVC exception handling warnings.
 
 If everything builds then the newly build mex-files should be located in the folder:
 ```
-MINGW ~/DREAM/build/Release
+ DREAM/build/Release
 ```
-Move these mex-files to a suitable folder and copy the FFTW dll:s which is installed in
-```
-C:\software\miniconda3\Library\bin
-```
-to the same folder and add it to your MATLAB path by adding it to the `startup.m` file (see the "Post Installation
-Setup" section below).
 
-## Python (on Linux)
+## Python (on Linux) - Experimental
 
 First, one needs to install `pybind11`, `numpy` and `matplotlib` (to run the tests). On Gentoo Linux
 ```
-$ sudo emerge dev-python/pybind11
-$ sudo emerge dev-python/numpy
-$ sudo emerge dev-python/matplotlib
+# emerge dev-python/pybind11
+# emerge dev-python/numpy
+# emerge dev-python/matplotlib
 ```
 and on Ubuntu Linux
 ```
 $ sudo apt install python3-pybind11
-% sudo apt install python3-numpy
+$ sudo apt install python3-numpy
 $ sudo apt install python3-matplotlib
 ```
 Then (clone if needed) configure and build using (`mex` and `oct` builds are optional and can be switched off):
@@ -205,8 +201,7 @@ $ DREAM/python/tests $ python3 test_dreamrect.py
 ```
 A window should appear with the SIR plots.
 
-
-## Julia (on Linux)
+## Julia (on Linux) - Experimental
 
 First install Julia, where on Ubuntu (22.04 LTS) there is no package so one have to do something like
 ```bash
@@ -274,32 +269,21 @@ The support is enabled by using the cmake option `-DUSE_OPENCL=on`. One needs dr
 the type of GPU used (Nvidia, AMD, or Intel) which is normally provided by the GPU vendor tools
 like, for example, CUDA for Nvidia or the ROCm stack from AMD.
 
-We currently keep the OpenCL kernels in a folder `kernels` inside the build folder which is generated
-by cmake (NB. this setup will must likely change in the future). To run the corresponding function we
-read an enviroment variable `DREAM_CL_KERNELS` which must contain the path to that folder. That is,
-we must set something like,
-```bash
-$ export DREAM_CL_KERNELS=/home/<USER>/DREAM/build/kernels
-```
-on Linux or
-```bash
-MINGW64 ~ setx DREAM_CL_KERNELS "C:\Users\<USER>\DREAM\build\kernels"
-```
-on Windows (or run `sysdm.cpl` and add it using the GUI [a reboot may be needed]) before starting
-MATLAB or Octave (replace `<USER>` with the user building DREAM).
-
 ## Linux
 
-On Gentoo first install the vendor specific OpenCL tools, for example CUDA (or ROCm etc.), and then
-the OpenCL C++ headers,
+On Gentoo first install the vendor specific OpenCL tools, for example CUDA (or ROCm etc.),
+the OpenCL C++ headers, and and then the `xxd` tool from vim (which we use to convert OpenCL
+`.cl` sources to header files):
 ```bash
 # emerge dev-util/nvidia-cuda-toolkit
 # emerge dev-util/opencl-headers dev-libs/clhpp
+# emerge app-editors/vim-core
+
 ```
 or on Ubuntu,
 ```bash
-# apt install nvidia-cuda-toolkit-gcc
-# apt install opencl-c-headers opencl-clhpp-header
+# sudo apt install nvidia-cuda-toolkit-gcc
+# sudo apt install opencl-c-headers opencl-clhpp-header
 ```
 
 Now setup the build as described in the Linux build section above and add the cmake option `-DUSE_OPENCL=on`
@@ -319,24 +303,26 @@ Nothing here yet.
 
 ## Windows
 
-* Install CUDA (Nvidia), ROCm (AMD), or Intel tools depending of which GPU is in use.
+* Install CUDA (Nvidia), ROCm (AMD) [not tested], or Intel tools [not tested] depending of which GPU is in use.
 
 * Install the OpenCL headers. Start `Git Bash` and run
-```
-$ git clone https://github.com/KhronosGroup/OpenCL-Headers.git
-$ git clone https://github.com/KhronosGroup/OpenCL-CLHPP.git
-```
-Then create the folder `CL` in the `DREAM/include` folder and copy all OpnCL header
-files (both `.h` and `.hpp`) to that folder; they are located in `OpenCL-Headers/CL`
-and `OpenCL-CLHPP/include/CL`, respectively. Finally , configure the build using,
-```bash
--snip-
+  ```
+  $ git clone https://github.com/KhronosGroup/OpenCL-Headers.git
+  $ git clone https://github.com/KhronosGroup/OpenCL-CLHPP.git
+  ```
+  Then create the folder `CL` in the `DREAM/include` folder and copy all OpenCL header
+  files (both `.h` and `.hpp`) to that folder; they are located in `OpenCL-Headers/CL`
+  and `OpenCL-CLHPP/include/CL`, respectively.
 
-MINGW ~/DREAM/build (master) cmake -DCMAKE_CXX_FLAGS="-O2 -EHsc" -DBUILD_MEX=on -DBUILD_OCT=off -USE_OPENCL=on ..
-
--snip-
-```
-and and build as described in the Windows build section above (NB. only Windows mex-files has currently been tested).
+* Start an Anaconda powershell and install the `xxd` tool (part of vim):
+  ```
+  > conda install --channel=conda-forge vim
+  ```
+* Finally, using an Anaconda Powershell, configure and build using:
+  ```
+ > cmake -DCMAKE_CXX_FLAGS="-O2 -EHsc" -DBUILD_MEX=on -DBUILD_OCT=off -USE_OPENCL=on ..
+ > cmake --build . --config Release
+ ```
 
 # Post Installation Setup
 

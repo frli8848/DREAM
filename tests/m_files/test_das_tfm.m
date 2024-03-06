@@ -108,7 +108,6 @@ if (exist('DO_PLOTTING'))
   title('FMC B-scan when transmit element = receive element')
   xlabel('x [mm]')
   ylabel('t [{\mu}s]')
-
 end
 
 num_elements = size(xo,2);

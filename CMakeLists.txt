@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2016,2019,2021,2022,2023 Fredrik Lingvall
+# Copyright (C) 2016,2019,2021,2022,2023,2024 Fredrik Lingvall
 #
 
 cmake_minimum_required(VERSION 3.14)
@@ -81,18 +81,31 @@ if (USE_OPENCL)
 
   if (OpenCL_FOUND)
 
+    # NB. We need the OpenCL C++ headers too.
+    #
+    # On Gentoo install dev-cpp/clhpp
+    # On Ubuntu install opencl-clhpp-headers
+    # On Windows get them with git clone (see INSTALL doc).
+
     add_definitions(-DUSE_OPENCL)
 
-    # Generate header files from the cl kernels so we can embed them
+    # Generate header files from the .cl kernels so we can embed them
     # in the binaries directly.
 
+    # On Gentoo:  # emerge app-editors/vim-core
+    # On Windows: > conda install --channel=conda-forge vim
     find_program(XXD xxd REQUIRED)
 
-    # The Windows version of xxd in Conda does not have the -n option
-    # so we use sed to clean up the variable names in the xxd:ed files.
-    find_program(SED sed REQUIRED)
+    # The Windows version of xxd in Conda may not have the -n option. If this is
+    # the case then we can use sed to clean up the variable names in the xxd:ed files.
+    #
+    # Linux: sed should be a part of all distros.
+    # On Windows: > conda install --channel=conda-forge m2-sed
+    #find_program(SED sed REQUIRED)
 
     # Put xxd:ed OpenCL kernel sources in the build folder
+    # so that we do not need to read them  from a file when
+    # we run them.
     file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/opencl")
 
     file(GLOB cl_files "opencl/*.cl")
@@ -101,30 +114,21 @@ if (USE_OPENCL)
 
       message (STATUS "${file} -> ${CMAKE_CURRENT_SOURCE_DIR}/include/${rel_path_file}.h")
 
-      #file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/${rel_path_file}.h" "const char* cl_kernel_string[] =\n")
+      #
+      # Use the external xxd program (part of vim-core or vim) # FIXME: Make cross-platform solution (preferable cmake only)
+      #
 
-      # This one eats all new lines...
-      #file(STRINGS ${file} CL_SOURCES)
-      #file(APPEND "${CMAKE_CURRENT_BINARY_DIR}/opencl/${rel_path_file}.h" ${CL_SOURCES})
+      set (TMP_VAR_NAME "__${rel_path_file}")
+      string(REPLACE "." "_" C_VAR_NAME ${TMP_VAR_NAME})
+      execute_process(COMMAND ${XXD} -i -n "${C_VAR_NAME}" ${file} "${CMAKE_CURRENT_BINARY_DIR}/opencl/${rel_path_file}.h")
 
-      # This one do not work with lines ending in "//"
-      #file(READ ${file} CL_SOURCES)
-      #foreach(line ${CL_SOURCES})
-      #  file(APPEND "${CMAKE_CURRENT_BINARY_DIR}/${rel_path_file}.h" "\"${line}\\n\"\n")
-      #endforeach()
-      #file(APPEND "${CMAKE_CURRENT_BINARY_DIR}/${rel_path_file}.h" ";\n")
-
-      # Use external xxd program (part of app-editors/vim-core) # FIXME: Make cross-platform solution (preferable cmake only)
-
-      # NB. This does not work on the Windows version of xxd
-      #set (TMP_VAR_NAME "__${rel_path_file}")
-      #string(REPLACE "." "_" C_VAR_NAME ${TMP_VAR_NAME})
-      #execute_process(COMMAND ${XXD} -i -n "${C_VAR_NAME}" ${file} "${CMAKE_CURRENT_BINARY_DIR}/opencl/${rel_path_file}.h")
-
-      # Works on both Linux and Windows (when using a Git Bash shell which has sed)
-      string(REPLACE "/" "_" WIN_PATH_VAR_NAME ${CMAKE_CURRENT_SOURCE_DIR})
-      execute_process(COMMAND ${XXD} -i ${file} "${CMAKE_CURRENT_BINARY_DIR}/opencl/${rel_path_file}.h")
-      execute_process(COMMAND ${SED} -i "s/${WIN_PATH_VAR_NAME}_opencl/_/g"  "${CMAKE_CURRENT_BINARY_DIR}/opencl/${rel_path_file}.h")
+      ## Works on both Linux and Windows (when using a Git Bash shell which has sed)
+      ## when we have a xxd version that do not support the -n flag.
+      #execute_process(COMMAND ${XXD} -i ${file} "${CMAKE_CURRENT_BINARY_DIR}/opencl/${rel_path_file}.h")
+      ## sed version of the -n option in xxd.
+      #string(REPLACE "/" "_" WIN_PATH_VAR_NAME ${CMAKE_CURRENT_SOURCE_DIR})
+      #string(REPLACE ":" "_" WIN_PATH_VAR_NAME ${WIN_PATH_VAR_NAME}) # Needed on Windows
+      #execute_process(COMMAND ${SED} -i "s/${WIN_PATH_VAR_NAME}_opencl/_/g"  "${CMAKE_CURRENT_BINARY_DIR}/opencl/${rel_path_file}.h")
 
     endforeach()
 

@@ -36,6 +36,7 @@ set (DREAM_FUNC_LIST
   dream_arr_cylind
   dream_arr_annu
   conv_p
+  fftconv_p
 )
 
 # FIXME: There must be a cleaner way than having a separate file for each Julia module!?
@@ -377,4 +378,25 @@ set_target_properties(jl_conv_p PROPERTIES
   INCLUDE_DIRECTORIES "${DREAM_JULIA_INCLUDE_DIRS}"
   LINK_FLAGS ${JULIA_LD_FLAGS}
   PREFIX "" OUTPUT_NAME "conv_p"
+)
+
+#
+# fftconv_p
+#
+
+set (jl_fftconv_p_SOURCE_FILES
+  src/jl_fftconv_p.cc
+  ../extra_src/fftconv.cc
+  ../src/affinity.cc
+)
+
+add_library(jl_fftconv_p MODULE ${jl_fftconv_p_SOURCE_FILES})
+target_link_libraries(jl_fftconv_p)
+
+set_target_properties(jl_fftconv_p PROPERTIES
+  CXX_STANDARD 17
+  COMPILE_FLAGS "${DREAM_JULIA_FLAGS}"
+  INCLUDE_DIRECTORIES "${DREAM_JULIA_INCLUDE_DIRS}"
+  LINK_FLAGS ${JULIA_LD_FLAGS}
+  PREFIX "" OUTPUT_NAME "fftconv_p"
 )

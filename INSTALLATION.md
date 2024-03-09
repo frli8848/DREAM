@@ -243,6 +243,7 @@ $ julia
 
 julia>
 (@v1.8) pkg> add Plots
+(@v1.8) pkg> add PyPlot
 (@v1.8) pkg> add TickTock
 (@v1.8) pkg> add DSP
 (@v1.8) pkg> add https://github.com/barche/libcxxwrap_julia_jll.jl.git
@@ -258,7 +259,12 @@ DREAM/build $ cmake -DCMAKE_CXX_FLAGS="-O3 -march=native" -DBUILD_JULIA=on ..
 DREAM/build $ make -j8
 ```
 
-# Building with GPU Acceleration Support - OpenCL Setup
+Then add the `build/julia` folder to the Julia path in the  `~/.julia/config/startup.jl` file:
+```
+push!(LOAD_PATH, "<your_dream_clone_path>/DREAM/build/julia")
+```
+
+# Building with GPU Acceleration Support - OpenCL
 
 We have experimental OpenCL (GPU) support for a few functions which currently includes:
 * `das`

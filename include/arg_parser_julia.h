@@ -546,6 +546,42 @@ public:
     return retval;
   };
 
+  // A string arg
+  bool parse_das_arg(const char *func_name, std::string das_str, DASType &das_type) {
+    bool retval=true;
+    std::ostringstream s;
+
+    bool is_set = false;
+
+    if (das_str == "saft") {
+      das_type = DASType::saft;
+      is_set = true;
+    }
+
+    if (das_str == "tfm") {
+      das_type = DASType::tfm;
+      is_set = true;
+    }
+
+    if ( (das_str == "rca") || (das_str == "rca_coltx") ) { // Default to column transmit.
+      das_type = DASType::rca_coltx;
+      is_set = true;
+    }
+
+    if (das_str == "rca_rowtx") {
+      das_type = DASType::rca_rowtx;
+      is_set = true;
+    }
+
+    if (is_set == false) {
+      retval=false;
+      s << func_name <<  " Unknown error level!";
+      //dream_err_msg(s.str().c_str());
+    }
+
+    return retval;
+  };
+
   //private:
 
   // Vector

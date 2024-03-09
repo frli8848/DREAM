@@ -13,7 +13,7 @@ if (NOT DEFINED CXXWRAP_PREFIX)
   string (REPLACE "\"" "" CXXWRAP_PREFIX ${CXXWRAP_PREFIX})
 endif (NOT DEFINED CXXWRAP_PREFIX)
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH};${CXXWRAP_PREFIX}/lib/cmake/JlCxx/)
+set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH};${CXXWRAP_PREFIX}/lib/cmake/JlCxx/)
 set (CXXWRAP_INCLUDE_DIR ${CXXWRAP_PREFIX}/include)
 
 message (STATUS "Julia CxxWrap PREFIX ${CXXWRAP_PREFIX}")
@@ -37,6 +37,7 @@ set (DREAM_FUNC_LIST
   dream_arr_annu
   conv_p
   fftconv_p
+  das
 )
 
 # FIXME: There must be a cleaner way than having a separate file for each Julia module!?
@@ -57,6 +58,7 @@ find_package(Julia REQUIRED)
 
 set (DREAM_JULIA_INCLUDE_DIRS
   ${PROJECT_BINARY_DIR}
+  "${PROJECT_BINARY_DIR}/../opencl;"
   "${PROJECT_SOURCE_DIR}/../include;"
   ${Julia_INCLUDE_DIRS}
   ${CXXWRAP_INCLUDE_DIR}
@@ -400,3 +402,35 @@ set_target_properties(jl_fftconv_p PROPERTIES
   LINK_FLAGS ${JULIA_LD_FLAGS}
   PREFIX "" OUTPUT_NAME "fftconv_p"
 )
+
+#
+# Delay-and-sum (DAS)
+#
+
+# das
+
+set (jl_das_SOURCE_FILES
+  src/jl_das.cc
+  ../extra_src/das.cc
+  ../src/affinity.cc
+  #../src/dream_error.cc
+)
+
+if (OpenCL_FOUND)
+  set (jl_das_SOURCE_FILES ${jl_das_SOURCE_FILES} "../opencl/cl_das.cc")
+  file (COPY ../opencl/das_float.cl DESTINATION ../kernels)
+  file (COPY ../opencl/das_double.cl DESTINATION ../kernels)
+endif (OpenCL_FOUND)
+
+add_library (jl_das MODULE ${jl_das_SOURCE_FILES})
+
+target_link_libraries (jl_das
+  ${OpenCL_LIBRARIES}
+)
+
+set_target_properties (jl_das PROPERTIES
+  CXX_STANDARD 17
+  COMPILE_FLAGS "${DREAM_JULIA_FLAGS}"
+  INCLUDE_DIRECTORIES "${DREAM_JULIA_INCLUDE_DIRS}"
+  LINK_FLAGS ${JULIA_LD_FLAGS}
+  SUFFIX "" PREFIX "" OUTPUT_NAME "das")

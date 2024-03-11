@@ -27,7 +27,7 @@
 #include "fft.h"
 
 void fftconv(FFT &fft,
-             double *xr, dream_idx_type nx, double *yr, dream_idx_type ny, double *zr,
+             const double *xr, dream_idx_type nx, const double *yr, dream_idx_type ny, double *zr,
              double *a,  double *b, double *c,
              std::complex<double> *af, std::complex<double> *bf, std::complex<double> *cf,
              ConvMode conv_mode);

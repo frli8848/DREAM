@@ -73,6 +73,7 @@ if (BUILD_OCT)
 
   add_test(test_octave_das_saft_run octave --path "${PROJECT_SOURCE_DIR}/tests/m_files/" --eval test_das_saft)
   add_test(test_octave_das_tfm_run octave --path "${PROJECT_SOURCE_DIR}/tests/m_files/" --eval test_das_tfm)
+  add_test(test_octave_das_tfm_run octave --path "${PROJECT_SOURCE_DIR}/tests/m_files/" --eval test_das_rca)
 
   if (USE_OPENCL)
     add_test(test_octave_opencl_run octave --path "${PROJECT_SOURCE_DIR}/tests/m_files/" --eval test_opencl)
@@ -81,7 +82,7 @@ if (BUILD_OCT)
 endif (BUILD_OCT)
 
 #
-# Matlab tests
+# MATLAB tests
 #
 
 # NB. We need a relatively new MATLAB version that has the -batch flag.
@@ -109,8 +110,15 @@ if (BUILD_MEX)
 
   add_test(test_matlab_das_saft_run matlab -sd "${PROJECT_SOURCE_DIR}/tests/m_files/" -batch test_das_saft)
   add_test(test_matlab_das_tfm_run matlab -sd "${PROJECT_SOURCE_DIR}/tests/m_files/" -batch test_das_tfm)
+  add_test(test_matlab_das_tfm_run matlab -sd "${PROJECT_SOURCE_DIR}/tests/m_files/" -batch test_das_rca)
 
 endif (BUILD_MEX)
+
+#
+# Python tests
+#
+
+# Nothing here yet.
 
 #
 # Julia tests
@@ -133,7 +141,8 @@ if (BUILD_JULIA)
 
   add_test(test_julia_conv_run julia "${PROJECT_SOURCE_DIR}/julia/tests/test_conv.jl")
 
-  #add_test(test_julia_das_saft_run julia "${PROJECT_SOURCE_DIR}/julia/tests/test_das_saft.jl")
-  #add_test(test_julia_das_tfm_run julia "${PROJECT_SOURCE_DIR}/julia/tests/test_das_tfm.jl")
+  add_test(test_julia_das_saft_run julia "${PROJECT_SOURCE_DIR}/julia/tests/test_das_saft.jl")
+  add_test(test_julia_das_tfm_run julia "${PROJECT_SOURCE_DIR}/julia/tests/test_das_tfm.jl")
+  add_test(test_julia_das_rca_run julia "${PROJECT_SOURCE_DIR}/julia/tests/test_das_rca.jl")
 
 endif (BUILD_JULIA)

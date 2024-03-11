@@ -244,7 +244,7 @@ jl::ArrayRef<double, 2> jl_das(jl::ArrayRef<double, 2> jl_Y,
 
 /***
  *
- *  Julia gateway function for (parallel) dreamrect.
+ *  Julia gateway function for (parallel) DAS.
  *
  ***/
 

@@ -137,6 +137,10 @@ jl::ArrayRef<double, 2> jl_conv_p(jl::ArrayRef<double, 2> jl_A,
   DATA *D = nullptr;
   ConvMode conv_mode = ConvMode::equ;
 
+  //
+  // Input args
+  //
+
   double *A = static_cast<double*>(ap.get_data(jl_A));
   dream_idx_type A_M = (dream_idx_type) ap.get_m(jl_A);
   dream_idx_type A_N = (dream_idx_type) ap.get_n(jl_A);
@@ -145,9 +149,9 @@ jl::ArrayRef<double, 2> jl_conv_p(jl::ArrayRef<double, 2> jl_A,
   dream_idx_type B_M = (dream_idx_type) ap.get_m(jl_B);
   dream_idx_type B_N = (dream_idx_type) ap.get_n(jl_B);
 
-  // Check that arg 2.
+  // Check that arg 2 has the correct dim (matrix or vector allowed).
   if ( B_M != 1 && B_N !=1 && B_N != A_N) {
-    throw std::runtime_error("Argument 2 must be a vector or a matrix with the same number of rows as arg 1!");
+    throw std::runtime_error("Argument 2 must be a vector or a matrix with the same number of columns as arg 1!");
   }
 
   if (  B_M == 1 || B_N == 1 ) { // B is a vector.
@@ -191,13 +195,14 @@ jl::ArrayRef<double, 2> jl_conv_p(jl::ArrayRef<double, 2> jl_A,
     std::cerr << "Couldn't register SIGINT signal handler!" << std::endl;
   }
 
+  //
+  // Create an output matrix
+  //
 
-  // Create an output matrix for the impulse responses
   jl_value_t *matrix_type = jl_apply_array_type((jl_value_t*) jl_float64_type,2);
   jl_array_t *jl_Y_array = jl_alloc_array_2d(matrix_type, A_M+B_M-1, A_N);
   double *Y = (double *) jl_array_data(jl_Y_array);
   auto jl_Y_mat = jl::ArrayRef<double, 2>(jl_Y_array);
-
 
   //
   // Call the CONV subroutine.
@@ -276,7 +281,7 @@ jl::ArrayRef<double, 2> jl_conv_p(jl::ArrayRef<double, 2> jl_A,
 
 /***
  *
- *  Julia gateway function for (parallel) dreamrect.
+ *  Julia gateway function for (parallel) conv.
  *
  ***/
 

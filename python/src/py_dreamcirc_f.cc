@@ -48,7 +48,7 @@ py::array_t<double,py::array::f_style> py_dreamcirc_f(py::array_t<double,py::arr
                                                       std::string foc_str, py::array_t<double,py::array::f_style> *py_focal,
                                                       std::string err_level_str)
 {
-  ArgParser ap;
+  ArgParser<double> ap;
 
   //
   // Observation points.

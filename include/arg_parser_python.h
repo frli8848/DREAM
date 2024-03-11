@@ -37,6 +37,7 @@
 
 namespace py = pybind11;
 
+template <class T>
 class ArgParser
 {
 public:
@@ -79,7 +80,7 @@ public:
   };
   */
 
-  bool check_obs_points(const char *func_name, py::array_t<double,py::array::f_style> *py_ro) {
+  bool check_obs_points(const char *func_name, py::array_t<T,py::array::f_style> *py_ro) {
     bool retval=true;
     std::ostringstream s;
 
@@ -95,7 +96,7 @@ public:
     return retval;
   };
 
-  bool check_array(const char *func_name, py::array_t<double,py::array::f_style> *py_G) {
+  bool check_array(const char *func_name, py::array_t<T,py::array::f_style> *py_G) {
     bool retval=true;
     std::ostringstream s;
 
@@ -113,7 +114,7 @@ public:
     return retval;
   };
 
-  bool check_array_annu(const char *func_name, py::array_t<double,py::array::f_style> *py_G) {
+  bool check_array_annu(const char *func_name, py::array_t<T,py::array::f_style> *py_G) {
     bool retval=true;
     std::ostringstream s;
 
@@ -145,8 +146,8 @@ public:
   };
   */
 
-  bool parse_geometry(const char *func_name, py::array_t<double,py::array::f_style> *py_geom_pars, dream_idx_type num_pars,
-                      double &arg1, double &arg2, double &arg3) {
+  bool parse_geometry(const char *func_name, py::array_t<T,py::array::f_style> *py_geom_pars, dream_idx_type num_pars,
+                      T &arg1, T &arg2, T &arg3) {
     bool retval=true;
     std::ostringstream s;
 
@@ -161,7 +162,7 @@ public:
       retval=false;
     } else {
 
-      double *pars = get_data(py_geom_pars);
+      T *pars = get_data(py_geom_pars);
 
       if (num_pars==1) { // Scalars needs special treatment
         arg1 = get_scalar(py_geom_pars);
@@ -182,7 +183,7 @@ public:
   };
 
   /*
-  bool check_sampling(const char *func_name, py::array_t<double,py::array::f_style> *py_s_par, dream_idx_type num_pars) {
+  bool check_sampling(const char *func_name, py::array_t<T,py::array::f_style> *py_s_par, dream_idx_type num_pars) {
     bool retval=true;
     std::ostringstream s;
     if (!((get_m(py_s_par)==num_pars && get_n(py_s_pa)==1) ||
@@ -196,8 +197,8 @@ public:
   };
   */
 
-  bool parse_sampling(const char *func_name, py::array_t<double,py::array::f_style> *py_s_par, dream_idx_type num_pars,
-                      double &dx, double &dy, double &dt, dream_idx_type &nt) {
+  bool parse_sampling(const char *func_name, py::array_t<T,py::array::f_style> *py_s_par, dream_idx_type num_pars,
+                      T &dx, T &dy, T &dt, dream_idx_type &nt) {
     bool retval=true;
     std::ostringstream s;
 
@@ -233,8 +234,8 @@ public:
   };
   */
 
-  bool parse_material(const char *func_name, py::array_t<double,py::array::f_style> *py_m_par,
-                      double &v, double &cp, double &alpha) {
+  bool parse_material(const char *func_name, py::array_t<T,py::array::f_style> *py_m_par,
+                      T &v, T &cp, T &alpha) {
     bool retval=true;
     std::ostringstream s;
     if (!((get_m(py_m_par) == 3 && get_n(py_m_par) == 1) ||
@@ -255,7 +256,7 @@ public:
 
 
   // Check that the delay is a scalar or vector of length no.
-  bool check_delay(const char *func_name, py::array_t<double,py::array::f_style> *py_focal, dream_idx_type No) {
+  bool check_delay(const char *func_name, py::array_t<T,py::array::f_style> *py_focal, dream_idx_type No) {
     bool retval=true;
     std::ostringstream s;
 
@@ -314,8 +315,8 @@ public:
    *
    ***/
 
-  bool parse_focus_args(const char *func_name, std::string foc_str, py::array_t<double,py::array::f_style> *py_focal, dream_idx_type num_elements,
-                        FocusMet &foc_met, double *focal)
+  bool parse_focus_args(const char *func_name, std::string foc_str, py::array_t<T,py::array::f_style> *py_focal, dream_idx_type num_elements,
+                        FocusMet &foc_met, T *focal)
   {
     bool retval=true;
     std::ostringstream s;
@@ -357,9 +358,9 @@ public:
         s << "delays must have the same length as the number of array elements!";
         retval=false;
       } else { // Copy the user defined apodization weights.
-        double *tmp_focal = get_data(py_focal);
+        T *tmp_focal = get_data(py_focal);
         if (focal) {
-          std::memcpy(focal, tmp_focal, num_elements*sizeof(double));
+          std::memcpy(focal, tmp_focal, num_elements*sizeof(T));
         } else {
           s << func_name << " focal vector not initialzed!";
           retval=false;
@@ -392,8 +393,8 @@ public:
   };
 
   // A string arg and a 2 element vector
-  bool parse_steer_args(const char *func_name, std::string steer_str, py::array_t<double,py::array::f_style> *py_steer_par,
-                        SteerMet &steer_met, double &theta, double &phi)
+  bool parse_steer_args(const char *func_name, std::string steer_str, py::array_t<T,py::array::f_style> *py_steer_par,
+                        SteerMet &steer_met, T &theta, T &phi)
   {
     bool retval=true;
     std::ostringstream s;
@@ -435,7 +436,7 @@ public:
       }
 
     if (is_set && retval) {
-      const double *steer_pars = get_data(py_steer_par);
+      const T *steer_pars = get_data(py_steer_par);
       theta = steer_pars[0];
       phi= steer_pars[1];
     }
@@ -444,8 +445,8 @@ public:
   };
 
   // A string arg, a vector, and a scalar.
-  bool parse_apod_args(const char *func_name,  std::string apod_str, py::array_t<double,py::array::f_style> *py_apod, dream_idx_type num_elements,
-                       bool &do_apod, double *apod, ApodMet &apod_met, double &apod_par) {
+  bool parse_apod_args(const char *func_name,  std::string apod_str, py::array_t<T,py::array::f_style> *py_apod, dream_idx_type num_elements,
+                       bool &do_apod, T *apod, ApodMet &apod_met, T &apod_par) {
     bool retval=true;
     std::ostringstream s;
     bool is_set = false;
@@ -509,9 +510,9 @@ public:
         s << func_name <<  " the length of apodization vector argument must be the same as the number of array elements!";
         retval=false;
       } else { // Copy the user defined apodization weights.
-        double *tmp_apod = get_data(py_apod);
+        T *tmp_apod = get_data(py_apod);
         if (apod) {
-          std::memcpy(apod, tmp_apod, num_elements*sizeof(double));
+          std::memcpy(apod, tmp_apod, num_elements*sizeof(T));
         } else {
           s << func_name << " apodization vector not initialzed!";
           retval=false;
@@ -543,31 +544,75 @@ public:
     return retval;
   };
 
-private:
+  // A string arg
+  bool parse_das_arg(const char *func_name, std::string das_str, DASType &das_type) {
+    bool retval=true;
+    std::ostringstream s;
 
-  dream_idx_type get_m(const py::array_t<double,py::array::f_style> *py_arg) {
+    bool is_set = false;
+
+    if (das_str == "saft") {
+      das_type = DASType::saft;
+      is_set = true;
+    }
+
+    if (das_str == "tfm") {
+      das_type = DASType::tfm;
+      is_set = true;
+    }
+
+    if ( (das_str == "rca") || (das_str == "rca_coltx") ) { // Default to column transmit.
+      das_type = DASType::rca_coltx;
+      is_set = true;
+    }
+
+    if (das_str == "rca_rowtx") {
+      das_type = DASType::rca_rowtx;
+      is_set = true;
+    }
+
+    if (is_set == false) {
+      retval=false;
+      s << func_name <<  " Unknown error level!";
+      //dream_err_msg(s.str().c_str());
+    }
+
+    return retval;
+  };
+
+  //private:
+
+  dream_idx_type get_m(const py::array_t<T,py::array::f_style> *py_arg) {
     py::buffer_info py_arg_info = py_arg->request();
     auto m = py_arg_info.shape[0];
 
     return (dream_idx_type) m;
   };
 
-  dream_idx_type get_n(const py::array_t<double,py::array::f_style> *py_arg) {
+  dream_idx_type get_n(const py::array_t<T,py::array::f_style> *py_arg) {
     py::buffer_info py_arg_info = py_arg->request();
     auto n = py_arg_info.shape[1];
 
     return (dream_idx_type) n;
   };
 
-  double* get_data(const py::array_t<double,py::array::f_style> *py_arg) {
+  // Assume vector here. We do not care it is a row or column vector.
+  dream_idx_type get_len(const py::array_t<T,py::array::f_style> *py_arg) {
     py::buffer_info py_arg_info = py_arg->request();
+    auto len = py_arg_info.shape[0] * py_arg_info.shape[1];
 
-    return static_cast<double*>(py_arg_info.ptr);
+    return (dream_idx_type) len;
   };
 
-  double get_scalar(const py::array_t<double,py::array::f_style> *py_arg) {
+  T* get_data(const py::array_t<T,py::array::f_style> *py_arg) {
     py::buffer_info py_arg_info = py_arg->request();
-    double *retval = static_cast<double*>(py_arg_info.ptr);
+
+    return static_cast<T*>(py_arg_info.ptr);
+  };
+
+  T get_scalar(const py::array_t<T,py::array::f_style> *py_arg) {
+    py::buffer_info py_arg_info = py_arg->request();
+    T *retval = static_cast<T*>(py_arg_info.ptr);
 
     return retval[0];
   };

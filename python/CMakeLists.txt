@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2023 Fredrik Lingvall
+# Copyright (C) 2023,2024 Fredrik Lingvall
 #
 
 project(py_dream)
@@ -13,10 +13,10 @@ find_package(pybind11 CONFIG REQUIRED)
 set (DREAM_PYTHON_INCLUDE_DIRS
   "${PROJECT_BINARY_DIR};"
   "${PROJECT_SOURCE_DIR}/../include;"
+  "${PROJECT_SOURCE_DIR}/include;"
   "${FFTW_INCLUDE_DIR};"
 )
 message (STATUS "DREAM_PYTHON_INCLUDE_DIRS: ${DREAM_PYTHON_INCLUDE_DIRS}")
-
 
 if (pybind11_FOUND)
 
@@ -358,4 +358,53 @@ set_target_properties(py_dream_arr_annu PROPERTIES
   #VISIBILITY_INLINES_HIDDEN ON
   LINK_FLAGS ${PYTHON_LD_FLAGS}
   PREFIX "" OUTPUT_NAME "dream_arr_annu"
+)
+
+
+#
+# das
+#
+
+# Single
+
+set (py_das_f_SOURCE_FILES
+  src/py_das.cc
+  ../extra_src/das.cc
+  ../src/affinity.cc
+)
+
+add_library(py_das_f MODULE ${py_das_f_SOURCE_FILES})
+target_link_libraries(py_das_f pybind11::module)
+
+set_target_properties(py_das_f PROPERTIES
+  CXX_STANDARD 14
+  COMPILE_FLAGS "${DREAM_PYTHON_FLAGS} -DUSE_FLOAT"
+  INCLUDE_DIRECTORIES "${DREAM_PYTHON_INCLUDE_DIRS}"
+  INTERPROCEDURAL_OPTIMIZATION ON
+  #CXX_VISIBILITY_PRESET ON
+  #VISIBILITY_INLINES_HIDDEN ON
+  LINK_FLAGS ${PYTHON_LD_FLAGS}
+  PREFIX "" OUTPUT_NAME "das_f"
+)
+
+# Double
+
+set (py_das_SOURCE_FILES
+  src/py_das.cc
+  ../extra_src/das.cc
+  ../src/affinity.cc
+)
+
+add_library(py_das MODULE ${py_das_SOURCE_FILES})
+target_link_libraries(py_das pybind11::module)
+
+set_target_properties(py_das PROPERTIES
+  CXX_STANDARD 14
+  COMPILE_FLAGS "${DREAM_PYTHON_FLAGS}"
+  INCLUDE_DIRECTORIES "${DREAM_PYTHON_INCLUDE_DIRS}"
+  INTERPROCEDURAL_OPTIMIZATION ON
+  #CXX_VISIBILITY_PRESET ON
+  #VISIBILITY_INLINES_HIDDEN ON
+  LINK_FLAGS ${PYTHON_LD_FLAGS}
+  PREFIX "" OUTPUT_NAME "das"
 )

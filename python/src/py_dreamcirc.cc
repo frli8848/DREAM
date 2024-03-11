@@ -46,7 +46,7 @@ py::array_t<double,py::array::f_style> py_dreamcirc(py::array_t<double,py::array
                                                          py::array_t<double,py::array::f_style> *py_m_par,
                                                          std::string err_level_str)
 {
-  ArgParser ap;
+  ArgParser<double> ap;
 
   //
   // Observation points.

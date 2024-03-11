@@ -186,7 +186,7 @@ py::array_t<double,py::array::f_style> py_dream_arr_circ(py::array_t<double,py::
   }
 
   // Create an output matrix for the impulse response
-  auto py_h_mat = py::array_t<double,py::array::f_style>(nt*no);
+  auto py_h_mat = py::array_t<double,py::array::f_style>({nt,no});
   py::buffer_info h_mat_info = py_h_mat.request();
   double *h = static_cast<double*>(h_mat_info.ptr);
 

@@ -582,6 +582,13 @@ public:
 
   //private:
 
+  dream_idx_type get_ndim(const py::array_t<T,py::array::f_style> *py_arg) {
+    py::buffer_info py_arg_info = py_arg->request();
+    auto ndim = py_arg_info.ndim;
+
+    return (dream_idx_type) ndim;
+  };
+
   dream_idx_type get_m(const py::array_t<T,py::array::f_style> *py_arg) {
     py::buffer_info py_arg_info = py_arg->request();
     auto m = py_arg_info.shape[0];

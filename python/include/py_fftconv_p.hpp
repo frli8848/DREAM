@@ -40,12 +40,22 @@ py::array_t<T,py::array::f_style> py_fftconv_p(py::array_t<T,py::array::f_style>
 {
   ArgParser<T> ap;
 
+  // A
+  dream_idx_type A_ndim = (dream_idx_type) ap.get_ndim(py_A);
   dream_idx_type A_M = (dream_idx_type) ap.get_m(py_A);
-  dream_idx_type A_N =  (dream_idx_type) ap.get_n(py_A);
+  dream_idx_type A_N = 1;
+  if (A_ndim == 2) {
+    A_N =  (dream_idx_type) ap.get_n(py_A);
+  }
   T *A = static_cast<T*>(ap.get_data(py_A));
 
+  // B
+  dream_idx_type B_ndim = (dream_idx_type) ap.get_ndim(py_B);
   dream_idx_type B_M = (dream_idx_type) ap.get_m(py_B);
-  dream_idx_type B_N = (dream_idx_type) ap.get_n(py_B);
+  dream_idx_type B_N = 1;
+  if (B_ndim == 2) {
+    B_N =  (dream_idx_type) ap.get_n(py_B);
+  }
   T *B = static_cast<T*>(ap.get_data(py_B));
 
   // Check that arg 2 has the correct dim (matrix or vector allowed).

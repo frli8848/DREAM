@@ -46,7 +46,7 @@ https://github.com/frli8848/DREAM.\n\
 \n\
 Copyright 2006-2024 Fredrik Lingvall.";
 
-  m.def("das_f", &py_das<float>,
+  m.def("das", &py_das<float>,
         "Im = das(Y,Gt,Gr,Ro,dt,delay,cp,method,err_level,device)",
         py::arg("Y"),
         py::arg("Gt"),

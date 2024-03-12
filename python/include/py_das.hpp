@@ -66,13 +66,22 @@ py::array_t<T,py::array::f_style> py_das(py::array_t<T,py::array::f_style> *py_Y
   const T *Gt =  static_cast<T*>(ap.get_data(py_Gt));
 
   //
+  // DAS method
+  //
+
+  DASType das_type;
+  if (!ap.parse_das_arg("das", das_method_str, das_type)) {
+    throw std::runtime_error("Error in das!");
+  }
+
+  //
   // Recieve array
   //
 
   dream_idx_type num_r_elements = 0;
   const T *Gr = nullptr;
 
-  if (ap.get_m(py_Gr) != 0) {         // SAFT is using an empty Gr.
+  if (das_type != DASType::saft) { // We do not use Gr in SAFT mode.
 
     if (ap.get_n(py_Gr) != 3) {
       throw std::runtime_error("Argument 3 must be a (num recieve elements) x 3 matrix!");
@@ -119,15 +128,6 @@ py::array_t<T,py::array::f_style> py_das(py::array_t<T,py::array::f_style> *py_Y
   //
 
   // No arg parsing needed here. Or, perhaps check for reasonbale values?
-
-  //
-  // DAS method
-  //
-
-  DASType das_type;
-  if (!ap.parse_das_arg("das", das_method_str, das_type)) {
-    throw std::runtime_error("Error in das!");
-  }
 
   //
   // Error reporting.

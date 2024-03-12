@@ -7,10 +7,11 @@ import matplotlib.pyplot as plt
 #import sys
 #sys.path.insert(0, '../')
 
+# DREAM functions
 import dreamrect as dr
+import fftconv_p as ft_p
 import das as das
 import das_f as das_f
-import fftconv_p as ft_p
 
 #
 # ------------- Delay-and-sum --------------------------
@@ -81,7 +82,7 @@ if 'DO_PLOTTING' in locals():
     plt.show(block=False)
 
 #
-# RCA TFM data (full matrix capture - a.k.a FMC)
+# SAFT data
 #
 
 d  = 0.5                        # Array pitch
@@ -92,78 +93,43 @@ zo = z_pt * np.ones((xo.shape[0], 1))
 
 # We cannot append column-wise in python as in MATLAB/Octave so
 # we have to do it row-wise and transpose.
-Ro_t = np.asmatrix([xo.flatten('F'), yo.flatten('F'), zo.flatten('F')])
-Ro_t = Ro_t.T
-
-# Crossed transmit and receve elemets.
+Ro = np.asmatrix([xo.flatten('F'), yo.flatten('F'), zo.flatten('F')])
+Ro = Ro.T
 
 # Geometrical parameters.
 a = 0.4                         # element x-size [mm].
-b = 50                          # element y-size [mm].
-geom_par_t = np.asmatrix([a,b])
+b = 15                          # element y-size [mm].
+geom_par = np.asmatrix([a,b])
 
 delay = np.asmatrix([0.0])
-Ht = dr.dreamrect(Ro_t,geom_par_t,s_par,delay,m_par,"stop")
+H = dr.dreamrect(Ro,geom_par,s_par,delay,m_par,"stop")
 
-geom_par_r = np.asmatrix([b,a])
 
-Ro_r = np.asmatrix([yo.flatten('F'), xo.flatten('F'), zo.flatten('F')])
-Ro_r = Ro_r.T
-
-Hr = dr.dreamrect(Ro_r,geom_par_r,s_par,delay,m_par,"stop")
-
-L = xo.shape[0]
-Yfmc = np.zeros((nt+nt-1+nt_he-1, L*L))
-
-# Loop over all transmit elements
-n_t = 0
-for n in range(0, L*L, L) :
-    Hdp = ft_p.fftconv_p(Hr, Ht[:,n_t]) # Double-path SIRs for the n_t:th transmit
-    #print("n = %d n_t = %d M = %d x M = %d" % (n, n_t, Hdp.shape[0], Hdp.shape[1]))
-    Yfmc[:,n:(n+L)] = ft_p.fftconv_p(Hdp, h_e)
-    n_t += 1
-
-Yfmc = Yfmc / np.max(np.max(np.abs(Yfmc),axis=0),axis=0) # Normalize amplitudes
+Hdp = ft_p.fftconv_p(H, H) # Double-path SIRs
+Ysaft = ft_p.fftconv_p(Hdp, h_e)
+Ysaft = Ysaft / np.max(np.max(np.abs(Ysaft),axis=0),axis=0) # Normalize amplitudes
 
 if 'DO_PLOTTING' in locals():
 
-    t_dp = np.linspace(0.0, Ts*Yfmc.shape[0], num=int(Yfmc.shape[0]), endpoint=True)
-
-    if False : # NB. This is plots very slow
-        fig = plt.figure(2)
-        plt.clf()
-        a_scan_idx = np.linspace(1.0, Yfmc.shape[1], num=int(Yfmc.shape[1]), endpoint=True)
-        plt.pcolor(a_scan_idx, t_dp, Yfmc)
-        plt.gca().invert_yaxis()
-        plt.title("FMC RCA B-scan");
-        plt.xlabel("A-scan index");
-        plt.ylabel("t [\\mu s]");
-        plt.show(block=False)
-
-    fig = plt.figure(3)
+    fig = plt.figure(2)
     plt.clf()
-    plt.pcolor(xo, t_dp, Yfmc[:,1:L*L:L])
+    t_dp = np.linspace(0.0, Ts*Ysaft.shape[0], num=int(Ysaft.shape[0]), endpoint=True)
+    plt.pcolor(xo, t_dp, Ysaft)
     plt.gca().invert_yaxis()
-    plt.title("FMC RCA B-scan");
+    plt.title("SAFT B-scan");
     plt.xlabel("A-scan index");
     plt.ylabel("t [\\mu s]");
     plt.show(block=False)
 
 num_elements = xo.shape[0]
 
-# Transmit element positions
-xt = xo.flatten('F')
-yt = np.zeros((num_elements,1)).flatten('F')
-zt = np.zeros((num_elements,1)).flatten('F')
-Gt = np.asmatrix([xt,yt,zt])
+# Element positions
+x = xo.flatten('F')
+y = np.zeros((num_elements,1)).flatten('F')
+z = np.zeros((num_elements,1)).flatten('F')
+Gt = np.asmatrix([x,y,z])
 Gt = Gt.T
-
-# Receive element positions
-xr = np.zeros((num_elements,1)).flatten('F')
-yr = xo.flatten('F')
-zr = np.zeros((num_elements,1)).flatten('F')
-Gr = np.asmatrix([xr,yr,zr])
-Gr = Gr.T
+Gr = np.asmatrix([]) # Empty for SAFT processing
 
 # Observation points for DAS
 x = np.linspace(-25.0,25.0, num=int((50.0/d)+1), endpoint=True)
@@ -171,8 +137,8 @@ z = np.linspace(0.0,20.0, num=int(64), endpoint=True) # Make sure its a multiple
 
 X, Z = np.meshgrid(x,z)
 Y = np.zeros((X.shape[0], X.shape[1]))
-Ro_rca = np.asmatrix([X.flatten('F'), Y.flatten('F'), Z.flatten('F')])
-Ro_rca = Ro_rca.T
+Ro_saft = np.asmatrix([X.flatten('F'), Y.flatten('F'), Z.flatten('F')])
+Ro_saft = Ro_saft.T
 
 delay = np.matrix(system_delay) # Compensate for the pulse/system (transducer) delay.
 
@@ -180,16 +146,16 @@ delay = np.matrix(system_delay) # Compensate for the pulse/system (transducer) d
 # CPU - double precision
 #
 
-Im_rca = das.das(Yfmc, Gt, Gr, Ro_rca, dt, delay, cp, "rca", "ignore", "cpu")
+Im = das.das(Ysaft, Gt, Gr, Ro_saft, dt, delay, cp, "saft", "ignore", "cpu")
 
 if 'DO_PLOTTING' in locals():
 
     fig = plt.figure(4)
     plt.clf()
-    py_Im = np.reshape(Im_rca, (x.shape[0], z.shape[0]))
+    py_Im = np.reshape(Im, (x.shape[0], z.shape[0]))
     plt.pcolor(x, z, py_Im.T)
     plt.gca().invert_yaxis()
-    plt.title("RCA CPU Reconstruction")
+    plt.title("SAFT CPU Reconstruction")
     plt.xlabel("x [mm]")
     plt.ylabel("z [mm]")
     plt.show(block=False)
@@ -198,16 +164,16 @@ if 'DO_PLOTTING' in locals():
 # GPU - double precision
 #
 
-Im_rca_gpu = das.das(Yfmc, Gt, Gr, Ro_rca, dt, delay, cp, "rca", "ignore", "gpu")
+Im_gpu = das.das(Ysaft, Gt, Gr, Ro_saft, dt, delay, cp, "saft", "ignore", "gpu")
 
 if 'DO_PLOTTING' in locals():
 
     fig = plt.figure(5)
     plt.clf()
-    py_Im = np.reshape(Im_rca_gpu, (x.shape[0], z.shape[0]))
+    py_Im = np.reshape(Im_gpu, (x.shape[0], z.shape[0]))
     plt.pcolor(x, z, py_Im.T)
     plt.gca().invert_yaxis()
-    plt.title("RCA GPU Reconstruction")
+    plt.title("SAFT GPU Reconstruction")
     plt.xlabel("x [mm]")
     plt.ylabel("z [mm]")
     plt.show(block=False)
@@ -218,24 +184,24 @@ if 'DO_PLOTTING' in locals():
 #
 
 # Convert args to single precision.
-Yfmc_f   = np.float32(Yfmc)
+Ysaft_f   = np.float32(Ysaft)
 Gt_f     = np.float32(Gt)
 Gr_f     = np.float32(Gr)
-Ro_rca_f = np.float32(Ro_rca)
+Ro_saft_f = np.float32(Ro_saft)
 dt_f     = np.float32(dt)
 delay_f  = np.float32(delay)
 cp_f     = np.float32(cp)
 
-Im_rca_f  = das_f.das(Yfmc_f, Gt_f, Gr_f, Ro_rca_f, dt_f, delay_f, cp_f, "rca", "ignore", "cpu")
+Im_f  = das_f.das(Ysaft_f, Gt_f, Gr_f, Ro_saft_f, dt_f, delay_f, cp_f, "saft", "ignore", "cpu")
 
 if 'DO_PLOTTING' in locals():
 
     fig = plt.figure(6)
     plt.clf()
-    py_Im = np.reshape(Im_rca_f, (x.shape[0], z.shape[0]))
+    py_Im = np.reshape(Im_f, (x.shape[0], z.shape[0]))
     plt.pcolor(x, z, py_Im.T)
     plt.gca().invert_yaxis()
-    plt.title("RCA GPU Reconstruction")
+    plt.title("SAFT GPU Reconstruction")
     plt.xlabel("x [mm]")
     plt.ylabel("z [mm]")
     plt.show(block=False)
@@ -244,16 +210,16 @@ if 'DO_PLOTTING' in locals():
 # GPU - single precision
 #
 
-Im_rca_gpu_f  = das_f.das(Yfmc_f, Gt_f, Gr_f, Ro_rca_f, dt_f, delay_f, cp_f, "rca", "ignore", "gpu")
+Im_gpu_f  = das_f.das(Ysaft_f, Gt_f, Gr_f, Ro_saft_f, dt_f, delay_f, cp_f, "saft", "ignore", "gpu")
 
 if 'DO_PLOTTING' in locals():
 
     fig = plt.figure(7)
     plt.clf()
-    py_Im = np.reshape(Im_rca_gpu_f, (x.shape[0], z.shape[0]))
+    py_Im = np.reshape(Im_gpu_f, (x.shape[0], z.shape[0]))
     plt.pcolor(x, z, py_Im.T)
     plt.gca().invert_yaxis()
-    plt.title("RCA GPU Reconstruction")
+    plt.title("SAFT GPU Reconstruction")
     plt.xlabel("x [mm]")
     plt.ylabel("z [mm]")
     plt.show()

@@ -573,7 +573,7 @@ public:
 
     if (is_set == false) {
       retval=false;
-      s << func_name <<  " Unknown error level!";
+      s << func_name <<  " Unknown delay-and-sum method!";
       //dream_err_msg(s.str().c_str());
     }
 

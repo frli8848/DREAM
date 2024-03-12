@@ -88,20 +88,18 @@ win_par = 1.0; # Parameter for raised cos and Gaussian apodization functions.
 
 H = dac.dream_arr_circ(Ro,geom_par,G,s_par,delay,m_par,foc_met,focal,steer_met,steer_par,apod_met,apod,win_par,"stop")
 
-fig = plt.figure(1)
-plt.clf()
-
-plt.plot(t, H, 'b-', label='Attenuation alpha = 0 [dB/cm MHz]', linewidth=2, markersize=12)
-
 alpha  = 5.0;                   # Absorbtion (dB/cm Hz).
 m_par = np.asmatrix([v,cp,alpha]);
 Hatt = dac.dream_arr_circ(Ro,geom_par,G,s_par,delay,m_par,foc_met,focal,steer_met,steer_par,apod_met,apod,win_par,"stop");
-plt.plot(t, Hatt, 'r--',label='Attenuation alpha = 5 [dB/cm MHz]', linewidth=2, markersize=12)
 
-plt.title('Array with circular elements')
+if 'DO_PLOTTING' in locals():
 
-plt.xlabel('t [us]')
-plt.ylabel('h_{SIR} [m/s]')
-
-plt.legend()
-plt.show()
+    fig = plt.figure(1)
+    plt.clf()
+    plt.plot(t, H, 'b-', label='Attenuation alpha = 0 [dB/cm MHz]', linewidth=2, markersize=12)
+    plt.plot(t, Hatt, 'r--',label='Attenuation alpha = 5 [dB/cm MHz]', linewidth=2, markersize=12)
+    plt.title('Array with circular elements')
+    plt.xlabel('t [us]')
+    plt.ylabel('h_{SIR} [m/s]')
+    plt.legend()
+    plt.show()

@@ -89,20 +89,18 @@ win_par = 1.0; # Parameter for raised cos and Gaussian apodization functions.
 
 H = dar.dream_arr_rect(Ro,geom_par,G,s_par,delay,m_par,foc_met,focal,steer_met,steer_par,apod_met,apod,win_par,"stop")
 
-fig = plt.figure(1)
-plt.clf()
-
-plt.plot(t, H, 'b-', label='Attenuation alpha = 0 [dB/cm MHz]', linewidth=2, markersize=12)
-
 alpha  = 5.0;                   # Absorbtion (dB/cm Hz).
 m_par = np.asmatrix([v,cp,alpha]);
 Hatt = dar.dream_arr_rect(Ro,geom_par,G,s_par,delay,m_par,foc_met,focal,steer_met,steer_par,apod_met,apod,win_par,"stop");
 
-plt.plot(t, Hatt, 'r--',label='Attenuation alpha = 5 [dB/cm MHz]', linewidth=2, markersize=12)
+if 'DO_PLOTTING' in locals():
 
-plt.title('Array with rectangular elements')
-plt.xlabel('t [us]')
-plt.ylabel('h_{SIR} [m/s]')
-
-plt.legend()
-plt.show()
+    fig = plt.figure(1)
+    plt.clf()
+    plt.plot(t, H, 'b-', label='Attenuation alpha = 0 [dB/cm MHz]', linewidth=2, markersize=12)
+    plt.plot(t, Hatt, 'r--',label='Attenuation alpha = 5 [dB/cm MHz]', linewidth=2, markersize=12)
+    plt.title('Array with rectangular elements')
+    plt.xlabel('t [us]')
+    plt.ylabel('h_{SIR} [m/s]')
+    plt.legend()
+    plt.show()

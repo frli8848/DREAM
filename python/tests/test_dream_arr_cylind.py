@@ -92,20 +92,19 @@ win_par = 1.0; # Parameter for raised cos and Gaussian apodization functions.
 
 H = dacy.dream_arr_cylind(Ro,geom_par,G,s_par,delay,m_par,foc_met,focal,steer_met,steer_par,apod_met,apod,win_par,"stop")
 
-fig, axs = plt.subplots(2)
-
-axs[0].plot(t, H, 'b-', label='Attenuation alpha = 0 [dB/cm MHz]', linewidth=2, markersize=12)
-
 alpha  = 5.0;                   # Absorbtion (dB/cm Hz).
 m_par = np.asmatrix([v,cp,alpha]);
 Hatt = dacy.dream_arr_cylind(Ro,geom_par,G,s_par,delay,m_par,foc_met,focal,steer_met,steer_par,apod_met,apod,win_par,"stop");
-axs[0].plot(t, Hatt, 'r--',label='Attenuation alpha = 5 [dB/cm MHz]', linewidth=2, markersize=12)
 
-axs[0].set_title('Array with focused cylindrical transducer at Rcurv=10 [mm]')
-axs[0].legend()
+if 'DO_PLOTTING' in locals():
 
-axs[0].set_xlabel('t [us]')
-axs[0].set_ylabel('h_{SIR} [m/s]')
+    fig, axs = plt.subplots(2)
+    axs[0].plot(t, H, 'b-', label='Attenuation alpha = 0 [dB/cm MHz]', linewidth=2, markersize=12)
+    axs[0].plot(t, Hatt, 'r--',label='Attenuation alpha = 5 [dB/cm MHz]', linewidth=2, markersize=12)
+    axs[0].set_title('Array with focused cylindrical transducer at Rcurv=10 [mm]')
+    axs[0].legend()
+    axs[0].set_xlabel('t [us]')
+    axs[0].set_ylabel('h_{SIR} [m/s]')
 
 # Defocused
 
@@ -116,18 +115,18 @@ alpha  = 0.0;                   # Absorbtion (dB/cm Hz).
 m_par = np.asmatrix([v,cp,alpha]);
 
 H = dacy.dream_arr_cylind(Ro,geom_par,G,s_par,delay,m_par,foc_met,focal,steer_met,steer_par,apod_met,apod,win_par,"stop")
-axs[1].plot(t, H, 'b-', label='Attenuation alpha = 0 [dB/cm MHz]', linewidth=2, markersize=12)
 
 alpha  = 5.0;                   # Absorbtion (dB/cm Hz).
 m_par = np.asmatrix([v,cp,alpha]);
 Hatt = dacy.dream_arr_cylind(Ro,geom_par,G,s_par,delay,m_par,foc_met,focal,steer_met,steer_par,apod_met,apod,win_par,"stop");
-axs[1].plot(t, Hatt, 'r--',label='Attenuation alpha = 5 [dB/cm MHz]', linewidth=2, markersize=12)
 
-axs[1].set_title('Array with defocused cylindrical transducer at Rcurv=-10 [mm]')
-axs[1].legend()
+if 'DO_PLOTTING' in locals():
 
-axs[1].set_xlabel('t [us]')
-axs[1].set_ylabel('h_{SIR} [m/s]')
+    axs[1].plot(t, H, 'b-', label='Attenuation alpha = 0 [dB/cm MHz]', linewidth=2, markersize=12)
+    axs[1].plot(t, Hatt, 'r--',label='Attenuation alpha = 5 [dB/cm MHz]', linewidth=2, markersize=12)
+    axs[1].set_title('Array with defocused cylindrical transducer at Rcurv=-10 [mm]')
+    axs[1].legend()
+    axs[1].set_xlabel('t [us]')
+    axs[1].set_ylabel('h_{SIR} [m/s]')
 
-
-plt.show()
+    plt.show()

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 import math
 import numpy as np
@@ -52,20 +52,19 @@ geom_par = np.asmatrix([R,Rcurv])
 
 H = dsp.dreamsphere(Ro,geom_par,s_par,delay,m_par,"stop")
 
-fig, axs = plt.subplots(2)
-
-axs[0].plot(t, H, 'b-', label='Attenuation alpha = 0 [dB/cm MHz]', linewidth=2, markersize=12)
-
 alpha  = 5.0;                   # Absorbtion (dB/cm Hz).
 m_par = np.asmatrix([v,cp,alpha]);
 Hatt = dsp.dreamsphere(Ro,geom_par,s_par,delay,m_par,"stop");
-axs[0].plot(t, Hatt, 'r--',label='Attenuation alpha = 5 [dB/cm MHz]', linewidth=2, markersize=12)
 
-axs[0].set_title('Focused spherical transducer at Rcurv=25 [mm]')
-axs[0].legend()
+if 'DO_PLOTTING' in locals():
 
-axs[0].set_xlabel('t [us]')
-axs[0].set_ylabel('h_{SIR} [m/s]')
+    fig, axs = plt.subplots(2)
+    axs[0].plot(t, H, 'b-', label='Attenuation alpha = 0 [dB/cm MHz]', linewidth=2, markersize=12)
+    axs[0].plot(t, Hatt, 'r--',label='Attenuation alpha = 5 [dB/cm MHz]', linewidth=2, markersize=12)
+    axs[0].set_title('Focused spherical transducer at Rcurv=25 [mm]')
+    axs[0].legend()
+    axs[0].set_xlabel('t [us]')
+    axs[0].set_ylabel('h_{SIR} [m/s]')
 
 # Defocused
 
@@ -76,18 +75,18 @@ alpha  = 0.0;                   # Absorbtion (dB/cm Hz).
 m_par = np.asmatrix([v,cp,alpha]);
 
 H = dsp.dreamsphere(Ro,geom_par,s_par,delay,m_par,"stop")
-axs[1].plot(t, H, 'b-', label='Attenuation alpha = 0 [dB/cm MHz]', linewidth=2, markersize=12)
 
 alpha  = 5.0;                   # Absorbtion (dB/cm Hz).
 m_par = np.asmatrix([v,cp,alpha]);
 Hatt = dsp.dreamsphere(Ro,geom_par,s_par,delay,m_par,"stop");
-axs[1].plot(t, Hatt, 'r--',label='Attenuation alpha = 5 [dB/cm MHz]', linewidth=2, markersize=12)
 
-axs[1].set_title('Defocused spherical transducer at Rcurv=-25 [mm]')
-axs[1].legend()
+if 'DO_PLOTTING' in locals():
 
-axs[1].set_xlabel('t [us]')
-axs[1].set_ylabel('h_{SIR} [m/s]')
+    axs[1].plot(t, H, 'b-', label='Attenuation alpha = 0 [dB/cm MHz]', linewidth=2, markersize=12)
+    axs[1].plot(t, Hatt, 'r--',label='Attenuation alpha = 5 [dB/cm MHz]', linewidth=2, markersize=12)
+    axs[1].set_title('Defocused spherical transducer at Rcurv=-25 [mm]')
+    axs[1].legend()
+    axs[1].set_xlabel('t [us]')
+    axs[1].set_ylabel('h_{SIR} [m/s]')
 
-
-plt.show()
+    plt.show()

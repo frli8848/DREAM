@@ -70,20 +70,19 @@ win_par = 1.0; # Parameter for raised cos and Gaussian apodization functions.
 
 H = daa.dream_arr_annu(Ro,G,s_par,delay,m_par,foc_met,focal,apod_met,apod,win_par,"stop")
 
-fig = plt.figure(1)
-plt.clf()
-
-plt.plot(t, H, 'b-', label='Attenuation alpha = 0 [dB/cm MHz]', linewidth=2, markersize=12)
-
 alpha  = 5.0;                   # Absorbtion (dB/cm Hz).
 m_par = np.asmatrix([v,cp,alpha]);
 Hatt = daa.dream_arr_annu(Ro,G,s_par,delay,m_par,foc_met,focal,apod_met,apod,win_par,"stop");
-plt.plot(t, Hatt, 'r--',label='Attenuation alpha = 5 [dB/cm MHz]', linewidth=2, markersize=12)
 
-plt.title('Annular Array')
+if 'DO_PLOTTING' in locals():
 
-plt.xlabel('t [us]')
-plt.ylabel('h_{SIR} [m/s]')
+    fig = plt.figure(1)
+    plt.clf()
+    plt.plot(t, H, 'b-', label='Attenuation alpha = 0 [dB/cm MHz]', linewidth=2, markersize=12)
 
-plt.legend()
-plt.show()
+    plt.plot(t, Hatt, 'r--',label='Attenuation alpha = 5 [dB/cm MHz]', linewidth=2, markersize=12)
+    plt.title('Annular Array')
+    plt.xlabel('t [us]')
+    plt.ylabel('h_{SIR} [m/s]')
+    plt.legend()
+    plt.show()

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 #################################################################
 #
@@ -9,7 +9,7 @@
 import math
 import numpy as np
 import scipy as sp
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import time
 
 #import sys

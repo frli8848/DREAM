@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 import math
 import numpy as np
@@ -57,20 +57,18 @@ focal = np.asmatrix(10.0);
 
 H = dcf.dreamcirc_f(Ro,geom_par,s_par,delay,m_par,foc_met,focal,"stop")
 
-fig = plt.figure(1)
-plt.clf()
-
-plt.plot(t, H, 'b-', label='Attenuation alpha = 0 [dB/cm MHz]', linewidth=2, markersize=12)
-
 alpha  = 5.0;                   # Absorbtion (dB/cm Hz).
 m_par = np.asmatrix([v,cp,alpha]);
 Hatt = dcf.dreamcirc_f(Ro,geom_par,s_par,delay,m_par,foc_met,focal,"stop");
-plt.plot(t, Hatt, 'r--',label='Attenuation alpha = 5 [dB/cm MHz]', linewidth=2, markersize=12)
 
-plt.title('Focused circular transducer')
+if 'DO_PLOTTING' in locals():
 
-plt.xlabel('t [us]')
-plt.ylabel('h_{SIR} [m/s]')
-
-plt.legend()
-plt.show()
+    fig = plt.figure(1)
+    plt.clf()
+    plt.plot(t, H, 'b-', label='Attenuation alpha = 0 [dB/cm MHz]', linewidth=2, markersize=12)
+    plt.plot(t, Hatt, 'r--',label='Attenuation alpha = 5 [dB/cm MHz]', linewidth=2, markersize=12)
+    plt.title('Focused circular transducer')
+    plt.xlabel('t [us]')
+    plt.ylabel('h_{SIR} [m/s]')
+    plt.legend()
+    plt.show()

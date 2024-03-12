@@ -118,7 +118,28 @@ endif (BUILD_MEX)
 # Python tests
 #
 
-# Nothing here yet.
+if (BUILD_PYTHON)
+
+  add_test(test_python_dreamline_run python "${PROJECT_SOURCE_DIR}/python/tests/test_dreamline.py")
+  add_test(test_python_dreamcirc_run python "${PROJECT_SOURCE_DIR}/python/tests/test_dreamcirc.py")
+  add_test(test_python_dreamcirc_f_run python "${PROJECT_SOURCE_DIR}/python/tests/test_dreamcirc_f.py")
+  add_test(test_python_dreamrect_run python "${PROJECT_SOURCE_DIR}/python/tests/test_dreamrect.py")
+  add_test(test_python_dreamrect_f_run python "${PROJECT_SOURCE_DIR}/python/tests/test_dreamrect_f.py")
+  add_test(test_python_dreamsphere_run python "${PROJECT_SOURCE_DIR}/python/tests/test_dreamsphere.py")
+
+  add_test(test_python_dream_arr_cylind_run python "${PROJECT_SOURCE_DIR}/python/tests/test_dream_arr_cylind.py")
+  add_test(test_python_dream_arr_circ_run python "${PROJECT_SOURCE_DIR}/python/tests/test_dream_arr_circ.py")
+  add_test(test_python_dream_arr_rect_run python "${PROJECT_SOURCE_DIR}/python/tests/test_dream_arr_rect.py")
+  add_test(test_python_dreamcylind_run python "${PROJECT_SOURCE_DIR}/python/tests/test_dreamcylind.py")
+  add_test(test_python_dream_arr_annu_run python "${PROJECT_SOURCE_DIR}/python/tests/test_dream_arr_annu.py")
+
+  add_test(test_python_conv_run python "${PROJECT_SOURCE_DIR}/python/tests/test_conv.py")
+
+  add_test(test_python_das_saft_run python "${PROJECT_SOURCE_DIR}/python/tests/test_das_saft.py")
+  add_test(test_python_das_tfm_run python "${PROJECT_SOURCE_DIR}/python/tests/test_das_tfm.py")
+  add_test(test_python_das_rca_run python "${PROJECT_SOURCE_DIR}/python/tests/test_das_rca.py")
+
+endif (BUILD_PYTHON)
 
 #
 # Julia tests

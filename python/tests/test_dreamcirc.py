@@ -48,21 +48,18 @@ R = 10.0;
 geom_par = np.asmatrix([R]);
 
 H = dc.dreamcirc(Ro,geom_par,s_par,delay,m_par,"stop")
-
-fig = plt.figure(1)
-plt.clf()
-
-plt.plot(t, H, 'b-', label='Attenuation alpha = 0 [dB/cm MHz]', linewidth=2, markersize=12)
-
 alpha  = 5.0;                   # Absorbtion (dB/cm Hz).
 m_par = np.asmatrix([v,cp,alpha]);
 Hatt = dc.dreamcirc(Ro,geom_par,s_par,delay,m_par,"stop");
-plt.plot(t, Hatt, 'r--',label='Attenuation alpha = 5 [dB/cm MHz]', linewidth=2, markersize=12)
 
-plt.xlabel('t [us]')
-plt.ylabel('h_{SIR} [m/s]')
+if 'DO_PLOTTING' in locals():
 
-plt.title('Circular transducer')
-
-plt.legend()
-plt.show()
+    fig = plt.figure(1)
+    plt.clf()
+    plt.plot(t, H, 'b-', label='Attenuation alpha = 0 [dB/cm MHz]', linewidth=2, markersize=12)
+    plt.plot(t, Hatt, 'r--',label='Attenuation alpha = 5 [dB/cm MHz]', linewidth=2, markersize=12)
+    plt.xlabel('t [us]')
+    plt.ylabel('h_{SIR} [m/s]')
+    plt.title('Circular transducer')
+    plt.legend()
+    plt.show()

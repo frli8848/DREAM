@@ -53,16 +53,17 @@ H = dreamrect_f_m.dreamrect_f(Ro,geom_par,s_par,delay,m_par,foc_met,focal,"stop"
 
 t = range(0.0, Ts*float(nt-1), length=Int(nt));
 
-plot(t, H, label="Attenuation alpha = 0 [dB/cm MHz]", linewidth=2)
-
 alpha  = 5.0;                   # Absorbtion (dB/cm Hz).
 m_par = [v,cp,alpha];
 Hatt = dreamrect_f_m.dreamrect_f(Ro,geom_par,s_par,delay,m_par,foc_met,focal,"stop");
 
-plot!(t, Hatt, label="Attenuation alpha = 5 [dB/cm MHz]", linewidth=2)
+if (@isdefined(DO_PLOTTING))
 
-title!("Focused rectangular transducer")
-xlabel!("t [us]")
-ylabel!("h_{SIR} [m/s]")
+    plot(t, H, label="Attenuation alpha = 0 [dB/cm MHz]", linewidth=2)
+    plot!(t, Hatt, label="Attenuation alpha = 5 [dB/cm MHz]", linewidth=2)
+    title!("Focused rectangular transducer")
+    xlabel!("t [us]")
+    ylabel!("h_{SIR} [m/s]")
 
-gui()
+    gui()
+end

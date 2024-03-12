@@ -65,16 +65,17 @@ H = dream_arr_annu_m.dream_arr_annu(Ro,G,s_par,delay,m_par,foc_met,focal,apod_me
 
 t = range(0.0, Ts*float(nt-1), length=Int(nt));
 
-plot(t, H, label="Attenuation alpha = 0 [dB/cm MHz]", linewidth=2)
-
 alpha  = 5.0;                   # Absorbtion (dB/cm Hz).
 m_par = [v,cp,alpha];
 Hatt = dream_arr_annu_m.dream_arr_annu(Ro,G,s_par,delay,m_par,foc_met,focal,apod_met,apod,win_par,"stop");
 
-plot!(t, Hatt, label="Attenuation alpha = 5 [dB/cm MHz]", linewidth=2)
+if (@isdefined(DO_PLOTTING))
 
-title!("Annular Array")
-xlabel!("t [us]")
-ylabel!("h_{SIR} [m/s]")
+    plot(t, H, label="Attenuation alpha = 0 [dB/cm MHz]", linewidth=2)
+    plot!(t, Hatt, label="Attenuation alpha = 5 [dB/cm MHz]", linewidth=2)
+    title!("Annular Array")
+    xlabel!("t [us]")
+    ylabel!("h_{SIR} [m/s]")
 
-gui()
+    gui()
+end

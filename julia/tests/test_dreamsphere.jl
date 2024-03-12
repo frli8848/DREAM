@@ -50,17 +50,19 @@ geom_par = [R,Rcurv];
 
 H = dreamsphere_m.dreamsphere(Ro,geom_par,s_par,delay,m_par,"stop");
 
-plot(t, H, label="Focused: Attenuation alpha = 0 [dB/cm MHz]", linewidth=2)
-
 alpha  = 5.0;                   # Absorbtion (dB/cm Hz).
 m_par = [v,cp,alpha];
 Hatt = dreamsphere_m.dreamsphere(Ro,geom_par,s_par,delay,m_par,"stop");
 
-plot!(t, Hatt, label="Focused: Attenuation alpha = 5 [dB/cm MHz]", linewidth=2)
+if (@isdefined(DO_PLOTTING))
 
-#title!("Focused spherical transducer at Rcurv=25 [mm]")
-#xlabel!("t [us]")
-#ylabel!("h_{SIR} [m/s]")
+    plot(t, H, label="Focused: Attenuation alpha = 0 [dB/cm MHz]", linewidth=2)
+    plot!(t, Hatt, label="Focused: Attenuation alpha = 5 [dB/cm MHz]", linewidth=2)
+
+    #title!("Focused spherical transducer at Rcurv=25 [mm]")
+    #xlabel!("t [us]")
+    #ylabel!("h_{SIR} [m/s]")
+end
 
 # Defocused
 
@@ -72,16 +74,17 @@ m_par = [v,cp,alpha];
 
 Hd = dreamsphere_m.dreamsphere(Ro,geom_par,s_par,delay,m_par,"stop");
 
-plot!(t, Hd, label="Defocused: Attenuation alpha = 0 [dB/cm MHz]", linewidth=2)
-
 alpha  = 5.0;                   # Absorbtion (dB/cm Hz).
 m_par = [v,cp,alpha];
 Hattd = dreamsphere_m.dreamsphere(Ro,geom_par,s_par,delay,m_par,"stop");
 
-plot!(t, Hattd, label="Defocused: Attenuation alpha = 5 [dB/cm MHz]", linewidth=2)
+if (@isdefined(DO_PLOTTING))
 
-title!("Spherical transducer with Rcurv = 25 or -25 [mm]")
-xlabel!("t [us]")
-ylabel!("h_{SIR} [m/s]")
+    plot!(t, Hd, label="Defocused: Attenuation alpha = 0 [dB/cm MHz]", linewidth=2)
+    plot!(t, Hattd, label="Defocused: Attenuation alpha = 5 [dB/cm MHz]", linewidth=2)
+    title!("Spherical transducer with Rcurv = 25 or -25 [mm]")
+    xlabel!("t [us]")
+    ylabel!("h_{SIR} [m/s]")
 
-gui()
+    gui()
+end

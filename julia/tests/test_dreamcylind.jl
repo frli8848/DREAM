@@ -51,17 +51,19 @@ geom_par = [a,b,Rcurv];
 
 H = dreamcylind_m.dreamcylind(Ro,geom_par,s_par,delay,m_par,"stop");
 
-plot(t, H, label="Focused: Attenuation alpha = 0 [dB/cm MHz]", linewidth=2)
-
 alpha  = 5.0;                   # Absorbtion (dB/cm Hz).
 m_par = [v,cp,alpha];
 Hatt = dreamcylind_m.dreamcylind(Ro,geom_par,s_par,delay,m_par,"stop");
 
-plot!(t, Hatt, label="Focused: Attenuation alpha = 5 [dB/cm MHz]", linewidth=2)
+if (@isdefined(DO_PLOTTING))
 
-#title!("Focused spherical transducer at Rcurv=25 [mm]")
-#xlabel!("t [us]")
-#ylabel!("h_{SIR} [m/s]")
+    plot(t, H, label="Focused: Attenuation alpha = 0 [dB/cm MHz]", linewidth=2)
+    plot!(t, Hatt, label="Focused: Attenuation alpha = 5 [dB/cm MHz]", linewidth=2)
+
+    #title!("Focused spherical transducer at Rcurv=25 [mm]")
+    #xlabel!("t [us]")
+    #ylabel!("h_{SIR} [m/s]")
+end
 
 # Defocused
 
@@ -73,16 +75,18 @@ m_par = [v,cp,alpha];
 
 Hd = dreamcylind_m.dreamcylind(Ro,geom_par,s_par,delay,m_par,"stop");
 
-plot!(t, Hd, label="Defocused: Attenuation alpha = 0 [dB/cm MHz]", linewidth=2)
-
 alpha  = 5.0;                   # Absorbtion (dB/cm Hz).
 m_par = [v,cp,alpha];
 Hattd = dreamcylind_m.dreamcylind(Ro,geom_par,s_par,delay,m_par,"stop");
 
-plot!(t, Hattd, label="Defocused: Attenuation alpha = 5 [dB/cm MHz]", linewidth=2)
+if (@isdefined(DO_PLOTTING))
 
-title!("Cylindrical transducer with Rcurv = 10 or -10 [mm]")
-xlabel!("t [us]")
-ylabel!("h_{SIR} [m/s]")
+    plot!(t, Hd, label="Defocused: Attenuation alpha = 0 [dB/cm MHz]", linewidth=2)
+    plot!(t, Hattd, label="Defocused: Attenuation alpha = 5 [dB/cm MHz]", linewidth=2)
 
-gui()
+    title!("Cylindrical transducer with Rcurv = 10 or -10 [mm]")
+    xlabel!("t [us]")
+    ylabel!("h_{SIR} [m/s]")
+
+    gui()
+end

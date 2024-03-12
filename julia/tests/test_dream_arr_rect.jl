@@ -82,16 +82,17 @@ H = dream_arr_rect_m.dream_arr_rect(Ro,geom_par,G,s_par,delay,m_par,foc_met,foca
 
 t = range(0.0, Ts*float(nt-1), length=Int(nt));
 
-plot(t, H, label="Attenuation alpha = 0 [dB/cm MHz]", linewidth=2)
-
 alpha  = 5.0;                   # Absorbtion (dB/cm Hz).
 m_par = [v,cp,alpha];
 Hatt = dream_arr_rect_m.dream_arr_rect(Ro,geom_par,G,s_par,delay,m_par,foc_met,focal,steer_met,steer_par,apod_met,apod,win_par,"stop");
 
-plot!(t, Hatt, label="Attenuation alpha = 5 [dB/cm MHz]", linewidth=2)
+if (@isdefined(DO_PLOTTING))
 
-title!("Array with rectangular elements")
-xlabel!("t [us]")
-ylabel!("h_{SIR} [m/s]")
+    plot(t, H, label="Attenuation alpha = 0 [dB/cm MHz]", linewidth=2)
+    plot!(t, Hatt, label="Attenuation alpha = 5 [dB/cm MHz]", linewidth=2)
+    title!("Array with rectangular elements")
+    xlabel!("t [us]")
+    ylabel!("h_{SIR} [m/s]")
 
-gui()
+    gui()
+end

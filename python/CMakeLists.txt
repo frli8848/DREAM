@@ -4,9 +4,21 @@
 
 project(py_dream)
 
-# Hack to make cmake use the active python version on Gentoo
-find_package(Python 3.11 COMPONENTS Interpreter Development REQUIRED EXACT)
-#find_package(Python COMPONENTS Interpreter Development REQUIRED)
+if (UNIX AND NOT MACOSX)
+
+  if ("${LINUX_DISTRO}" STREQUAL "GENTOO")
+    # Hack to make cmake use the active python version on Gentoo
+    find_package(Python 3.11 COMPONENTS Interpreter Development REQUIRED EXACT)
+  else ("${LINUX_DISTRO}" STREQUAL "GENTOO")
+    find_package(Python COMPONENTS Interpreter Development REQUIRED)
+  endif ("${LINUX_DISTRO}" STREQUAL "GENTOO")
+
+else (UNIX AND NOT MACOSX)
+
+  find_package(Python COMPONENTS Interpreter Development REQUIRED)
+
+endif (UNIX AND NOT MACOSX)
+
 find_package(pybind11 CONFIG REQUIRED)
 
 # Strip lead and trailing whitepasce

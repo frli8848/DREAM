@@ -4,17 +4,20 @@
 
 project(py_dream)
 
-find_package(Python COMPONENTS Interpreter Development REQUIRED)
+# Hack to make cmake use the active python version on Gentoo
+find_package(Python 3.11 COMPONENTS Interpreter Development REQUIRED EXACT)
+#find_package(Python COMPONENTS Interpreter Development REQUIRED)
 find_package(pybind11 CONFIG REQUIRED)
 
 # Strip lead and trailing whitepasce
 #string(STRIP "${OCTAVE_INCLUDE_DIRS}" OCTAVE_INCLUDE_DIRS)
 
 set (DREAM_PYTHON_INCLUDE_DIRS
-  "${PROJECT_BINARY_DIR};"
+  ${PROJECT_BINARY_DIR};
+  "${PROJECT_BINARY_DIR}/../opencl;"
   "${PROJECT_SOURCE_DIR}/../include;"
   "${PROJECT_SOURCE_DIR}/include;"
-  "${FFTW_INCLUDE_DIR};"
+  ${FFTW_INCLUDE_DIR};
 )
 message (STATUS "DREAM_PYTHON_INCLUDE_DIRS: ${DREAM_PYTHON_INCLUDE_DIRS}")
 
@@ -397,10 +400,17 @@ set (py_das_f_SOURCE_FILES
   src/py_das.cc
   ../extra_src/das.cc
   ../src/affinity.cc
+  ../src/dream_error.cc
 )
 
+if (OpenCL_FOUND)
+  set (py_das_f_SOURCE_FILES ${py_das_f_SOURCE_FILES} "../opencl/cl_das.cc")
+endif (OpenCL_FOUND)
+
 add_library(py_das_f MODULE ${py_das_f_SOURCE_FILES})
-target_link_libraries(py_das_f pybind11::module)
+target_link_libraries(py_das_f pybind11::module
+  ${OpenCL_LIBRARIES}
+)
 
 set_target_properties(py_das_f PROPERTIES
   CXX_STANDARD 14
@@ -419,10 +429,17 @@ set (py_das_SOURCE_FILES
   src/py_das.cc
   ../extra_src/das.cc
   ../src/affinity.cc
+  ../src/dream_error.cc
 )
 
+if (OpenCL_FOUND)
+  set (py_das_SOURCE_FILES ${py_das_SOURCE_FILES} "../opencl/cl_das.cc")
+endif (OpenCL_FOUND)
+
 add_library(py_das MODULE ${py_das_SOURCE_FILES})
-target_link_libraries(py_das pybind11::module)
+target_link_libraries(py_das pybind11::module
+  ${OpenCL_LIBRARIES}
+)
 
 set_target_properties(py_das PROPERTIES
   CXX_STANDARD 14

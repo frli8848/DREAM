@@ -256,4 +256,4 @@ if 'DO_PLOTTING' in locals():
     plt.title("RCA GPU  Single Precision Reconstruction")
     plt.xlabel("x [mm]")
     plt.ylabel("z [mm]")
-    plt.show()
+    plt.show(block=False)

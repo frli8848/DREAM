@@ -210,7 +210,7 @@ dt_f     = convert(Float32, dt)
 delay_f  = convert(Vector{Float32}, delay)
 cp_f     = convert(Float32, cp)
 
-Im_tfm_f = das_f_m.das(Yfmc_f, Gt_f, Gr_f, Ro_tfm_f, dt_f, delay_f, cp_f, "tfm"," ignore", "cpu");
+Im_tfm_f = das_f_m.das(Yfmc_f, Gt_f, Gr_f, Ro_tfm_f, dt_f, delay_f, cp_f, "tfm", "ignore", "cpu");
 
 if (@isdefined(DO_PLOTTING))
     figure(6);

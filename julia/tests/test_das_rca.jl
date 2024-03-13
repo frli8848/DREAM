@@ -16,6 +16,7 @@ using VectorizedRoutines
 using fftconv_p_m
 using dreamrect_m
 using das_m
+using das_f_m
 
 #DO_PLOTTING=1;
 
@@ -97,7 +98,7 @@ yo = zeros(length(xo),1);
 zo = z_pt*ones(length(xo),1);
 Ro_t = [xo[:] yo[:] zo[:]];
 
-# Crossed transmit and receve elemets.
+# Crossed transmit and receive elemets.
 
 # Geometrical parameters.
 a = 0.4;                        # x-size.
@@ -105,6 +106,7 @@ b = 50;				# y-size.
 geom_par_t = [a,b];
 
 delay = [0.0];
+
 Ht  = dreamrect_m.dreamrect(Ro_t,geom_par_t,s_par,delay,m_par,"stop");
 
 geom_par_r = [b,a];
@@ -166,7 +168,12 @@ Y = zeros(size(X));
 Ro_rca = [X[:] Y[:] Z[:]];
 
 delay = [system_delay]; # Compensate for the pulse/system (transducer) delay.
-Im_rca = das_m.das(Yfmc, Gt, Gr, Ro_rca, dt, delay, cp,"rca","ignore","cpu");
+
+#
+# CPU - double precision
+#
+
+Im_rca = das_m.das(Yfmc, Gt, Gr, Ro_rca, dt, delay, cp, "rca", "ignore", "cpu");
 
 if (@isdefined(DO_PLOTTING))
     figure(4);
@@ -178,7 +185,11 @@ if (@isdefined(DO_PLOTTING))
     ylabel("z [mm]");
 end
 
-Im_rca_gpu = das_m.das(Yfmc, Gt, Gr, Ro_rca, dt, delay, cp,"rca", "ignore","gpu");
+#
+# GPU - double precision
+#
+
+Im_rca_gpu = das_m.das(Yfmc, Gt, Gr, Ro_rca, dt, delay, cp,"rca", "ignore", "gpu");
 
 if (@isdefined(DO_PLOTTING))
     figure(5);
@@ -186,6 +197,47 @@ if (@isdefined(DO_PLOTTING))
     #images(x,z,reshape(Im_rca_gpu,length(z),length(x)));
     pcolor(x, z, reshape(Im_rca_gpu,length(z),length(x)));
     title("RCA GPU Reconstruction");
+    xlabel("x [mm]");
+    ylabel("z [mm]");
+end
+
+#
+# CPU - single precision
+#
+
+# Convert args to single precision.
+Yfmc_f   = convert(Matrix{Float32}, Yfmc)
+Gt_f     = convert(Matrix{Float32}, Gt)
+Gr_f     = convert(Matrix{Float32}, Gr)
+Ro_rca_f = convert(Matrix{Float32}, Ro_rca)
+dt_f     = convert(Float32, dt)
+delay_f  = convert(Vector{Float32}, delay)
+cp_f     = convert(Float32, cp)
+
+Im_rca_f = das_f_m.das(Yfmc_f, Gt_f, Gr_f, Ro_rca_f, dt_f, delay_f, cp_f, "rca", "ignore", "gpu");
+
+if (@isdefined(DO_PLOTTING))
+    figure(6);
+    #clf;
+    #imagesc(x,z,reshape(Im_rca,length(z),length(x)));
+    pcolor(x, z, reshape(Im_rca_f, length(z), length(x)));
+    title("RCA CPU  Single Precision Reconstruction");
+    xlabel("x [mm]");
+    ylabel("z [mm]");
+end
+
+#
+# GPU - single precision
+#
+
+Im_rca_gpu_f = das_f_m.das(Yfmc_f, Gt_f, Gr_f, Ro_rca_f, dt_f, delay_f, cp_f, "rca", "ignore", "gpu");
+
+if (@isdefined(DO_PLOTTING))
+    figure(7);
+    #clf;
+    #images(x,z,reshape(Im_rca_gpu,length(z),length(x)));
+    pcolor(x, z, reshape(Im_rca_gpu_f, length(z), length(x)));
+    title("RCA GPU Single Precision Reconstruction");
     xlabel("x [mm]");
     ylabel("z [mm]");
 end

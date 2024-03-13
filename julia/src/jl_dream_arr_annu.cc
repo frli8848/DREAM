@@ -47,7 +47,7 @@ jl::ArrayRef<double, 2> jl_dream_arr_annu(jl::ArrayRef<double, 2> jl_ro,
                                           std::string apod_str, jl::ArrayRef<double> jl_apod, double win_par,
                                           std::string err_level_str)
 {
-  ArgParser ap;
+  ArgParser<double> ap;
 
   //
   // Observation points.

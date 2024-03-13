@@ -16,6 +16,7 @@ using VectorizedRoutines
 using fftconv_p_m
 using dreamrect_m
 using das_m
+using das_f_m
 
 #DO_PLOTTING=1;
 
@@ -138,26 +139,76 @@ Y = zeros(size(X));
 Ro_saft = [X[:] Y[:] Z[:]];
 
 delay = [system_delay]; # Compensate for the pulse/system (transducer) delay.
-Im_saft = das_m.das(Ysaft, Gt, Gr, Ro_saft, dt, delay, cp,"saft","ignore","cpu");
+
+#
+# CPU - double precision
+#
+
+Im_saft = das_m.das(Ysaft, Gt, Gr, Ro_saft, dt, delay, cp,"saft", "ignore", "cpu");
 
 if (@isdefined(DO_PLOTTING))
     figure(3);
     #clf;
     #imagesc(x,z,reshape(Im_saft,length(z),length(x)))
     pcolor(x, z, reshape(Im_saft,length(z),length(x)))
-    title("CPU SAFT Reconstruction");
+    title("SAFT CPU Reconstruction");
     xlabel("x [mm]");
     ylabel("z [mm]");
 end
 
-Im_saft_gpu = das_m.das(Ysaft, Gt, Gr, Ro_saft, dt, delay, cp,"saft", "ignore","gpu");
+#
+# GPU - double precision
+#
+
+Im_saft_gpu = das_m.das(Ysaft, Gt, Gr, Ro_saft, dt, delay, cp, "saft", "ignore", "gpu");
 
 if (@isdefined(DO_PLOTTING))
     figure(4);
     #clf;
     #images(x,z,reshape(Im_saft_gpu,length(z),length(x)))
     pcolor(x, z, reshape(Im_saft_gpu,length(z),length(x)))
-    title("GPU SAFT Reconstruction")
+    title("SAFT GPU Reconstruction")
+    xlabel("x [mm]")
+    ylabel("z [mm]")
+end
+
+#
+# CPU - single precision
+#
+
+# Convert args to single precision.
+Ysaft_f   = convert(Matrix{Float32}, Ysaft)
+Gt_f     = convert(Matrix{Float32}, Gt)
+Gr_f     = convert(Matrix{Float32}, Gr)
+Ro_saft_f = convert(Matrix{Float32}, Ro_saft)
+dt_f     = convert(Float32, dt)
+delay_f  = convert(Vector{Float32}, delay)
+cp_f     = convert(Float32, cp)
+
+Im_saft_f = das_f_m.das(Ysaft_f, Gt_f, Gr_f, Ro_saft_f, dt_f, delay_f, cp_f, "saft"," ignore", "cpu");
+
+if (@isdefined(DO_PLOTTING))
+    figure(3);
+    #clf;
+    #imagesc(x,z,reshape(Im_saft,length(z),length(x)))
+    pcolor(x, z, reshape(Im_saft_f, length(z), length(x)))
+    title("SAFT CPU Single Precision Reconstruction");
+    xlabel("x [mm]");
+    ylabel("z [mm]");
+end
+
+#
+# GPU - single precision
+#
+
+Im_saft_gpu_f = das_f_m.das(Ysaft_f, Gt_f, Gr_f, Ro_saft_f, dt_f, delay_f, cp_f, "saft", "ignore", "gpu");
+
+if (@isdefined(DO_PLOTTING))
+    figure(4);
+    #clf;
+    #images(x,z,reshape(Im_saft_gpu,length(z),length(x)))
+    pcolor(x, z, reshape(Im_saft_gpu_f, length(z), length(x)))
+    title("SAFT GPU Single Precision Reconstruction")
     xlabel("x [mm]")
     ylabel("z [mm]")
 end

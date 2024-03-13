@@ -45,7 +45,7 @@ jl::ArrayRef<double, 2> jl_dreamcirc_f(jl::ArrayRef<double, 2> jl_ro,
                                        std::string foc_str, jl::ArrayRef<double> jl_focal,
                                        std::string err_level_str)
 {
-  ArgParser ap;
+  ArgParser<double> ap;
 
   //
   // Observation points.

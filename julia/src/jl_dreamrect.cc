@@ -43,7 +43,7 @@ jl::ArrayRef<double, 2> jl_dreamrect(jl::ArrayRef<double, 2> jl_ro,
                                      jl::ArrayRef<double> jl_m_par,
                                      std::string err_level_str)
 {
-  ArgParser ap;
+  ArgParser<double> ap;
 
   //
   // Observation points.

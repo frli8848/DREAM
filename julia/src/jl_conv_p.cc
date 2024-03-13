@@ -132,7 +132,7 @@ jl::ArrayRef<double, 2> jl_conv_p(jl::ArrayRef<double, 2> jl_A,
 jl::ArrayRef<double, 2> jl_conv_p(jl::ArrayRef<double, 2> jl_A,
                                   jl::ArrayRef<double, 2> jl_B)
 {
-  ArgParser ap;
+  ArgParser<double> ap;
   sighandler_t old_handler, old_handler_abrt, old_handler_keyint;
   DATA *D = nullptr;
   ConvMode conv_mode = ConvMode::equ;

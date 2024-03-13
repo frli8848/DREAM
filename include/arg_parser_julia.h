@@ -1,6 +1,6 @@
 /***
  *
- * Copyright (C) 2023 Fredrik Lingvall
+ * Copyright (C) 2023,2024 Fredrik Lingvall
  *
  * This file is part of the DREAM Toolbox.
  *
@@ -38,6 +38,7 @@
 
 namespace jl = jlcxx;
 
+template <class T>
 class ArgParser
 {
 public:
@@ -80,7 +81,7 @@ public:
   };
   */
 
-  bool check_obs_points(const char *func_name,jl::ArrayRef<double, 2> jl_ro) {
+  bool check_obs_points(const char *func_name,jl::ArrayRef<T, 2> jl_ro) {
     bool retval=true;
     std::ostringstream s;
 
@@ -95,7 +96,7 @@ public:
   };
 
   // 2D Array / Marrix
-  bool check_array(const char *func_name,jl::ArrayRef<double, 2> &jl_G) {
+  bool check_array(const char *func_name,jl::ArrayRef<T, 2> &jl_G) {
     bool retval=true;
     std::ostringstream s;
 
@@ -112,7 +113,7 @@ public:
     return retval;
   };
 
-  bool check_array_annu(const char *func_name,jl::ArrayRef<double> &jl_G) {
+  bool check_array_annu(const char *func_name,jl::ArrayRef<T> &jl_G) {
     bool retval=true;
     std::ostringstream s;
 
@@ -146,8 +147,8 @@ public:
   */
 
   // 1D Array / Vector
-  bool parse_geometry(const char *func_name,jl::ArrayRef<double> &jl_geom_pars, dream_idx_type num_pars,
-                      double &arg1, double &arg2, double &arg3) {
+  bool parse_geometry(const char *func_name,jl::ArrayRef<T> &jl_geom_pars, dream_idx_type num_pars,
+                      T &arg1, T &arg2, T &arg3) {
     bool retval=true;
     std::ostringstream s;
 
@@ -163,7 +164,7 @@ public:
       retval=false;
     } else {
 
-      double *pars = get_data(jl_geom_pars);
+      T *pars = get_data(jl_geom_pars);
 
       if (num_pars==1) { // Scalars needs special treatment
         arg1 = get_scalar(jl_geom_pars);
@@ -184,7 +185,7 @@ public:
   };
 
   /*
-  bool check_sampling(const char *func_name,jl::ArrayRef<double> jl_s_par, dream_idx_type num_pars) {
+  bool check_sampling(const char *func_name,jl::ArrayRef<T> jl_s_par, dream_idx_type num_pars) {
     bool retval=true;
     std::ostringstream s;
     if (!((get_m(jl_s_par)==num_pars && get_n(jl_s_pa)==1) ||
@@ -199,8 +200,8 @@ public:
   */
 
   // 1D Array / Vector
-  bool parse_sampling(const char *func_name,jl::ArrayRef<double> &jl_s_par, dream_idx_type num_pars,
-                      double &dx, double &dy, double &dt, dream_idx_type &nt) {
+  bool parse_sampling(const char *func_name,jl::ArrayRef<T> &jl_s_par, dream_idx_type num_pars,
+                      T &dx, T &dy, T &dt, dream_idx_type &nt) {
     bool retval=true;
     std::ostringstream s;
 
@@ -238,8 +239,8 @@ public:
   */
 
   // 1D Array / Vector
-  bool parse_material(const char *func_name,jl::ArrayRef<double> &jl_m_par,
-                      double &v, double &cp, double &alpha) {
+  bool parse_material(const char *func_name,jl::ArrayRef<T> &jl_m_par,
+                      T &v, T &cp, T &alpha) {
     bool retval=true;
     std::ostringstream s;
 
@@ -262,7 +263,7 @@ public:
 
 
   // 1D Array / Vector or scalar
-  bool check_delay(const char *func_name,jl::ArrayRef<double> &jl_focal, dream_idx_type No) {
+  bool check_delay(const char *func_name,jl::ArrayRef<T> &jl_focal, dream_idx_type No) {
     bool retval=true;
     std::ostringstream s;
 
@@ -319,8 +320,8 @@ public:
    ***/
 
   // String + 1D Array / Vector
-  bool parse_focus_args(const char *func_name, std::string foc_str,jl::ArrayRef<double> &jl_focal, dream_idx_type num_elements,
-                        FocusMet &foc_met, double *focal)
+  bool parse_focus_args(const char *func_name, std::string foc_str,jl::ArrayRef<T> &jl_focal, dream_idx_type num_elements,
+                        FocusMet &foc_met, T *focal)
   {
     bool retval=true;
     std::ostringstream s;
@@ -362,9 +363,9 @@ public:
         s << "delays must have the same length as the number of array elements!";
         retval=false;
       } else { // Copy the user defined apodization weights.
-        double *tmp_focal = get_data(jl_focal);
+        T *tmp_focal = get_data(jl_focal);
         if (focal) {
-          std::memcpy(focal, tmp_focal, num_elements*sizeof(double));
+          std::memcpy(focal, tmp_focal, num_elements*sizeof(T));
         } else {
           s << func_name << " focal vector not initialzed!";
           retval=false;
@@ -397,8 +398,8 @@ public:
   };
 
   // String + 1D Array / Vector
-  bool parse_steer_args(const char *func_name, std::string steer_str,jl::ArrayRef<double> &jl_steer_par,
-                        SteerMet &steer_met, double &theta, double &phi)
+  bool parse_steer_args(const char *func_name, std::string steer_str,jl::ArrayRef<T> &jl_steer_par,
+                        SteerMet &steer_met, T &theta, T &phi)
   {
     bool retval=true;
     std::ostringstream s;
@@ -438,7 +439,7 @@ public:
     }
 
     if (is_set && retval) {
-      const double *steer_pars = get_data(jl_steer_par);
+      const T *steer_pars = get_data(jl_steer_par);
       theta = steer_pars[0];
       phi= steer_pars[1];
     }
@@ -447,8 +448,8 @@ public:
   };
 
   // String + 1D Array / Vector + scalar
-  bool parse_apod_args(const char *func_name,  std::string apod_str,jl::ArrayRef<double> jl_apod, dream_idx_type num_elements,
-                       bool &do_apod, double *apod, ApodMet &apod_met, double &apod_par) {
+  bool parse_apod_args(const char *func_name,  std::string apod_str,jl::ArrayRef<T> jl_apod, dream_idx_type num_elements,
+                       bool &do_apod, T *apod, ApodMet &apod_met, T &apod_par) {
     bool retval=true;
     std::ostringstream s;
     bool is_set = false;
@@ -512,9 +513,9 @@ public:
         s << func_name <<  " the length of apodization vector argument must be the same as the number of array elements!";
         retval=false;
       } else { // Copy the user defined apodization weights.
-        double *tmp_apod = get_data(jl_apod);
+        T *tmp_apod = get_data(jl_apod);
         if (apod) {
-          std::memcpy(apod, tmp_apod, num_elements*sizeof(double));
+          std::memcpy(apod, tmp_apod, num_elements*sizeof(T));
         } else {
           s << func_name << " apodization vector not initialzed!";
           retval=false;
@@ -585,36 +586,36 @@ public:
   //private:
 
   // Vector
-  dream_idx_type get_len(const jl::ArrayRef<double> &jl_arg) {
+  dream_idx_type get_len(const jl::ArrayRef<T> &jl_arg) {
     auto len = jl_array_len(jl_arg.wrapped());
     return (dream_idx_type) len;
   };
 
   // Matrix
-  dream_idx_type get_m(const jl::ArrayRef<double, 2> &jl_arg) {
+  dream_idx_type get_m(const jl::ArrayRef<T, 2> &jl_arg) {
     auto m = jl_arg.wrapped()->nrows;
     return (dream_idx_type) m;
   };
 
   // Matrix
-  dream_idx_type get_n(const jl::ArrayRef<double, 2> &jl_arg) {
+  dream_idx_type get_n(const jl::ArrayRef<T, 2> &jl_arg) {
     auto n = jl_arg.wrapped()->ncols;
     return (dream_idx_type) n;
   };
 
 
   // Vector
-  double* get_data(const jl::ArrayRef<double> &jl_arg) {
-    return static_cast<double*>(jl_array_data(jl_arg.wrapped()));
+  T* get_data(const jl::ArrayRef<T> &jl_arg) {
+    return static_cast<T*>(jl_array_data(jl_arg.wrapped()));
   };
 
   // Matrix
-  double* get_data(const jl::ArrayRef<double, 2> &jl_arg) {
-    return static_cast<double*>(jl_array_data(jl_arg.wrapped()));
+  T* get_data(const jl::ArrayRef<T, 2> &jl_arg) {
+    return static_cast<T*>(jl_array_data(jl_arg.wrapped()));
   };
 
-  double get_scalar(const jl::ArrayRef<double> &jl_arg) {
-    double *retval = static_cast<double*>(jl_array_data(jl_arg.wrapped()));
+  T get_scalar(const jl::ArrayRef<T> &jl_arg) {
+    T *retval = static_cast<T*>(jl_array_data(jl_arg.wrapped()));
     return retval[0];
   };
 

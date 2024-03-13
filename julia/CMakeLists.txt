@@ -38,6 +38,7 @@ set (DREAM_FUNC_LIST
   conv_p
   fftconv_p
   das
+  das_f
 )
 
 # FIXME: There must be a cleaner way than having a separate file for each Julia module!?
@@ -60,6 +61,7 @@ set (DREAM_JULIA_INCLUDE_DIRS
   ${PROJECT_BINARY_DIR}
   "${PROJECT_BINARY_DIR}/../opencl;"
   "${PROJECT_SOURCE_DIR}/../include;"
+  "${PROJECT_SOURCE_DIR}/include;"
   ${Julia_INCLUDE_DIRS}
   ${CXXWRAP_INCLUDE_DIR}
   ${FFTW_INCLUDE_DIR}
@@ -407,19 +409,43 @@ set_target_properties(jl_fftconv_p PROPERTIES
 # Delay-and-sum (DAS)
 #
 
-# das
+# single
+
+set (jl_das_f_SOURCE_FILES
+  src/jl_das.cc
+  ../extra_src/das.cc
+  ../src/affinity.cc
+  ../src/dream_error.cc
+)
+
+if (OpenCL_FOUND)
+  set (jl_das_f_SOURCE_FILES ${jl_das_f_SOURCE_FILES} "../opencl/cl_das.cc")
+endif (OpenCL_FOUND)
+
+add_library (jl_das_f MODULE ${jl_das_f_SOURCE_FILES})
+
+target_link_libraries (jl_das_f
+  ${OpenCL_LIBRARIES}
+)
+
+set_target_properties (jl_das_f PROPERTIES
+  CXX_STANDARD 17
+  COMPILE_FLAGS "${DREAM_JULIA_FLAGS} -DUSE_FLOAT"
+  INCLUDE_DIRECTORIES "${DREAM_JULIA_INCLUDE_DIRS}"
+  LINK_FLAGS ${JULIA_LD_FLAGS}
+  SUFFIX "" PREFIX "" OUTPUT_NAME "das_f")
+
+# Double
 
 set (jl_das_SOURCE_FILES
   src/jl_das.cc
   ../extra_src/das.cc
   ../src/affinity.cc
-  #../src/dream_error.cc
+  ../src/dream_error.cc
 )
 
 if (OpenCL_FOUND)
   set (jl_das_SOURCE_FILES ${jl_das_SOURCE_FILES} "../opencl/cl_das.cc")
-  file (COPY ../opencl/das_float.cl DESTINATION ../kernels)
-  file (COPY ../opencl/das_double.cl DESTINATION ../kernels)
 endif (OpenCL_FOUND)
 
 add_library (jl_das MODULE ${jl_das_SOURCE_FILES})

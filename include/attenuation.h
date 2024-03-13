@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2002,2003,2004,2006,2007,2008,2009,2012,2014,2015,2021 Fredrik Lingvall
+* Copyright (C) 2002,2003,2004,2006,2007,2008,2009,2012,2014,2015,2021,2024 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -52,6 +52,5 @@ class Attenuation
   std::unique_ptr<FFT> m_fft;
   dream_idx_type m_len;
   double m_dt;
-  double m_cp;
   double m_alpha;
 };

@@ -38,9 +38,9 @@ DAS_UNI<T>::DAS_UNI(DASType das_type,
                     T min_Rz, T dz, T max_Rz,
                     unsigned char *cl_kernel_str,
                     unsigned int cl_kernel_str_len)
-  : m_out_err(ErrorLevel::none)
-  , m_das_type(das_type)
+  : m_das_type(das_type)
   , m_a_scan_len(a_scan_len)
+  , m_out_err(ErrorLevel::none)
 {
   if (sizeof(T) == sizeof(float) ) {
     init_opencl(min_t, pitch_t, max_t,

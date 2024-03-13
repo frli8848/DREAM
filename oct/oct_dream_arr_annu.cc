@@ -193,7 +193,7 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
     return oct_retval;
   }
 
-  if ((mxGetM(1) > 1) & (mxGetN(1) > 1)) {
+  if ((mxGetM(1) > 1) && (mxGetN(1) > 1)) {
     error("Argument 2 must a vector (number of array elements)");
     return oct_retval;
   }

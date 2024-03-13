@@ -46,7 +46,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
   // Check for proper number of arguments
 
-  if ((nrhs < 8) && (nrhs > 10)) {
+  if ((nrhs < 8) || (nrhs > 10)) {
     dream_err_msg("das requires 8 to 10 input arguments!");
   }
 

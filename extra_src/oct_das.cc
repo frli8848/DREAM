@@ -154,7 +154,7 @@ Copyright @copyright{} 2008-2023 Fredrik Lingvall.\n\
   // Check for proper number of arguments
   //
 
-  if ((nrhs < 8) && (nrhs > 10)) {
+  if ((nrhs < 8) || (nrhs > 10)) {
     error("das requires 8 to 10 input arguments!");
     return oct_retval;
   }

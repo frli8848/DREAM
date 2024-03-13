@@ -65,9 +65,7 @@ py::array_t<double,py::array::f_style> py_dream_arr_circ(py::array_t<double,py::
   }
 
   py::buffer_info ro_info = py_ro->request();
-  auto ro_ndim = ro_info.ndim;
   auto ro_m = ro_info.shape[0];
-  auto ro_n = ro_info.shape[1];
   double *ro = static_cast<double*>(ro_info.ptr);
 
   dream_idx_type no = (dream_idx_type) ro_m;
@@ -90,9 +88,7 @@ py::array_t<double,py::array::f_style> py_dream_arr_circ(py::array_t<double,py::
   }
 
   py::buffer_info G_info = py_G->request();
-  auto G_ndim = G_info.ndim;
   auto G_m = G_info.shape[0];
-  auto G_n = G_info.shape[1];
   double *G = static_cast<double*>(G_info.ptr);
 
   dream_idx_type num_elements = (dream_idx_type) G_m;
@@ -116,7 +112,6 @@ py::array_t<double,py::array::f_style> py_dream_arr_circ(py::array_t<double,py::
   }
 
   py::buffer_info delay_info = py_delay->request();
-  auto delay_ndim = delay_info.ndim;
   auto delay_m = delay_info.shape[0];
   auto delay_n = delay_info.shape[1];
   double *delay = static_cast<double*>(delay_info.ptr);

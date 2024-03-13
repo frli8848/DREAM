@@ -59,9 +59,7 @@ py::array_t<double,py::array::f_style> py_dreamrect_f(py::array_t<double,py::arr
   }
 
   py::buffer_info ro_info = py_ro->request();
-  auto ro_ndim = ro_info.ndim;
   auto ro_m = ro_info.shape[0];
-  auto ro_n = ro_info.shape[1];
   double *ro = static_cast<double*>(ro_info.ptr);
 
   dream_idx_type no = (dream_idx_type) ro_m;
@@ -94,7 +92,6 @@ py::array_t<double,py::array::f_style> py_dreamrect_f(py::array_t<double,py::arr
   }
 
   py::buffer_info delay_info = py_delay->request();
-  auto delay_ndim = delay_info.ndim;
   auto delay_m = delay_info.shape[0];
   auto delay_n = delay_info.shape[1];
   double *delay = static_cast<double*>(delay_info.ptr);

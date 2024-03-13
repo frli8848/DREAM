@@ -50,7 +50,6 @@ py::array_t<T,py::array::f_style> py_das(py::array_t<T,py::array::f_style> *py_Y
   //
 
   dream_idx_type a_scan_len = (dream_idx_type) ap.get_m(py_Y); // A-scan length
-  dream_idx_type num_a_scans =  (dream_idx_type) ap.get_m(py_Y);
 
   T *Y = static_cast<T*>(ap.get_data(py_Y));
 
@@ -127,7 +126,7 @@ py::array_t<T,py::array::f_style> py_das(py::array_t<T,py::array::f_style> *py_Y
   // Material parameter
   //
 
-  // No arg parsing needed here. Or, perhaps check for reasonbale values?
+  // No arg parsing needed here. Or, perhaps check for reasonable values?
 
   //
   // Error reporting.

@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2023 Fredrik Lingvall
+* Copyright (C) 2023,2024 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -101,8 +101,6 @@ public:
     std::ostringstream s;
 
     py::buffer_info G_info = py_G->request();
-    auto G_ndim = G_info.ndim;
-    auto G_m = G_info.shape[0];
     auto G_n = G_info.shape[1];
 
     if ( G_n != 3 ) {

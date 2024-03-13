@@ -242,9 +242,9 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
   B_N = tmp1.cols();
   B = (double*) tmp1.data();
 
-  // Check that arg 2.
+  // Check that arg 2 has the correct dim (matrix or vector allowed).
   if ( B_M != 1 && B_N !=1 && B_N != A_N) {
-    dream_err_msg("Argument 2 must be a vector or a matrix with the same number of rows as arg 1!");
+    dream_err_msg("Argument 2 must be a vector or a matrix with the same number of columns as arg 1!");
     return oct_retval;
   }
 

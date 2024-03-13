@@ -234,17 +234,17 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
 
   // Check if we should use the GPU
   if (device == "gpu") {
-    rect.cl_dreamrect(Ro, No, a, b,  dx, dy, dt, nt,  delay[0], v, cp, h);
+    rect.cl_dreamrect(Ro, No, a, b, dx, dy, dt, nt, delay[0], v, cp, h);
 
   } else { // Otherwise use the cpu
 #endif
 
     err = rect.dreamrect(alpha,
-                         Ro,  No,
-                         a,  b,
-                         dx,  dy,  dt, nt,
+                         Ro, No,
+                         a, b,
+                         dx, dy, dt, nt,
                          delay_type, delay,
-                         v,cp,
+                         v, cp,
                          h, err_level);
 
     if (!rect.is_running()) {

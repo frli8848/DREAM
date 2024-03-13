@@ -166,7 +166,7 @@ ErrorLevel FFTConvP::run(double *Y,
   // then use the more time-consuming MEAUSURE method.
   //if (nlhs == 2) {
   plan_method = 3; // 3 = MEASURE. This takes too long on long fft:s
-  //plan_method = 4; // 4 = ESTIMATE.
+  ////plan_method = 4; // 4 = ESTIMATE.
   //}
 
   //
@@ -338,7 +338,7 @@ ErrorLevel FFTConvP::run(double *Y,
   running_conv = true;
 
   // Allocate local data.
-  DATA   *D = (DATA*) malloc(nthreads*sizeof(DATA));
+  DATA *D = (DATA*) malloc(nthreads*sizeof(DATA));
   if (!D) {
     throw std::runtime_error("Failed to allocate memory for thread data!");
   }

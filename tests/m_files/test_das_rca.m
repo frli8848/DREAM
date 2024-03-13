@@ -67,6 +67,7 @@ end
 
 d  = 0.5;                       % Array pitch
 xo = (-25:d:25);
+xo = xo(:);
 yo = zeros(length(xo),1);
 zo = z_pt*ones(length(xo),1);
 Ro_t = [xo(:) yo(:) zo(:)];
@@ -117,7 +118,7 @@ if (exist('DO_PLOTTING'))
 
 end
 
-num_elements = size(xo,2);
+num_elements = size(xo,1);
 Gt = [xo(:) zeros(num_elements,1) zeros(num_elements,1)];
 Gr = [zeros(num_elements,1) xo(:) zeros(num_elements,1)];
 
@@ -165,7 +166,7 @@ Ro_rca_f = single(Ro_rca);
 Im_rca_f = das(Yfmc_f, Gt_f, Gr_f, Ro_rca_f, single(dt), single(delay), single(cp), 'rca');
 
 if (exist('DO_PLOTTING'))
-  figure(5);
+  figure(6);
   clf;
   imagesc(x,z,reshape(Im_rca_f,length(z),length(x)))
   title('RCA CPU Single Reconstruction')
@@ -176,7 +177,7 @@ end
 Im_rca_f_gpu = das(Yfmc_f, Gt_f, Gr_f, Ro_rca_f, single(dt), single(delay), single(cp), 'rca', 'ignore', 'gpu');
 
 if (exist('DO_PLOTTING'))
-  figure(6);
+  figure(7);
   clf;
   imagesc(x,z,reshape(Im_rca_f_gpu,length(z),length(x)))
   title('RCA GPU Single Reconstruction')

@@ -72,6 +72,7 @@ geom_par = [a b];
 
 d  = 0.5;                       % Array pitch
 xo = (-25:d:25);
+xo = xo(:);
 yo = zeros(length(xo),1);
 zo = z_pt*ones(length(xo),1);
 Ro = [xo(:) yo(:) zo(:)];
@@ -110,7 +111,7 @@ if (exist('DO_PLOTTING'))
   ylabel('t [{\mu}s]')
 end
 
-num_elements = size(xo,2);
+num_elements = size(xo,1);
 Gt = [xo(:) zeros(num_elements,1) zeros(num_elements,1)];
 Gr = Gt;
 
@@ -158,7 +159,7 @@ Ro_tfm_f = single(Ro_tfm);
 Im_tfm_f = das(Yfmc_f, Gt_f, Gr_f, Ro_tfm_f, single(dt), single(delay), single(cp), 'tfm');
 
 if (exist('DO_PLOTTING'))
-  figure(5);
+  figure(6);
   clf;
   imagesc(x,z,reshape(Im_tfm_f,length(z),length(x)))
   title('TFM CPU Single Reconstruction')
@@ -169,7 +170,7 @@ end
 Im_tfm_f_gpu = das(Yfmc_f, Gt_f, Gr_f, Ro_tfm_f, single(dt), single(delay), single(cp), 'tfm', 'ignore', 'gpu');
 
 if (exist('DO_PLOTTING'))
-  figure(6);
+  figure(7);
   clf;
   imagesc(x,z,reshape(Im_tfm_f_gpu,length(z),length(x)))
   title('TFM GPU Single Reconstruction')

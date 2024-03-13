@@ -43,6 +43,10 @@
 #define CL_HPP_ENABLE_PROGRAM_CONSTRUCTION_FROM_ARRAY_COMPATIBILITY
 #include <CL/opencl.hpp>
 
+// This switches on das arg parsing
+// in the arg_parser_xx:ers
+#define DELAY_AND_SUM
+
 template <class T>
 class DAS_UNI
 {

@@ -160,11 +160,6 @@ ErrorLevel Sphere::dreamsphere(double alpha,
                                double v, double cp,
                                double *h, ErrorLevel err_level)
 {
-  std::thread *threads;
-  dream_idx_type thread_n, nthreads;
-  dream_idx_type start, stop;
-  DATA *D;
-
   running = true;
 
   //
@@ -172,7 +167,7 @@ ErrorLevel Sphere::dreamsphere(double alpha,
   //
 
   // Get number of CPU cores (including hypethreading, C++11)
-  nthreads = std::thread::hardware_concurrency();
+  dream_idx_type nthreads = std::thread::hardware_concurrency();
 
   // Read DREAM_NUM_THREADS env var
   if(const char* env_p = std::getenv("DREAM_NUM_THREADS")) {
@@ -183,7 +178,7 @@ ErrorLevel Sphere::dreamsphere(double alpha,
   }
 
   // nthreads can't be larger then the number of observation points.
-  if (nthreads > (unsigned int) No) {
+  if (nthreads > No) {
     nthreads = No;
   }
 
@@ -195,15 +190,15 @@ ErrorLevel Sphere::dreamsphere(double alpha,
   }
 
   // Allocate local data.
-  D = (DATA*) malloc(nthreads*sizeof(DATA));
+  DATA *D = (DATA*) malloc(nthreads*sizeof(DATA));
 
   // Allocate mem for the threads.
-  threads = new std::thread[nthreads]; // Init thread data.
+  std::thread *threads = new std::thread[nthreads]; // Init thread data.
 
-  for (thread_n = 0; thread_n < nthreads; thread_n++) {
+  for (dream_idx_type thread_n = 0; thread_n < nthreads; thread_n++) {
 
-    start = thread_n * No/nthreads;
-    stop =  (thread_n+1) * No/nthreads;
+    dream_idx_type start = thread_n * No/nthreads;
+    dream_idx_type stop =  (thread_n+1) * No/nthreads;
 
     // Init local data.
     D[thread_n].start = start; // Local start index;
@@ -235,7 +230,7 @@ ErrorLevel Sphere::dreamsphere(double alpha,
 
   // Wait for all threads to finish.
   if (nthreads>1) {
-    for (thread_n = 0; thread_n < nthreads; thread_n++) {
+    for (dream_idx_type thread_n = 0; thread_n < nthreads; thread_n++) {
       threads[thread_n].join();
     }
   }

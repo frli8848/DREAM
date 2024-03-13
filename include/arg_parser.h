@@ -546,6 +546,8 @@ public:
     return retval;
   };
 
+# ifdef DELAY_AND_SUM
+
   // A string arg
   bool parse_das_arg(const char *func_name, args_t args, dream_idx_type arg_num, DASType &das_type) {
     bool retval=true;
@@ -588,6 +590,8 @@ public:
 
     return retval;
   };
+
+#endif
 
 #ifdef DREAM_OCTAVE
 

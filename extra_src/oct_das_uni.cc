@@ -178,7 +178,6 @@ Copyright @copyright{} 2023 Fredrik Lingvall.\n\
   //
 
   dream_idx_type a_scan_len = mxGetM(0); // A-scan length
-  dream_idx_type num_a_scans = mxGetN(0);
 
   const float *Yf = nullptr;
   const double *Yd = nullptr;
@@ -321,11 +320,6 @@ Copyright @copyright{} 2023 Fredrik Lingvall.\n\
 
   if (!ap.check_delay("das_uni", args, 5, No)) {
     return oct_retval;
-  }
-
-  DelayType delay_type = DelayType::single;  // delay is a scalar.
-  if (mxGetM(5) * mxGetN(5) != 1) {
-    delay_type = DelayType::multiple; // delay is a vector.
   }
 
   const float *delay_f = nullptr;

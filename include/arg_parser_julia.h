@@ -100,8 +100,6 @@ public:
     bool retval=true;
     std::ostringstream s;
 
-    //auto G_ndim = G_info.ndim;
-    auto G_m = get_m(jl_G);
     auto G_n = get_n(jl_G);
 
     if ( G_n != 3 ) {
@@ -547,6 +545,7 @@ public:
     return retval;
   };
 
+# ifdef DELAY_AND_SUM
   // A string arg
   bool parse_das_arg(const char *func_name, std::string das_str, DASType &das_type) {
     bool retval=true;
@@ -582,6 +581,8 @@ public:
 
     return retval;
   };
+
+#endif
 
   //private:
 

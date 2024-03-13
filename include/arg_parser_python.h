@@ -542,6 +542,8 @@ public:
     return retval;
   };
 
+# ifdef DELAY_AND_SUM
+
   // A string arg
   bool parse_das_arg(const char *func_name, std::string das_str, DASType &das_type) {
     bool retval=true;
@@ -578,6 +580,7 @@ public:
     return retval;
   };
 
+#endif
   //private:
 
   dream_idx_type get_ndim(const py::array_t<T,py::array::f_style> *py_arg) {

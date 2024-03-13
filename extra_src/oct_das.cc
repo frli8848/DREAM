@@ -193,7 +193,6 @@ Copyright @copyright{} 2008-2023 Fredrik Lingvall.\n\
   //
 
   dream_idx_type a_scan_len = mxGetM(0); // A-scan length
-  dream_idx_type num_a_scans = mxGetN(0);
 
   float *Yf = nullptr;
   double *Yd = nullptr;
@@ -324,7 +323,6 @@ Copyright @copyright{} 2008-2023 Fredrik Lingvall.\n\
     delay_d = tmp5d.data();
   }
 
-
   //
   // Material parameter
   //
@@ -348,7 +346,6 @@ Copyright @copyright{} 2008-2023 Fredrik Lingvall.\n\
     const double *m_par_d = (double*) tmp6d.data();
     cp_d = m_par_d[0];
   }
-
 
   //
   // DAS method
@@ -410,7 +407,7 @@ Copyright @copyright{} 2008-2023 Fredrik Lingvall.\n\
 
   if (use_float) {
 
-    // Create an output matrix for the impulse response.
+    // Create an output matrix for the processed data.
     Im_mat_f = FloatMatrix(No,1);
     Im_f = (float*) Im_mat_f.data();
 

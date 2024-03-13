@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2023 Fredrik Lingvall
+* Copyright (C) 2023,2024 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -82,7 +82,6 @@ jl::ArrayRef<double, 2> jl_dream_arr_rect(jl::ArrayRef<double, 2> jl_ro,
   }
 
   auto G_m = ap.get_m(jl_G);
-  auto G_n = ap.get_n(jl_G);
   double *G = ap.get_data(jl_G);
 
   dream_idx_type num_elements = (dream_idx_type) G_m;

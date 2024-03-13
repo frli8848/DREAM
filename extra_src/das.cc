@@ -23,6 +23,7 @@
 
 #include <cmath>
 #include <atomic>
+#include <mutex>
 
 #include "das.h"
 #include "affinity.h"

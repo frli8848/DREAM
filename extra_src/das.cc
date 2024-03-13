@@ -209,11 +209,6 @@ ErrorLevel DAS<T>::das(const T *Y, const T *Ro, const T *Gt, const T *Gr,
                        T *Im,
                        ErrorLevel err_level)
 {
-  std::thread *threads;
-  dream_idx_type thread_n, nthreads;
-  dream_idx_type start, stop;
-  DATA<T> *D;
-
   // Force SAFT if Gt is empty.
   DASType das_type = m_das_type;
   if (m_num_r_elements == 0) {
@@ -225,7 +220,7 @@ ErrorLevel DAS<T>::das(const T *Y, const T *Ro, const T *Gt, const T *Gr,
   //
 
   // Get number of CPU cores (including hypethreading, C++11).
-  nthreads = std::thread::hardware_concurrency();
+  dream_idx_type nthreads = std::thread::hardware_concurrency();
 
   // Read DREAM_NUM_THREADS env var
   if(const char* env_p = std::getenv("DREAM_NUM_THREADS")) {
@@ -241,15 +236,15 @@ ErrorLevel DAS<T>::das(const T *Y, const T *Ro, const T *Gt, const T *Gr,
   }
 
   // Allocate local data.
-  D = (DATA<T>*) malloc(nthreads*sizeof(DATA<T>));
+  DATA<T> *D = (DATA<T>*) malloc(nthreads*sizeof(DATA<T>));
 
   // Allocate mem for the threads.
-  threads = new std::thread[nthreads]; // Init thread data.
+  std::thread *threads = new std::thread[nthreads]; // Init thread data.
 
-  for (thread_n = 0; thread_n < nthreads; thread_n++) {
+  for (dream_idx_type thread_n = 0; thread_n < nthreads; thread_n++) {
 
-    start = thread_n * m_No/nthreads;
-    stop =  (thread_n+1) * m_No/nthreads;
+    dream_idx_type start = thread_n * m_No/nthreads;
+    dream_idx_type stop =  (thread_n+1) * m_No/nthreads;
 
     // Init local data.
     D[thread_n].start = start; // Local start index;
@@ -281,7 +276,7 @@ ErrorLevel DAS<T>::das(const T *Y, const T *Ro, const T *Gt, const T *Gr,
 
   // Wait for all threads to finish.
   if (nthreads>1) {
-    for (thread_n = 0; thread_n < nthreads; thread_n++) {
+    for (dream_idx_type thread_n = 0; thread_n < nthreads; thread_n++) {
       threads[thread_n].join();
     }
   }
@@ -391,7 +386,7 @@ ErrorLevel DAS<T>::das_tfm_serial(const T *Y, // Size: a_scan_len x num_t_elemen
       T t_r =  std::sqrt(gx_r*gx_r + gy_r*gy_r + gz_r*gz_r) * one_over_cp;
 
       T t_dp = t_t + t_r; // Double-path travel time.
-      auto k = int(t_dp*Fs_khz);
+      auto k = dream_idx_type(t_dp*Fs_khz);
 
       //if (n_r == n_t) { // For comparing with SAFT (for testing)
       if ((k < a_scan_len) && (k >= 0)) {
@@ -489,7 +484,7 @@ ErrorLevel DAS<T>::das_rca_serial_coltx(const T *Y, // Size: a_scan_len x num_co
       T t_r =  std::sqrt(gx_r*gx_r + gy_r*gy_r + gz_r*gz_r) * one_over_cp;
 
       T t_dp = t_c + t_r; // Double-path travel time.
-      auto k = int(t_dp*Fs_khz);
+      auto k = dream_idx_type(t_dp*Fs_khz);
 
       if ((k < a_scan_len) && (k >= 0)) {
         im += y_p[k];
@@ -580,7 +575,7 @@ ErrorLevel DAS<T>::das_rca_serial_rowtx(const T *Y, // Size: a_scan_len x num_co
       t_c += delay_ms;            // Compensate for system pulse delay.
 
       T t_dp = t_c + t_r; // Double-path travel time.
-      auto k = int(t_dp*Fs_khz);
+      auto k = dream_idx_type(t_dp*Fs_khz);
 
       if ((k < a_scan_len) && (k >= 0)) {
         im += y_p[k];

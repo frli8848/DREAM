@@ -389,7 +389,9 @@ set (py_fftconv_p_SOURCE_FILES
 )
 
 add_library(py_fftconv_p MODULE ${py_fftconv_p_SOURCE_FILES})
-target_link_libraries(py_fftconv_p pybind11::module)
+target_link_libraries(py_fftconv_p pybind11::module
+  ${FFTW_LIBRARIES}
+)
 
 set_target_properties(py_fftconv_p PROPERTIES
   CXX_STANDARD 14

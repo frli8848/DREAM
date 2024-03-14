@@ -395,7 +395,9 @@ set (jl_fftconv_p_SOURCE_FILES
 )
 
 add_library(jl_fftconv_p MODULE ${jl_fftconv_p_SOURCE_FILES})
-target_link_libraries(jl_fftconv_p)
+target_link_libraries(jl_fftconv_p
+  ${FFTW_LIBRARIES}
+)
 
 set_target_properties(jl_fftconv_p PROPERTIES
   CXX_STANDARD 17

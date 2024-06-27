@@ -112,7 +112,7 @@ py::array_t<double,py::array::f_style> py_dreamrect(py::array_t<double,py::array
   // Error reporting.
   //
 
-  ErrorLevel err=ErrorLevel::none, err_level=ErrorLevel::stop;
+  ErrorLevel err_level=ErrorLevel::stop;
 
   if (!ap.parse_error_arg("dreamrect", err_level_str, err_level)) {
     throw std::runtime_error("Error in dreamrect!");
@@ -135,7 +135,7 @@ py::array_t<double,py::array::f_style> py_dreamrect(py::array_t<double,py::array
   // Call DREAM function
   //
 
-  err = rect.dreamrect(alpha,
+  SIRError err = rect.dreamrect(alpha,
                        ro, no,
                        a, b,
                        dx, dy,  dt, nt,
@@ -144,11 +144,16 @@ py::array_t<double,py::array::f_style> py_dreamrect(py::array_t<double,py::array
                        h, err_level);
 
   if (!rect.is_running()) {
-    dream_err_msg("CTRL-C pressed!\n"); // Bail out.
+    if (err != SIRError::out_of_bounds) {
+      dream_err_msg("CTRL-C pressed!\n"); // Bail out.
+    } else {
+      dream_err_msg("SIR out-of-bounds!\n"); // Bail out.
+    }
+
     throw std::runtime_error("Error in dreamrect!");
   }
 
-  if (err == ErrorLevel::stop) {
+  if (err == SIRError::out_of_bounds) {
     throw std::runtime_error("Error in dreamrect!");
   }
 

@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2023 Fredrik Lingvall
+* Copyright (C) 2023,2024 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -112,7 +112,7 @@ py::array_t<double,py::array::f_style> py_dreamcylind(py::array_t<double,py::arr
   // Error reporting.
   //
 
-  ErrorLevel err=ErrorLevel::none, err_level=ErrorLevel::stop;
+  ErrorLevel err_level=ErrorLevel::stop;
 
   if (!ap.parse_error_arg("dreamcylind", err_level_str, err_level)) {
     throw std::runtime_error("Error in dreamcylind!");
@@ -135,23 +135,27 @@ py::array_t<double,py::array::f_style> py_dreamcylind(py::array_t<double,py::arr
 
   Cylind cylind;
 
-  err = cylind.dreamcylind(alpha,
-                           ro, no,
-                           a, b, Rcurv,
-                           dx, dy,  dt, nt,
-                           delay_type, delay,
-                           v, cp,
-                           h, err_level);
+  SIRError err = cylind.dreamcylind(alpha,
+                                    ro, no,
+                                    a, b, Rcurv,
+                                    dx, dy,  dt, nt,
+                                    delay_type, delay,
+                                    v, cp,
+                                    h, err_level);
 
   if (!cylind.is_running()) {
-    dream_err_msg("CTRL-C pressed!\n"); // Bail out.
+    if (err != SIRError::out_of_bounds) {
+      dream_err_msg("CTRL-C pressed!\n"); // Bail out.
+    } else {
+      dream_err_msg("SIR out-of-bounds!\n"); // Bail out.
+    }
+
     throw std::runtime_error("Error in dreamcylind!");
   }
 
-  if (err == ErrorLevel::stop) {
+  if (err == SIRError::out_of_bounds) {
     throw std::runtime_error("Error in dreamcylind!");
   }
-
 
   return py_h_mat;
 }

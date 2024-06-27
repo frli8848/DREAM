@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2021,2023 Fredrik Lingvall
+* Copyright (C) 2021,2023,2024 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -174,7 +174,7 @@ py::array_t<double,py::array::f_style> py_dream_arr_circ(py::array_t<double,py::
   // Error reporting.
   //
 
-  ErrorLevel err=ErrorLevel::none, err_level=ErrorLevel::stop;
+  ErrorLevel err_level=ErrorLevel::stop;
 
   if (!ap.parse_error_arg("dream_arr_circ", err_level_str, err_level)) {
     throw std::runtime_error("Error in dream_arr_circ!");
@@ -197,24 +197,29 @@ py::array_t<double,py::array::f_style> py_dream_arr_circ(py::array_t<double,py::
 
   ArrCirc arr_circ;
 
-  err = arr_circ.dream_arr_circ(alpha,
-                                ro, no,
-                                R,
-                                dx, dy,  dt, nt,
-                                delay_type, delay,
-                                v, cp,
-                                num_elements, G,
-                                foc_met, focal.get(),
-                                steer_met, theta, phi,
-                                apod.get(), do_apod, apod_met, apod_par,
-                                h, err_level);
+  SIRError err = arr_circ.dream_arr_circ(alpha,
+                                         ro, no,
+                                         R,
+                                         dx, dy,  dt, nt,
+                                         delay_type, delay,
+                                         v, cp,
+                                         num_elements, G,
+                                         foc_met, focal.get(),
+                                         steer_met, theta, phi,
+                                         apod.get(), do_apod, apod_met, apod_par,
+                                         h, err_level);
 
   if (!arr_circ.is_running()) {
-    dream_err_msg("CTRL-C pressed!\n"); // Bail out.
+    if (err != SIRError::out_of_bounds) {
+      dream_err_msg("CTRL-C pressed!\n"); // Bail out.
+    } else {
+      dream_err_msg("SIR out-of-bounds!\n"); // Bail out.
+    }
+
     throw std::runtime_error("Error in dream_arr_circ!");
   }
 
-  if (err == ErrorLevel::stop) {
+  if (err == SIRError::out_of_bounds) {
     throw std::runtime_error("Error in dream_arr_circ!");
   }
 

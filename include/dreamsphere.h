@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2002,2003,2006,2007,2008,2009,2021,2023 Fredrik Lingvall
+* Copyright (C) 2002,2003,2006,2007,2008,2009,2021,2023,2024 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -33,42 +33,39 @@ class Sphere
 {
  public:
 
- Sphere()
-   : m_out_err(ErrorLevel::none)
-    {;}
+  Sphere()= default;
+  ~Sphere() = default;
 
-  ~Sphere()  = default;
-
-  ErrorLevel dreamsphere(double alpha,
-                         double *Ro, dream_idx_type No,
-                         double R, double Rcurv,
-                         double dx, double dy, double dt, dream_idx_type nt,
-                         DelayType delay_type, double *delay,
-                         double v, double cp,
-                         double *h, ErrorLevel err_level);
+  SIRError dreamsphere(double alpha,
+                       double *Ro, dream_idx_type No,
+                       double R, double Rcurv,
+                       double dx, double dy, double dt, dream_idx_type nt,
+                       DelayType delay_type, double *delay,
+                       double v, double cp,
+                       double *h, ErrorLevel err_level);
 
   static void abort(int signum);
   bool is_running();
 
- private:
+private:
 
   void* smp_dream_sphere(void *arg);
   std::thread sphere_thread(void *arg) {
     return std::thread(&Sphere::smp_dream_sphere, this, arg);
   }
 
-  ErrorLevel dreamsphere_serial(double xo, double yo, double zo,
-                                double R, double Rcurv,
-                                double dx, double dy, double dt,
-                                dream_idx_type nt, double delay, double v, double cp,
-                                double  *h, ErrorLevel err_level);
+  SIRError dreamsphere_serial(double xo, double yo, double zo,
+                              double R, double Rcurv,
+                              double dx, double dy, double dt,
+                              dream_idx_type nt, double delay, double v, double cp,
+                              double  *h, ErrorLevel err_level);
 
-  ErrorLevel dreamsphere_serial(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
-                                double xo, double yo, double zo,
-                                double R, double Rcurv,
-                                double dx, double dy, double dt,
-                                dream_idx_type nt, double delay, double v, double cp,
-                                double  *h, ErrorLevel err_level);
+  SIRError dreamsphere_serial(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
+                              double xo, double yo, double zo,
+                              double R, double Rcurv,
+                              double dx, double dy, double dt,
+                              dream_idx_type nt, double delay, double v, double cp,
+                              double  *h, ErrorLevel err_level);
 
   double sphere_f(double xs, double ys,
                   double Rcurv,
@@ -77,6 +74,4 @@ class Sphere
   double sphere_d(double xs, double ys,
                   double Rcurv,
                   double xo, double yo, double zo);
-
-  ErrorLevel m_out_err;
 };

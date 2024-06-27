@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2002,2003,2006,2007,2008,2009,2014,2019,2021,2023 Fredrik Lingvall
+* Copyright (C) 2002,2003,2006,2007,2008,2009,2014,2019,2021,2023,2024 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -61,6 +61,7 @@ typedef struct
   Attenuation *att;
   double *h;
   ErrorLevel err_level;
+  SIRError err; // Output error.
 } DATA;
 
 /***
@@ -71,16 +72,16 @@ typedef struct
 
 void* Sphere::smp_dream_sphere(void *arg)
 {
-  ErrorLevel tmp_err=ErrorLevel::none, err=ErrorLevel::none;
-  DATA D = *(DATA *)arg;
+  DATA *D = (DATA *)arg;
   double xo, yo, zo;
-  double *h = D.h;
-  double R=D.R, Rcurv=D.Rcurv, dx=D.dx, dy=D.dy, dt=D.dt;
-  dream_idx_type n, No=D.No, nt=D.nt;
-  ErrorLevel tmp_lev, err_level=D.err_level;
-  double *delay=D.delay, *Ro=D.Ro, v=D.v, cp=D.cp;
-  Attenuation *att = D.att;
-  dream_idx_type start=D.start, stop=D.stop;
+  double *h = D->h;
+  double R=D->R, Rcurv=D->Rcurv, dx=D->dx, dy=D->dy, dt=D->dt;
+  dream_idx_type n, No=D->No, nt=D->nt;
+  double *delay=D->delay, *Ro=D->Ro, v=D->v, cp=D->cp;
+  Attenuation *att = D->att;
+  dream_idx_type start=D->start, stop=D->stop;
+  ErrorLevel err_level = D->err_level;
+  SIRError err = SIRError::none;
 
   // Buffers for the FFTs in the Attenuation
   std::unique_ptr<FFTCVec> xc_vec;
@@ -90,12 +91,7 @@ void* Sphere::smp_dream_sphere(void *arg)
     x_vec = std::make_unique<FFTVec>(nt);
   }
 
-  // Let the thread finish and then catch the error.
-  if (err_level == ErrorLevel::stop) {
-    tmp_lev = ErrorLevel::parallel_stop;
-  } else {
-    tmp_lev = err_level;
-  }
+  D->err = SIRError::none;  // Default to no output error.
 
   for (n=start; n<stop; n++) {
     xo = Ro[n];
@@ -103,7 +99,7 @@ void* Sphere::smp_dream_sphere(void *arg)
     zo = Ro[n+2*No];
 
     double dlay = 0.0;
-    if (D.delay_type == DelayType::single) {
+    if (D->delay_type == DelayType::single) {
       dlay = delay[0];
     } else { // DelayType::multiple.
       dlay = delay[n];
@@ -114,33 +110,26 @@ void* Sphere::smp_dream_sphere(void *arg)
                                R, Rcurv,
                                dx, dy, dt,
                                nt, dlay, v, cp,
-                               &h[n*nt], tmp_lev);
+                               &h[n*nt], err_level);
     } else {
       err = dreamsphere_serial(*att, *xc_vec.get(),*x_vec.get(),
                                xo, yo, zo,
                                R, Rcurv,
                                dx, dy, dt,
                                nt, dlay, v, cp,
-                               &h[n*nt], tmp_lev);
+                               &h[n*nt], err_level);
     }
 
-    if (err != ErrorLevel::none || m_out_err ==  ErrorLevel::parallel_stop) {
-      tmp_err = err;
-      if (err == ErrorLevel::parallel_stop || m_out_err ==  ErrorLevel::parallel_stop) {
-        break; // Jump out when a ErrorLevel::stop error occurs.
-      }
+    if (err == SIRError::out_of_bounds) {
+      D->err = err; // Return the out-of-bounds error for this thread.
+      running = false;          // Tell all threads to exit.
     }
 
     if (!running) {
       std::cout << "Thread for observation points " << start+1 << " -> " << stop << " bailing out!\n";
       return(NULL);
     }
-  }
 
-  if ((tmp_err != ErrorLevel::none) && (m_out_err == ErrorLevel::none)) {
-    std::lock_guard<std::mutex> lk(err_mutex);
-
-    m_out_err = tmp_err;
   }
 
   return(NULL);
@@ -152,14 +141,21 @@ void* Sphere::smp_dream_sphere(void *arg)
  *
  ***/
 
-ErrorLevel Sphere::dreamsphere(double alpha,
-                               double *Ro, dream_idx_type No,
-                               double R, double Rcurv,
-                               double dx, double dy, double dt, dream_idx_type nt,
-                               DelayType delay_type, double *delay,
-                               double v, double cp,
-                               double *h, ErrorLevel err_level)
+SIRError Sphere::dreamsphere(double alpha,
+                             double *Ro, dream_idx_type No,
+                             double R, double Rcurv,
+                             double dx, double dy, double dt, dream_idx_type nt,
+                             DelayType delay_type, double *delay,
+                             double v, double cp,
+                             double *h, ErrorLevel err_level)
 {
+  std::thread *threads;
+  dream_idx_type thread_n, nthreads;
+  dream_idx_type start, stop;
+  DATA *D;
+
+  SIRError err = SIRError::none;
+
   running = true;
 
   //
@@ -218,6 +214,7 @@ ErrorLevel Sphere::dreamsphere(double alpha,
     D[thread_n].att = att_ptr;
     D[thread_n].h = h;
     D[thread_n].err_level = err_level;
+    D[thread_n].err = SIRError::none;
 
     if (nthreads>1) {
       // Start the threads.
@@ -232,6 +229,12 @@ ErrorLevel Sphere::dreamsphere(double alpha,
   if (nthreads>1) {
     for (dream_idx_type thread_n = 0; thread_n < nthreads; thread_n++) {
       threads[thread_n].join();
+
+      // Check if the current thread or a previous had an out-of-bounds error.
+      if ( (err == SIRError::out_of_bounds) || (D[thread_n].err == SIRError::out_of_bounds) ) {
+        err = SIRError::out_of_bounds;
+      }
+
     }
   }
 
@@ -240,19 +243,20 @@ ErrorLevel Sphere::dreamsphere(double alpha,
     free((void*) D);
   }
 
-    return m_out_err;
+  return err;
 }
 
-ErrorLevel Sphere::dreamsphere_serial(double xo, double yo, double zo,
-                                      double R, double Rcurv,
-                                      double dx, double dy, double dt,
-                                      dream_idx_type nt, double delay, double v, double cp,
-                                      double *h, ErrorLevel err_level)
+SIRError Sphere::dreamsphere_serial(double xo, double yo, double zo,
+                                    double R, double Rcurv,
+                                    double dx, double dy, double dt,
+                                    dream_idx_type nt, double delay, double v, double cp,
+                                    double *h, ErrorLevel err_level)
 {
+  SIRError err = SIRError::none;
+
   dream_idx_type i, it;
   double t, ai, r;
   double xsmin, ysmin, xsmax, ysmax;
-  ErrorLevel err = ErrorLevel::none;
 
   double ds = dx * dy;
 
@@ -303,9 +307,10 @@ ErrorLevel Sphere::dreamsphere_serial(double xo, double yo, double zo,
           err = dream_out_of_bounds_err("SIR out of bounds",it,err_level);
         }
 
-        if ( (err_level == ErrorLevel::parallel_stop) || (err_level == ErrorLevel::stop) ) {
+        if (err == SIRError::out_of_bounds) {
           return err; // Bail out.
         }
+
       }
       xs += dx;
     }
@@ -315,17 +320,18 @@ ErrorLevel Sphere::dreamsphere_serial(double xo, double yo, double zo,
   return err;
 }
 
-ErrorLevel Sphere::dreamsphere_serial(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
-                                      double xo, double yo, double zo,
-                                      double R, double Rcurv,
-                                      double dx, double dy, double dt,
-                                      dream_idx_type nt, double delay, double v, double cp,
-                                      double *h, ErrorLevel err_level)
+SIRError Sphere::dreamsphere_serial(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
+                                    double xo, double yo, double zo,
+                                    double R, double Rcurv,
+                                    double dx, double dy, double dt,
+                                    dream_idx_type nt, double delay, double v, double cp,
+                                    double *h, ErrorLevel err_level)
 {
+  SIRError err = SIRError::none;
+
   dream_idx_type i, it;
   double t, ai, r;
   double xsmin, ysmin, xsmax, ysmax;
-  ErrorLevel err = ErrorLevel::none;
 
   double ds = dx * dy;
 
@@ -375,9 +381,10 @@ ErrorLevel Sphere::dreamsphere_serial(Attenuation &att, FFTCVec &xc_vec, FFTVec 
           err = dream_out_of_bounds_err("SIR out of bounds",it,err_level);
         }
 
-        if ( (err_level == ErrorLevel::parallel_stop) || (err_level == ErrorLevel::stop) ) {
+        if (err == SIRError::out_of_bounds) {
           return err; // Bail out.
         }
+
       }
       xs += dx;
     }

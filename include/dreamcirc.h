@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2002,2003,2004,2006,2007,2008,2009,2021,2023 Fredrik Lingvall
+* Copyright (C) 2002,2003,2004,2006,2007,2008,2009,2021,2023,2024 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -33,13 +33,10 @@ class Circ
 {
  public:
 
- Circ()
-   : m_out_err(ErrorLevel::none)
-    {;}
+  Circ() = default;
+  ~Circ() = default;
 
-  ~Circ()  = default;
-
-ErrorLevel dreamcirc(double alpha,
+  SIRError dreamcirc(double alpha,
                      double *Ro, dream_idx_type No,
                      double R,
                      double dx, double dy, double dt, dream_idx_type nt,
@@ -57,17 +54,16 @@ ErrorLevel dreamcirc(double alpha,
                    double *H);
 #endif
 
- static void abort(int signum);
- bool is_running();
+  static void abort(int signum);
+  bool is_running();
 
- private:
+private:
 
- void* smp_dream_circ(void *arg);
- std::thread circ_thread(void *arg) {
-   return std::thread(&Circ::smp_dream_circ, this, arg);
- }
+  void* smp_dream_circ(void *arg);
+  std::thread circ_thread(void *arg) {
+    return std::thread(&Circ::smp_dream_circ, this, arg);
+  }
 
- ErrorLevel m_out_err;
 };
 
 // FIXME. We keep the serial code out of the class until
@@ -75,23 +71,23 @@ ErrorLevel dreamcirc(double alpha,
 // member functions in the array class(es) that also uses these
 // functions.
 
-ErrorLevel dreamcirc_serial(double xo, double yo, double zo,
-                            double R,
-                            double dx, double dy, double dt,
-                            dream_idx_type nt,
-                            double delay,
-                            double v, double cp,
-                            double *h,
-                            ErrorLevel err_level,
-                            double weight=1.0);
+SIRError dreamcirc_serial(double xo, double yo, double zo,
+                          double R,
+                          double dx, double dy, double dt,
+                          dream_idx_type nt,
+                          double delay,
+                          double v, double cp,
+                          double *h,
+                          ErrorLevel err_level,
+                          double weight=1.0);
 
-ErrorLevel dreamcirc_serial(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
-                            double xo, double yo, double zo,
-                            double R,
-                            double dx, double dy, double dt,
-                            dream_idx_type nt,
-                            double delay,
-                            double v, double cp,
-                            double *h,
-                            ErrorLevel err_level,
-                            double weight=1.0);
+SIRError dreamcirc_serial(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
+                          double xo, double yo, double zo,
+                          double R,
+                          double dx, double dy, double dt,
+                          dream_idx_type nt,
+                          double delay,
+                          double v, double cp,
+                          double *h,
+                          ErrorLevel err_level,
+                          double weight=1.0);

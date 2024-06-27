@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2002,2003,2005,2006,2007,2008,2009,2021,2023 Fredrik Lingvall
+* Copyright (C) 2002,2003,2005,2006,2007,2008,2009,2021,2023,2024 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -30,47 +30,42 @@
 #include "attenuation.h"
 #include "dream_error.h"
 
-
-
 class Cylind
 {
  public:
 
- Cylind()
-   : m_out_err(ErrorLevel::none)
-    {;}
+ Cylind() = default;
+  ~Cylind() = default;
 
-  ~Cylind()  = default;
-
-  ErrorLevel dreamcylind(double alpha,
-                         double *Ro, dream_idx_type No,
-                         double a, double b, double Rcurv,
-                         double dx, double dy, double dt, dream_idx_type nt,
-                         DelayType delay_type, double *delay,
-                         double v, double cp,
-                         double *h, ErrorLevel err_level);
+  SIRError dreamcylind(double alpha,
+                       double *Ro, dream_idx_type No,
+                       double a, double b, double Rcurv,
+                       double dx, double dy, double dt, dream_idx_type nt,
+                       DelayType delay_type, double *delay,
+                       double v, double cp,
+                       double *h, ErrorLevel err_level);
 
   static void abort(int signum);
   bool is_running();
 
   // public since dream_arr_cylind uses these too.
-  ErrorLevel dreamcylind_serial(double xo, double yo, double zo,
-                                double a, double b, double Rcurv,
-                                double dx, double dy, double dt,
-                                dream_idx_type nt, double delay, double v, double cp,
-                                double *h,
-                                ErrorLevel err_level,
-                                double weight=1.0);
+  SIRError dreamcylind_serial(double xo, double yo, double zo,
+                              double a, double b, double Rcurv,
+                              double dx, double dy, double dt,
+                              dream_idx_type nt, double delay, double v, double cp,
+                              double *h,
+                              ErrorLevel err_level,
+                              double weight=1.0);
 
-  ErrorLevel dreamcylind_serial(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
-                                double xo, double yo, double zo,
-                                double a, double b, double Rcurv,
-                                double dx, double dy, double dt,
-                                dream_idx_type nt, double delay, double v, double cp,
-                                double *h,
-                                ErrorLevel err_level,
-                                double weight=1.0);
- private:
+  SIRError dreamcylind_serial(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
+                              double xo, double yo, double zo,
+                              double a, double b, double Rcurv,
+                              double dx, double dy, double dt,
+                              dream_idx_type nt, double delay, double v, double cp,
+                              double *h,
+                              ErrorLevel err_level,
+                              double weight=1.0);
+private:
 
   void* smp_dream_cylind(void *arg);
   std::thread cylind_thread(void *arg) {
@@ -86,6 +81,4 @@ class Cylind
                   double Rcurv, double z_Rcurv,
                   double xo, double yo, double zo,
                   double &du);
-
-  ErrorLevel m_out_err;
 };

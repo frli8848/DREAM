@@ -90,6 +90,7 @@ struct DATA
   T *Im;
   DASType das_type;
   ErrorLevel err_level;
+  SIRError err; // Output error.
 };
 
 /***
@@ -101,30 +102,25 @@ struct DATA
 template <class T>
 void* DAS<T>::smp_das(void *arg)
 {
-  DATA<T> D = *(DATA<T> *)arg;
-  const T *Y = D.Y;
-  dream_idx_type a_scan_len=D.a_scan_len;
-  const T *Gt = D.Gt;
-  dream_idx_type num_t_elements = D.num_t_elements;
-  const T *Gr = D.Gr;
-  dream_idx_type num_r_elements  = D.num_r_elements;
-  T dt=D.dt;
-  dream_idx_type No=D.No;
-  const T *delay=D.delay;
-  const T *Ro=D.Ro;
-  T cp=D.cp;
-  DASType das_type=D.das_type;
-  T *Im = D.Im;
-  dream_idx_type start=D.start, stop=D.stop;
-  ErrorLevel tmp_lev=ErrorLevel::none, err_level=D.err_level;
-  ErrorLevel tmp_err=ErrorLevel::none, err=ErrorLevel::none;
+  DATA<T> *D = (DATA<T> *) arg;
+  const T *Y = D->Y;
+  dream_idx_type a_scan_len=D->a_scan_len;
+  const T *Gt = D->Gt;
+  dream_idx_type num_t_elements = D->num_t_elements;
+  const T *Gr = D->Gr;
+  dream_idx_type num_r_elements  = D->num_r_elements;
+  T dt=D->dt;
+  dream_idx_type No=D->No;
+  const T *delay=D->delay;
+  const T *Ro=D->Ro;
+  T cp=D->cp;
+  DASType das_type=D->das_type;
+  T *Im = D->Im;
+  dream_idx_type start=D->start, stop=D->stop;
+  ErrorLevel err_level = D->err_level;
+  SIRError err = SIRError::none;
 
-  // Let the thread finish and then catch the error.
-  if (err_level == ErrorLevel::stop) {
-    tmp_lev = ErrorLevel::parallel_stop;
-  } else {
-    tmp_lev = err_level;
-  }
+  D->err = SIRError::none;  // Default to no output error.
 
   for (dream_idx_type no=start; no<stop; no++) {
     T xo = Ro[no];
@@ -132,7 +128,7 @@ void* DAS<T>::smp_das(void *arg)
     T zo = Ro[no+2*No];
 
     T dlay = 0.0;
-    if (D.delay_type == DelayType::single) {
+    if (D->delay_type == DelayType::single) {
       dlay = delay[0];
     } else { // DelayType::multiple.
       dlay = delay[no];
@@ -143,7 +139,7 @@ void* DAS<T>::smp_das(void *arg)
                             Gt, num_t_elements, // Transmit = receive here.
                             xo, yo, zo,
                             dt, dlay,
-                            cp, Im[no], tmp_lev);
+                            cp, Im[no], err_level);
     }
 
     if (das_type == DASType::tfm) {
@@ -152,7 +148,7 @@ void* DAS<T>::smp_das(void *arg)
                            Gr, num_r_elements,
                            xo, yo, zo,
                            dt, dlay,
-                           cp, Im[no], tmp_lev);
+                           cp, Im[no], err_level);
     }
 
     if (das_type == DASType::rca_coltx) {
@@ -161,7 +157,7 @@ void* DAS<T>::smp_das(void *arg)
                                  Gr, num_r_elements, // Gr = G_row
                                  xo, yo, zo,
                                  dt, dlay,
-                                 cp, Im[no], tmp_lev);
+                                 cp, Im[no], err_level);
     }
 
     if (das_type == DASType::rca_rowtx) {
@@ -170,27 +166,20 @@ void* DAS<T>::smp_das(void *arg)
                                  Gr, num_r_elements, // Gr = G_row
                                  xo, yo, zo,
                                  dt, dlay,
-                                 cp, Im[no], tmp_lev);
+                                 cp, Im[no], err_level);
     }
 
 
-    if (err != ErrorLevel::none || m_out_err ==  ErrorLevel::parallel_stop) {
-      tmp_err = err;
-      if (err == ErrorLevel::parallel_stop || m_out_err ==  ErrorLevel::parallel_stop) {
-        break; // Jump out when an ErrorLevel::stop error occurs.
-      }
+    if (err == SIRError::out_of_bounds) {
+      D->err = err; // Return the out-of-bounds error for this thread.
+      running = false;   // Tell all threads to exit.
     }
 
     if (!running) {
       std::cout << "Thread for observation points " << start+1 << " -> " << stop << " bailing out!\n";
       return(NULL);
     }
-  }
 
-  if ((tmp_err != ErrorLevel::none) && (m_out_err == ErrorLevel::none)) {
-    std::lock_guard<std::mutex> lk(err_mutex);
-
-    m_out_err = tmp_err;
   }
 
   return(NULL);
@@ -198,18 +187,25 @@ void* DAS<T>::smp_das(void *arg)
 
 /***
  *
- * Delay-and-sum (DAS) processing using SAFT or TFM ErrorLevel.
+ * Delay-and-sum (DAS) processing using SAFT, TFM, or RCA.
  *
  ***/
 
 template <class T>
-ErrorLevel DAS<T>::das(const T *Y, const T *Ro, const T *Gt, const T *Gr,
-                       T dt,
-                       DelayType delay_type, const T *delay,
-                       T cp,
-                       T *Im,
-                       ErrorLevel err_level)
+SIRError DAS<T>::das(const T *Y, const T *Ro, const T *Gt, const T *Gr,
+                     T dt,
+                     DelayType delay_type, const T *delay,
+                     T cp,
+                     T *Im,
+                     ErrorLevel err_level)
 {
+  std::thread *threads;
+  dream_idx_type thread_n, nthreads;
+  dream_idx_type start, stop;
+  DATA<T> *D;
+
+  SIRError err = SIRError::none;
+
   // Force SAFT if Gt is empty.
   DASType das_type = m_das_type;
   if (m_num_r_elements == 0) {
@@ -265,6 +261,7 @@ ErrorLevel DAS<T>::das(const T *Y, const T *Ro, const T *Gt, const T *Gr,
     D[thread_n].cp = cp;
     D[thread_n].das_type = das_type;
     D[thread_n].err_level = err_level;
+    D[thread_n].err = SIRError::none;
 
     if (nthreads>1) {
       // Start the threads.
@@ -279,6 +276,12 @@ ErrorLevel DAS<T>::das(const T *Y, const T *Ro, const T *Gt, const T *Gr,
   if (nthreads>1) {
     for (dream_idx_type thread_n = 0; thread_n < nthreads; thread_n++) {
       threads[thread_n].join();
+
+      // Check if the current thread or a previous had an out-of-bounds error.
+      if ( (err == SIRError::out_of_bounds) || (D[thread_n].err == SIRError::out_of_bounds) ) {
+        err = SIRError::out_of_bounds;
+      }
+
     }
   }
 
@@ -287,7 +290,7 @@ ErrorLevel DAS<T>::das(const T *Y, const T *Ro, const T *Gt, const T *Gr,
     free((void*) D);
   }
 
-  return m_out_err;
+  return err;
 }
 
 /***
@@ -297,14 +300,15 @@ ErrorLevel DAS<T>::das(const T *Y, const T *Ro, const T *Gt, const T *Gr,
  ***/
 
 template <class T>
-ErrorLevel DAS<T>::das_saft_serial(const T *Y, // Size: a_scan_len x num_elements
-                                   dream_idx_type a_scan_len,
-                                   const T *g, dream_idx_type num_elements,
-                                   T xo, T yo, T zo,
-                                   T dt, T delay,
-                                   T cp, T &im, ErrorLevel err_level)
+SIRError DAS<T>::das_saft_serial(const T *Y, // Size: a_scan_len x num_elements
+                                 dream_idx_type a_scan_len,
+                                 const T *g, dream_idx_type num_elements,
+                                 T xo, T yo, T zo,
+                                 T dt, T delay,
+                                 T cp, T &im, ErrorLevel err_level)
 {
-  ErrorLevel err = ErrorLevel::none;
+  SIRError err = SIRError::none;
+
   const T Fs_khz = (1.0/dt)*1000.0;
   const T one_over_cp = 1.0/cp;
   const T delay_ms = delay/1000.0;
@@ -331,10 +335,15 @@ ErrorLevel DAS<T>::das_saft_serial(const T *Y, // Size: a_scan_len x num_element
       im += y_p[k];
     } else {
       if (k >= 0) {
-        err = dream_out_of_bounds_err("DAS out of bounds",k-a_scan_len+1,err_level);
+        err = dream_out_of_bounds_err("DAS out of bounds",k-a_scan_len+1, err_level);
       } else {
-        err = dream_out_of_bounds_err("DAS out of bounds",k,err_level);
+        err = dream_out_of_bounds_err("DAS out of bounds",k, err_level);
       }
+
+      if (err == SIRError::out_of_bounds) {
+        return err; // Bail out.
+      }
+
     }
 
     y_p += a_scan_len; // Jump to the next A-scan
@@ -350,15 +359,16 @@ ErrorLevel DAS<T>::das_saft_serial(const T *Y, // Size: a_scan_len x num_element
  ***/
 
 template <class T>
-ErrorLevel DAS<T>::das_tfm_serial(const T *Y, // Size: a_scan_len x num_t_elements*num_r_elements (=FMC)
-                                  dream_idx_type a_scan_len,
-                                  const T *Gt, dream_idx_type num_t_elements,
-                                  const T *Gr, dream_idx_type num_r_elements,
-                                  T xo, T yo, T zo,
-                                  T dt, T delay,
-                                  T cp, T &im, ErrorLevel err_level)
+SIRError DAS<T>::das_tfm_serial(const T *Y, // Size: a_scan_len x num_t_elements*num_r_elements (=FMC)
+                                dream_idx_type a_scan_len,
+                                const T *Gt, dream_idx_type num_t_elements,
+                                const T *Gr, dream_idx_type num_r_elements,
+                                T xo, T yo, T zo,
+                                T dt, T delay,
+                                T cp, T &im, ErrorLevel err_level)
 {
-  ErrorLevel err = ErrorLevel::none;
+  SIRError err = SIRError::none;
+
   const T Fs_khz = (1.0/dt)*1000.0;
   const T one_over_cp = 1.0/cp;
   const T delay_ms = delay/1000.0;
@@ -394,10 +404,15 @@ ErrorLevel DAS<T>::das_tfm_serial(const T *Y, // Size: a_scan_len x num_t_elemen
         im += y_p[k];
       } else {
         if (k >= 0) {
-          err = dream_out_of_bounds_err("DAS out of bounds +",k-a_scan_len+1,err_level);
+          err = dream_out_of_bounds_err("DAS out of bounds +",k-a_scan_len+1, err_level);
         } else {
-          err = dream_out_of_bounds_err("DAS out of bounds -",k,err_level);
+          err = dream_out_of_bounds_err("DAS out of bounds -",k, err_level);
         }
+
+        if (err == SIRError::out_of_bounds) {
+          return err; // Bail out.
+        }
+
       }
       //} // SAFT testing
       y_p += a_scan_len; // Jump to the next A-scan
@@ -416,15 +431,16 @@ ErrorLevel DAS<T>::das_tfm_serial(const T *Y, // Size: a_scan_len x num_t_elemen
 
 // Transmit with columns - receive with rows.
 template <class T>
-ErrorLevel DAS<T>::das_rca_serial_coltx(const T *Y, // Size: a_scan_len x num_cols*num_rows (=FMC)
-                                        dream_idx_type a_scan_len,
-                                        const T *G_col, dream_idx_type num_cols,
-                                        const T *G_row, dream_idx_type num_rows,
-                                        T xo, T yo, T zo,
-                                        T dt, T delay,
-                                        T cp, T &im, ErrorLevel err_level)
+SIRError DAS<T>::das_rca_serial_coltx(const T *Y, // Size: a_scan_len x num_cols*num_rows (=FMC)
+                                      dream_idx_type a_scan_len,
+                                      const T *G_col, dream_idx_type num_cols,
+                                      const T *G_row, dream_idx_type num_rows,
+                                      T xo, T yo, T zo,
+                                      T dt, T delay,
+                                      T cp, T &im, ErrorLevel err_level)
 {
-  ErrorLevel err = ErrorLevel::none;
+  SIRError err = SIRError::none;
+
   const T Fs_khz = (1.0/dt)*1000.0;
   const T one_over_cp = 1.0/cp;
   const T delay_ms = delay/1000.0;
@@ -495,6 +511,11 @@ ErrorLevel DAS<T>::das_rca_serial_coltx(const T *Y, // Size: a_scan_len x num_co
         } else {
           err = dream_out_of_bounds_err("DAS out of bounds -",k,err_level);
         }
+
+        if (err == SIRError::out_of_bounds) {
+          return err; // Bail out.
+        }
+
       }
       y_p += a_scan_len; // Jump to the next A-scan
     }
@@ -506,15 +527,16 @@ ErrorLevel DAS<T>::das_rca_serial_coltx(const T *Y, // Size: a_scan_len x num_co
 
 // Transmit with rows - receive with cols.
 template <class T>
-ErrorLevel DAS<T>::das_rca_serial_rowtx(const T *Y, // Size: a_scan_len x num_cols*num_rows (=FMC)
-                                        dream_idx_type a_scan_len,
-                                        const T *G_col, dream_idx_type num_cols,
-                                        const T *G_row, dream_idx_type num_rows,
-                                        T xo, T yo, T zo,
-                                        T dt, T delay,
-                                        T cp, T &im, ErrorLevel err_level)
+SIRError DAS<T>::das_rca_serial_rowtx(const T *Y, // Size: a_scan_len x num_cols*num_rows (=FMC)
+                                      dream_idx_type a_scan_len,
+                                      const T *G_col, dream_idx_type num_cols,
+                                      const T *G_row, dream_idx_type num_rows,
+                                      T xo, T yo, T zo,
+                                      T dt, T delay,
+                                      T cp, T &im, ErrorLevel err_level)
 {
-  ErrorLevel err = ErrorLevel::none;
+  SIRError err = SIRError::none;
+
   const T Fs_khz = (1.0/dt)*1000.0;
   const T one_over_cp = 1.0/cp;
   const T delay_ms = delay/1000.0;
@@ -586,6 +608,11 @@ ErrorLevel DAS<T>::das_rca_serial_rowtx(const T *Y, // Size: a_scan_len x num_co
         } else {
           err = dream_out_of_bounds_err("DAS out of bounds -",k,err_level);
         }
+
+        if (err == SIRError::out_of_bounds) {
+          return err; // Bail out.
+        }
+
       }
       y_p += a_scan_len; // Jump to the next A-scan
     }

@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2002,2003,2005,2006,2007,2008,2009,2019,2021,2023 Fredrik Lingvall
+* Copyright (C) 2002,2003,2005,2006,2007,2008,2009,2019,2021,2023,2024 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -35,24 +35,21 @@ class ArrCylind
 {
  public:
 
- ArrCylind()
-   : m_out_err(ErrorLevel::none)
-    {;}
+  ArrCylind() = default;
+  ~ArrCylind() = default;
 
-  ~ArrCylind()  = default;
-
-  ErrorLevel dream_arr_cylind(double alpha,
-                              double *Ro, dream_idx_type No,
-                              double a, double b, double Rcurv,
-                              double dx, double dy, double dt,
-                              dream_idx_type nt,
-                              DelayType delay_type, double *delay,
-                              double v, double cp,
-                              dream_idx_type num_elements, double *G,
-                              FocusMet foc_met, double *focal,
-                              SteerMet steer_met, double theta, double phi,
-                              double *apod, bool do_apod, ApodMet apod_met, double apod_par,
-                              double *h, ErrorLevel err_level);
+  SIRError dream_arr_cylind(double alpha,
+                            double *Ro, dream_idx_type No,
+                            double a, double b, double Rcurv,
+                            double dx, double dy, double dt,
+                            dream_idx_type nt,
+                            DelayType delay_type, double *delay,
+                            double v, double cp,
+                            dream_idx_type num_elements, double *G,
+                            FocusMet foc_met, double *focal,
+                            SteerMet steer_met, double theta, double phi,
+                            double *apod, bool do_apod, ApodMet apod_met, double apod_par,
+                            double *h, ErrorLevel err_level);
 
   static void abort(int signum);
   bool is_running();
@@ -65,28 +62,26 @@ class ArrCylind
   }
 
 
-  ErrorLevel dream_arr_cylind_serial(Cylind &cylind,
-                                     double xo, double yo, double zo,
-                                     double a, double b, double Rcurv,
-                                     double dx, double dy, double dt, dream_idx_type nt,
-                                     double delay, double v, double cp,
-                                     dream_idx_type num_elements, double *gx, double *gy, double *gz,
-                                     FocusMet foc_met, double *focal,
-                                     SteerMet steer_met, double theta, double phi,
-                                     double *apod, bool do_apod, ApodMet apod_met, double param,
-                                     double *h, ErrorLevel err_level);
+  SIRError dream_arr_cylind_serial(Cylind &cylind,
+                                   double xo, double yo, double zo,
+                                   double a, double b, double Rcurv,
+                                   double dx, double dy, double dt, dream_idx_type nt,
+                                   double delay, double v, double cp,
+                                   dream_idx_type num_elements, double *gx, double *gy, double *gz,
+                                   FocusMet foc_met, double *focal,
+                                   SteerMet steer_met, double theta, double phi,
+                                   double *apod, bool do_apod, ApodMet apod_met, double param,
+                                   double *h, ErrorLevel err_level);
 
-  ErrorLevel dream_arr_cylind_serial(Cylind &cylind,
-                                     Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
-                                     double xo, double yo, double zo,
-                                     double a, double b, double Rcurv,
-                                     double dx, double dy, double dt, dream_idx_type nt,
-                                     double delay, double v, double cp,
-                                     dream_idx_type num_elements, double *gx, double *gy, double *gz,
-                                     FocusMet foc_met, double *focal,
-                                     SteerMet steer_met, double theta, double phi,
-                                     double *apod, bool do_apod, ApodMet apod_met, double param,
-                                     double *h, ErrorLevel err_level);
-
-  ErrorLevel m_out_err;
+  SIRError dream_arr_cylind_serial(Cylind &cylind,
+                                   Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
+                                   double xo, double yo, double zo,
+                                   double a, double b, double Rcurv,
+                                   double dx, double dy, double dt, dream_idx_type nt,
+                                   double delay, double v, double cp,
+                                   dream_idx_type num_elements, double *gx, double *gy, double *gz,
+                                   FocusMet foc_met, double *focal,
+                                   SteerMet steer_met, double theta, double phi,
+                                   double *apod, bool do_apod, ApodMet apod_met, double param,
+                                   double *h, ErrorLevel err_level);
 };

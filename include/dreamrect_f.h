@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2003,2006,2007,2008,2009,2021,2023 Fredrik Lingvall
+* Copyright (C) 2003,2006,2007,2008,2009,2021,2023,2024 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -32,15 +32,12 @@
 
 class Rect_f
 {
- public:
+public:
 
- Rect_f()
-   : m_out_err(ErrorLevel::none)
-    {;}
+  Rect_f() = default;
+  ~Rect_f() = default;
 
-  ~Rect_f()  = default;
-
-ErrorLevel dreamrect_f(double alpha,
+  SIRError dreamrect_f(double alpha,
                        double *Ro, dream_idx_type No,
                        double a, double b,
                        FocusMet foc_met, double focal,
@@ -49,41 +46,39 @@ ErrorLevel dreamrect_f(double alpha,
                        double v, double cp,
                        double *h, ErrorLevel err_level);
 
- static void abort(int signum);
- bool is_running();
+  static void abort(int signum);
+  bool is_running();
 
- private:
+private:
 
- void* smp_dream_rect_f(void *arg);
- std::thread rect_f_thread(void *arg) {
-   return std::thread(&Rect_f::smp_dream_rect_f, this, arg);
- }
+  void* smp_dream_rect_f(void *arg);
+  std::thread rect_f_thread(void *arg) {
+    return std::thread(&Rect_f::smp_dream_rect_f, this, arg);
+  }
 
- double focus_delay_rect(FocusMet foc_met, double focal,
-                         double xs, double ys,
-                         double x_max, double y_max, double r_max,
-                         double cp);
+  double focus_delay_rect(FocusMet foc_met, double focal,
+                          double xs, double ys,
+                          double x_max, double y_max, double r_max,
+                          double cp);
 
- ErrorLevel dreamrect_f_serial(double xo, double yo, double zo,
-                               double a, double b,
-                               FocusMet foc_met, double focal,
-                               double dx, double dy, double dt,
-                               dream_idx_type nt,
-                               double delay,
-                               double v, double cp,
-                               double *h,
-                               ErrorLevel err_level);
+  SIRError dreamrect_f_serial(double xo, double yo, double zo,
+                              double a, double b,
+                              FocusMet foc_met, double focal,
+                              double dx, double dy, double dt,
+                              dream_idx_type nt,
+                              double delay,
+                              double v, double cp,
+                              double *h,
+                              ErrorLevel err_level);
 
- ErrorLevel dreamrect_f_serial(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
-                               double xo, double yo, double zo,
-                               double a, double b,
-                               FocusMet foc_met, double focal,
-                               double dx, double dy, double dt,
-                               dream_idx_type nt,
-                               double delay,
-                               double v, double cp,
-                               double *h,
-                               ErrorLevel err_level);
-
- ErrorLevel m_out_err;
+  SIRError dreamrect_f_serial(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
+                              double xo, double yo, double zo,
+                              double a, double b,
+                              FocusMet foc_met, double focal,
+                              double dx, double dy, double dt,
+                              dream_idx_type nt,
+                              double delay,
+                              double v, double cp,
+                              double *h,
+                              ErrorLevel err_level);
 };

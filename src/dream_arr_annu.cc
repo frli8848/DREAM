@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2002,2003,2005,2006,2007,2008,2009,2014,2019,2021 Fredrik Lingvall
+* Copyright (C) 2002,2003,2005,2006,2007,2008,2009,2014,2019,2021,2024 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -67,6 +67,7 @@ typedef struct
   double apod_par;
   double *h;
   ErrorLevel err_level;
+  SIRError err;
 } DATA;
 
 /***
@@ -77,23 +78,23 @@ typedef struct
 
 void* ArrAnnu::smp_dream_arr_annu(void *arg)
 {
-  ErrorLevel tmp_err=ErrorLevel::none, err=ErrorLevel::none;
-  DATA D = *(DATA *)arg;
+  DATA *D = (DATA *) arg;
   double xo, yo, zo;
-  double *h = D.h;
-  double dx=D.dx, dy=D.dy, dt=D.dt;
-  dream_idx_type No=D.No, nt=D.nt;
-  ErrorLevel tmp_lev=ErrorLevel::none, err_level=D.err_level;
-  double *delay=D.delay, *Ro=D.Ro, v=D.v, cp=D.cp;
-  Attenuation *att=D.att;
-  dream_idx_type start=D.start, stop=D.stop;
-  FocusMet foc_met=D.foc_met;
-  bool do_apod=D.do_apod;
-  ApodMet apod_met=D.apod_met;
-  double *focal=D.focal, *apod=D.apod, apod_par=D.apod_par;
-  dream_idx_type num_radii=D.num_radii;
+  double *h = D->h;
+  double dx=D->dx, dy=D->dy, dt=D->dt;
+  dream_idx_type No=D->No, nt=D->nt;
+  double *delay=D->delay, *Ro=D->Ro, v=D->v, cp=D->cp;
+  Attenuation *att=D->att;
+  dream_idx_type start=D->start, stop=D->stop;
+  FocusMet foc_met=D->foc_met;
+  bool do_apod=D->do_apod;
+  ApodMet apod_met=D->apod_met;
+  double *focal=D->focal, *apod=D->apod, apod_par=D->apod_par;
+  dream_idx_type num_radii=D->num_radii;
+  ErrorLevel err_level = D->err_level;
+  SIRError err = SIRError::none;
 
-  double *Gr=D.Gr;
+  double *Gr=D->Gr;
 
   // Buffers for the FFTs in the Attenuation
   std::unique_ptr<FFTCVec> xc_vec;
@@ -103,12 +104,7 @@ void* ArrAnnu::smp_dream_arr_annu(void *arg)
     x_vec = std::make_unique<FFTVec>(nt);
   }
 
-  // Let the thread finish and then catch the error.
-  if (err_level == ErrorLevel::stop) {
-    tmp_lev = ErrorLevel::parallel_stop;
-  } else {
-    tmp_lev = err_level;
-  }
+  D->err = SIRError::none;  // Default to no output error.
 
   for (dream_idx_type n=start; n<stop; n++) {
     xo = Ro[n];
@@ -116,7 +112,7 @@ void* ArrAnnu::smp_dream_arr_annu(void *arg)
     zo = Ro[n+2*No];
 
     double dlay = 0.0;
-    if (D.delay_type == DelayType::single) {
+    if (D->delay_type == DelayType::single) {
       dlay = delay[0];
     } else { // DelayType::multiple.
       dlay = delay[n];
@@ -129,7 +125,7 @@ void* ArrAnnu::smp_dream_arr_annu(void *arg)
                                   num_radii,Gr,
                                   foc_met, focal,
                                   apod, do_apod, apod_met, apod_par,
-                                  &h[n*nt], tmp_lev);
+                                  &h[n*nt], err_level);
     } else {
       err = dream_arr_annu_serial(*att, *xc_vec, *x_vec,
                                   xo, yo, zo,
@@ -138,14 +134,12 @@ void* ArrAnnu::smp_dream_arr_annu(void *arg)
                                   num_radii, Gr,
                                   foc_met, focal,
                                   apod, do_apod, apod_met, apod_par,
-                                  &h[n*nt], tmp_lev);
+                                  &h[n*nt], err_level);
     }
 
-    if (err != ErrorLevel::none || m_out_err ==  ErrorLevel::parallel_stop) {
-      tmp_err = err;
-      if (err == ErrorLevel::parallel_stop || m_out_err ==  ErrorLevel::parallel_stop) {
-        break; // Jump out when a ErrorLevel::stop error occurs.
-      }
+    if (err == SIRError::out_of_bounds) {
+      D->err = err; // Return the out-of-bounds error for this thread.
+      running = false;   // Tell all threads to exit.
     }
 
     if (!running) {
@@ -153,12 +147,6 @@ void* ArrAnnu::smp_dream_arr_annu(void *arg)
       return(NULL);
     }
 
-  }
-
-  if ((tmp_err != ErrorLevel::none) && (m_out_err == ErrorLevel::none)) {
-    std::lock_guard<std::mutex> lk(err_mutex);
-
-    m_out_err = tmp_err;
   }
 
   return(NULL);
@@ -170,17 +158,17 @@ void* ArrAnnu::smp_dream_arr_annu(void *arg)
  *
  ***/
 
-ErrorLevel ArrAnnu::dream_arr_annu_serial(double xo, double yo, double zo,
-                                 double dx, double dy, double dt,
-                                 dream_idx_type nt,
-                                 double delay,
-                                 double v, double cp,
-                                 dream_idx_type num_radii, double *Gr,
-                                 FocusMet foc_met, double *focal,
-                                 double *apod, bool do_apod, ApodMet apod_met, double apod_par,
-                                 double *h, ErrorLevel err_level)
+SIRError ArrAnnu::dream_arr_annu_serial(double xo, double yo, double zo,
+                                        double dx, double dy, double dt,
+                                        dream_idx_type nt,
+                                        double delay,
+                                        double v, double cp,
+                                        dream_idx_type num_radii, double *Gr,
+                                        FocusMet foc_met, double *focal,
+                                        double *apod, bool do_apod, ApodMet apod_met, double apod_par,
+                                        double *h, ErrorLevel err_level)
 {
-  ErrorLevel err = ErrorLevel::none, out_err = ErrorLevel::none;
+  SIRError err = SIRError::none;
 
   // NB. The first ring have no inner radius (it is a normal
   // circular disc).
@@ -219,9 +207,11 @@ ErrorLevel ArrAnnu::dream_arr_annu_serial(double xo, double yo, double zo,
                              dx, dy, dt, nt,
                              delay,
                              v, cp, &h_disc[n*nt], err_level);
-      if (err != ErrorLevel::none) {
-        out_err = err;
+
+      if (err == SIRError::out_of_bounds) {
+        return err; // Bail out.
       }
+
     }
   }
 
@@ -249,21 +239,21 @@ ErrorLevel ArrAnnu::dream_arr_annu_serial(double xo, double yo, double zo,
     superpos_annular(h_ring.get(), h, nt, weight, foc_delay, n, dt); // Add the n:th impulse response.
   }
 
-  return out_err;
+  return err;
 }
 
-ErrorLevel ArrAnnu::dream_arr_annu_serial(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
-                                 double xo, double yo, double zo,
-                                 double dx, double dy, double dt,
-                                 dream_idx_type nt,
-                                 double delay,
-                                 double v, double cp,
-                                 dream_idx_type num_radii, double *Gr,
-                                 FocusMet foc_met, double *focal,
-                                 double *apod, bool do_apod, ApodMet apod_met, double apod_par,
-                                 double *h, ErrorLevel err_level)
+SIRError ArrAnnu::dream_arr_annu_serial(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
+                                        double xo, double yo, double zo,
+                                        double dx, double dy, double dt,
+                                        dream_idx_type nt,
+                                        double delay,
+                                        double v, double cp,
+                                        dream_idx_type num_radii, double *Gr,
+                                        FocusMet foc_met, double *focal,
+                                        double *apod, bool do_apod, ApodMet apod_met, double apod_par,
+                                        double *h, ErrorLevel err_level)
 {
-  ErrorLevel err = ErrorLevel::none, out_err = ErrorLevel::none;
+  SIRError err = SIRError::none;
 
   // NB. The first ring have no inner radius (it is a normal
   // circular disc).
@@ -301,9 +291,11 @@ ErrorLevel ArrAnnu::dream_arr_annu_serial(Attenuation &att, FFTCVec &xc_vec, FFT
                              dx, dy, dt, nt,
                              delay,
                              v, cp, &h_disc[n*nt], err_level);
-      if (err != ErrorLevel::none) {
-        out_err = err;
+
+      if (err == SIRError::out_of_bounds) {
+        return err; // Bail out.
       }
+
     }
   }
 
@@ -331,7 +323,7 @@ ErrorLevel ArrAnnu::dream_arr_annu_serial(Attenuation &att, FFTCVec &xc_vec, FFT
     superpos_annular(h_ring.get(), h, nt, weight, foc_delay, n, dt); // Add the n:th impulse response.
   }
 
-  return out_err;
+  return err;
 }
 
 /***
@@ -493,20 +485,22 @@ void ArrAnnu::resp_annular(double *h_disc, double *h_ring, dream_idx_type nt, dr
  *
  ***/
 
-ErrorLevel ArrAnnu::dream_arr_annu(double alpha,
-                                   double *Ro, dream_idx_type No,
-                                   double dx, double dy, double dt, dream_idx_type nt,
-                                   DelayType delay_type, double *delay,
-                                   double v, double cp,
-                                   dream_idx_type num_radii, double *Gr,
-                                   FocusMet foc_met, double *focal,
-                                   double *apod, bool do_apod, ApodMet apod_met, double apod_par,
-                                   double *h, ErrorLevel err_level)
+SIRError ArrAnnu::dream_arr_annu(double alpha,
+                                 double *Ro, dream_idx_type No,
+                                 double dx, double dy, double dt, dream_idx_type nt,
+                                 DelayType delay_type, double *delay,
+                                 double v, double cp,
+                                 dream_idx_type num_radii, double *Gr,
+                                 FocusMet foc_met, double *focal,
+                                 double *apod, bool do_apod, ApodMet apod_met, double apod_par,
+                                 double *h, ErrorLevel err_level)
 {
   std::thread *threads;
   dream_idx_type thread_n, nthreads;
   dream_idx_type start, stop;
   DATA *D;
+
+  SIRError err = SIRError::none;
 
   running = true;
 
@@ -572,6 +566,7 @@ ErrorLevel ArrAnnu::dream_arr_annu(double alpha,
     D[thread_n].apod_par = apod_par;
     D[thread_n].h = h;
     D[thread_n].err_level = err_level;
+    D[thread_n].err = SIRError::none;
 
     if (nthreads > 1) {
       // Start the threads.
@@ -587,11 +582,19 @@ ErrorLevel ArrAnnu::dream_arr_annu(double alpha,
   if (nthreads > 1) {
     for (thread_n = 0; thread_n < nthreads; thread_n++) {
       threads[thread_n].join();
+
+      // Check if the current thread or a previous had an out-of-bounds error.
+      if ( (err == SIRError::out_of_bounds) || (D[thread_n].err == SIRError::out_of_bounds) ) {
+        err = SIRError::out_of_bounds;
+      }
+
     }
   }
 
   // Free memory.
-  free((void*) D);
+  if (D) {
+    free((void*) D);
+  }
 
-  return  m_out_err;
+  return err;
 }

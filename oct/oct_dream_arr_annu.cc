@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2006,2007,2008,2009,2012,2015,2016,2021,2021,2023 Fredrik Lingvall
+* Copyright (C) 2006,2007,2008,2009,2012,2015,2016,2021,2021,2023,2024 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -274,7 +274,7 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
   // Error reporting.
   //
 
-  ErrorLevel err=ErrorLevel::none, err_level=ErrorLevel::stop;
+  ErrorLevel err_level=ErrorLevel::stop;
 
   if (nrhs == 11) {
     if (!ap.parse_error_arg("dream_arr_annu", args, 10, err_level)) {
@@ -297,18 +297,23 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
   // Call the DREAM subroutine.
   //
 
-  err = arr_annu.dream_arr_annu(alpha,
-                                Ro, No,
-                                dx, dy,  dt, nt,
-                                delay_type, delay,
-                                v, cp,
-                                num_radii, gr,
-                                foc_met, focal.get(),
-                                apod.get(), do_apod, apod_met, apod_par,
-                                h, err_level);
+  SIRError err = arr_annu.dream_arr_annu(alpha,
+                                         Ro, No,
+                                         dx, dy,  dt, nt,
+                                         delay_type, delay,
+                                         v, cp,
+                                         num_radii, gr,
+                                         foc_met, focal.get(),
+                                         apod.get(), do_apod, apod_met, apod_par,
+                                         h, err_level);
 
   if (!arr_annu.is_running()) {
-    error("CTRL-C pressed!\n"); // Bail out.
+    if (err != SIRError::out_of_bounds) {
+      error("CTRL-C pressed!\n"); // Bail out.
+    } else {
+      error("SIR out-of-bounds!\n"); // Bail out.
+    }
+
     return oct_retval;
   }
 
@@ -316,7 +321,7 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
   // Check for Error.
   //
 
-  if (err == ErrorLevel::stop) {
+  if (err == SIRError::out_of_bounds) {
     error("Error in dream_arr_annu"); // Bail out if error.
     return oct_retval;
   }

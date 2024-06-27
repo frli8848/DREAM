@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2002,2003,2006,2007,2008,2009,2021,2023 Fredrik Lingvall
+* Copyright (C) 2002,2003,2006,2007,2008,2009,2021,2023,2024 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -33,13 +33,10 @@ class Rect
 {
  public:
 
- Rect()
-   : m_out_err(ErrorLevel::none)
-    {;}
+ Rect() = default;
+  ~Rect() = default;
 
-  ~Rect()  = default;
-
-ErrorLevel dreamrect(double alpha,
+  SIRError dreamrect(double alpha,
                      double *Ro, dream_idx_type No,
                      double a, double b,
                      double dx, double dy, double dt, dream_idx_type nt,
@@ -72,8 +69,6 @@ ErrorLevel dreamrect(double alpha,
  std::thread rect_thread(void *arg) {
    return std::thread(&Rect::smp_dream_rect, this, arg);
  }
-
- ErrorLevel m_out_err;
 };
 
 // FIXME. We keep the serial code out of the class until
@@ -81,23 +76,23 @@ ErrorLevel dreamrect(double alpha,
 // member functions in the array class(es) that also uses these
 // functions.
 
-ErrorLevel dreamrect_serial(double xo, double yo, double zo,
-                            double a, double b,
-                            double dx, double dy, double dt,
-                            dream_idx_type nt,
-                            double delay,
-                            double v, double cp,
-                            double *h,
-                            ErrorLevel err_level,
-                            double weight=1.0);
+SIRError dreamrect_serial(double xo, double yo, double zo,
+                          double a, double b,
+                          double dx, double dy, double dt,
+                          dream_idx_type nt,
+                          double delay,
+                          double v, double cp,
+                          double *h,
+                          ErrorLevel err_level,
+                          double weight=1.0);
 
-ErrorLevel dreamrect_serial(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
-                            double xo, double yo, double zo,
-                            double a, double b,
-                            double dx, double dy, double dt,
-                            dream_idx_type nt,
-                            double delay,
-                            double v, double cp,
-                            double *h,
-                            ErrorLevel err_level,
-                            double weight=1.0);
+SIRError dreamrect_serial(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
+                          double xo, double yo, double zo,
+                          double a, double b,
+                          double dx, double dy, double dt,
+                          dream_idx_type nt,
+                          double delay,
+                          double v, double cp,
+                          double *h,
+                          ErrorLevel err_level,
+                          double weight=1.0);

@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2008,2009,2016,2023 Fredrik Lingvall
+* Copyright (C) 2008,2009,2016,2023,2024 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -360,7 +360,7 @@ Copyright @copyright{} 2008-2023 Fredrik Lingvall.\n\
   // Error reporting.
   //
 
-  ErrorLevel err=ErrorLevel::none, err_level=ErrorLevel::stop;
+  ErrorLevel err_level=ErrorLevel::stop;
 
   if (nrhs >= 9) {
     if (!ap.parse_error_arg("das", args, 8, err_level)) {
@@ -431,8 +431,8 @@ Copyright @copyright{} 2008-2023 Fredrik Lingvall.\n\
         das_f = std::make_unique<DAS<float>>(das_type, a_scan_len, No, num_t_elements, num_r_elements, use_gpu);
       }
 
-      catch (std::runtime_error &err) {
-        std::cout << err.what();
+      catch (std::runtime_error &std_err) {
+        std::cout << std_err.what();
         return oct_retval;
       }
     }
@@ -468,8 +468,8 @@ Copyright @copyright{} 2008-2023 Fredrik Lingvall.\n\
         das_d = std::make_unique<DAS<double>>(das_type, a_scan_len, No, num_t_elements, num_r_elements, use_gpu);
       }
 
-      catch (std::runtime_error &err) {
-        std::cout << err.what();
+      catch (std::runtime_error &std_err) {
+        std::cout << std_err.what();
         return oct_retval;
       }
     }
@@ -479,6 +479,8 @@ Copyright @copyright{} 2008-2023 Fredrik Lingvall.\n\
     // Register signal handler.
     std::signal(SIGABRT, DAS<double>::abort);
   }
+
+  SIRError err = SIRError::none;
 
 #ifdef USE_OPENCL
 
@@ -504,7 +506,12 @@ Copyright @copyright{} 2008-2023 Fredrik Lingvall.\n\
 
       err = das_f->das(Yf, Ro_f, Gt_f, Gr_f, dt_f, delay_type, delay_f, cp_f, Im_f, err_level);
       if (!das_f->is_running()) {
-        error("CTRL-C pressed!\n"); // Bail out.
+        if (err != SIRError::out_of_bounds) {
+          error("CTRL-C pressed!\n"); // Bail out.
+        } else {
+          error("SIR out-of-bounds!\n"); // Bail out.
+        }
+
         return oct_retval;
       }
 
@@ -512,7 +519,12 @@ Copyright @copyright{} 2008-2023 Fredrik Lingvall.\n\
 
       err = das_d->das(Yd, Ro_d, Gt_d, Gr_d, dt_d, delay_type, delay_d, cp_d, Im_d, err_level);
       if (!das_d->is_running()) {
-        error("CTRL-C pressed!\n"); // Bail out.
+        if (err != SIRError::out_of_bounds) {
+          error("CTRL-C pressed!\n"); // Bail out.
+        } else {
+          error("SIR out-of-bounds!\n"); // Bail out.
+        }
+
         return oct_retval;
       }
 
@@ -522,8 +534,8 @@ Copyright @copyright{} 2008-2023 Fredrik Lingvall.\n\
   }
 #endif
 
-  if (err == ErrorLevel::stop) {
-    error("Error in DAS"); // Bail out if error.
+  if (err == SIRError::out_of_bounds) {
+    error("Error in DAS!"); // Bail out if error.
     return oct_retval;
   }
 

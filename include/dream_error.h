@@ -1,6 +1,6 @@
 /***
  *
- * Copyright (C) 2003,2004,2005,2006,2008,2009,2012,2021,2023 Fredrik Lingvall
+ * Copyright (C) 2003,2004,2005,2006,2008,2009,2012,2021,2023,2024 Fredrik Lingvall
  *
  * This file is part of the DREAM Toolbox.
  *
@@ -25,5 +25,5 @@
 
 #include "dream.h"
 
-ErrorLevel dream_out_of_bounds_err(const char *msg, dream_idx_type idx, ErrorLevel err_level);
+SIRError dream_out_of_bounds_err(const char *msg, dream_idx_type idx, ErrorLevel err_level);
 void dream_err_msg(const char *msg);

@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2006,2007,2008,2009,2012,2016,2021,2023 Fredrik Lingvall
+* Copyright (C) 2006,2007,2008,2009,2012,2016,2021,2023,2024 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -92,7 +92,7 @@ An error message is printed and the program is stopped.\n\
 dreamline is an oct-function that is a part of the DREAM Toolbox available at\n\
 @url{https://github.com/frli8848/DREAM}.\n\
 \n\
-Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
+Copyright @copyright{} 2006-2024 Fredrik Lingvall.\n\
 @seealso {dreamline}\n\
 @end deftypefn")
 {
@@ -172,7 +172,7 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
   // Error reporting.
   //
 
-  ErrorLevel err=ErrorLevel::none, err_level=ErrorLevel::stop;
+  ErrorLevel err_level = ErrorLevel::stop;
 
   if (nrhs == 6) {
     if (!ap.parse_error_arg("dreamline", args, 5, err_level)) {
@@ -198,16 +198,21 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
   // Call the DREAM subroutine.
   //
 
-  err = line.dreamline(alpha,
-                       Ro,  No,
-                       a,
-                       dx,  dy,  dt, nt,
-                       delay_type, delay,
-                       v,cp,
-                       h, err_level);
+  SIRError err = line.dreamline(alpha,
+                                Ro,  No,
+                                a,
+                                dx,  dy,  dt, nt,
+                                delay_type, delay,
+                                v,cp,
+                                h, err_level);
 
   if (!line.is_running()) {
-    error("CTRL-C pressed!\n"); // Bail out.
+    if (err != SIRError::out_of_bounds) {
+      error("CTRL-C pressed!\n"); // Bail out.
+    } else {
+      error("SIR out-of-bounds!\n"); // Bail out.
+    }
+
     return oct_retval;
   }
 
@@ -215,7 +220,7 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
   // Check for Error.
   //
 
-  if (err == ErrorLevel::stop) {
+  if (err == SIRError::out_of_bounds) {
     error("Error in dreamline!"); // Bail out if error.
     return oct_retval;
   }

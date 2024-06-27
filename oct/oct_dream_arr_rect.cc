@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2006,2007,2008,2009,2012,2014,2015,2016,2021,2021,2023 Fredrik Lingvall
+* Copyright (C) 2006,2007,2008,2009,2012,2014,2015,2016,2021,2021,2023,2024 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -316,7 +316,7 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
   // Error reporting.
   //
 
-  ErrorLevel err=ErrorLevel::none, err_level=ErrorLevel::stop;
+  ErrorLevel err_level=ErrorLevel::stop;
 
   if (nrhs == 14) {
     if (!ap.parse_error_arg("dream_arr_rect", args, 13, err_level)) {
@@ -342,7 +342,7 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
   // Call the DREAM subroutine.
   //
 
-  err = arr_rect.dream_arr_rect(alpha,
+  SIRError err = arr_rect.dream_arr_rect(alpha,
                                 Ro, No,
                                 a, b,
                                 dx, dy,  dt, nt,
@@ -355,7 +355,12 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
                                 h, err_level);
 
   if (!arr_rect.is_running()) {
-    error("CTRL-C pressed!\n"); // Bail out.
+    if (err != SIRError::out_of_bounds) {
+      error("CTRL-C pressed!\n"); // Bail out.
+    } else {
+      error("SIR out-of-bounds!\n"); // Bail out.
+    }
+
     return oct_retval;
   }
 
@@ -363,8 +368,8 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
   // Check for Error.
   //
 
-  if (err == ErrorLevel::stop) {
-    error("Error in dream_arr_rect"); // Bail out if error.
+  if (err == SIRError::out_of_bounds) {
+    error("Error in dream_arr_rect!"); // Bail out if error.
     return oct_retval;
   }
 

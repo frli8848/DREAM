@@ -1,6 +1,6 @@
 /***
  *
- * Copyright (C) 2002,2003,2005,2006,2007,2008,2009,2014,2021,2023 Fredrik Lingvall
+ * Copyright (C) 2002,2003,2005,2006,2007,2008,2009,2014,2021,2023,2024 Fredrik Lingvall
  *
  * This file is part of the DREAM Toolbox.
  *
@@ -33,19 +33,16 @@ class Line
 {
  public:
 
- Line()
-   : m_out_err(ErrorLevel::none)
-    {;}
+  Line() = default;
+  ~Line() = default;
 
-  ~Line()  = default;
-
-  ErrorLevel dreamline(double alpha,
-                       double *Ro, dream_idx_type No,
-                       double a,
-                       double dx, double dy, double dt, dream_idx_type nt,
-                       DelayType delay_type, double *delay,
-                       double v, double cp,
-                       double *h, ErrorLevel err_level);
+  SIRError dreamline(double alpha,
+                     double *Ro, dream_idx_type No,
+                     double a,
+                     double dx, double dy, double dt, dream_idx_type nt,
+                     DelayType delay_type, double *delay,
+                     double v, double cp,
+                     double *h, ErrorLevel err_level);
 
   static void abort(int signum);
   bool is_running();
@@ -57,18 +54,16 @@ class Line
     return std::thread(&Line::smp_dream_line, this, arg);
   }
 
-  ErrorLevel dreamline_serial(double xo, double yo, double zo,
-                              double a,
-                              double dx, double dy, double dt, dream_idx_type nt,
-                              double delay, double v,
-                              double cp, double *h, ErrorLevel err_level);
+  SIRError dreamline_serial(double xo, double yo, double zo,
+                            double a,
+                            double dx, double dy, double dt, dream_idx_type nt,
+                            double delay, double v,
+                            double cp, double *h, ErrorLevel err_level);
 
-  ErrorLevel dreamline_serial(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
-                              double xo, double yo, double zo,
-                              double a,
-                              double dx, double dy, double dt, dream_idx_type nt,
-                              double delay, double v,
-                              double cp, double *h, ErrorLevel err_level);
-
- ErrorLevel m_out_err;
+  SIRError dreamline_serial(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
+                            double xo, double yo, double zo,
+                            double a,
+                            double dx, double dy, double dt, dream_idx_type nt,
+                            double delay, double v,
+                            double cp, double *h, ErrorLevel err_level);
 };

@@ -63,12 +63,12 @@ public:
 
   ~DAS()  = default;
 
-  ErrorLevel das(const T *Y, const T *Ro, const T *gt, const T *gr,
-                 T dt,
-                 DelayType delay_type, const T *delay,
-                 T cp,
-                 T *Im,
-                 ErrorLevel err_level);
+  SIRError das(const T *Y, const T *Ro, const T *gt, const T *gr,
+               T dt,
+               DelayType delay_type, const T *delay,
+               T cp,
+               T *Im,
+               ErrorLevel err_level);
 
   static void abort(int signum);
   bool is_running();
@@ -395,36 +395,36 @@ private:
     return std::thread(&DAS::smp_das, this, arg);
   }
 
-  ErrorLevel das_saft_serial(const T *Y, // Size: nt x num_elements
-                             dream_idx_type a_scan_len,
-                             const T *g, dream_idx_type num_elements,
-                             T xo, T yo, T zo,
-                             T dt, T delay,
-                             T cp, T &im, ErrorLevel err_level);
+  SIRError das_saft_serial(const T *Y, // Size: nt x num_elements
+                           dream_idx_type a_scan_len,
+                           const T *g, dream_idx_type num_elements,
+                           T xo, T yo, T zo,
+                           T dt, T delay,
+                           T cp, T &im, ErrorLevel err_level);
 
-  ErrorLevel das_tfm_serial(const T *Y, // Size: nt x num_t_elements*num_r_elements (=FMC)
-                            dream_idx_type a_scan_len,
-                            const T *gt, dream_idx_type num_t_elements,
-                            const T *gr, dream_idx_type num_r_elements,
-                            T xo, T yo, T zo,
-                            T dt, T delay,
-                            T cp, T &im, ErrorLevel err_level);
+  SIRError das_tfm_serial(const T *Y, // Size: nt x num_t_elements*num_r_elements (=FMC)
+                          dream_idx_type a_scan_len,
+                          const T *gt, dream_idx_type num_t_elements,
+                          const T *gr, dream_idx_type num_r_elements,
+                          T xo, T yo, T zo,
+                          T dt, T delay,
+                          T cp, T &im, ErrorLevel err_level);
 
-  ErrorLevel das_rca_serial_coltx(const T *Y, // Size: a_scan_len x num_cols*num_rows (=FMC)
-                                  dream_idx_type a_scan_len,
-                                  const T *G_col, dream_idx_type num_cols,
-                                  const T *G_row, dream_idx_type num_rows,
-                                  T xo, T yo, T zo,
-                                  T dt, T delay,
-                                  T cp, T &im, ErrorLevel err_level);
+  SIRError das_rca_serial_coltx(const T *Y, // Size: a_scan_len x num_cols*num_rows (=FMC)
+                                dream_idx_type a_scan_len,
+                                const T *G_col, dream_idx_type num_cols,
+                                const T *G_row, dream_idx_type num_rows,
+                                T xo, T yo, T zo,
+                                T dt, T delay,
+                                T cp, T &im, ErrorLevel err_level);
 
-  ErrorLevel das_rca_serial_rowtx(const T *Y, // Size: a_scan_len x num_cols*num_rows (=FMC)
-                                  dream_idx_type a_scan_len,
-                                  const T *G_col, dream_idx_type num_cols,
-                                  const T *G_row, dream_idx_type num_rows,
-                                  T xo, T yo, T zo,
-                                  T dt, T delay,
-                                  T cp, T &im, ErrorLevel err_level);
+  SIRError das_rca_serial_rowtx(const T *Y, // Size: a_scan_len x num_cols*num_rows (=FMC)
+                                dream_idx_type a_scan_len,
+                                const T *G_col, dream_idx_type num_cols,
+                                const T *G_row, dream_idx_type num_rows,
+                                T xo, T yo, T zo,
+                                T dt, T delay,
+                                T cp, T &im, ErrorLevel err_level);
 
   DASType m_das_type;
   dream_idx_type m_a_scan_len;

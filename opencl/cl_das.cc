@@ -1,6 +1,6 @@
 /***
  *
- * Copyright (C) 2023 Fredrik Lingvall
+ * Copyright (C) 2023,2024 Fredrik Lingvall
  *
  * This file is part of the DREAM Toolbox.
  *

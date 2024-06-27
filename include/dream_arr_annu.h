@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2002,2003,2005,2006,2007,2008,2009,2019,2021,2023 Fredrik Lingvall
+* Copyright (C) 2002,2003,2005,2006,2007,2008,2009,2019,2021,2023,2024 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -32,23 +32,20 @@
 
 class ArrAnnu
 {
- public:
+public:
 
- ArrAnnu()
-   : m_out_err(ErrorLevel::none)
-    {;}
+  ArrAnnu() = default;
+  ~ArrAnnu() = default;
 
-  ~ArrAnnu()  = default;
-
-  ErrorLevel dream_arr_annu(double alpha,
-                            double *Ro, dream_idx_type No,
-                            double dx, double dy, double dt, dream_idx_type nt,
-                            DelayType delay_type, double *delay,
-                            double v, double cp,
-                            dream_idx_type num_radii, double *Gr,
-                            FocusMet foc_met, double *focal,
-                            double *apod, bool do_apod, ApodMet apod_met, double apod_par,
-                            double *h, ErrorLevel err_level);
+  SIRError dream_arr_annu(double alpha,
+                          double *Ro, dream_idx_type No,
+                          double dx, double dy, double dt, dream_idx_type nt,
+                          DelayType delay_type, double *delay,
+                          double v, double cp,
+                          dream_idx_type num_radii, double *Gr,
+                          FocusMet foc_met, double *focal,
+                          double *apod, bool do_apod, ApodMet apod_met, double apod_par,
+                          double *h, ErrorLevel err_level);
 
   static void abort(int signum);
   bool is_running();
@@ -68,24 +65,22 @@ class ArrAnnu
   void superpos_annular(double *h_ring, double *h, dream_idx_type nt,
                         double weight, double foc_delay, dream_idx_type n, double dt);
 
-  ErrorLevel dream_arr_annu_serial(double xo, double yo, double zo,
-                                   double dx, double dy, double dt, dream_idx_type nt,
-                                   double delay,
-                                   double v, double cp,
-                                   dream_idx_type num_radii, double *Gr,
-                                   FocusMet foc_met, double *focal,
-                                   double *apod, bool do_apod, ApodMet apod_met, double param,
-                                   double *h, ErrorLevel err_level);
+  SIRError dream_arr_annu_serial(double xo, double yo, double zo,
+                                 double dx, double dy, double dt, dream_idx_type nt,
+                                 double delay,
+                                 double v, double cp,
+                                 dream_idx_type num_radii, double *Gr,
+                                 FocusMet foc_met, double *focal,
+                                 double *apod, bool do_apod, ApodMet apod_met, double param,
+                                 double *h, ErrorLevel err_level);
 
-  ErrorLevel dream_arr_annu_serial(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
-                                   double xo, double yo, double zo,
-                                   double dx, double dy, double dt, dream_idx_type nt,
-                                   double delay,
-                                   double v, double cp,
-                                   dream_idx_type num_radii, double *Gr,
-                                   FocusMet foc_met, double *focal,
-                                   double *apod, bool do_apod, ApodMet apod_met, double param,
-                                   double *h, ErrorLevel err_level);
-
-    ErrorLevel m_out_err;
+  SIRError dream_arr_annu_serial(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
+                                 double xo, double yo, double zo,
+                                 double dx, double dy, double dt, dream_idx_type nt,
+                                 double delay,
+                                 double v, double cp,
+                                 dream_idx_type num_radii, double *Gr,
+                                 FocusMet foc_met, double *focal,
+                                 double *apod, bool do_apod, ApodMet apod_met, double param,
+                                 double *h, ErrorLevel err_level);
 };

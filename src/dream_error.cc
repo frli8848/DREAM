@@ -37,12 +37,32 @@
  *
  ***/
 
-ErrorLevel dream_out_of_bounds_err(const char *msg, dream_idx_type idx, ErrorLevel err_level)
+SIRError dream_out_of_bounds_err(const char *msg, dream_idx_type idx, ErrorLevel err_level)
 {
+  SIRError err = SIRError::none;
 
   switch(err_level) {
 
+  case ErrorLevel::ignore:
+    break; // Do nothing.
+
+  case ErrorLevel::warn:
+    {
+#if defined(DREAM_OCTAVE) || defined(DREAM_PYTHON) || defined(DREAM_JULIA)
+      std::cout << msg << " (offset = " << idx << " samples)" << std::endl;
+#endif
+
+#ifdef DREAM_MATLAB
+      //mexPrintf("%s (offset = %d samples)\n",msg,idx);
+      std::cout << msg << " (offset = " << idx << " samples)" << std::endl;
+#endif
+    }
+    break;
+
   case ErrorLevel::stop:
+
+    err = SIRError::out_of_bounds;
+
     {
 #if defined(DREAM_OCTAVE) || defined(DREAM_PYTHON) || defined(DREAM_JULIA)
       std::cout << msg << " (offset = " << idx << " samples)" << std::endl;
@@ -58,24 +78,11 @@ ErrorLevel dream_out_of_bounds_err(const char *msg, dream_idx_type idx, ErrorLev
     }
     break;
 
-  case ErrorLevel::warn:
-    {
-#if defined(DREAM_OCTAVE) || defined(DREAM_PYTHON) || defined(DREAM_JULIA)
-      std::cout << msg << " (offset = " << idx << " samples)" << std::endl;
-#endif
-
-#ifdef DREAM_MATLAB
-      //mexPrintf("%s (offset = %d samples)\n",msg,idx);
-      std::cout << msg << " (offset = " << idx << " samples)" << std::endl;
-#endif
-    }
-    break;
-
-  case ErrorLevel::ignore:
-    break; // Do nothing.
-
   case ErrorLevel::parallel_stop:
     {
+
+      err = SIRError::out_of_bounds;
+
 #if defined(DREAM_OCTAVE) || defined(DREAM_PYTHON) || defined(DREAM_JULIA)
       std::cout << msg << " (offset = " << idx << " samples)" << std::endl;
 #endif
@@ -83,6 +90,7 @@ ErrorLevel dream_out_of_bounds_err(const char *msg, dream_idx_type idx, ErrorLev
 #ifdef DREAM_MATLAB
       //mexPrintf("%s (offset = %d samples)\n",msg,idx);
       std::cout << msg << " (offset = " << idx << " samples)" << std::endl;
+      mexErrMsgTxt(""); // Bail out!
 #endif
     }
     break;
@@ -91,7 +99,7 @@ ErrorLevel dream_out_of_bounds_err(const char *msg, dream_idx_type idx, ErrorLev
     break;
   }
 
-  return err_level;
+  return err;
 }
 
 void dream_err_msg(const char *msg)

@@ -1,6 +1,6 @@
 /***
  *
- * Copyright (C) 2002,2003,2005,2006,2007,2008,2009,2014,2019,2021,2023 Fredrik Lingvall
+ * Copyright (C) 2002,2003,2005,2006,2007,2008,2009,2014,2019,2021,2023,2024 Fredrik Lingvall
  *
  * This file is part of the DREAM Toolbox.
  *
@@ -60,6 +60,7 @@ typedef struct
   Attenuation *att;
   double *h;
   ErrorLevel err_level;
+  SIRError err; // Output error.
 } DATA_CIRC;
 
 /***
@@ -70,16 +71,16 @@ typedef struct
 
 void* Circ::smp_dream_circ(void *arg)
 {
-  ErrorLevel tmp_err=ErrorLevel::none, err=ErrorLevel::none;
-  DATA_CIRC D = *(DATA_CIRC *)arg;
+  DATA_CIRC *D = (DATA_CIRC *) arg;
   double xo, yo, zo;
-  double *h = D.h;
-  double R=D.R, dx=D.dx, dy=D.dy, dt=D.dt;
-  dream_idx_type n, No=D.No, nt=D.nt;
-  ErrorLevel tmp_lev=ErrorLevel::none, err_level=D.err_level;
-  double *delay=D.delay, *Ro=D.Ro, v=D.v, cp=D.cp;
-  Attenuation *att = D.att;
-  dream_idx_type start=D.start, stop=D.stop;
+  double *h = D->h;
+  double R=D->R, dx=D->dx, dy=D->dy, dt=D->dt;
+  dream_idx_type n, No=D->No, nt=D->nt;
+  double *delay=D->delay, *Ro=D->Ro, v=D->v, cp=D->cp;
+  Attenuation *att = D->att;
+  dream_idx_type start=D->start, stop=D->stop;
+  ErrorLevel err_level = D->err_level;
+  SIRError err = SIRError::none;
 
   // Buffers for the FFTs in the Attenuation
   std::unique_ptr<FFTCVec> xc_vec;
@@ -89,12 +90,7 @@ void* Circ::smp_dream_circ(void *arg)
     x_vec = std::make_unique<FFTVec>(nt);
   }
 
-  // Let the thread finish and then catch the error.
-  if (err_level == ErrorLevel::stop) {
-    tmp_lev = ErrorLevel::parallel_stop;
-  } else {
-    tmp_lev = err_level;
-  }
+  D->err = SIRError::none;  // Default to no output error.
 
   for (n=start; n<stop; n++) {
     xo = Ro[n];
@@ -102,7 +98,7 @@ void* Circ::smp_dream_circ(void *arg)
     zo = Ro[n+2*No];
 
     double dlay = 0.0;
-    if (D.delay_type == DelayType::single) {
+    if (D->delay_type == DelayType::single) {
       dlay = delay[0];
     } else { // DelayType::multiple.
       dlay = delay[n];
@@ -113,33 +109,26 @@ void* Circ::smp_dream_circ(void *arg)
                              R,
                              dx, dy, dt,
                              nt, dlay, v, cp,
-                             &h[n*nt], tmp_lev);
+                             &h[n*nt], err_level);
     } else {
       err = dreamcirc_serial(*att, *xc_vec.get(),*x_vec.get(),
                              xo, yo, zo,
                              R,
                              dx, dy, dt,
                              nt, dlay, v, cp,
-                             &h[n*nt], tmp_lev);
+                             &h[n*nt], err_level);
     }
 
-    if (err != ErrorLevel::none || m_out_err ==  ErrorLevel::parallel_stop) {
-      tmp_err = err;
-      if (err == ErrorLevel::parallel_stop || m_out_err ==  ErrorLevel::parallel_stop) {
-        break; // Jump out when a ErrorLevel::stop error occurs.
-      }
+    if (err == SIRError::out_of_bounds) {
+      D->err = err;  // Return the out-of-bounds error for this thread.
+      running_circ = false; // Tell all threads to exit.
     }
 
     if (!running_circ) {
       std::cout << "Thread for observation points " << start+1 << " -> " << stop << " bailing out!\n";
       return(NULL);
     }
-  }
 
-  if ((tmp_err != ErrorLevel::none) && (m_out_err == ErrorLevel::none)) {
-    std::lock_guard<std::mutex> lk(err_mutex_circ);
-
-    m_out_err = tmp_err;
   }
 
   return(NULL);
@@ -151,18 +140,20 @@ void* Circ::smp_dream_circ(void *arg)
  *
  ***/
 
-ErrorLevel Circ::dreamcirc(double alpha,
-                           double *Ro, dream_idx_type No,
-                           double R,
-                           double dx, double dy, double dt, dream_idx_type nt,
-                           DelayType delay_type, double *delay,
-                           double v, double cp,
-                           double *h, ErrorLevel err_level)
+SIRError Circ::dreamcirc(double alpha,
+                         double *Ro, dream_idx_type No,
+                         double R,
+                         double dx, double dy, double dt, dream_idx_type nt,
+                         DelayType delay_type, double *delay,
+                         double v, double cp,
+                         double *h, ErrorLevel err_level)
 {
   std::thread *threads;
   dream_idx_type thread_n, nthreads;
   dream_idx_type start, stop;
   DATA_CIRC *D;
+
+  SIRError err = SIRError::none;
 
   running_circ = true;
 
@@ -221,6 +212,7 @@ ErrorLevel Circ::dreamcirc(double alpha,
     D[thread_n].att = att_ptr;
     D[thread_n].h = h;
     D[thread_n].err_level = err_level;
+    D[thread_n].err = SIRError::none;
 
     if (nthreads>1) {
       // Start the threads.
@@ -235,6 +227,12 @@ ErrorLevel Circ::dreamcirc(double alpha,
   if (nthreads>1) {
     for (thread_n = 0; thread_n < nthreads; thread_n++) {
       threads[thread_n].join();
+
+      // Check if the current thread or a previous had an out-of-bounds error.
+      if ( (err == SIRError::out_of_bounds) || (D[thread_n].err == SIRError::out_of_bounds) ) {
+        err = SIRError::out_of_bounds;
+      }
+
     }
   }
 
@@ -243,7 +241,7 @@ ErrorLevel Circ::dreamcirc(double alpha,
     free((void*) D);
   }
 
-  return m_out_err;
+  return err;
 }
 
 
@@ -255,17 +253,17 @@ ErrorLevel Circ::dreamcirc(double alpha,
  *
  ***/
 
-ErrorLevel dreamcirc_serial(double xo, double yo, double zo,
-                            double R,
-                            double dx, double dy, double dt,
-                            dream_idx_type nt,
-                            double delay,
-                            double v, double cp,
-                            double *h,
-                            ErrorLevel err_level,
-                            double weight)
+SIRError dreamcirc_serial(double xo, double yo, double zo,
+                          double R,
+                          double dx, double dy, double dt,
+                          dream_idx_type nt,
+                          double delay,
+                          double v, double cp,
+                          double *h,
+                          ErrorLevel err_level,
+                          double weight)
 {
-  ErrorLevel err = ErrorLevel::none;
+  SIRError err = SIRError::none;
 
   double ds = dx * dy;
 
@@ -304,15 +302,16 @@ ErrorLevel dreamcirc_serial(double xo, double yo, double zo,
         h[it] += ai;
       } else {
 
-        if (it >= 0) {
-          err = dream_out_of_bounds_err("SIR out of bounds",it-nt+1,err_level);
+        if  (it >= 0) {
+          err = dream_out_of_bounds_err("SIR out of bounds", it-nt+1, err_level);
         } else {
-          err = dream_out_of_bounds_err("SIR out of bounds",it,err_level);
+          err = dream_out_of_bounds_err("SIR out of bounds", it, err_level);
         }
 
-        if ( (err_level == ErrorLevel::parallel_stop) || (err_level == ErrorLevel::stop) ) {
+        if (err == SIRError::out_of_bounds) {
           return err; // Bail out.
         }
+
       }
       xs += dx;
     }
@@ -322,18 +321,18 @@ ErrorLevel dreamcirc_serial(double xo, double yo, double zo,
   return err;
 }
 
-ErrorLevel dreamcirc_serial(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
-                            double xo, double yo, double zo,
-                            double R,
-                            double dx, double dy, double dt,
-                            dream_idx_type nt,
-                            double delay,
-                            double v, double cp,
-                            double *h,
-                            ErrorLevel err_level,
-                            double weight)
+SIRError dreamcirc_serial(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
+                          double xo, double yo, double zo,
+                          double R,
+                          double dx, double dy, double dt,
+                          dream_idx_type nt,
+                          double delay,
+                          double v, double cp,
+                          double *h,
+                          ErrorLevel err_level,
+                          double weight)
 {
-  ErrorLevel err = ErrorLevel::none;
+  SIRError err = SIRError::none;
 
   double ds = dx * dy;
 
@@ -372,15 +371,16 @@ ErrorLevel dreamcirc_serial(Attenuation &att, FFTCVec &xc_vec, FFTVec &x_vec,
         att.att(xc_vec, x_vec, r, it, h, ai);
       } else {
 
-        if (it >= 0) {
-          err = dream_out_of_bounds_err("SIR out of bounds",it-nt+1,err_level);
+        if  (it >= 0) {
+          err = dream_out_of_bounds_err("SIR out of bounds", it-nt+1, err_level);
         } else {
-          err = dream_out_of_bounds_err("SIR out of bounds",it,err_level);
+          err = dream_out_of_bounds_err("SIR out of bounds", it, err_level);
         }
 
-        if ( (err_level == ErrorLevel::parallel_stop) || (err_level == ErrorLevel::stop) ) {
+        if (err == SIRError::out_of_bounds) {
           return err; // Bail out.
         }
+
       }
       xs += dx;
     }

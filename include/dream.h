@@ -41,6 +41,11 @@
 #define M_PI 3.14159265358979323846
 #endif
 
+enum class SIRError {
+  none,
+  out_of_bounds
+};
+
 enum class ErrorLevel {
   none,
   stop,
@@ -129,8 +134,6 @@ typedef size_t dream_idx_type;
 typedef size_t dream_idx_type;
 #define HAVE_FFTW
 #endif
-
-
 
 /***
  *

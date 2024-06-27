@@ -190,7 +190,7 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
   // Error reporting.
   //
 
-  ErrorLevel err=ErrorLevel::none, err_level=ErrorLevel::stop;
+  ErrorLevel err_level=ErrorLevel::stop;
 
   if (nrhs >= 6) {
     if (!ap.parse_error_arg("dreamrect", args, 5, err_level)) {
@@ -230,6 +230,8 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
   // Call the DREAM subroutine.
   //
 
+  SIRError err = SIRError::none;
+
 #ifdef USE_OPENCL
 
   // Check if we should use the GPU
@@ -248,7 +250,12 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
                          h, err_level);
 
     if (!rect.is_running()) {
-      error("CTRL-C pressed!\n"); // Bail out.
+      if (err != SIRError::out_of_bounds) {
+        error("CTRL-C pressed!\n"); // Bail out.
+      } else {
+        error("SIR out-of-bounds!\n"); // Bail out.
+      }
+
       return oct_retval;
     }
 
@@ -261,7 +268,7 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
   //
 
   // NB. The GPU code do not return any error codes (yet).
-  if (err == ErrorLevel::stop) {
+  if (err == SIRError::out_of_bounds) {
     error("Error in dreamrect"); // Bail out if error.
     return oct_retval;
   }

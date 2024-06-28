@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2002,2003,2006,2007,2008,2009,2014,2015,2019,2021,2023 Fredrik Lingvall
+* Copyright (C) 2002,2003,2006,2007,2008,2009,2014,2015,2019,2021,2023,2024 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -147,7 +147,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Error reporting.
   //
 
-  ErrorLevel err=ErrorLevel::none, err_level=ErrorLevel::stop;
+  ErrorLevel err_level=ErrorLevel::stop;
 
   if (nrhs == 14) {
     ap.parse_error_arg("dream_arr_circ", prhs, 13, err_level);
@@ -171,27 +171,31 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Call the DREAM subroutine.
   //
 
-  err = arr_circ.dream_arr_circ(alpha,
-                                Ro, No,
-                                R,
-                                dx, dy,  dt, nt,
-                                delay_type, delay,
-                                v, cp,
-                                num_elements, G,
-                                foc_met,  focal.get(),
-                                steer_met, theta, phi,
-                                apod.get(), do_apod, apod_met, apod_par,
-                                h, err_level);
+  SIRError err = arr_circ.dream_arr_circ(alpha,
+                                         Ro, No,
+                                         R,
+                                         dx, dy,  dt, nt,
+                                         delay_type, delay,
+                                         v, cp,
+                                         num_elements, G,
+                                         foc_met,  focal.get(),
+                                         steer_met, theta, phi,
+                                         apod.get(), do_apod, apod_met, apod_par,
+                                         h, err_level);
 
   if (!arr_circ.is_running()) {
-    dream_err_msg("CTRL-C pressed!\n"); // Bail out.
+    if (err != SIRError::out_of_bounds) {
+      dream_err_msg("CTRL-C pressed!\n"); // Bail out.
+    } else {
+      dream_err_msg("SIR out-of-bounds!\n"); // Bail out.
+    }
   }
 
   //
   // Check for Error.
   //
 
-  if (err == ErrorLevel::stop) {
+  if (err == SIRError::out_of_bounds) {
     dream_err_msg(""); // Bail out if error.
   }
 

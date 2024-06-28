@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2003,2006,2007,2008,2009,2014,2015,2016,2021,2023 Fredrik Lingvall
+* Copyright (C) 2003,2006,2007,2008,2009,2014,2015,2016,2021,2023,2024 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -40,7 +40,7 @@ std::unique_ptr<DAS<float>> das_f=nullptr;
  *
  ***/
 
-void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
   ArgParser ap;
 
@@ -229,7 +229,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Error reporting.
   //
 
-  ErrorLevel err=ErrorLevel::none, err_level=ErrorLevel::stop;
+  ErrorLevel err_level=ErrorLevel::stop;
 
   if (nrhs >= 9) {
     ap.parse_error_arg("das", prhs, 8, err_level);
@@ -344,6 +344,8 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     std::signal(SIGABRT, DAS<double>::abort);
   }
 
+  SIRError err = SIRError::none;
+
 #ifdef USE_OPENCL
 
   // Check if we should use the GPU
@@ -368,7 +370,12 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
       err = das_f->das(Yf, Ro_f, Gt_f, Gr_f, dt_f, delay_type, delay_f, cp_f, Im_f, err_level);
       if (!das_f->is_running()) {
-        dream_err_msg("CTRL-C pressed!\n"); // Bail out.
+        if (err != SIRError::out_of_bounds) {
+          dream_err_msg("CTRL-C pressed!\n"); // Bail out.
+        } else {
+          dream_err_msg("SIR out-of-bounds!\n"); // Bail out.
+        }
+
         return;
       }
 
@@ -376,7 +383,12 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
       err = das_d->das(Yd, Ro_d, Gt_d, Gr_d, dt_d, delay_type, delay_d, cp_d, Im_d, err_level);
       if (!das_d->is_running()) {
-        dream_err_msg("CTRL-C pressed!\n"); // Bail out.
+        if (err != SIRError::out_of_bounds) {
+          dream_err_msg("CTRL-C pressed!\n"); // Bail out.
+        } else {
+          dream_err_msg("SIR out-of-bounds!\n"); // Bail out.
+        }
+
         return;
       }
 
@@ -386,7 +398,7 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   }
 #endif
 
-  if (err == ErrorLevel::stop) {
+  if (err == SIRError::out_of_bounds) {
     dream_err_msg("Error in DAS"); // Bail out if error.
   }
 

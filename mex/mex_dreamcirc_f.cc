@@ -1,6 +1,6 @@
 /***
  *
- * Copyright (C) 2003,2006,2007,2008,2009,2014,2015,2019,2021,2023 Fredrik Lingvall
+ * Copyright (C) 2003,2006,2007,2008,2009,2014,2015,2019,2021,2023,2024 Fredrik Lingvall
  *
  * This file is part of the DREAM Toolbox.
  *
@@ -104,7 +104,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Error reporting.
   //
 
-  ErrorLevel err=ErrorLevel::none, err_level=ErrorLevel::stop;
+  ErrorLevel err_level=ErrorLevel::stop;
 
   if (nrhs == 8) {
     ap.parse_error_arg("dreamcirc_f", prhs, 7, err_level);
@@ -128,24 +128,28 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // Call the DREAM subroutine.
   //
 
-  err = circ_f.dreamcirc_f(alpha,
-                           Ro, No,
-                           R,
-                           foc_met, focal,
-                           dx, dy, dt, nt,
-                           delay_type,  delay,
-                           v, cp,
-                           h, err_level);
+  SIRError err = circ_f.dreamcirc_f(alpha,
+                                    Ro, No,
+                                    R,
+                                    foc_met, focal,
+                                    dx, dy, dt, nt,
+                                    delay_type,  delay,
+                                    v, cp,
+                                    h, err_level);
 
   if (!circ_f.is_running()) {
-    dream_err_msg("CTRL-C pressed!\n"); // Bail out.
+    if (err != SIRError::out_of_bounds) {
+      dream_err_msg("CTRL-C pressed!\n"); // Bail out.
+    } else {
+      dream_err_msg("SIR out-of-bounds!\n"); // Bail out.
+    }
   }
 
   //
   // Check for Error.
   //
 
-  if (err == ErrorLevel::stop) {
+  if (err == SIRError::out_of_bounds) {
     dream_err_msg(""); // Bail out if error.
   }
 

@@ -149,10 +149,8 @@ SIRError Sphere::dreamsphere(double alpha,
                              double v, double cp,
                              double *h, ErrorLevel err_level)
 {
-  std::thread *threads;
-  dream_idx_type thread_n, nthreads;
+  dream_idx_type thread_n;
   dream_idx_type start, stop;
-  DATA *D;
 
   SIRError err = SIRError::none;
 

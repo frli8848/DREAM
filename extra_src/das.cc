@@ -199,10 +199,8 @@ SIRError DAS<T>::das(const T *Y, const T *Ro, const T *Gt, const T *Gr,
                      T *Im,
                      ErrorLevel err_level)
 {
-  std::thread *threads;
-  dream_idx_type thread_n, nthreads;
+  dream_idx_type thread_n;
   dream_idx_type start, stop;
-  DATA<T> *D;
 
   SIRError err = SIRError::none;
 

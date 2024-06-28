@@ -164,7 +164,7 @@ jl::ArrayRef<double, 2> jl_dream_arr_rect(jl::ArrayRef<double, 2> jl_ro,
   // Error reporting.
   //
 
-  ErrorLevel err=ErrorLevel::none, err_level=ErrorLevel::stop;
+  ErrorLevel err_level=ErrorLevel::stop;
 
   if (!ap.parse_error_arg("dream_arr_rect", err_level_str, err_level)) {
     throw std::runtime_error("Error in dream_arr_rect!");
@@ -188,24 +188,29 @@ jl::ArrayRef<double, 2> jl_dream_arr_rect(jl::ArrayRef<double, 2> jl_ro,
   // Call DREAM function
   //
 
-  err = arr_rect.dream_arr_rect(alpha,
-                                ro, no,
-                                a, b,
-                                dx, dy,  dt, nt,
-                                delay_type, delay,
-                                v, cp,
-                                num_elements, G,
-                                foc_met, focal.get(),
-                                steer_met, theta, phi,
-                                apod.get(), do_apod, apod_met, apod_par,
-                                h, err_level);
+  SIRError err = arr_rect.dream_arr_rect(alpha,
+                                         ro, no,
+                                         a, b,
+                                         dx, dy,  dt, nt,
+                                         delay_type, delay,
+                                         v, cp,
+                                         num_elements, G,
+                                         foc_met, focal.get(),
+                                         steer_met, theta, phi,
+                                         apod.get(), do_apod, apod_met, apod_par,
+                                         h, err_level);
 
   if (!arr_rect.is_running()) {
-    dream_err_msg("CTRL-C pressed!\n"); // Bail out.
+    if (err != SIRError::out_of_bounds) {
+      dream_err_msg("CTRL-C pressed!\n"); // Bail out.
+    } else {
+      dream_err_msg("SIR out-of-bounds!\n"); // Bail out.
+    }
+
     throw std::runtime_error("Error in dream_arr_rect!");
   }
 
-  if (err == ErrorLevel::stop) {
+  if (err == SIRError::out_of_bounds) {
     throw std::runtime_error("Error in dream_arr_rect!");
   }
 

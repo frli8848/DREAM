@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2023 Fredrik Lingvall
+* Copyright (C) 2023,2024 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -141,7 +141,7 @@ jl::ArrayRef<double, 2> jl_dream_arr_annu(jl::ArrayRef<double, 2> jl_ro,
   // Error reporting.
   //
 
-  ErrorLevel err=ErrorLevel::none, err_level=ErrorLevel::stop;
+  ErrorLevel err_level=ErrorLevel::stop;
 
   if (!ap.parse_error_arg("dream_arr_annu", err_level_str, err_level)) {
     throw std::runtime_error("Error in dream_arr_annu!");
@@ -165,22 +165,27 @@ jl::ArrayRef<double, 2> jl_dream_arr_annu(jl::ArrayRef<double, 2> jl_ro,
   // Call DREAM function
   //
 
-  err = arr_annu.dream_arr_annu(alpha,
-                                ro, no,
-                                dx, dy,  dt, nt,
-                                delay_type, delay,
-                                v, cp,
-                                num_elements, G,
-                                foc_met, focal.get(),
-                                apod.get(), do_apod, apod_met, apod_par,
-                                h, err_level);
+  SIRError err = arr_annu.dream_arr_annu(alpha,
+                                         ro, no,
+                                         dx, dy,  dt, nt,
+                                         delay_type, delay,
+                                         v, cp,
+                                         num_elements, G,
+                                         foc_met, focal.get(),
+                                         apod.get(), do_apod, apod_met, apod_par,
+                                         h, err_level);
 
   if (!arr_annu.is_running()) {
-    dream_err_msg("CTRL-C pressed!\n"); // Bail out.
+    if (err != SIRError::out_of_bounds) {
+      dream_err_msg("CTRL-C pressed!\n"); // Bail out.
+    } else {
+      dream_err_msg("SIR out-of-bounds!\n"); // Bail out.
+    }
+
     throw std::runtime_error("Error in dream_arr_annu!");
   }
 
-  if (err == ErrorLevel::stop) {
+  if (err == SIRError::out_of_bounds) {
     throw std::runtime_error("Error in dream_arr_annu!");
   }
 

@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2023 Fredrik Lingvall
+* Copyright (C) 2023,2024 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -103,7 +103,7 @@ jl::ArrayRef<double, 2> jl_dreamline(jl::ArrayRef<double, 2> jl_ro,
   // Error reporting.
   //
 
-  ErrorLevel err=ErrorLevel::none, err_level=ErrorLevel::stop;
+  ErrorLevel err_level=ErrorLevel::stop;
 
   if (!ap.parse_error_arg("dreamline", err_level_str, err_level)) {
     throw std::runtime_error("Error in dreamline!");
@@ -127,7 +127,7 @@ jl::ArrayRef<double, 2> jl_dreamline(jl::ArrayRef<double, 2> jl_ro,
   // Call DREAM function
   //
 
-  err = line.dreamline(alpha,
+  SIRError err = line.dreamline(alpha,
                        ro, no,
                        a,
                        dx, dy,  dt, nt,
@@ -136,11 +136,16 @@ jl::ArrayRef<double, 2> jl_dreamline(jl::ArrayRef<double, 2> jl_ro,
                        h, err_level);
 
   if (!line.is_running()) {
-    dream_err_msg("CTRL-C pressed!\n"); // Bail out.
+    if (err != SIRError::out_of_bounds) {
+      dream_err_msg("CTRL-C pressed!\n"); // Bail out.
+    } else {
+      dream_err_msg("SIR out-of-bounds!\n"); // Bail out.
+    }
+
     throw std::runtime_error("Error in dreamline!");
   }
 
-  if (err == ErrorLevel::stop) {
+  if (err == SIRError::out_of_bounds) {
     throw std::runtime_error("Error in dreamline!");
   }
 

@@ -164,7 +164,7 @@ jl::ArrayRef<double, 2> jl_dream_arr_cylind(jl::ArrayRef<double, 2> jl_ro,
   // Error reporting.
   //
 
-  ErrorLevel err=ErrorLevel::none, err_level=ErrorLevel::stop;
+  ErrorLevel err_level=ErrorLevel::stop;
 
   if (!ap.parse_error_arg("dream_arr_cylind", err_level_str, err_level)) {
     throw std::runtime_error("Error in dream_arr_cylind!");
@@ -188,7 +188,7 @@ jl::ArrayRef<double, 2> jl_dream_arr_cylind(jl::ArrayRef<double, 2> jl_ro,
   // Call DREAM function
   //
 
-  err = arr_cylind.dream_arr_cylind(alpha,
+  SIRError err = arr_cylind.dream_arr_cylind(alpha,
                                     ro, no,
                                     a, b, Rcurv,
                                     dx, dy,  dt, nt,
@@ -201,11 +201,16 @@ jl::ArrayRef<double, 2> jl_dream_arr_cylind(jl::ArrayRef<double, 2> jl_ro,
                                     h, err_level);
 
   if (!arr_cylind.is_running()) {
-    dream_err_msg("CTRL-C pressed!\n"); // Bail out.
+    if (err != SIRError::out_of_bounds) {
+      dream_err_msg("CTRL-C pressed!\n"); // Bail out.
+    } else {
+      dream_err_msg("SIR out-of-bounds!\n"); // Bail out.
+    }
+
     throw std::runtime_error("Error in dream_arr_cylind!");
   }
 
-  if (err == ErrorLevel::stop) {
+  if (err == SIRError::out_of_bounds) {
     throw std::runtime_error("Error in dream_arr_cylind!");
   }
 

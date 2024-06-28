@@ -129,7 +129,7 @@ jl::ArrayRef<T, 2> jl_das(jl::ArrayRef<T, 2> jl_Y,
   // Error reporting.
   //
 
-  ErrorLevel err=ErrorLevel::none, err_level=ErrorLevel::stop;
+  ErrorLevel err_level=ErrorLevel::stop;
 
   if (!ap.parse_error_arg("das", err_level_str, err_level)) {
     throw std::runtime_error("Error in das!");
@@ -158,6 +158,8 @@ jl::ArrayRef<T, 2> jl_das(jl::ArrayRef<T, 2> jl_Y,
   //
   // Create an output matrix for the processed data, Im
   //
+
+  SIRError err = SIRError::none;
 
   // FIXME: Is there a cleaner way to do this?
   jl_value_t *matrix_type = nullptr;
@@ -216,6 +218,12 @@ jl::ArrayRef<T, 2> jl_das(jl::ArrayRef<T, 2> jl_Y,
 
     err = das->das(Y, Ro, Gt, Gr, dt, delay_type, delay, cp, Im, err_level);
     if (!das->is_running()) {
+      if (err != SIRError::out_of_bounds) {
+        dream_err_msg("CTRL-C pressed!\n"); // Bail out.
+      } else {
+        dream_err_msg("SIR out-of-bounds!\n"); // Bail out.
+      }
+
       throw std::runtime_error("CTRL-C pressed!\n"); // Bail out.
     }
 
@@ -223,7 +231,7 @@ jl::ArrayRef<T, 2> jl_das(jl::ArrayRef<T, 2> jl_Y,
   }
 #endif
 
-  if (err == ErrorLevel::stop) {
+  if (err == SIRError::out_of_bounds) {
     throw std::runtime_error("Error in DAS"); // Bail out if error.
   }
 

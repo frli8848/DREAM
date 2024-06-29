@@ -189,19 +189,31 @@ Then (clone if needed) configure and build using (`mex` and `oct` builds are opt
 $ git clone https://github.com/frli8848/DREAM.git
 $ cd DREAM
 DREAM $ mkdir build && cd build
-DREAM/build $ cmake -DCMAKE_CXX_FLAGS="-O3 -march=native" -DBUILD_OCT=on -DBUILD_MEX=on -DBUILD_PYTHON=on ..
+DREAM/build $ cmake -DCMAKE_CXX_FLAGS="-O3 -march=native" -DBUILD_OCT=off -DBUILD_PYTHON=on ..
 DREAM/build $ make -j8
 ```
 
-Finally, set the `PYTHONPATH` to your `build/python` folder (see the corresponding section below) and run the tests
-using, for  example:
+Finally, set the `PYTHONPATH` to your `build/python` folder (see the corresponding section below) and run one of the the tests
+using, for example:
 ```
 $ cd DREAM/python/tests
 $ DREAM/python/tests $ python3 test_dreamrect.py
 ```
-A window should appear with the SIR plots.
+or directly in the Python interpreter:
+```
+>>> exec(open('test_dreamrect.py').read())
+```
+To show plots when running the test scripts one can
+set the `DO_PLOTTING` variable like
+```
+>>> DO_PLOTTING=1
+>>> exec(open('test_dreamret.py').read())
+```
+and a window should appear with the SIR plots.
 
 ## Julia (on Linux) - Experimental
+
+NB. This is experimental code so expect some rough spots!
 
 First install Julia, where on Ubuntu (22.04 LTS) there is no package so one have to do something like
 ```bash
@@ -227,7 +239,7 @@ to a file in  `/etc/portage/package.use/`. Then one can install Julia using
 $ sudo emerge dev-lang/julia
 ```
 
-Now install the  `CxxWrap` package (and some other useful packages). Start Julia and press `]`
+Now (try to) install the `CxxWrap` package (and some other useful packages). Start Julia and press `]`
 to enter `Pkg` mode
 
 ```bash
@@ -237,20 +249,79 @@ $ julia
   (_)     | (_) (_)    |
    _ _   _| |_  __ _   |  Type "?" for help, "]?" for Pkg help.
   | | | | | | |/ _` |  |
-  | | |_| | | | (_| |  |  Version 1.8.5 (2023-01-08)
- _/ |\__'_|_|_|\__'_|  |  Official https://julialang.org/ release
-|__/
+  | | |_| | | | (_| |  |  Version 1.9.4 (2023-11-14)
+ _/ |\__'_|_|_|\__'_|  |
+|__/                   |
 
 julia>
-(@v1.8) pkg> add Plots
-(@v1.8) pkg> add PyPlot
-(@v1.8) pkg> add TickTock
-(@v1.8) pkg> add DSP
-(@v1.8) pkg> add https://github.com/barche/libcxxwrap_julia_jll.jl.git
-(@v1.8) pkg> add CxxWrap
+(@v1.9) pkg> add Plots
+(@v1.9) pkg> add PyPlot
+(@v1.9) pkg> add TickTock
+(@v1.9) pkg> add DSP
+(@v1.9) pkg> add VectorizedRoutines
+(@v1.9) pkg> add https://github.com/barche/libcxxwrap_julia_jll.jl.git
+(@v1.9) pkg> add CxxWrap
+```
+The line:
+```
+(@v1.9) pkg> add https://github.com/barche/libcxxwrap_julia_jll.jl.git
+```
+adds pre-build binaries of libcxxwrap-julia from the main branch
+(see https://github.com/barche/libcxxwrap_julia_jll.jl).
+
+If (when) the above fail when adding CxxWrap (typically for CxxWrap >= 0.16)
+then try to build `libcxxwrap-julia` from sources and make CxxWrap use them instead.
+
+Below we use the user `fl` as a example user. First clear all previously added Julia
+packages:
+```
+ ~ $ cd .julia
+ ~/.julia $ rm -fR artifacts clones compiled conda environments logs packages prefs registries scratchspaces dev
+```
+and then clone the `libcxxwrap-julia` repo in a suitable folder (software for example):
+```
+ ~ $ cd software
+ ~/software $ git clone https://github.com/JuliaInterop/libcxxwrap-julia.git
+```
+Then run these commands (see https://github.com/JuliaInterop/libcxxwrap-julia)
+```
+(@v1.9) pkg> develop libcxxwrap_julia_jll
+julia> import libcxxwrap_julia_jll
+julia> libcxxwrap_julia_jll.dev_jll()
 ```
 
-Then (clone if needed) configure and build using:
+```
+ ~ $ cd .julia/dev/libcxxwrap_julia_jll/override
+ ~/.julia/dev/libcxxwrap_julia_jll/override $ rm -rf *
+ ~/.julia/dev/libcxxwrap_julia_jll/override $ cmake -DJulia_PREFIX=/usr /home/fl/software/libcxxwrap-julia
+ ~/.julia/dev/libcxxwrap_julia_jll/override $ cmake --build . -j --config Release
+```
+which assumes that Julia is installed in `/usr` (as on Gentoo Linux).
+
+Now add CxxWrap again (also add the other packages as described above):
+```
+(@v1.9) pkg> add CxxWrap
+```
+and print the prefix path for CxxWrap:
+```
+julia> using CxxWrap
+julia> CxxWrap.prefix_path()
+"/home/fl/.julia/dev/libcxxwrap_julia_jll/override"
+```
+
+There are, however, no CMake files or C++ header files in the .`julia/dev/libcxxwrap_julia_jll/override`
+folder which we need when building the DREAM bindings. They are instead installed when adding CxxWrap but
+not to the folder reported by `CxxWrap.prefix_path()`. To find and copy the files/folder one can
+for example do:
+```
+ ~ $ find /home/fl/.julia/  -name jlcxx.hpp
+/home/fl/.julia/artifacts/a171557f021273c0bad6f9a8d54db6f9da7e99b0/include/jlcxx/jlcxx.hpp
+
+ ~ $ cp -a /home/fl/.julia/artifacts/a171557f021273c0bad6f9a8d54db6f9da7e99b0/lib/cmake /home/fl/.julia/dev/libcxxwrap_julia_jll/override/lib/
+ ~ $ cp -a /home/fl/.julia/artifacts/a171557f021273c0bad6f9a8d54db6f9da7e99b0/include /home/fl/.julia/dev/libcxxwrap_julia_jll/override/
+```
+
+Then (clone if needed) configure and build DREAM using:
 ```bash
 $ git clone https://github.com/frli8848/DREAM.git
 $ cd DREAM
@@ -263,6 +334,40 @@ Then add the `build/julia` folder to the Julia path in the  `~/.julia/config/sta
 ```
 push!(LOAD_PATH, "<your_dream_clone_path>/DREAM/build/julia")
 ```
+If you get an error such as:
+```
+[ Info: Precompiling das_f_m [top-level]
+┌ Error: Calling `@wrapmodule` with the path of the library to load is no longer supported.
+│ Pass the name of a function returning the path instead, e.g. use `libfoo_jll.get_libfoo_path` instead of `libfoo_jll.libfoo`.
+└ @ CxxWrap.CxxWrapCore ~/.julia/packages/CxxWrap/eWADG/src/CxxWrap.jl:793
+```
+when running, for example,
+```
+ ~ $ DREAM/build $ julia ../julia/tests/test_das_saft.jl
+```
+then try to run it again and check if the error dissapear (bug in CxxWrap?).
+
+Also, when you have build DREAM with `-DBUILD_TESTS=on` you can try to run the tests using:
+```
+ ~ $ DREAM/build $ ctest
+```
+If all Julia tests fail then try to run `ctest` again and check if the errors disappear.
+
+Similar to the Octave/MATLAB bindings one can run the test scripts directly in the Julia interpreter
+using
+```
+$ cd DREAM/julia/tests
+```
+```
+julia> include("test_dreamrect.jl")
+```
+To show plots when running the test scripts one can
+set the `DO_PLOTTING` variable like
+```
+julia> DO_PLOTTING=1;
+julia> include("test_dreamrect.jl")
+```
+and a window should appear with the SIR plots.
 
 # Building with GPU Acceleration Support - OpenCL
 

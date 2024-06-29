@@ -5,12 +5,15 @@
 #################################################################
 
 using LinearAlgebra
-#using Plots
-using PyPlot
 using TickTock
 using Printf
 using DSP
 using VectorizedRoutines
+
+if (@isdefined(DO_PLOTTING))
+    #using Plots
+    using PyPlot
+end
 
 # DREAM functions
 using fftconv_p_m

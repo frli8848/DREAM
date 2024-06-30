@@ -30,10 +30,7 @@
 #if defined(_WIN32) || defined(_MSC_VER)
 #define _USE_MATH_DEFINES       // Needed for M_PI def.
 #include <cmath>
-#endif
-
-#ifdef _MSC_VER
-#define _CRT_SECURE_NO_WARNINGS
+#define _CRT_SECURE_NO_WARNINGS // Silence "C4996: 'getenv': This function or variable may be unsafe" warnings.
 #endif
 
 // Fallback def

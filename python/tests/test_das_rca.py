@@ -212,7 +212,6 @@ if 'DO_PLOTTING' in locals():
     plt.ylabel("z [mm]")
     plt.show(block=False)
 
-
 #
 # CPU - single precision
 #
@@ -235,7 +234,7 @@ if 'DO_PLOTTING' in locals():
     py_Im = np.reshape(Im_rca_f, (x.shape[0], z.shape[0]))
     plt.pcolor(x, z, py_Im.T)
     plt.gca().invert_yaxis()
-    plt.title("RCA GPU  Single Precision Reconstruction")
+    plt.title("RCA GPU Single Precision Reconstruction")
     plt.xlabel("x [mm]")
     plt.ylabel("z [mm]")
     plt.show(block=False)
@@ -253,7 +252,7 @@ if 'DO_PLOTTING' in locals():
     py_Im = np.reshape(Im_rca_gpu_f, (x.shape[0], z.shape[0]))
     plt.pcolor(x, z, py_Im.T)
     plt.gca().invert_yaxis()
-    plt.title("RCA GPU  Single Precision Reconstruction")
+    plt.title("RCA GPU Single Precision Reconstruction")
     plt.xlabel("x [mm]")
     plt.ylabel("z [mm]")
     plt.show(block=False)

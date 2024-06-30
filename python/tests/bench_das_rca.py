@@ -8,6 +8,14 @@ import time
 #import sys
 #sys.path.insert(0, '../')
 
+# Check if we have vtk installed
+try:
+    import vtk
+    have_vtk =  True
+
+except:
+    have_vtk =  False
+
 import dreamrect as dr
 import das as das
 import das_f as das_f
@@ -286,3 +294,64 @@ print("* CPU double precision %1.2f [MDAS/s] " % (Ntot/t1/1e6))
 print("* GPU double precision %1.2f [MDAS/s] " % (Ntot/t2/1e6))
 print("* CPU single precision %1.2f [MDAS/s] " % (Ntot/t3/1e6))
 print("* GPU single precision %1.2f [MDAS/s] " % (Ntot/t4/1e6))
+
+#
+# 3D VTK plot
+#
+
+if have_vtk:
+
+    #maxNumPoints = 1e6
+    zMin = -0.05
+    zMax = 0.05
+    vtkPolyData = vtk.vtkPolyData()
+
+    #clearPoints()
+    vtkPoints = vtk.vtkPoints()
+    vtkCells = vtk.vtkCellArray()
+    vtkDepth = vtk.vtkDoubleArray()
+    vtkDepth.SetName('DepthArray')
+    vtkPolyData.SetPoints(vtkPoints)
+    vtkPolyData.SetVerts(vtkCells)
+    vtkPolyData.GetPointData().SetScalars(vtkDepth)
+    vtkPolyData.GetPointData().SetActiveScalars('DepthArray')
+
+    mapper = vtk.vtkPolyDataMapper()
+    mapper.SetInputData(vtkPolyData)
+    mapper.SetColorModeToDefault()
+    mapper.SetScalarRange(zMin, zMax)
+    mapper.SetScalarVisibility(1)
+    vtkActor = vtk.vtkActor()
+    vtkActor.SetMapper(mapper)
+
+    # Add data
+    for k in range(np.size(Im_rca, 0)):
+        point = [Ro_rca[k,0],Ro_rca[k,1],Ro_rca[k,2]]
+        #point = 20.0*(np.random.rand(3)-0.5)
+        pointId = vtkPoints.InsertNextPoint(point[:])
+        vtkDepth.InsertNextValue(Im_rca[k]/mx)
+        vtkCells.InsertNextCell(1)
+        vtkCells.InsertCellPoint(pointId)
+        vtkCells.Modified()
+        vtkPoints.Modified()
+        vtkDepth.Modified()
+
+    # Renderer
+    renderer = vtk.vtkRenderer()
+    renderer.AddActor(vtkActor)
+    #renderer.SetBackground(.2, .3, .4)
+    renderer.SetBackground(0.0, 0.0, 0.0)
+    renderer.ResetCamera()
+
+    # Render Window
+    renderWindow = vtk.vtkRenderWindow()
+    renderWindow.AddRenderer(renderer)
+
+    # Interactor
+    renderWindowInteractor = vtk.vtkRenderWindowInteractor()
+    renderWindowInteractor.SetRenderWindow(renderWindow)
+
+    # Begin Interaction
+    renderWindow.Render()
+    renderWindow.SetWindowName("XYZ Data Viewer")
+    renderWindowInteractor.Start()

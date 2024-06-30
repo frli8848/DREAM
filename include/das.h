@@ -431,7 +431,6 @@ private:
   dream_idx_type m_No;
   dream_idx_type m_num_t_elements;
   dream_idx_type m_num_r_elements;
-  ErrorLevel m_out_err;
   bool m_use_gpu;
 
 #ifdef USE_OPENCL

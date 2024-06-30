@@ -40,7 +40,6 @@ DAS<T>::DAS(DASType das_type,
   , m_num_t_elements(num_t_elements)
   , m_num_r_elements(num_r_elements)
   , m_use_gpu(use_gpu)
-  , m_out_err(ErrorLevel::none)
 {
   if (m_use_gpu) { // We do not want to run the OpenCL init func when we use the CPU.
     if (sizeof(T) == sizeof(float) ) {

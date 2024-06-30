@@ -87,7 +87,6 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   //
 
   dream_idx_type a_scan_len = mxGetM(prhs[0]); // A-scan length
-  dream_idx_type num_a_scans = mxGetN(prhs[0]);
 
   float *Yf = nullptr;
   double *Yd = nullptr;
@@ -214,11 +213,6 @@ min_Rz_f = ((float*) mxGetData(prhs[3]))[2]; dz_f = ((float*) mxGetData(prhs[3])
   //
 
   ap.check_delay("das", prhs, 5, No);
-
-  DelayType delay_type = DelayType::single;  // delay is a scalar.
-  if (mxGetM(prhs[5]) * mxGetN(prhs[5]) != 1) {
-    delay_type = DelayType::multiple; // delay is a vector.
-  }
 
   const float *delay_f = nullptr;
   const double *delay_d = nullptr;

@@ -200,9 +200,6 @@ SIRError DAS<T>::das(const T *Y, const T *Ro, const T *Gt, const T *Gr,
                      T *Im,
                      ErrorLevel err_level)
 {
-  dream_idx_type thread_n;
-  dream_idx_type start, stop;
-
   SIRError err = SIRError::none;
 
   // Force SAFT if Gt is empty.
@@ -308,9 +305,9 @@ SIRError DAS<T>::das_saft_serial(const T *Y, // Size: a_scan_len x num_elements
 {
   SIRError err = SIRError::none;
 
-  const T Fs_khz = (1.0/dt)*1000.0;
-  const T one_over_cp = 1.0/cp;
-  const T delay_ms = delay/1000.0;
+  T Fs_khz = (1.0/dt)*1000.0;
+  T one_over_cp = 1.0/cp;
+  T delay_ms = delay/1000.0;
 
   //
   //  Transmit with one element - receive with one element.
@@ -368,9 +365,9 @@ SIRError DAS<T>::das_tfm_serial(const T *Y, // Size: a_scan_len x num_t_elements
 {
   SIRError err = SIRError::none;
 
-  const T Fs_khz = (1.0/dt)*1000.0;
-  const T one_over_cp = 1.0/cp;
-  const T delay_ms = delay/1000.0;
+  T Fs_khz = (1.0/dt)*1000.0;
+  T one_over_cp = 1.0/cp;
+  T delay_ms = delay/1000.0;
 
   //
   //  Transmit with all - receive with all elements.
@@ -440,9 +437,9 @@ SIRError DAS<T>::das_rca_serial_coltx(const T *Y, // Size: a_scan_len x num_cols
 {
   SIRError err = SIRError::none;
 
-  const T Fs_khz = (1.0/dt)*1000.0;
-  const T one_over_cp = 1.0/cp;
-  const T delay_ms = delay/1000.0;
+  T Fs_khz = (1.0/dt)*1000.0;
+  T one_over_cp = 1.0/cp;
+  T delay_ms = delay/1000.0;
 
   // Here we have crossed striped electrodes and the length of the transmit element stripe
   // is determined by the two edge positions of the receive elements and vice versa.
@@ -456,10 +453,10 @@ SIRError DAS<T>::das_rca_serial_coltx(const T *Y, // Size: a_scan_len x num_cols
   //   (y-dim edge positions).
 
   // Element (stripe) lengths
-  const T gc_y_min = G_row[0 + 1*num_cols];
-  const T gc_y_max = G_row[num_cols-1 + 1*num_cols];
-  const T gr_x_min = G_col[0];
-  const T gr_x_max = G_col[num_rows-1];
+  T gc_y_min = G_row[0 + 1*num_cols];
+  T gc_y_max = G_row[num_cols-1 + 1*num_cols];
+  T gr_x_min = G_col[0];
+  T gr_x_max = G_col[num_rows-1];
 
   im = 0.0;
   const T *y_p = Y;
@@ -536,9 +533,9 @@ SIRError DAS<T>::das_rca_serial_rowtx(const T *Y, // Size: a_scan_len x num_cols
 {
   SIRError err = SIRError::none;
 
-  const T Fs_khz = (1.0/dt)*1000.0;
-  const T one_over_cp = 1.0/cp;
-  const T delay_ms = delay/1000.0;
+  T Fs_khz = (1.0/dt)*1000.0;
+  T one_over_cp = 1.0/cp;
+  T delay_ms = delay/1000.0;
 
   // Here we have crossed striped electrodes and the length of the transmit element stripe
   // is determined by the two edge positions of the receive elements and vice versa.
@@ -552,10 +549,10 @@ SIRError DAS<T>::das_rca_serial_rowtx(const T *Y, // Size: a_scan_len x num_cols
   //   (y-dim edge positions).
 
   // Element (stripe) lengths
-  const T gc_y_min = G_row[0 + 1*num_cols];
-  const T gc_y_max = G_row[num_cols-1 + 1*num_cols];
-  const T gr_x_min = G_col[0];
-  const T gr_x_max = G_col[num_rows-1];
+  T gc_y_min = G_row[0 + 1*num_cols];
+  T gc_y_max = G_row[num_cols-1 + 1*num_cols];
+  T gr_x_min = G_col[0];
+  T gr_x_max = G_col[num_rows-1];
 
   im = 0.0;
   const T *y_p = Y;

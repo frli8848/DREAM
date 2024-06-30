@@ -149,9 +149,6 @@ SIRError Sphere::dreamsphere(double alpha,
                              double v, double cp,
                              double *h, ErrorLevel err_level)
 {
-  dream_idx_type thread_n;
-  dream_idx_type start, stop;
-
   SIRError err = SIRError::none;
 
   running = true;

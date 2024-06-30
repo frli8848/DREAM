@@ -235,7 +235,7 @@ jl::ArrayRef<double, 2> jl_fftconv_p(jl::ArrayRef<double, 2> jl_A,
 
   int plan_method = 4; // Default to FFTW_ESTIMATE
   dream_idx_type fft_len = A_M+B_M-1;
-  bool return_wisdom = false, load_wisdom = false;
+  //bool return_wisdom = false, load_wisdom = false;
 
   FFT fft(fft_len, nullptr, plan_method);
 

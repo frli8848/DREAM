@@ -84,7 +84,6 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   //
 
   dream_idx_type a_scan_len = mxGetM(prhs[0]); // A-scan length
-  dream_idx_type num_a_scans = mxGetN(prhs[0]);
 
   float *Yf = nullptr;
   double *Yd = nullptr;

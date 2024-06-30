@@ -157,10 +157,9 @@ ErrorLevel FFTConvP::run(double *Y,
                          ConvMode mode)
 {
   int plan_method = 4; // Default to FFTW_ESTIMATE
-  bool return_wisdom = false, load_wisdom = false;
+  //bool return_wisdom = false, load_wisdom = false;
   ConvMode conv_mode = mode;
   ErrorLevel err = ErrorLevel::none;
-
 
   // If we want to save a plan (in the second output arg)
   // then use the more time-consuming MEAUSURE method.

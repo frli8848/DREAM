@@ -24,6 +24,7 @@
 #include <cmath>
 #include <atomic>
 #include <mutex>
+#include <string>
 
 #include "das.h"
 #include "affinity.h"

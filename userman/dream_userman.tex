@@ -1170,14 +1170,14 @@ string with the following alternatives:
 
 \item \texttt{'ignore'}: Here an error is silently ignored,
 
-\item \texttt{'warn'}: An error message is printed but computation is not stopped,
+\item \texttt{'warn'}: A warning message is printed but computation is not stopped,
 
 \item \texttt{'stop'}: An error message is printed and the computation is stopped.
 
 \end{enumerate}
 %
-The error message contains a number that tells how many samples outside the time window the
-SIR is. The default error level is \texttt{'stop'} (if the \texttt{err\_level} is omitted).
+%The error message contains a number that tells how many samples outside the time window the
+%SIR is. The default error level is \texttt{'stop'} (if the \texttt{err\_level} is omitted).
 
 \subsection{Output Parameters Common to all Transducer Functions}
 
@@ -1195,16 +1195,14 @@ Each column \texttt{H} contain the SIR for the corresponding entry in the observ
 
 \subsubsection{The Error Output Argument}
 
-The second (optional) output argument, \texttt{err}, is negative if an error has occurred and
-0 otherwise.
+The second (optional) output argument, \texttt{err}, is non-zero if an error has occurred
+and 0 otherwise.
 %
 \begin{verbatim}
   [H,err] = dream***( ... );
 \end{verbatim}
 %
-If, for example, \texttt{err\_level = 'ignore'} then no error message will be printed
-but \texttt{err} will be negative if an error occurred so the error can be detected. This
-is useful for displaying error dialog boxes in GUIs, for example.
+
 
 %---------------------------------------------------------------
 

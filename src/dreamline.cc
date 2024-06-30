@@ -30,6 +30,7 @@
 
 std::mutex err_mutex;
 std::atomic<bool> running;
+std::atomic<bool> verbose_err_messages;
 
 void Line::abort(int signum)
 {
@@ -111,14 +112,18 @@ void* Line::smp_dream_line(void *arg)
                              xo,yo,zo,a,dx,dy,dt,nt,dlay,v,cp, &h[n*nt], err_level);
     }
 
+    if (err != SIRError::none) {
+      D->err = err;
+    }
+
     if (err == SIRError::out_of_bounds) {
-      D->err = err;  // Return the out-of-bounds error for this thread.
       running = false; // Tell all threads to exit.
-      //break; // Jump out when a ErrorLevel::stop error occurs.
     }
 
     if (!running) {
-      std::cout << "Thread for observation points " << start+1 << " -> " << stop << " bailing out!\n";
+      if (verbose_err_messages) {
+        std::cout << "Thread for observation points " << start+1 << " -> " << stop << " bailing out!\n";
+      }
       return(NULL);
     }
   }
@@ -140,12 +145,8 @@ SIRError Line::dreamline(double alpha,
                          double v, double cp,
                          double *h, ErrorLevel err_level)
 {
-  std::thread *threads;
-  dream_idx_type thread_n, nthreads;
-  dream_idx_type start, stop;
-  DATA *D;
-
   SIRError err = SIRError::none;
+  verbose_err_messages = false;
 
   running = true;
 
@@ -154,7 +155,7 @@ SIRError Line::dreamline(double alpha,
   //
 
   // Get number of CPU cores (including hypethreading, C++11).
-  nthreads = std::thread::hardware_concurrency();
+  dream_idx_type nthreads = std::thread::hardware_concurrency();
 
   // Read DREAM_NUM_THREADS env var
   if(const char* env_p = std::getenv("DREAM_NUM_THREADS")) {
@@ -177,15 +178,15 @@ SIRError Line::dreamline(double alpha,
   }
 
   // Allocate local data.
-  D = (DATA*) malloc(nthreads*sizeof(DATA));
+  DATA *D = (DATA*) malloc(nthreads*sizeof(DATA));
 
   // Allocate mem for the threads.
-  threads = new std::thread[nthreads]; // Init thread data.
+  std::thread *threads = new std::thread[nthreads]; // Init thread data.
 
-  for (thread_n = 0; thread_n < nthreads; thread_n++) {
+  for (dream_idx_type thread_n = 0; thread_n < nthreads; thread_n++) {
 
-    start = thread_n * No/nthreads;
-    stop =  (thread_n+1) * No/nthreads;
+    dream_idx_type start = thread_n * No/nthreads;
+    dream_idx_type stop =  (thread_n+1) * No/nthreads;
 
     // Init local data.
     D[thread_n].start = start; // Local start index;
@@ -217,12 +218,12 @@ SIRError Line::dreamline(double alpha,
 
   // Wait for all threads to finish.
   if (nthreads>1) {
-    for (thread_n = 0; thread_n < nthreads; thread_n++) {
+    for (dream_idx_type thread_n = 0; thread_n < nthreads; thread_n++) {
       threads[thread_n].join();
 
-      // Check if the current thread or a previous had an out-of-bounds error.
-      if ( (err == SIRError::out_of_bounds) || (D[thread_n].err == SIRError::out_of_bounds) ) {
-        err = SIRError::out_of_bounds;
+      // Check if one of the threads had an out-of-bounds event.
+      if (D[thread_n].err != SIRError::none) {
+        err = D[thread_n].err;
       }
 
     }

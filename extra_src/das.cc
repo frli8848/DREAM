@@ -170,9 +170,13 @@ void* DAS<T>::smp_das(void *arg)
     }
 
 
+
+    if (err != SIRError::none) {
+      D->err = err;
+    }
+
     if (err == SIRError::out_of_bounds) {
-      D->err = err; // Return the out-of-bounds error for this thread.
-      running = false;   // Tell all threads to exit.
+      running = false; // Tell all threads to exit.
     }
 
     if (!running) {
@@ -272,9 +276,9 @@ SIRError DAS<T>::das(const T *Y, const T *Ro, const T *Gt, const T *Gr,
     for (dream_idx_type thread_n = 0; thread_n < nthreads; thread_n++) {
       threads[thread_n].join();
 
-      // Check if the current thread or a previous had an out-of-bounds error.
-      if ( (err == SIRError::out_of_bounds) || (D[thread_n].err == SIRError::out_of_bounds) ) {
-        err = SIRError::out_of_bounds;
+      // Check if one of the threads had an out-of-bounds event.
+      if (D[thread_n].err != SIRError::none) {
+        err = D[thread_n].err;
       }
 
     }

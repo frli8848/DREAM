@@ -28,8 +28,10 @@
 #include "attenuation.h"
 #include "affinity.h"
 
+// NB. We link this one in dream_arr_circ so we need unique names.
 std::mutex err_mutex_circ;
 std::atomic<bool> running_circ;
+std::atomic<bool> verbose_err_msg_circ;
 
 void Circ::abort(int signum)
 {
@@ -119,13 +121,18 @@ void* Circ::smp_dream_circ(void *arg)
                              &h[n*nt], err_level);
     }
 
+    if (err != SIRError::none) {
+      D->err = err;
+    }
+
     if (err == SIRError::out_of_bounds) {
-      D->err = err;  // Return the out-of-bounds error for this thread.
       running_circ = false; // Tell all threads to exit.
     }
 
     if (!running_circ) {
-      std::cout << "Thread for observation points " << start+1 << " -> " << stop << " bailing out!\n";
+      if (verbose_err_msg_circ) {
+        std::cout << "Thread for observation points " << start+1 << " -> " << stop << " bailing out!\n";
+      }
       return(NULL);
     }
 
@@ -154,6 +161,7 @@ SIRError Circ::dreamcirc(double alpha,
   DATA_CIRC *D;
 
   SIRError err = SIRError::none;
+  verbose_err_msg_circ = false;
 
   running_circ = true;
 
@@ -228,9 +236,9 @@ SIRError Circ::dreamcirc(double alpha,
     for (thread_n = 0; thread_n < nthreads; thread_n++) {
       threads[thread_n].join();
 
-      // Check if the current thread or a previous had an out-of-bounds error.
-      if ( (err == SIRError::out_of_bounds) || (D[thread_n].err == SIRError::out_of_bounds) ) {
-        err = SIRError::out_of_bounds;
+     // Check if one of the threads had an out-of-bounds event.
+      if (D[thread_n].err != SIRError::none) {
+        err = D[thread_n].err;
       }
 
     }

@@ -25,5 +25,5 @@
 
 #include "dream.h"
 
-SIRError dream_out_of_bounds_err(const char *msg, dream_idx_type idx, ErrorLevel err_level);
+SIRError dream_out_of_bounds_err(const char *msg, dream_idx_type idx, ErrorLevel err_level, bool verbose=false);
 void dream_err_msg(const char *msg);

@@ -506,10 +506,10 @@ Copyright @copyright{} 2008-2023 Fredrik Lingvall.\n\
 
       err = das_f->das(Yf, Ro_f, Gt_f, Gr_f, dt_f, delay_type, delay_f, cp_f, Im_f, err_level);
       if (!das_f->is_running()) {
-        if (err != SIRError::out_of_bounds) {
-          error("CTRL-C pressed!\n"); // Bail out.
+        if (err == SIRError::out_of_bounds) {
+          error("DAS out-of-bounds!\n"); // Bail out.
         } else {
-          error("SIR out-of-bounds!\n"); // Bail out.
+          error("CTRL-C pressed!\n"); // Bail out.
         }
 
         return oct_retval;
@@ -519,10 +519,10 @@ Copyright @copyright{} 2008-2023 Fredrik Lingvall.\n\
 
       err = das_d->das(Yd, Ro_d, Gt_d, Gr_d, dt_d, delay_type, delay_d, cp_d, Im_d, err_level);
       if (!das_d->is_running()) {
-        if (err != SIRError::out_of_bounds) {
-          error("CTRL-C pressed!\n"); // Bail out.
+        if (err == SIRError::out_of_bounds) {
+          error("DAS out-of-bounds!\n"); // Bail out.
         } else {
-          error("SIR out-of-bounds!\n"); // Bail out.
+          error("CTRL-C pressed!\n"); // Bail out.
         }
 
         return oct_retval;
@@ -534,9 +534,8 @@ Copyright @copyright{} 2008-2023 Fredrik Lingvall.\n\
   }
 #endif
 
-  if (err == SIRError::out_of_bounds) {
-    error("Error in DAS!"); // Bail out if error.
-    return oct_retval;
+  if (err == SIRError::warn_out_of_bounds) {
+    std::cout << "Warning: DAS out-of-bounds!" << std::endl;
   }
 
   if (use_float) {

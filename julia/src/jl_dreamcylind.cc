@@ -136,16 +136,12 @@ jl::ArrayRef<double, 2> jl_dreamcylind(jl::ArrayRef<double, 2> jl_ro,
                                     h, err_level);
 
   if (!cylind.is_running()) {
-    if (err != SIRError::out_of_bounds) {
-      dream_err_msg("CTRL-C pressed!\n"); // Bail out.
-    } else {
+    if (err == SIRError::out_of_bounds) {
       dream_err_msg("SIR out-of-bounds!\n"); // Bail out.
+    } else {
+      dream_err_msg("CTRL-C pressed!\n"); // Bail out.
     }
 
-    throw std::runtime_error("Error in dreamcylind!");
-  }
-
-  if (err == SIRError::out_of_bounds) {
     throw std::runtime_error("Error in dreamcylind!");
   }
 

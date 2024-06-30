@@ -30,6 +30,7 @@
 
 std::mutex err_mutex;
 std::atomic<bool> running;
+std::atomic<bool> verbose_err_messages;
 
 void ArrAnnu::abort(int signum)
 {
@@ -137,13 +138,18 @@ void* ArrAnnu::smp_dream_arr_annu(void *arg)
                                   &h[n*nt], err_level);
     }
 
+    if (err != SIRError::none) {
+      D->err = err;
+    }
+
     if (err == SIRError::out_of_bounds) {
-      D->err = err; // Return the out-of-bounds error for this thread.
-      running = false;   // Tell all threads to exit.
+      running = false; // Tell all threads to exit.
     }
 
     if (!running) {
-      std::cout << "Thread for observation points " << start+1 << " -> " << stop << " bailing out!" << std::endl;
+      if (verbose_err_messages) {
+        std::cout << "Thread for observation points " << start+1 << " -> " << stop << " bailing out!" << std::endl;
+      }
       return(NULL);
     }
 
@@ -169,6 +175,7 @@ SIRError ArrAnnu::dream_arr_annu_serial(double xo, double yo, double zo,
                                         double *h, ErrorLevel err_level)
 {
   SIRError err = SIRError::none;
+  verbose_err_messages = false;
 
   // NB. The first ring have no inner radius (it is a normal
   // circular disc).
@@ -583,9 +590,9 @@ SIRError ArrAnnu::dream_arr_annu(double alpha,
     for (thread_n = 0; thread_n < nthreads; thread_n++) {
       threads[thread_n].join();
 
-      // Check if the current thread or a previous had an out-of-bounds error.
-      if ( (err == SIRError::out_of_bounds) || (D[thread_n].err == SIRError::out_of_bounds) ) {
-        err = SIRError::out_of_bounds;
+      // Check if one of the threads had an out-of-bounds event.
+      if (D[thread_n].err != SIRError::none) {
+        err = D[thread_n].err;
       }
 
     }

@@ -30,6 +30,7 @@
 
 std::mutex err_mutex;
 std::atomic<bool> running;
+std::atomic<bool> verbose_err_messages;
 
 void Sphere::abort(int signum)
 {
@@ -120,13 +121,18 @@ void* Sphere::smp_dream_sphere(void *arg)
                                &h[n*nt], err_level);
     }
 
+    if (err != SIRError::none) {
+      D->err = err;
+    }
+
     if (err == SIRError::out_of_bounds) {
-      D->err = err; // Return the out-of-bounds error for this thread.
-      running = false;          // Tell all threads to exit.
+      running = false; // Tell all threads to exit.
     }
 
     if (!running) {
-      std::cout << "Thread for observation points " << start+1 << " -> " << stop << " bailing out!\n";
+      if (verbose_err_messages) {
+        std::cout << "Thread for observation points " << start+1 << " -> " << stop << " bailing out!\n";
+      }
       return(NULL);
     }
 
@@ -150,6 +156,7 @@ SIRError Sphere::dreamsphere(double alpha,
                              double *h, ErrorLevel err_level)
 {
   SIRError err = SIRError::none;
+  verbose_err_messages=false;
 
   running = true;
 

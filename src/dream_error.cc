@@ -37,7 +37,7 @@
  *
  ***/
 
-SIRError dream_out_of_bounds_err(const char *msg, dream_idx_type idx, ErrorLevel err_level)
+SIRError dream_out_of_bounds_err(const char *msg, dream_idx_type idx, ErrorLevel err_level, bool verbose)
 {
   SIRError err = SIRError::none;
 
@@ -48,48 +48,24 @@ SIRError dream_out_of_bounds_err(const char *msg, dream_idx_type idx, ErrorLevel
 
   case ErrorLevel::warn:
     {
-#if defined(DREAM_OCTAVE) || defined(DREAM_PYTHON) || defined(DREAM_JULIA)
-      std::cout << msg << " (offset = " << idx << " samples)" << std::endl;
-#endif
+      err = SIRError::warn_out_of_bounds;
 
-#ifdef DREAM_MATLAB
-      //mexPrintf("%s (offset = %d samples)\n",msg,idx);
-      std::cout << msg << " (offset = " << idx << " samples)" << std::endl;
-#endif
+      if (verbose) {
+        std::cout << "Warning: " << msg << " (offset = " << idx << " samples)" << std::endl;
+      }
     }
     break;
 
   case ErrorLevel::stop:
-
-    err = SIRError::out_of_bounds;
-
-    {
-#if defined(DREAM_OCTAVE) || defined(DREAM_PYTHON) || defined(DREAM_JULIA)
-      std::cout << msg << " (offset = " << idx << " samples)" << std::endl;
-#endif
-
-      // NB. mexPrintf is not thread safe!
-
-#ifdef DREAM_MATLAB
-      // mexPrintf("%s (offset = %d samples)\n",msg,idx);
-      std::cout << msg << " (offset = " << idx << " samples)" << std::endl;
-      mexErrMsgTxt(""); // Bail out!
-#endif
-    }
-    break;
-
   case ErrorLevel::parallel_stop:
     {
-
       err = SIRError::out_of_bounds;
 
-#if defined(DREAM_OCTAVE) || defined(DREAM_PYTHON) || defined(DREAM_JULIA)
-      std::cout << msg << " (offset = " << idx << " samples)" << std::endl;
-#endif
+      if (verbose) {
+        std::cout << msg << " (offset = " << idx << " samples)" << std::endl;
+      }
 
 #ifdef DREAM_MATLAB
-      //mexPrintf("%s (offset = %d samples)\n",msg,idx);
-      std::cout << msg << " (offset = " << idx << " samples)" << std::endl;
       mexErrMsgTxt(""); // Bail out!
 #endif
     }

@@ -210,17 +210,17 @@ py::array_t<double,py::array::f_style> py_dream_arr_rect(py::array_t<double,py::
                                          h, err_level);
 
   if (!arr_rect.is_running()) {
-    if (err != SIRError::out_of_bounds) {
-      dream_err_msg("CTRL-C pressed!\n"); // Bail out.
-    } else {
+    if (err == SIRError::out_of_bounds) {
       dream_err_msg("SIR out-of-bounds!\n"); // Bail out.
+    } else {
+      dream_err_msg("CTRL-C pressed!\n"); // Bail out.
     }
 
     throw std::runtime_error("Error in dream_arr_rect!");
   }
 
-  if (err == SIRError::out_of_bounds) {
-    throw std::runtime_error("Error in dream_arr_rect!");
+  if (err == SIRError::warn_out_of_bounds) {
+    std::cout << "Warning: SIR out-of-bounds!" << std::endl;
   }
 
   return py_h_mat;

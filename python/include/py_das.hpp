@@ -213,10 +213,10 @@ py::array_t<T,py::array::f_style> py_das(py::array_t<T,py::array::f_style> *py_Y
 
     err = das->das(Y, Ro, Gt, Gr, dt, delay_type, delay, cp, Im, err_level);
     if (!das->is_running()) {
-      if (err != SIRError::out_of_bounds) {
-        dream_err_msg("CTRL-C pressed!\n"); // Bail out.
+      if (err == SIRError::out_of_bounds) {
+        dream_err_msg("DAS out-of-bounds!\n"); // Bail out.
       } else {
-        dream_err_msg("SIR out-of-bounds!\n"); // Bail out.
+        dream_err_msg("CTRL-C pressed!\n"); // Bail out.
       }
 
       throw std::runtime_error("CTRL-C pressed!\n"); // Bail out.
@@ -226,8 +226,8 @@ py::array_t<T,py::array::f_style> py_das(py::array_t<T,py::array::f_style> *py_Y
   }
 #endif
 
-  if (err == SIRError::out_of_bounds) {
-    throw std::runtime_error("Error in DAS"); // Bail out if error.
+  if (err == SIRError::warn_out_of_bounds) {
+    std::cout << "Warning: DAS out-of-bounds!" << std::endl;
   }
 
   return py_Im_mat;

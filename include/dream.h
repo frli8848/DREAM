@@ -38,16 +38,18 @@
 #define M_PI 3.14159265358979323846
 #endif
 
+// SIR out-out-of-bounds error codes
 enum class SIRError {
   none,
+  warn_out_of_bounds,
   out_of_bounds
 };
 
 enum class ErrorLevel {
   none,
-  stop,
-  warn,
   ignore,
+  warn,
+  stop,
   parallel_stop
 };
 

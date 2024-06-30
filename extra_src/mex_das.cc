@@ -369,10 +369,10 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
       err = das_f->das(Yf, Ro_f, Gt_f, Gr_f, dt_f, delay_type, delay_f, cp_f, Im_f, err_level);
       if (!das_f->is_running()) {
-        if (err != SIRError::out_of_bounds) {
-          dream_err_msg("CTRL-C pressed!\n"); // Bail out.
+        if (err == SIRError::out_of_bounds) {
+          dream_err_msg("DAS out-of-bounds!\n"); // Bail out.
         } else {
-          dream_err_msg("SIR out-of-bounds!\n"); // Bail out.
+          dream_err_msg("CTRL-C pressed!\n"); // Bail out.
         }
 
         return;
@@ -382,10 +382,10 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
       err = das_d->das(Yd, Ro_d, Gt_d, Gr_d, dt_d, delay_type, delay_d, cp_d, Im_d, err_level);
       if (!das_d->is_running()) {
-        if (err != SIRError::out_of_bounds) {
-          dream_err_msg("CTRL-C pressed!\n"); // Bail out.
+        if (err == SIRError::out_of_bounds) {
+          dream_err_msg("DAS out-of-bounds!\n"); // Bail out.
         } else {
-          dream_err_msg("SIR out-of-bounds!\n"); // Bail out.
+          dream_err_msg("CTRL-C pressed!\n"); // Bail out.
         }
 
         return;
@@ -397,8 +397,8 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   }
 #endif
 
-  if (err == SIRError::out_of_bounds) {
-    dream_err_msg("Error in DAS"); // Bail out if error.
+  if (err == SIRError::warn_out_of_bounds) {
+    std::cout << "Warning: DAS out-of-bounds!" << std::endl;
   }
 
   // Return error.

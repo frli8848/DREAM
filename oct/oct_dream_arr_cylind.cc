@@ -357,22 +357,17 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
                                              h, err_level);
 
   if (!arr_cylind.is_running()) {
-    if (err != SIRError::out_of_bounds) {
-      error("CTRL-C pressed!\n"); // Bail out.
-    } else {
+    if (err == SIRError::out_of_bounds) {
       error("SIR out-of-bounds!\n"); // Bail out.
+    } else {
+      error("CTRL-C pressed!\n"); // Bail out.
     }
 
     return oct_retval;
   }
 
-  //
-  // Check for Error.
-  //
-
-  if (err == SIRError::out_of_bounds) {
-    error("Error in dream_arr_cylind!"); // Bail out if error.
-    return oct_retval;
+  if (err == SIRError::warn_out_of_bounds) {
+    std::cout << "Warning: SIR out-of-bounds!" << std::endl;
   }
 
   oct_retval.append(h_mat);

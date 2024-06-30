@@ -28,8 +28,10 @@
 #include "attenuation.h"
 #include "affinity.h"
 
+// NB. We link this one in dream_arr_rect so we need unique names.
 std::mutex err_mutex_rect;
 std::atomic<bool> running_rect;
+std::atomic<bool> verbose_err_msg_rect;
 
 void Rect::abort(int signum)
 {
@@ -120,13 +122,18 @@ void* Rect::smp_dream_rect(void *arg)
                              &h[n*nt], err_level);
     }
 
+    if (err != SIRError::none) {
+      D->err = err;
+    }
+
     if (err == SIRError::out_of_bounds) {
-      D->err = err;  // Return the out-of-bounds error for this thread.
       running_rect = false; // Tell all threads to exit.
     }
 
     if (!running_rect) {
-      std::cout << "Thread for observation points " << start+1 << " -> " << stop << " bailing out!\n";
+      if (verbose_err_msg_rect) {
+        std::cout << "Thread for observation points " << start+1 << " -> " << stop << " bailing out!\n";
+      }
       return(NULL);
     }
 
@@ -149,12 +156,8 @@ SIRError Rect::dreamrect(double alpha,
                          double v, double cp,
                          double *h, ErrorLevel err_level)
 {
-  std::thread *threads;
-  dream_idx_type thread_n, nthreads;
-  dream_idx_type start, stop;
-  DATA_RECT *D;
-
   SIRError err = SIRError::none;
+  verbose_err_msg_rect = false;
 
   running_rect = true;
 
@@ -163,7 +166,7 @@ SIRError Rect::dreamrect(double alpha,
   //
 
   // Get number of CPU cores (including hypethreading, C++11).
-  nthreads = std::thread::hardware_concurrency();
+  dream_idx_type nthreads = std::thread::hardware_concurrency();
 
   // Read DREAM_NUM_THREADS env var
   if(const char* env_p = std::getenv("DREAM_NUM_THREADS")) {
@@ -186,15 +189,15 @@ SIRError Rect::dreamrect(double alpha,
   }
 
   // Allocate local data.
-  D = (DATA_RECT*) malloc(nthreads*sizeof(DATA_RECT));
+  DATA_RECT *D = (DATA_RECT*) malloc(nthreads*sizeof(DATA_RECT));
 
   // Allocate mem for the threads.
-  threads = new std::thread[nthreads]; // Init thread data.
+  std::thread *threads = new std::thread[nthreads]; // Init thread data.
 
-  for (thread_n = 0; thread_n < nthreads; thread_n++) {
+  for (dream_idx_type thread_n = 0; thread_n < nthreads; thread_n++) {
 
-    start = thread_n * No/nthreads;
-    stop =  (thread_n+1) * No/nthreads;
+    dream_idx_type start = thread_n * No/nthreads;
+    dream_idx_type stop =  (thread_n+1) * No/nthreads;
 
     // Init local data.
     D[thread_n].start = start; // Local start index;
@@ -227,12 +230,12 @@ SIRError Rect::dreamrect(double alpha,
 
   // Wait for all threads to finish.
   if (nthreads>1) {
-    for (thread_n = 0; thread_n < nthreads; thread_n++) {
+    for (dream_idx_type thread_n = 0; thread_n < nthreads; thread_n++) {
       threads[thread_n].join();
 
-      // Check if the current thread or a previous had an out-of-bounds error.
-      if ( (err == SIRError::out_of_bounds) || (D[thread_n].err == SIRError::out_of_bounds) ) {
-        err = SIRError::out_of_bounds;
+      // Check if one of the threads had an out-of-bounds event.
+      if (D[thread_n].err != SIRError::none) {
+        err = D[thread_n].err;
       }
 
     }

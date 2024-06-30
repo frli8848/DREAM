@@ -41,6 +41,7 @@
 // SIR out-out-of-bounds error codes
 enum class SIRError {
   none,
+  ignore_out_of_bounds,
   warn_out_of_bounds,
   out_of_bounds
 };

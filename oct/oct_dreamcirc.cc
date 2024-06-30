@@ -106,7 +106,7 @@ A string which can be one of 'cpu' or 'gpu'.\n\
 dreamcirc is an oct-function that is a part of the DREAM Toolbox available at\n\
 @url{https://github.com/frli8848/DREAM}.\n\
 \n\
-Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
+Copyright @copyright{} 2006-2024 Fredrik Lingvall.\n\
 @end deftypefn")
 {
   std::string device;

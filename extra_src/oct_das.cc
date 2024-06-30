@@ -141,7 +141,7 @@ A string which can be one of 'cpu' or 'gpu'.\n\
 das is an oct-function that is a part of the DREAM Toolbox available at\n\
 @url{https://github.com/frli8848/DREAM}.\n\
 \n\
-Copyright @copyright{} 2008-2023 Fredrik Lingvall.\n\
+Copyright @copyright{} 2008-2024 Fredrik Lingvall.\n\
 @end deftypefn")
 {
   octave_value_list oct_retval;

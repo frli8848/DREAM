@@ -107,7 +107,7 @@
 %     ‘'ignore'’
 %          An error is ignored (no error message is printed and the
 %          program is not stopped) but the err output argument is
-%          negative if an error occured.
+%          non-zero if an error occured.
 %     ‘'warn'’
 %          A warning message is printed but the program in not stopped.
 %     ‘'stop'’

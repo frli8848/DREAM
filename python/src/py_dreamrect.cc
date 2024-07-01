@@ -216,9 +216,9 @@ Error Handling: err_level;\n\
 \n\
 \"ignore\"\n\
    An error is ignored (no error message is printed and the program is not stopped) but the err output \n\
-   argument is negative if an error occured.\n\
+   argument is non-zero if an error occured.\n\
 \"warn\"\n\
-   A warning message is printed but the program in not stopped.\n\
+   A warning message is printed but the program in not stopped (and err argument is non-zero).\n\
 \"stop\"\n\
   An error message is printed and the program is stopped.\n\
 \n\

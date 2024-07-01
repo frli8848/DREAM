@@ -46,10 +46,10 @@
 %     ‘'ignore'’
 %          An error is ignored (no error message is printed and the
 %          program is not stopped) but the err output argument is
-%          negative if an error occured.
+%          non-zero if an error occured.
 %     ‘'warn'’
 %          An error message is printed but the program in not stopped
-%          (and err is negative).
+%          (and err is non-zero).
 %     ‘'stop'’
 %          An error message is printed and the program is stopped.
 %     ‘'device'’

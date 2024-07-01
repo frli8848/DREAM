@@ -1168,11 +1168,11 @@ string with the following alternatives:
 %
 \begin{enumerate}
 
-\item \texttt{'ignore'}: Here an error is silently ignored,
+\item \texttt{'ignore'}: Here an error is silently ignored (and err output arg is non-zero),
 
-\item \texttt{'warn'}: A warning message is printed but computation is not stopped,
+\item \texttt{'warn'}: A warning message is printed but computation is not stopped (and err output arg is non-zero),
 
-\item \texttt{'stop'}: An error message is printed and the computation is stopped.
+\item \texttt{'stop'}: An error message is printed and the computation is stopped (and none of the output args is set).
 
 \end{enumerate}
 %

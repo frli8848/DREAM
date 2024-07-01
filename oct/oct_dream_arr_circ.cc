@@ -160,7 +160,7 @@ err_level is an optional text string parameter for controlling the error behavio
 @table @code\n\
 @item 'ignore'\n\
 An error is ignored (no error message is printed and the program is not stopped) but the err output \n\
-argument is negative if an error occured.\n\
+argument is non-zero if an error occured.\n\
 @item 'warn'\n\
 A warning message is printed but the program in not stopped.\n\
 @item 'stop'\n\

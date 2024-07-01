@@ -274,23 +274,23 @@ then try to build `libcxxwrap-julia` from sources and make CxxWrap use them inst
 
 Below we use the user `fl` as a example user. First clear all previously added Julia
 packages:
-```
+```bash
  ~ $ cd .julia
  ~/.julia $ rm -fR artifacts clones compiled conda environments logs packages prefs registries scratchspaces dev
 ```
 and then clone the `libcxxwrap-julia` repo in a suitable folder (software for example):
-```
+```bash
  ~ $ cd software
  ~/software $ git clone https://github.com/JuliaInterop/libcxxwrap-julia.git
 ```
 Then run these commands (see https://github.com/JuliaInterop/libcxxwrap-julia)
-```
+```bash
 (@v1.9) pkg> develop libcxxwrap_julia_jll
 julia> import libcxxwrap_julia_jll
 julia> libcxxwrap_julia_jll.dev_jll()
 ```
 
-```
+```bash
  ~ $ cd .julia/dev/libcxxwrap_julia_jll/override
  ~/.julia/dev/libcxxwrap_julia_jll/override $ rm -rf *
  ~/.julia/dev/libcxxwrap_julia_jll/override $ cmake -DJulia_PREFIX=/usr /home/fl/software/libcxxwrap-julia
@@ -303,7 +303,7 @@ Now add CxxWrap again (also add the other packages as described above):
 (@v1.9) pkg> add CxxWrap
 ```
 and print the prefix path for CxxWrap:
-```
+```bash
 julia> using CxxWrap
 julia> CxxWrap.prefix_path()
 "/home/fl/.julia/dev/libcxxwrap_julia_jll/override"
@@ -313,7 +313,7 @@ There are, however, no CMake files or C++ header files in the .`julia/dev/libcxx
 folder which we need when building the DREAM bindings. They are instead installed when adding CxxWrap but
 not to the folder reported by `CxxWrap.prefix_path()`. To find and copy the files/folder one can
 for example do:
-```
+```bash
  ~ $ find /home/fl/.julia/  -name jlcxx.hpp
 /home/fl/.julia/artifacts/a171557f021273c0bad6f9a8d54db6f9da7e99b0/include/jlcxx/jlcxx.hpp
 
@@ -335,35 +335,35 @@ Then add the `build/julia` folder to the Julia path in the  `~/.julia/config/sta
 push!(LOAD_PATH, "<your_dream_clone_path>/DREAM/build/julia")
 ```
 If you get an error such as:
-```
+```bash
 [ Info: Precompiling das_f_m [top-level]
 ┌ Error: Calling `@wrapmodule` with the path of the library to load is no longer supported.
 │ Pass the name of a function returning the path instead, e.g. use `libfoo_jll.get_libfoo_path` instead of `libfoo_jll.libfoo`.
 └ @ CxxWrap.CxxWrapCore ~/.julia/packages/CxxWrap/eWADG/src/CxxWrap.jl:793
 ```
 when running, for example,
-```
+```bash
  ~ $ DREAM/build $ julia ../julia/tests/test_das_saft.jl
 ```
 then try to run it again and check if the error dissapear (bug in CxxWrap?).
 
 Also, when you have build DREAM with `-DBUILD_TESTS=on` you can try to run the tests using:
-```
+```bash
  ~ $ DREAM/build $ ctest
 ```
 If all Julia tests fail then try to run `ctest` again and check if the errors disappear.
 
 Similar to the Octave/MATLAB bindings one can run the test scripts directly in the Julia interpreter
 using
-```
+```bash
 $ cd DREAM/julia/tests
 ```
-```
+```bash
 julia> include("test_dreamrect.jl")
 ```
 To show plots when running the test scripts one can
 set the `DO_PLOTTING` variable like
-```
+```bash
 julia> DO_PLOTTING=1;
 julia> include("test_dreamrect.jl")
 ```
@@ -418,23 +418,23 @@ Nothing here yet.
 * Install CUDA (Nvidia), ROCm (AMD) [not tested], or Intel tools [not tested] depending of which GPU is in use.
 
 * Install the OpenCL headers. Start `Git Bash` and run
-  ```
+```bash
   $ git clone https://github.com/KhronosGroup/OpenCL-Headers.git
   $ git clone https://github.com/KhronosGroup/OpenCL-CLHPP.git
-  ```
+```
   Then create the folder `CL` in the `DREAM/include` folder and copy all OpenCL header
   files (both `.h` and `.hpp`) to that folder; they are located in `OpenCL-Headers/CL`
   and `OpenCL-CLHPP/include/CL`, respectively.
 
 * Start an Anaconda powershell and install the `xxd` tool (part of vim):
-  ```
+```bash
   > conda install --channel=conda-forge vim
-  ```
+```
 * Finally, using an Anaconda Powershell, configure and build using:
-  ```
+```bash
  > cmake -DCMAKE_CXX_FLAGS="-O2 -EHsc" -DBUILD_MEX=on -DBUILD_OCT=off -USE_OPENCL=on ..
  > cmake --build . --config Release
- ```
+```
 
 # Post Installation Setup
 

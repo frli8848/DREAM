@@ -138,6 +138,7 @@ jobs:
       run: |
         mkdir dream-${{ github.event.release.tag_name }}-matlab-windows-x86_64
         cp -v ${{github.workspace}}/build/Release/*.mexw64 dream-${{ github.event.release.tag_name }}-matlab-windows-x86_64/
+        cp -v ${{github.workspace}}/mex/matlab_help_files/*.m dream-${{ github.event.release.tag_name }}-matlab-windows-x86_64/
         cp -v C:/Miniconda3/envs/test/Library/lib/fftw3*.* dream-${{ github.event.release.tag_name }}-matlab-windows-x86_64/
         cp -v C:/Miniconda3/envs/test/Library/bin/fftw3*.* dream-${{ github.event.release.tag_name }}-matlab-windows-x86_64/
         zip -r dream-${{ github.event.release.tag_name }}-matlab-windows-x86_64.zip dream-${{ github.event.release.tag_name }}-matlab-windows-x86_64

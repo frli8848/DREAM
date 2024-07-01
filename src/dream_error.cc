@@ -62,12 +62,8 @@ SIRError dream_out_of_bounds_err(const char *msg, dream_idx_type idx, ErrorLevel
       err = SIRError::out_of_bounds;
 
       if (verbose) {
-        std::cout << msg << " (offset = " << idx << " samples)" << std::endl;
+        std::cout << "Error: " << msg << " (offset = " << idx << " samples)" << std::endl;
       }
-
-#ifdef DREAM_MATLAB
-      mexErrMsgTxt(""); // Bail out!
-#endif
     }
     break;
 

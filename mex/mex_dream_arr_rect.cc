@@ -186,10 +186,11 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
   if (!arr_rect.is_running()) {
     if (err == SIRError::out_of_bounds) {
-      dream_err_msg("SIR out-of-bounds!\n"); // Bail out.
+      dream_err_msg("SIR out-of-bounds!\n");
     } else {
-      dream_err_msg("CTRL-C pressed!\n"); // Bail out.
+      dream_err_msg("CTRL-C pressed!\n");
     }
+    mexErrMsgTxt(""); // Bail out!
   }
 
   if (err == SIRError::warn_out_of_bounds) {

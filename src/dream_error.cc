@@ -44,7 +44,8 @@ SIRError dream_out_of_bounds_err(const char *msg, dream_idx_type idx, ErrorLevel
   switch(err_level) {
 
   case ErrorLevel::ignore:
-    break; // Do nothing.
+    err = SIRError::ignore_out_of_bounds;
+    break; // No printouts.
 
   case ErrorLevel::warn:
     {

@@ -117,6 +117,7 @@ jobs:
       run: |
         conda install -c conda-forge fftw
         conda install -c conda-forge m2-zip
+        conda info --envs
 
     # Sets up MATLAB on the GitHub Actions runner
     - name: Setup MATLAB
@@ -139,8 +140,8 @@ jobs:
         mkdir dream-${{ github.event.release.tag_name }}-matlab-windows-x86_64
         cp -v ${{github.workspace}}/build/Release/*.mexw64 dream-${{ github.event.release.tag_name }}-matlab-windows-x86_64/
         cp -v ${{github.workspace}}/mex/matlab_help_files/*.m dream-${{ github.event.release.tag_name }}-matlab-windows-x86_64/
-        cp -v C:/Miniconda3/envs/test/Library/lib/fftw3*.* dream-${{ github.event.release.tag_name }}-matlab-windows-x86_64/
-        cp -v C:/Miniconda3/envs/test/Library/bin/fftw3*.* dream-${{ github.event.release.tag_name }}-matlab-windows-x86_64/
+        cp -v C:/Users/runneradmin/miniconda3/envs\test/Library/lib/fftw3*.* dream-${{ github.event.release.tag_name }}-matlab-windows-x86_64/
+        cp -v C:/Users/runneradmin/miniconda3/envs/test/Library/bin/fftw3*.* dream-${{ github.event.release.tag_name }}-matlab-windows-x86_64/
         zip -r dream-${{ github.event.release.tag_name }}-matlab-windows-x86_64.zip dream-${{ github.event.release.tag_name }}-matlab-windows-x86_64
 
     - name: Upload DREAM MATLAB Windows release binary

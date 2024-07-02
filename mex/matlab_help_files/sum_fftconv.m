@@ -20,11 +20,11 @@
 %
 %      Input parameters:
 %
-%      ‘H’
+%      H
 %           An MxNxL 3D matrix.
-%      ‘U’
+%      U
 %           H KxL matrix.
-%      ‘wisdom_str’
+%      wisdom_str
 %           Optional parameter.  If the wisdom_str parameter is not
 %           supplied then fftconv calls fftw wisdom plan functions before
 %           performing any frequency domain operations.  This overhead can
@@ -50,7 +50,7 @@
 %
 %      Output parameter:
 %
-%      ‘Y’
+%      Y
 %           The (M+K-1)xN output matrix.
 %
 % In-place mode

@@ -5,16 +5,16 @@
 %
 %    Input parameters:
 %
-%    ‘A’
+%    A
 %         An M x N matrix.
-%    ‘B’
+%    B
 %         A K x N matrix or a K-length vector.  If B is a vector each
 %         column in A is convolved with the vector B.
 %
-%    ‘wisdom_str_in’
+%    wisdom_str_in
 %
 %         Optional parameter.  If the wisdom_str_in parameter is not
-%         supplied then ‘fftconv_p’ calls FFTW wisdom plan functions
+%         supplied then fftconv_p calls FFTW wisdom plan functions
 %         before performing any frequency domain operations.  This
 %         overhead can be avoided by supplying a pre-computed FFTW
 %         wisdom string wisdom_str_in.  For more information see the
@@ -22,14 +22,14 @@
 %
 %    Output parameters:
 %
-%    ‘Y’
+%    Y
 %         The (M+K-1) x N output matrix.
 %
-%    ‘wisdom_str_out’
+%    wisdom_str_out
 %         Optional parameter.  If the wisdom_str_out output parameter is
-%         supplied then ‘fftconv_p’ will call FFTW wisdom plan functions
+%         supplied then fftconv_p will call FFTW wisdom plan functions
 %         and return the wisdom string which then can be used to speed
-%         up subsequent calls to ‘fftconv_p’ by suppying the string as
+%         up subsequent calls to fftconv_p by suppying the string as
 %         the input argument wisdom_str_in.
 %
 %         In place modes:

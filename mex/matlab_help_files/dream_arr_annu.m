@@ -6,89 +6,89 @@
 %
 %  Observation point(s) ([mm]):
 %
-%  ‘Ro’
+%  Ro
 %     An N x 3 matrix, Ro = [xo1 yo1 zo2; xo2 yo2 zo2; ...  xoN yoN
 %     zoN]; where N is the number of observation points.
 %
 %  Array grid parameter:
 %
-%  ‘G’
+%  G
 %     Vector of annulus radii [mm].
 %
 %  Sampling parameters: s_par = [dx dy dt nt];
 %
-%  ‘dx’
+%  dx
 %     Spatial x-direction discretization size [mm].
-%  ‘dy’
+%  dy
 %     Spatial y-direction discretization size [mm].
-%  ‘dt’
+%  dt
 %     Temporal discretization period (= 1/sampling freq) [us].
-%  ‘nt’
+%  nt
 %     Length of impulse response vector.
 %
 %  Start point of SIR:
 %
-%  ‘delay’
+%  delay
 %     Scalar delay for all observation points or a vector with
 %     individual delays for each observation point [us].
 %
 %  Material parameters: m_par = [v cp alpha];
 %
-%  ‘v’
+%  v
 %     Normal velocity [m/s].
-%  ‘cp’
+%  cp
 %     Sound velocity [m/s].
-%  ‘alpha’
+%  alpha
 %     Attenuation coefficient [dB/(cm MHz)].
 %
 %  Focusing parameters: foc_met and focal:
 %
-%  ‘foc_met’
+%  foc_met
 %     Focusing method, options are: 'on', 'off', and 'ud'.
-%  ‘focal’
+%  focal
 %     Focal distance [mm].  If foc_met = 'ud' (user defined) then
 %     focal is a vector of focusing delays.
 %
 %  Apodization parameters: apod_met, apod, and win_par.  The apod_met
 %  (apodization method) options are:
 %
-%  ‘'off'’
+%  'off'
 %     No apodization.
-%  ‘'ud'’
+%  'ud'
 %     User defined apodization.
-%  ‘'triangle'’
+%  'triangle'
 %     Triangle window.
-%  ‘'gauss'’
+%  'gauss'
 %     Gaussian (bell-shaped) window.
-%  ‘'raised'’
-%  ‘'hann'’
+%  'raised'
+%  'hann'
 %     Hann window.
-%  ‘'hamming'’
+%  'hamming'
 %     Hamming window.  Raised cosine.
-%  ‘'simply'’
+%  'simply'
 %     Simply supported.
-%  ‘'clamped'’
+%  'clamped'
 %     Clamped.
 %
 %  and the apod and win_par parameters are:
 %
-%  ‘apod’
+%  apod
 %     Vector of apodiztion weights (used for the 'ud' option).
-%  ‘win_par’
+%  win_par
 %     A scalar parameter for raised cosine and Gaussian apodization
 %     functions.
 %
 %  Error Handling: err_level; err_level is an optional text string
 %  parameter for controlling the error behavior, options are:
 %
-%  ‘'ignore'’
+%  'ignore'
 %     An error is ignored (no error message is printed and the
 %     program is not stopped) but the err output argument is
 %     non-zero if an error occured.
-%  ‘'warn'’
+%  'warn'
 %     An error message is printed but the program in not stopped
 %     (and err is non-zero).
-%  ‘'stop'’
+%  'stop'
 %     An error message is printed and the program is stopped.
 %
 % dream_arr_annu is a mex-function that is a part of the DREAM

@@ -16,52 +16,52 @@
 %
 % Data matrix:
 %
-% ‘Y’
+% Y
 %      A K x N matrix where K is the A-scan length and the number of
 %      A-scans, N, depends on DAS algorithm selected (see below).
 %
 % Transmit element vector [mm]:
 %
-% ‘gt’
+% gt
 %      A 3 element vector, gt = [min_t, pitch_t, max_t].
 %
 % Receive element vector [mm]:
 %
-% ‘gr’
+% gr
 %      A 3 element vector, gr = [min_r, pitch_r, max_r].
 %
 % Observation (image) point matrix [mm]:
 %
-% ‘Ro’
+% Ro
 %      A 3 x 3 matrix, Ro = [min_Rx, dx, max_Rx; min_Ry, dy, max_Ry;
 %      min_Rz, dz, max_Rz].
 %
 % Sampling parameter dt:
 %
-% ‘dt’
+% dt
 %      Temporal discretization period (= 1/sampling freq) [us].
 %
 % Data start and pulse delay compensation:
 %
-% ‘delay’
+% delay
 %      Scalar delay for all observation points or a vector with
 %      individual delays for each observation point [us].
 %
 % Sound speed:
 %
-% ‘cp’
+% cp
 %      Sound velocity of the medium [m/s].
 %
 % DAS algorithm: das_met is a text string parameter for selecting DAS
 % algorithm, options are:
 %
-% ‘'saft'’
+% 'saft'
 %      When SAFT is selected data Y must be an K x Lt (SAFT is also
 %      selected if Gr=[]).
-% ‘'tfm'’
+% 'tfm'
 %      When TFM is selected a linear array is assumed and data Y must
 %      be a K x Lt*Lr matrix.
-% ‘'rca_coltx' or 'rca_coltx'’
+% 'rca_coltx' or 'rca_coltx'
 %      When RCA is selected a 2D RCA array is assumed and data Y must
 %      be a K x Lt*Lr matrix.
 %

@@ -5,41 +5,41 @@
 %
 %     Observation point(s) ([mm]):
 %
-%     ‘Ro’
+%     Ro
 %          An N x 3 matrix, Ro = [xo1 yo1 zo2; xo2 yo2 zo2; ...  xoN yoN
 %          zoN]; where N is the number of observation points.
 %
 %     Geometrical parameters: geom_par = a;
 %
-%     ‘a’
+%     a
 %          Width of the strip (in x-direction) [mm].
 %
 %     Start point of SIR:
 %
-%     ‘delay’
+%     delay
 %          Scalar delay for all observation points or a vector with
 %          individual delays for each observation point [us].
 %
 %     Material parameters: m_par = [v cp alpha];
 %
-%     ‘v’
+%     v
 %          Normal velocity [m/s].
-%     ‘cp’
+%     cp
 %          Sound velocity [m/s].
-%     ‘alpha’
+%     alpha
 %          Attenuation coefficient [dB/(cm MHz)].
 %
 %     Error Handling: err_level; err_level is an optional text string
 %     parameter for controlling the error behavior, options are:
 %
-%     ‘'ignore'’
+%     'ignore'
 %          An error is ignored (no error message is printed and the
 %          program is not stopped) but the err output argument is
 %          non-zero if an error occured.
-%     ‘'warn'’
+%     'warn'
 %          An error message is printed but the program in not stopped
 %          (and err is non-zero).
-%     ‘'stop'’
+%     'stop'
 %          An error message is printed and the program is stopped.
 %
 % dreamline is a mex-function that is a part of the DREAM Toolbox

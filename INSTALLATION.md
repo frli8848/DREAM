@@ -214,7 +214,7 @@ NB. This is experimental code so expect some rough spots!
 
 First install Julia, where on Ubuntu (22.04 LTS) there is no package so one have to do something like
 ```bash
-$ wget https://julialang-s3.julialang.org/bin/linux/x64/1.8/julia-1.9.4-linux-x86_64.tar.gz
+$ wget https://julialang-s3.julialang.org/bin/linux/x64/1.9/julia-1.9.4-linux-x86_64.tar.gz
 $ tar xf julia-1.9.4-linux-x86_64.tar.gz
 $ sudo cp -a julia-1.9.4 /opt/
 $ sudo ln -s /opt/julia-1.9.4/bin/julia /usr/local/bin/julia

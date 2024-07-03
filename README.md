@@ -38,6 +38,14 @@ The DREAM Toolbox can be used using:
 * Compute SIRs for lossy media,
 * Accelerated delay-and-sum (DAS) synthetic aperture imaging beamforming (SAFT, TFM and row-column adressed [RCA] array DAS).
 
+# User Manual
+
+There is a PDF version of the user manual for each release available here:
+
+https://github.com/frli8848/DREAM/releases
+
+Look under _Assets_ for the corresponding release.
+
 # Functions
 
 | Function  | Description  | MATLAB  | Octave  | Python  | Julia |

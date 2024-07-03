@@ -8,10 +8,9 @@ described below.
 
 # Binary Installation
 
-There is (experimental) binaries of the MATLAB mex-files for Windows, Linux, and macOS here:
+There is (experimental) binaries for Windows, Linux, and macOS here:
 
 https://github.com/frli8848/DREAM/releases
-
 
 The zip-files can be found under the _Assets_ link for each release.
 
@@ -23,25 +22,25 @@ Then, follow the instructions on the _Post Installation Setup_ section below.
 
 ## Linux MATLAB Binaries
 
-Download load the zip-file for Linux, uncompress it and move the files to a suitable location.
+Download the zip-file for Linux, uncompress it and move the files to a suitable location.
 Then, follow the instructions on the _Post Installation Setup_ section below.
 
 ## macOS MATLAB Binaries
 
-We are using Miniconda packages when we build the macOS binaries so one first needs to install Miniconda from here:
+We are using Miniconda packages when we build the macOS binaries so one first need to install Miniconda from here:
 
 https://conda.io/projects/conda/en/latest/user-guide/install/macos.html
 
 and then start a new Terminal (or Terminal tab) and install the FFTW lib:
 
-```
+```bash
 $ sudo conda install -c conda-forge fftw
 ```
 
 For macOS the automatic GitHub CI/CD builds puts `conda` packages in `/usr/local/miniconda` where as the
 Miniconda installer puts the `conda` packages in `/opt/miniconda3`. And, one will get a "Library not loaded"
 error if one uses the GitHub builds on a standard Miniconda install. One can fix this with a simple symlink:
-```
+```bash
  $ sudo ln -s /opt/miniconda3 /usr/local/miniconda
 ```
 
@@ -51,11 +50,11 @@ Then, follow the instructions on the _Post Installation Setup_ section below.
 
 The  https://github.com/frli8848/DREAM.git repository contains the current development sources for the DREAM Toolbox.
 One can obtain the source code using:
-```
+```bash
  $ git clone https://github.com/frli8848/DREAM.git
 ```
 or
-```
+```bash
  $ git clone git@github.com:frli8848/DREAM.git
 ```
 
@@ -75,27 +74,26 @@ and Gentoo Linux. We assume that a compiler tool chain is already installed, suc
 or `clang`.
 
 First install the FFTW library (not needed if Octave is installed) which can be done using:
-```
+```bash
  $ sudo apt -yq update
  $ sudo apt install libfftw3-dev
 ```
 on Ubuntu Linux, or
-```
+```bash
 $ sudo emerge sci-libs/fftw
 
 ```
 on Gentoo Linux. To Install (a resent) Octave version one can do
 
-```
+```bash
 $ sudo add-apt-repository ppa:devacom/science
 $ sudo apt install octave
 $ sudo apt install liboctave-dev
 ```
 on Ubuntu, and on Gentoo Linux, add `sci-mathematics/octave` to a file in the
 `/etc/portage/package.accept_keywords/` folder and install Octave using
-```
+```bash
 # emerge sci-mathematics/octave
-
 ```
 Installing Octave will also pull in FFTW so the FFTW install steps above is then not needed.
 
@@ -117,7 +115,7 @@ which will build DREAM with both MATLAB and Octave support.
 On macOS, first install the macOS developer tools `Xcode` with the command line tools.
 This will install  the `clang` compilers, `git` and other tools. Next install CMake from here: https://cmake.org/install/
 and enable the command line tools from the Terminal:
-```
+```bash
 $ sudo "/Applications/CMake.app/Contents/bin/cmake-gui" --install
 Linked: '/usr/local/bin/cmake' -> '/Applications/CMake.app/Contents/bin/cmake'
 Linked: '/usr/local/bin/ctest' -> '/Applications/CMake.app/Contents/bin/ctest'
@@ -127,9 +125,8 @@ Linked: '/usr/local/bin/ccmake' -> '/Applications/CMake.app/Contents/bin/ccmake'
 
 ```
 Now, install FFTW using the Miniconda package manager (needed for MATLAB only builds)
-```
+```bash
  $ sudo conda install -c conda-forge fftw
-
 ```
 
 And finally, build the optimized binaries for macOS by following the `git clone ...` and CMake build instructions
@@ -146,7 +143,7 @@ already installed. Then install `git`, `cmake` and `Miniconda` or `Anaconda`:
 
 When you install `cmake` add it to the paths for all users. Then start the "Anaconda Powershell prompt" and
 run:
-```
+```bash
  >  conda install fftw
 ```
 
@@ -158,7 +155,7 @@ MINGW ~/DREAM (master) $ mkdir build
 ```
 
 Then start an Anaconda Powershell and run
-```
+```bash
  > cd DREAM/build
  > cmake -DCMAKE_CXX_FLAGS="-O2 -EHsc" -DBUILD_MEX=on -DBUILD_OCT=off ..
  > cmake --build . --config Release
@@ -173,13 +170,13 @@ If everything builds then the newly build mex-files should be located in the fol
 ## Python (on Linux) - Experimental
 
 First, one needs to install `pybind11`, `numpy` and `matplotlib` (to run the tests). On Gentoo Linux
-```
+```bash
 # emerge dev-python/pybind11
 # emerge dev-python/numpy
 # emerge dev-python/matplotlib
 ```
 and on Ubuntu Linux
-```
+```bash
 $ sudo apt install python3-pybind11
 $ sudo apt install python3-numpy
 $ sudo apt install python3-matplotlib
@@ -195,17 +192,17 @@ DREAM/build $ make -j8
 
 Finally, set the `PYTHONPATH` to your `build/python` folder (see the corresponding section below) and run one of the the tests
 using, for example:
-```
+```bash
 $ cd DREAM/python/tests
 $ DREAM/python/tests $ python3 test_dreamrect.py
 ```
 or directly in the Python interpreter:
-```
+```python
 >>> exec(open('test_dreamrect.py').read())
 ```
 To show plots when running the test scripts one can
 set the `DO_PLOTTING` variable like
-```
+```python
 >>> DO_PLOTTING=1
 >>> exec(open('test_dreamret.py').read())
 ```
@@ -217,10 +214,10 @@ NB. This is experimental code so expect some rough spots!
 
 First install Julia, where on Ubuntu (22.04 LTS) there is no package so one have to do something like
 ```bash
-$ wget https://julialang-s3.julialang.org/bin/linux/x64/1.8/julia-1.8.5-linux-x86_64.tar.gz
-$ tar xf julia-1.8.5-linux-x86_64.tar.gz
-$ sudo cp -a julia-1.8.5 /opt/
-$ sudo ln -s /opt/julia-1.8.5/bin/julia /usr/local/bin/julia
+$ wget https://julialang-s3.julialang.org/bin/linux/x64/1.8/julia-1.9.4-linux-x86_64.tar.gz
+$ tar xf julia-1.9.4-linux-x86_64.tar.gz
+$ sudo cp -a julia-1.9.4 /opt/
+$ sudo ln -s /opt/julia-1.9.4/bin/julia /usr/local/bin/julia
 ```
 
 On Gentoo Julia is in unstable so one have to add

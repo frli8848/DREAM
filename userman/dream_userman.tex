@@ -15,6 +15,7 @@
 \newboolean{TEX4HT}
 
 \usepackage{listings} % For programming code
+\usepackage{fancyvrb} % Frames around verbatim block
 
 %\usepackage[]{multicolumn}
 %\usepackage[]{showlabels}
@@ -362,6 +363,7 @@ be useful but WITHOUT ANY WARRANTY. More specifically:
 % \end{enumerate}
 
 \section{Installation}
+\label{sec:installation}
 
 \PARstart{T}{he} DREAM Toolbox can be installed both using pre-compiled binaries and from source code. Binaries are
 currently available for Linux (x86\_64), Windows (x86\_64), and for macOS (Intel Macs). The binaries are compiled
@@ -396,7 +398,7 @@ For more information see: \url{https://github.com/frli8848/DREAM#installation}
 % at the Octave command line.
 
 
-\section{An  Introduction to The Impulse Response Method}
+\section{An Introduction to The Impulse Response Method}
 
 \PARstart{T}{he} impulse response method is an approach based on linear systems theory to model acoustic fields from
 ultrasonic transducers; the method was introduced by Tupholme and Stepanishen in the late 60's, early
@@ -837,21 +839,16 @@ coefficient, $\alpha$ of 1 [db/cm MHz] is shown in Figure~\ref{fig:lossy} for 10
     \label{fig:lossy}}
 \end{figure}
 
-%\subsection{Far-field approximation}
-%
-% If the far-field the attanuation resonse are nearly identical so it can be computed outside the DREAM summation
-% using a single convolution.
-%
-
-
 \section{A Quick Start to DREAM Simulations}
 \label{sec:quick}
 
 \PARstart{I}{n} his section a quick start on how to perform simulations with DREAM is presented. Here only
 a simple example is shown just to illustrate what is needed to simulate an ultrasonic measurement system. We
-will use a circular transducers for this example but more advanced examples can be found on the DREAM web
-page  \url{http://www.signal.uu.se/Toolbox/dream/} on the
-\emph{Examples} page. Also more details of the various functions in the DREAM Toolbox can be found in
+will use a circular transducers.
+%for this example but more advanced examples can be found on the DREAM weba
+%page  \url{http://www.signal.uu.se/Toolbox/dream/} on the
+%\emph{Examples} page.
+More details of the various functions in the DREAM Toolbox can be found in
 Sections~\ref{sec:transducer-functions}, \ref{sec:parallel}, and~\ref{sec:misc-functions}, respectively.
 
 Let us study a the pressure response for a circular transducer using water as the propagation
@@ -866,7 +863,7 @@ at $z=10$ mm, from 1--50 mm with 1 mm between them (using m-code):
   frame=single,
   commentstyle=\color{red},
   caption={Defining observation points.},
-  label={code:obs_points}]
+  label={code:obs-points}]
 Fs = 10;   % Sampling freq. in MHz.
 Ts = 1/Fs;
 
@@ -884,7 +881,7 @@ yo = zeros(length(xo),1);
 zo = z*ones(length(xo),1);
 Ro = [xo(:) yo(:) zo(:)];
 \end{lstlisting}
-%
+
 Then we need to define the discretization parameters for both the transducer surface and the temporal
 sampling:
 %
@@ -895,7 +892,7 @@ sampling:
   frame=single,
   commentstyle=\color{red},
   caption={Defining descretization parameters.},
-  label={code:discr_pars}]
+  label={code:discr-pars}]
 % Descretization parameters.
 dx = 0.03;                              % [mm].
 dy = 0.03;                              % [mm]
@@ -914,7 +911,7 @@ an attenuation free medium ($\alpha = 0$) and a unit normal velocity:
   frame=single,
   commentstyle=\color{red},
   caption={Defining material parameters.},
-  label={code:discr_pars}]
+  label={code:meterial-pars}]
 % Material parameters.
 v     = 1.0;                           % Normal velocity.
 cp    = 1500;                          % Sound speed.
@@ -931,7 +928,7 @@ The size of the transducer must also be defined, here we use a circular transduc
   frame=single,
   commentstyle=\color{red},
   caption={Defining geometrical parameters.},
-  label={code:geom_pars}]
+  label={code:geom-pars}]
 % Geometrical parameters.
 r = 5;                                 % Radius [mm].
 geom_par = [r];
@@ -946,7 +943,7 @@ compute the discrete SIRs:
   frame=single,
   commentstyle=\color{red},
   caption={Defining SIR starting point.},
-  label={code:delat_pars}]
+  label={code:delay-pars}]
 % Delay.
 t_z = z*1e3/cp;
 %delay = 0;                             % Start at 0 [us].
@@ -955,8 +952,7 @@ delay = t_z;                            % Start at t_z [us].
 H = dreamcirc(Ro,geom_par,s_par,delay,m_par,'stop');
 \end{lstlisting}
 
-
-For Python, the corresponding code is:
+For Python, the corresponding code (with plotting added) is:
 \begin{lstlisting}[language=Python,
   basicstyle=\scriptsize,
   breaklines=true,
@@ -964,9 +960,10 @@ For Python, the corresponding code is:
   frame=single,
   commentstyle=\color{red},
   caption={A short Python \texttt{dreamcirc} example.},
-  label={code:short_example}]
+  label={code:short-example-python}]
 import math
 import numpy as np
+import matplotlib.pyplot as plt
 
 import dreamcirc as dc
 
@@ -979,36 +976,100 @@ z = 10.0                        # [mm]
 xo = np.linspace(0.0, 50.0, num=50, endpoint=True)
 xo = gx.reshape(51,1)
 [m,n] = np.shape(xo)
-gy = np.zeros((m,1), dtype=float);
-gz = z*np.ones((m,1), dtype=float);
+gy = np.zeros((m,1), dtype=float)
+gz = z*np.ones((m,1), dtype=float)
 Ro = gx
 Ro = np.hstack((G, gy))
 Ro = np.hstack((G, gz))
 
 # Descretization parameters.
-dx = 0.03;                # [mm].
-dy = 0.03;                # [mm]
+dx = 0.03                # [mm].
+dy = 0.03                # [mm].
+dt = Ts                  # [us].
+nt = 400.0               # Length of spatial impulse response vector.
+s_par = np.asmatrix([dx,dy,dt,nt])
+
+# Material parameters.
+v     = 1.0                    # Normal velocity.
+cp    = 1500.0                 # Sound speed.
+alpha = 0.0                    # Absorbtion (dB/cm Hz).
+m_par = np.asmatrix([v,cp,alpha])
+
+# Element size [mm].
+R = 10.0
+geom_par = np.asmatrix([R]);
+H = dc.dreamcirc(Ro,geom_par,s_par,delay,m_par,"stop")
+
+fig = plt.figure(1)
+plt.clf()
+plt.plot(t, H, 'b-', label='Attenuation alpha = 0 [dB/cm MHz]', linewidth=2, markersize=12)
+plt.xlabel('t [us]')
+plt.ylabel('h_{SIR} [m/s]')
+plt.title('Circular transducer')
+plt.legend()
+plt.show()
+\end{lstlisting}
+%
+and the Julia code (which is very similar to the m-code) is:
+%
+\begin{lstlisting}[language=Python,
+  basicstyle=\scriptsize,
+  breaklines=true,
+  captionpos=b,
+  frame=single,
+  commentstyle=\color{red},
+  caption={A short Julia \texttt{dreamcirc} example.},
+  label={code:short-example-julia}]
+using LinearAlgebra
+using Plots
+
+using dreamcirc_m
+
+Fs = 4.0;                       # Sampling freq. [MHz].
+Ts = 1/Fs;                      # [us].
+
+z = 10.0;
+
+# One point.
+xo = 0;
+yo = 0;
+zo = z;
+ro = [xo yo zo];
+Ro = ro;
+
+# Descretization parameters.
+dx = 0.05;                # [mm].
+dy = 0.05;                # [mm]
 dt = Ts;                  # [us].
-nt = 400.0;               # Length of spatial impulse response vector.
-s_par = np.asmatrix([dx,dy,dt,nt]);
+nt = 300.0;               # Length of spatial impulse response vector.
+s_par = [dx,dy,dt,nt];
 
 # Material parameters.
 v     = 1.0;                    # Normal velocity.
-cp    = 1500.0;                 # Sound speed.
-alpha = 0.0;                    # Absorbtion (dB/cm Hz).
-m_par = np.asmatrix([v,cp,alpha]);
+cp    = 1000.0;                 # Sound speed.
+alpha = 0.0;                    # Absorbtion [dB/cm Hz].
+m_par = [v,cp,alpha];
+
+#t_z = z*1.0e-3/cp * 1.0e6;      # us
+delay = [0.0];
 
 # Element size [mm].
 R = 10.0;
-geom_par = np.asmatrix([R]);
+geom_par = [R];
 
-H = dc.dreamcirc(Ro,geom_par,s_par,delay,m_par,"stop")
+H = dreamcirc_m.dreamcirc(Ro,geom_par,s_par,delay,m_par,"stop");
+
+t = range(0.0, Ts*float(nt-1), length=Int(nt));
+
+plot(t, H, label="Attenuation alpha = 0 [dB/cm MHz]", linewidth=2)
+
+title!("Circular transducer")
+xlabel!("t [us]")
+ylabel!("h_{SIR} [m/s]")
+gui()
 \end{lstlisting}
 
-
-%
 % TODO: add electrical impulse response.
-%
 
 \section{Transducer Function Reference}
 \label{sec:transducer-functions}
@@ -1056,8 +1117,27 @@ from single transducer functions by ``\texttt{\_arr\_}''. Note that arbitrary ar
 transducer elements) can be modeled using the single transducer functions and then adding their
 corresponding responses.
 
-\subsection{Input Parameters Common to all Transducer Functions}
+When using Python one need to import the corresponding function before using it like, for example;
+%
+\begin{Verbatim}[frame=single]
+    import dreamcirc as dc
 
+    H = dc.dreamcirc(Ro, geom_par, s_par, delay, m_par, "stop")
+\end{Verbatim}
+%
+and for Julia one need to import the DREAM function using the \texttt{using} keyword
+with an \texttt{\_m} appended after the function name likem for example:
+%
+\begin{Verbatim}[frame=single]
+  using dreamcirc_m
+
+  H = dreamcirc_m.dreamcirc(Ro, geom_par, s_par, delay, m_par, "stop");
+\end{Verbatim}
+%
+For MATLAB and Octave it is enough to set the path to the DREAM Toolbox
+(for more information see Section~\ref{sec:installation}).
+
+\subsection{Input Parameters Common to all Transducer Functions}
 
 \subsubsection{Observation Point(s) Parameter}
 \label{sec:obsarg}
@@ -1186,9 +1266,9 @@ string with the following alternatives:
 The first output argument of transducer functions, \texttt{H},  is a matrix or vector,
 containing the spatial impulse response(s).
 %
-\begin{verbatim}
+\begin{Verbatim}[frame=single]
   H = dream***( ... );
-\end{verbatim}
+\end{Verbatim}
 %
 Each column \texttt{H} contain the SIR for the corresponding entry in the observation point input matrix
 \texttt{Ro} (see Section~\ref{sec:obsarg}).
@@ -1198,9 +1278,9 @@ Each column \texttt{H} contain the SIR for the corresponding entry in the observ
 The second (optional) output argument, \texttt{err}, is non-zero if an error has occurred
 and 0 otherwise.
 %
-\begin{verbatim}
+\begin{Verbatim}[frame=single]
   [H,err] = dream***( ... );
-\end{verbatim}
+\end{Verbatim}
 %
 
 
@@ -1218,25 +1298,42 @@ by offsetting the coordinate system after computation.
 The line, or strip, transducer has a length \texttt{a} and a (small) thickness equal to
 \texttt{dy} (in \texttt{s\_par}).
 
-\noindent \textbf{Syntax}:
-\begin{verbatim}
+\noindent \textbf{Syntax} m-code (MATLAB and Octave):
+\begin{Verbatim}[frame=single]
   H = dreamline(Ro,geom_par,s_par,delay,m_par,err_level);
-\end{verbatim}
+\end{Verbatim}
 %
+\noindent \textbf{Syntax} Python:
+\begin{Verbatim}[frame=single]
+  import dreamline as dl
+
+  H = dl.dreamline(Ro,geom_par,s_par,delay,m_par,err_level)
+\end{Verbatim}
+%
+\noindent \textbf{Syntax} Julia:
+\begin{Verbatim}[frame=single]
+  using dreamline_m
+
+  H = dreamline_m.dreamline(Ro,geom_par,s_par,delay,m_par,err_level);
+\end{Verbatim}
+
 \noindent \textbf{Geometrical parameters}:
 \begin{verbatim}
   geom_par = [a];
      a [mm] - length of the strip (in x-direction).
 \end{verbatim}
 
+For Python and Julia the syntax for calling the other DREAM functions is similar to calling the \texttt{dreamline}
+function and will therefore not be repeated.
+
 \subsubsection{Rectangular Transducer}
 
 The size of the rectangular transducer is determined by \texttt{a} and \texttt{b}.
 
-\noindent \textbf{Syntax}:
-\begin{verbatim}
+\noindent \textbf{Syntax} m-code:
+\begin{Verbatim}[frame=single]
   H = dreamrect(Ro,geom_par,s_par,delay,m_par,err_level);
-\end{verbatim}
+\end{Verbatim}
 
 \noindent \textbf{Geometrical parameters}:
 \begin{verbatim}
@@ -1251,9 +1348,9 @@ The size of the rectangular focused transducer is determined by \texttt{a} and \
 the focusing is described in Section~\ref{sec:focus}.
 
 \noindent \textbf{Syntax}:
-\begin{verbatim}
+\begin{Verbatim}[frame=single]
   H = dreamrect_f(Ro,geom_par,s_par,delay,m_par,foc_met,focal,err_level);
-\end{verbatim}
+\end{Verbatim}
 
 \noindent \textbf{Geometrical parameters}:
 \begin{verbatim}
@@ -1267,9 +1364,9 @@ the focusing is described in Section~\ref{sec:focus}.
 The size of the circular transducer is determined by the single parameter \texttt{r}.
 
 \noindent \textbf{Syntax}:
-\begin{verbatim}
-  h  = dreamcirc(Ro,geom_par,s_par,delay,m_par,err_level);
-\end{verbatim}
+\begin{Verbatim}[frame=single]
+  H = dreamcirc(Ro,geom_par,s_par,delay,m_par,err_level);
+\end{Verbatim}
 
 \noindent \textbf{Geometrical parameters}:
 \begin{verbatim}
@@ -1283,9 +1380,9 @@ The size of the focused circular transducer is determined by the parameter \text
 and the focusing is described in Section~\ref{sec:focus}.
 
 \noindent \textbf{Syntax}:
-\begin{verbatim}
-  h  = dreamcirc_f(Ro,geom_par,s_par,delay,m_par,foc_met,focal,err_level);
-\end{verbatim}
+\begin{Verbatim}[frame=single]
+  H = dreamcirc_f(Ro,geom_par,s_par,delay,m_par,foc_met,focal,err_level);
+\end{Verbatim}
 
 \noindent \textbf{Geometrical parameters}:
 \begin{verbatim}
@@ -1297,7 +1394,7 @@ and the focusing is described in Section~\ref{sec:focus}.
 \label{sec:spher_f}
 
 \noindent \textbf{Syntax}:
-\begin{verbatim}
+\begin{Verbatim}[frame=single]
   H = dreamsphere_f(Ro,geom_par,s_par,delay,m_par,err_level);
 \end{verbatim}
 
@@ -1313,9 +1410,9 @@ and the focusing is described in Section~\ref{sec:focus}.
 \label{sec:spher_d}
 
 \noindent \textbf{Syntax}:
-\begin{verbatim}
+\begin{Verbatim}[frame=single]
   H = dreamsphere_d(Ro,geom_par,s_par,delay,m_par)
-\end{verbatim}
+\end{Verbatim}
 
 \noindent \textbf{Geometrical parameters}:
 \begin{verbatim}
@@ -1328,9 +1425,9 @@ and the focusing is described in Section~\ref{sec:focus}.
 \label{sec:cyl_f}
 
 \noindent \textbf{Syntax}:
-\begin{verbatim}
+\begin{Verbatim}[frame=single]
   H = dreamcylind_f(Ro,geom_par,s_par,delay,m_par,err_level);
-\end{verbatim}
+\end{Verbatim}
 
 \noindent \textbf{Geometrical parameters}:
 \begin{verbatim}
@@ -1344,9 +1441,9 @@ and the focusing is described in Section~\ref{sec:focus}.
 \label{sec:cyl_d}
 
 \noindent \textbf{Syntax}:
-\begin{verbatim}
+\begin{Verbatim}[frame=single]
   H = dreamcylind_d(Ro,geom_par,s_par,delay,m_par)
-\end{verbatim}
+\end{Verbatim}
 
 \noindent \textbf{Geometrical parameters}:
 \begin{verbatim}
@@ -1371,18 +1468,18 @@ arrays.%\footnote{Note that \texttt{G} is a vector for the annular array}.
 
 \noindent \textbf{Example m-code (linear array)}:
 \footnotesize
-\begin{verbatim}
+\begin{Verbatim}[frame=single]
   gx = -10:1:10;
   gy = zeros(length(gx),1);
   gz = zeros(length(gx),1);
   gx=gx(:); gy=gy(:); gz=gz(:);
   G = [gx gy gz];
-\end{verbatim}
+\end{Verbatim}
 \normalsize
 
 \noindent \textbf{Example Python/numpy code (linear array)}:
 \footnotesize
-\begin{verbatim}
+\begin{Verbatim}[frame=single]
   gx = np.linspace(-10.0, 10.0, num=21, endpoint=True)
   gx = gx.reshape(21,1)
   [num_elements,n] = np.shape(gx)
@@ -1391,7 +1488,7 @@ arrays.%\footnote{Note that \texttt{G} is a vector for the annular array}.
   G = gx
   G = np.hstack((G, gy))
   G = np.hstack((G, gz))
-\end{verbatim}
+\end{Verbatim}
 \normalsize
 
 \subsubsection{Array Focusing}
@@ -1485,10 +1582,10 @@ functions. See also Section~\ref{sec:misc-apod}.
 \subsubsection{Array with Rectangular Elements}
 
 \noindent \textbf{Syntax}:
-\begin{verbatim}
+\begin{Verbatim}[frame=single]
   H = dream_arr_rect(Ro,geom_par,G,s_par,delay,m_par,foc_met,
         focal,steer_met,steer_par,apod_met,apod,win_par,err_level);
-\end{verbatim}
+\end{Verbatim}
 
 \noindent \textbf{Geometrical parameters}:
 \begin{verbatim}
@@ -1501,10 +1598,10 @@ functions. See also Section~\ref{sec:misc-apod}.
 \subsubsection{Array with Circular Elements}
 
 \noindent \textbf{Syntax}:
-\begin{verbatim}
+\begin{Verbatim}[frame=single]
   H = dream_arr_circ(Ro,a,G,s_par,delay,m_par,foc_met,
         focal,steer_met,steer_par,apod_met,apod,win_par,err_level);
-\end{verbatim}
+\end{Verbatim}
 
 Geometrical parameters:
 \texttt{r}  - Radius of the transducer elements.
@@ -1513,10 +1610,10 @@ Geometrical parameters:
 \subsubsection{Array with Cylindrical Concave Elements}
 
 \noindent \textbf{Syntax}:
-\begin{verbatim}
+\begin{Verbatim}[frame=single]
   H = dream_arr_cylind_f(Ro,geom_par,G,s_par,delay,m_par,foc_met,
           focal,steer_met,steer_par,apod_met,apod,win_par,err_level);
-\end{verbatim}
+\end{Verbatim}
 
 \noindent \textbf{Geometrical parameters}:
 \begin{verbatim}
@@ -1529,10 +1626,10 @@ Geometrical parameters:
 \subsubsection{Array with Cylindrical Convex Elements}
 
 \noindent \textbf{Syntax}:
-\begin{verbatim}
+\begin{Verbatim}[frame=single]
   H = dream_arr_cylind_d(Ro,geom_par,G,s_par,delay,m_par,foc_met,
           focal,steer_met,steer_par,apod_met,apod,win_par,err_level);
-\end{verbatim}
+\end{Verbatim}
 
 \noindent \textbf{Geometrical parameters}:
 \begin{verbatim}
@@ -1545,10 +1642,10 @@ Geometrical parameters:
 \subsubsection{Annular Array}
 
 \noindent \textbf{Syntax}:
-\begin{verbatim}
+\begin{Verbatim}[frame=single]
   H = dream_arr_annu(Ro,G,s_par,delay,m_par,foc_met,focal,apod_met,apod,
           win_par,err_level);
-\end{verbatim}
+\end{Verbatim}
 
 \noindent \textbf{Geometrical parameters}:
 \begin{verbatim}
@@ -1629,13 +1726,13 @@ The DREAM Toolbox has two time-continous analytic functions, and one sampled ana
 circular and a rectangular transducers, respectively~\cite{Stepanishen1971a,Lockwood1973}. The parameters
 for the functions,
 %
-\begin{verbatim}
+\begin{Verbatim}[frame=single]
 [Y] = circ_sir(Ro,geom_par,delay,s_par,m_par);
 
 [Y] = rect_sir(Ro,geom_par,delay,s_par,m_par);
 
 [Y] = scirc_sir(Ro,geom_par,delay,s_par,m_par,n_int);
-\end{verbatim}
+\end{Verbatim}
 %
 are similar to the other DR-based transducer functions, except for the sampled analytic circular function,
 \texttt{scirc\_sir}, which has a parameter \texttt{n\_int} that determines the number of points to use
@@ -1649,9 +1746,9 @@ in the (numerical) temporal integration for each sampling interval [cf. Eq.~\eqr
 
 The DREAM toolbox includes function,
 %
-\begin{verbatim}
+\begin{Verbatim}[frame=single]
    [w] = dream_apodwin(apod_met,a,win_par)
-\end{verbatim}
+\end{Verbatim}
 %
 that can be used to compute apodization weights using the
 methods described is Section~\ref{sec:apod}. The input parameters are:
@@ -1702,11 +1799,11 @@ a slow \texttt{for}-loop using the build-in \texttt{conv} function
 (that only takes vector arguments).
 
 \noindent \textbf{Syntax}:
-\begin{verbatim}
+\begin{Verbatim}[frame=single]
   [Y] = conv_p(A,B);
         conv_p(A,B,Y);
         conv_p(A,B,Y,mode_string);
-\end{verbatim}
+\end{Verbatim}
 
 \begin{verbatim}
   [Y] = fftconv_p(A, B)
@@ -1717,14 +1814,14 @@ a slow \texttt{for}-loop using the build-in \texttt{conv} function
         fftconv_p(A, B, Y, mode_string, wisdom_string);
 \end{verbatim}
 
-\begin{verbatim}
+\begin{Verbatim}[frame=single]
   [Y] = fftconv_ola(A, B, block_len)
   [Y, wisdom_string] = fftconv_ola(A, B, block_len);
   [Y] = fftconv_ola(A, B, block_len, wisdom_string);
         fftconv_ola(A, B, block_len, Y, wisdom_string);
         fftconv_ola(A, B, block_len, Y, mode_string);
         fftconv_ola(A, B, block_len, Y, mode_string, wisdom_string);
-\end{verbatim}
+\end{Verbatim}
 
 %
 where \texttt{A} is an $M\times N$ matrix, \texttt{B} is a $K\times N$
@@ -1744,13 +1841,13 @@ vectors.\footnote{We have appended a \texttt{\_p} to the function names
 To speed up computation of repeated \texttt{fftconv\_p} operations (of the same size) one can use pre-computed FFTW plans.
 First compute the plan for the corresponding vector length,
 %
-\begin{verbatim}
+\begin{Verbatim}[frame=single]
   [tmp,wisdom_string] = fftconv_p(A(:,1),B(:,1));
-\end{verbatim}
+\end{Verbatim}
 %
 then use the plan in consecutive computations of the same size,
 %
-\begin{verbatim}
+\begin{Verbatim}[frame=single]
   for n=1:N
 
     % Compute new A and B here.
@@ -1758,7 +1855,7 @@ then use the plan in consecutive computations of the same size,
     [Y] = fftconv_p(A,B,wisdom_string);
 
   end
-\end{verbatim}
+\end{Verbatim}
 %
 The time-consuming call to FFTW plan functions is then avoided at each call to \texttt{fftconv\_p} inside the loop.
 
@@ -1772,8 +1869,7 @@ For the \texttt{conv\_p} and \texttt{fftconv\_p} functions, the in-place operati
 
 The default \texttt{'='} mode
 
-\begin{verbatim}
-
+\begin{Verbatim}[frame=single]
   [Y] = fftconv_p(H,u);
 
   for n=2:N
@@ -1783,14 +1879,14 @@ The default \texttt{'='} mode
     fftconv_p(H,u,Y,'+=');
 
   end
-\end{verbatim}
+\end{Verbatim}
 
 Note the in-place mode have the side effect that, in the code
 %
-\begin{verbatim}
+\begin{Verbatim}[frame=single]
     X = Y;
     fftconv_p(H,u,Y,'+=');
-\end{verbatim}
+\end{Verbatim}
 %
 both \texttt{X} and \texttt{Y} will be altered, since Malab/Octave do not make
 a copy of a matrix unless it is changed after the \texttt{X = Y} assignment.
@@ -1829,7 +1925,7 @@ discrete array responses with arbitrary input signals. Similar to the \texttt{ff
 the \texttt{sum\_fftconv} function uses a FFT based algorithm to compute the convolutions.
 The \texttt{sum\_fftconv} function performs an operation similar to the code:
 %%
-\begin{verbatim}
+\begin{Verbatim}[frame=single]
   fft_len = M+K-1;
   YF = zeros(fft_len,N);
   for l=1:L
@@ -1838,7 +1934,7 @@ The \texttt{sum\_fftconv} function performs an operation similar to the code:
     end
   end
   Y = real(ifft(Y))/fft_len;
-\end{verbatim}
+\end{Verbatim}
 %%
 where \texttt{H} is a 3D matrix.
 
@@ -1864,8 +1960,7 @@ and the output parameter, \texttt{Y} , is an $(M+K-1)\times N$ matrix.
 %
 A typical usage is:
 %
-\begin{verbatim}
-
+\begin{Verbatim}[frame=single]
 % Compute a new fftw wisdom string.
 [tmp,wisdom_str]  = fftconv_p(H(:,1,1),U(:,1));
 
@@ -1875,7 +1970,7 @@ for i=1:N
 
   Y = sum_fftconv(H,U,wisdom_str);
 end
-\end{verbatim}
+\end{Verbatim}
 %%
 where the overhead of calling FFTW plan functions is now avoided inside the for loop.
 
@@ -1886,9 +1981,9 @@ can therefore be considerable. The DREAM Toolbox comes with a threaded function 
 data copy.
 
 In-place, threaded copy of data into a matrix:
-\begin{verbatim}
+\begin{Verbatim}[frame=single]
   copy_p(B,row_idx,col_idx,A);
-\end{verbatim}
+\end{Verbatim}
 
 \noindent Input parameters:
 \begin{verbatim}
@@ -1907,9 +2002,9 @@ The DREAM toolbox comes with a function \texttt{h2o\_soundspeed}, based on a met
 Grosso~\cite{Grosso1974}, to facilitate computation of the water sound speed (as function
 of temperature, pressure, and salinity).
 
-\begin{verbatim}
+\begin{Verbatim}[frame=single]
   [cp] = h2o_soundspeed(T,P,unit,S)
-\end{verbatim}
+\end{Verbatim}
 
 \noindent Input parameters:
 \begin{verbatim}
@@ -1936,11 +2031,11 @@ and \texttt{fftconv\_p} that can be used to speed up this operation.
 %
 A typical example is:
 %
-\begin{verbatim}
+\begin{Verbatim}[frame=single]
 H = fftconv_p(H_t, H_r); % Double-path.
 
 P = fftconv_p(H, h_e); % Electrical impulse response.
-\end{verbatim}
+\end{Verbatim}
 %
 where we first compute the double-path SIRs and then add (convolve) the double-path
 electrical impulse response to get the (double-path) propagation response matrix \texttt{P}.
@@ -2054,15 +2149,15 @@ In TFM/RCA mode one needs to supply both transmit element and receive element gr
 (\texttt{Gt} and \texttt{Gr}) to \texttt{das} and set the DAS mode string to \texttt{'tfm'}
 or \texttt{'rca'}:
 %
-\begin{verbatim}
+\begin{Verbatim}[frame=single]
    Im = das(Y, Gt, Gr, Ro, dt, delay, cp, 'tfm');
-\end{verbatim}
+\end{Verbatim}
 %
 or
 %
-\begin{verbatim}
+\begin{Verbatim}[frame=single]
    Im = das(Y, Gt, Gr, Ro, dt, delay, cp, 'rca');
-\end{verbatim}
+\end{Verbatim}
 %
 \noindent Input parameters in TFM/RCA mode:\\
 \begin{tabular}{ l  l }
@@ -2089,7 +2184,7 @@ wants to present the results as an image.
 
 If one have build DREAM with OpenCL (GPU) support then there is also a function \texttt{das\_uni} which assume \emph{uniform}
 grids both for the array element positions and the observation (image) points. This reduces the amount of data
-transfered aand stored on the GPU since we do not transfer the \texttt{Ro}, \texttt{Gt}, and \texttt{Gr} matrices
+transfered and stored on the GPU since we do not transfer the \texttt{Ro}, \texttt{Gt}, and \texttt{Gr} matrices
 to the GPU.
 
 %, or read the
@@ -2099,42 +2194,6 @@ to the GPU.
 % \section{Known Issues}
 
 % \begin{itemize}
-
-% \item On Linux, if one get the error\\
-%   \texttt{Invalid MEX-file ... libstdc++.so.6: version `GLIBCXX\_3.4.17' not found}\\
-%   or similar, then try to pre-load the \texttt{libstdc++.so.6} for the compiler used to build the mex-files. For example,\\
-%   \texttt{\$ export LD\_PRELOAD="/usr/lib64/gcc/x86\_64-pc-linux-gnu/4.9.2/libstdc++.so.6"}\\
-%   and then start Matlab from the same terminal.
-
-% \item On Windows platforms the MEX-files can not be aborted by
-%   pressing \texttt{CTRL-C} since Windows lacks real asynchronous signals, see:
-%   %
-%   % \begin{verbatim}
-%   \url{http://www.mathworks.com/support/solutions/data/1-188VX.html}
-%   % \end{verbatim}
-%   %
-%   Therefore, when \texttt{CTRL-C} is pressed, using Windows, the
-%   operation is interrupted after the MEX-file has finished.
-
-% \item On Linux x86 platforms the \Matlab\ release 14 library
-%   \texttt{matlab/sys/os/glnx86/libgcc\_s.so} seems to be buggy causing
-%   \matlab\ to abort when a \texttt{mexErrMsg} call is done within a
-%   MEX-file. The threaded functions uses the \texttt{mexErrMsg}
-%   function when \texttt{CTRL-C} is pressed. A work-around is to set the environment
-%   variable \texttt{LD\_PRELOAD} to point to a working library. If you, for example, are using
-%   gcc 3.4.4, then you can set
-%   %
-% \begin{verbatim}
-%    export LD_PRELOAD=/usr/lib/gcc/i686-pc-linux-gnu/3.4.4/libgcc_s.so
-% \end{verbatim}
-%   %
-%   or rename \texttt{matlab/sys/os/glnx86/libgcc\_s.so} and copy (or
-%   link) a working \texttt{libgcc\_s.so} to the
-%   \texttt{matlab/sys/os/glnx86/} directory.
-
-% \item The file \texttt{mex\_sum\_fftconv\_p.c} do not compile unless \Matlab\ $\ge$ R2006b is installed. The problem
-%   is that \texttt{mwSize} must be defined in \texttt{matlab/extern/include/matrix.h} (\texttt{sum\_fftconv\_p}
-%   compiles for Octave).
 
 % \item The computation of responses for lossy media is rather time consuming; the computation time can be as
 %   large as a factor of 1000 times longer than for loss-less media. This due to the fact that the frequency

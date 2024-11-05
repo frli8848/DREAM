@@ -7,6 +7,8 @@ find_package (Octave)
 
 if (OCTAVE_FOUND)
 
+  add_definitions(-DOCTAVE) # Needed to catch CTRL-C by using the OCTAVE_QUIT macro inside loops.
+
   # Octave oct flags.
   set (DREAM_OCT_FLAGS "-DDREAM_OCTAVE") # So that octave_idx_type is used for matrix/vector indexing.
 

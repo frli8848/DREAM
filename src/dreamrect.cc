@@ -28,6 +28,10 @@
 #include "attenuation.h"
 #include "affinity.h"
 
+#ifdef OCTAVE
+#include <octave/oct.h>
+#endif
+
 // NB. We link this one in dream_arr_rect so we need unique names.
 std::mutex err_mutex_rect;
 std::atomic<bool> running_rect;
@@ -106,6 +110,20 @@ void* Rect::smp_dream_rect(void *arg)
     } else { // DelayType::multiple.
       dlay = delay[n];
     }
+
+#ifdef OCTAVE
+    // Octave throws an exception when pressing CTRL-C
+    // so catch it here and set running to false.
+    try {
+      OCTAVE_QUIT;
+    }
+
+    catch (octave::interrupt_exception &e) {
+      running_rect = false;
+    }
+
+    catch (int &signum) {;}
+#endif
 
     if (att == nullptr) {
       err = dreamrect_serial(xo, yo, zo,

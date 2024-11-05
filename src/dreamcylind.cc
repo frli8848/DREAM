@@ -28,6 +28,10 @@
 #include "attenuation.h"
 #include "affinity.h"
 
+#ifdef OCTAVE
+#include <octave/oct.h>
+#endif
+
 // NB. We link this one in dream_arr_cylind so we need unique names.
 std::mutex err_mutex_cylind;
 std::atomic<bool> running_cylind;
@@ -107,6 +111,20 @@ void* Cylind::smp_dream_cylind(void *arg)
     } else { // DelayType::multiple.
       dlay = delay[n];
     }
+
+#ifdef OCTAVE
+    // Octave throws an exception when pressing CTRL-C
+    // so catch it here and set running to false.
+    try {
+      OCTAVE_QUIT;
+    }
+
+    catch (octave::interrupt_exception &e) {
+      running_cylind = false;
+    }
+
+    catch (int &signum) {;}
+#endif
 
     if (att == nullptr) {
       err = dreamcylind_serial(xo, yo, zo,

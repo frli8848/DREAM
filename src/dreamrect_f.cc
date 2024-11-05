@@ -27,6 +27,10 @@
 #include "dreamrect_f.h"
 #include "affinity.h"
 
+#ifdef OCTAVE
+#include <octave/oct.h>
+#endif
+
 std::mutex err_mutex;
 std::atomic<bool> running;
 std::atomic<bool> verbose_err_messages;
@@ -105,6 +109,20 @@ void* Rect_f::smp_dream_rect_f(void *arg)
     } else { // DelayType::multiple.
       dlay = delay[n];
     }
+
+#ifdef OCTAVE
+    // Octave throws an exception when pressing CTRL-C
+    // so catch it here and set running to false.
+    try {
+      OCTAVE_QUIT;
+    }
+
+    catch (octave::interrupt_exception &e) {
+      running = false;
+    }
+
+    catch (int &signum) {;}
+#endif
 
     if (att == nullptr) {
       err = dreamrect_f_serial(xo, yo, zo,

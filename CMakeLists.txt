@@ -155,15 +155,15 @@ endif(CMAKE_USE_PTHREADS_INIT)
 #
 
 if (BUILD_OCT)
-  include(octave.cmake)
+  add_subdirectory(oct)
 endif (BUILD_OCT)
 
 #
-# Matlab
+# MATLAB
 #
 
 if (BUILD_MEX)
-  include(matlab.cmake)
+  add_subdirectory(mex)
 endif (BUILD_MEX)
 
 #
@@ -183,7 +183,7 @@ if (BUILD_JULIA)
 endif (BUILD_JULIA)
 
 #
-# User manual (N.B., we need CMake 3.x on Windows due to a MikTeX related bug).
+# User manual
 #
 
 if (BUILD_USERMAN)

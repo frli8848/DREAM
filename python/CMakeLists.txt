@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2023,2024 Fredrik Lingvall
+# Copyright (C) 2023,2024,2025 Fredrik Lingvall
 #
 
 project(py_dream)
@@ -20,6 +20,8 @@ else (UNIX AND NOT MACOSX)
 endif (UNIX AND NOT MACOSX)
 
 find_package(pybind11 CONFIG REQUIRED)
+
+remove_definitions(-DOCTAVE)
 
 # Strip lead and trailing whitepasce
 #string(STRIP "${OCTAVE_INCLUDE_DIRS}" OCTAVE_INCLUDE_DIRS)
@@ -465,3 +467,11 @@ set_target_properties(py_das PROPERTIES
   LINK_FLAGS ${PYTHON_LD_FLAGS}
   PREFIX "" OUTPUT_NAME "das"
 )
+
+#
+# Testing
+#
+
+if(BUILD_TESTS)
+  add_subdirectory(tests)
+endif (BUILD_TESTS)

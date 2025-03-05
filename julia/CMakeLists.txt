@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2023 Fredrik Lingvall
+# Copyright (C) 2023,2025 Fredrik Lingvall
 #
 
 project(jl_dream)
@@ -56,6 +56,8 @@ endforeach()
 # NB. CxxWrap uses the C++17 standard!
 
 find_package(Julia REQUIRED)
+
+remove_definitions(-DOCTAVE)
 
 set (DREAM_JULIA_INCLUDE_DIRS
   ${PROJECT_BINARY_DIR}
@@ -462,3 +464,11 @@ set_target_properties (jl_das PROPERTIES
   INCLUDE_DIRECTORIES "${DREAM_JULIA_INCLUDE_DIRS}"
   LINK_FLAGS ${JULIA_LD_FLAGS}
   SUFFIX "" PREFIX "" OUTPUT_NAME "das")
+
+#
+# Testing
+#
+
+if(BUILD_TESTS)
+  add_subdirectory(tests)
+endif (BUILD_TESTS)

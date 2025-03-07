@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2024 Fredrik Lingvall
+* Copyright (C) 2024,2025 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -33,15 +33,16 @@ namespace py = pybind11;
 
 template <class T>
 py::array_t<T,py::array::f_style> py_das(py::array_t<T,py::array::f_style> *py_Y,
-                          py::array_t<T,py::array::f_style> *py_Gt,
-                          py::array_t<T,py::array::f_style> *py_Gr,
-                          py::array_t<T,py::array::f_style>*py_Ro,
-                          T dt,
-                          py::array_t<T,py::array::f_style> *py_delay,
-                          T cp,
-                          std::string das_method_str,
-                          std::string err_level_str,
-                          std::string device_str)
+                                         py::array_t<T,py::array::f_style> *py_Gt,
+                                         py::array_t<T,py::array::f_style> *py_Gr,
+                                         py::array_t<T,py::array::f_style>*py_Ro,
+                                         T dt,
+                                         py::array_t<T,py::array::f_style> *py_delay,
+                                         T cp,
+                                         std::string das_method_str,
+                                         std::string err_level_str,
+                                         std::string device_str,
+                                         std::string verbose_str)
 {
   ArgParser<T> ap;
 
@@ -142,7 +143,19 @@ py::array_t<T,py::array::f_style> py_das(py::array_t<T,py::array::f_style> *py_Y
   // Compute device
   //
 
-  //FIXME: We have no check for allowed devices names yet!
+  if (device_str != "cpu" && device_str == "gpu") {
+    throw std::runtime_error("Error in das - unkown compute device string!");
+  }
+
+  //
+  // Verbose status printouts
+  //
+
+  bool verbose = false;
+
+  if (verbose_str == "verbose") {
+    verbose = true;
+  }
 
   //
   // Init DAS and output arg.
@@ -181,7 +194,7 @@ py::array_t<T,py::array::f_style> py_das(py::array_t<T,py::array::f_style> *py_Y
   if (init_das) {
 
     try {
-      das = std::make_unique<DAS<T>>(das_type, a_scan_len, No, num_t_elements, num_r_elements, use_gpu);
+      das = std::make_unique<DAS<T>>(das_type, a_scan_len, No, num_t_elements, num_r_elements, use_gpu, verbose);
     }
 
     catch (std::runtime_error &err) {

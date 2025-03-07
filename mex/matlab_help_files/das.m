@@ -82,8 +82,10 @@
 %
 % 'device'
 %      A string which can be one of 'cpu' or 'gpu'.
+% 'verbose'
+%      A string which when it is 'verbose' will printout OpenCL device info.
 %
 % das is a mex-function that is a part of the DREAM Toolbox
 % available at <https://github.com/frli8848/DREAM>.
 %
-% Copyright © 2008-2024 Fredrik Lingvall.
+% Copyright © 2008-2025 Fredrik Lingvall.

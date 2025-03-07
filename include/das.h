@@ -1,6 +1,6 @@
 /***
  *
- * Copyright (C) 2003,2006,2007,2008,2009,2021,2023,2024 Fredrik Lingvall
+ * Copyright (C) 2003,2006,2007,2008,2009,2021,2023,2024,2025 Fredrik Lingvall
  *
  * This file is part of the DREAM Toolbox.
  *
@@ -59,7 +59,8 @@ public:
       dream_idx_type No,
       dream_idx_type num_t_elements,
       dream_idx_type num_r_elements, // SAFT if num_r_elements = 0;
-      bool use_gpu=false);
+      bool use_gpu=false,
+      bool verbose=false);
 
   ~DAS()  = default;
 
@@ -94,7 +95,7 @@ public:
 
 #ifdef USE_OPENCL
 
-  void init_opencl(unsigned char *cl_kernel_str, unsigned int cl_kernel_str_len)
+  void init_opencl(unsigned char *cl_kernel_str, unsigned int cl_kernel_str_len, bool verbose=false)
   {
     std::string kernel_str;
     std::string kernel_name="das_tfm"; // Default function name of the OpenCL kernel
@@ -164,12 +165,14 @@ public:
     if (platforms.empty()) {
       throw std::runtime_error("Error in das - OpenCL error: No platforms found!");
     } else {
-      std::cout << "Found " << platforms.size() << " platform(s).\n" << std::endl;
-      size_t platformIndex = 0;
-      for (auto &platform : platforms) {
-        std::cout << "Platform[" << platformIndex++ << "]:" << std::endl;
-        std::cout << "  Name: " << platform.getInfo<CL_PLATFORM_NAME>() << std::endl;
-        std::cout << "  Vendor: " << platform.getInfo<CL_PLATFORM_VENDOR>() << std::endl;
+      if (verbose) {
+        std::cout << "Found " << platforms.size() << " platform(s).\n" << std::endl;
+        size_t platformIndex = 0;
+        for (auto &platform : platforms) {
+          std::cout << "Platform[" << platformIndex++ << "]:" << std::endl;
+          std::cout << "  Name: " << platform.getInfo<CL_PLATFORM_NAME>() << std::endl;
+          std::cout << "  Vendor: " << platform.getInfo<CL_PLATFORM_VENDOR>() << std::endl;
+        }
       }
     }
 
@@ -223,24 +226,26 @@ public:
     if (devices.empty()) {
       throw std::runtime_error("Error in das - OpenCL error: Found no devices(s)!");
     } else {
-      std::cout << "Found " <<  devices.size() << " devices(s)." << std::endl;
-      size_t deviceIndex = 0;
-      for(auto &device : devices) {
-        std::cout << "Device[" << deviceIndex++ << "]:" << std::endl;
-        std::cout << "  Name: " << device.getInfo<CL_DEVICE_NAME>() << std::endl;
-        if (device.getInfo<CL_DEVICE_TYPE>() == CL_DEVICE_TYPE_GPU) {
-          std::cout << "  Type: GPU" << std::endl;
+      if (verbose) {
+        std::cout << "Found " <<  devices.size() << " devices(s)." << std::endl;
+        size_t deviceIndex = 0;
+        for(auto &device : devices) {
+          std::cout << "Device[" << deviceIndex++ << "]:" << std::endl;
+          std::cout << "  Name: " << device.getInfo<CL_DEVICE_NAME>() << std::endl;
+          if (device.getInfo<CL_DEVICE_TYPE>() == CL_DEVICE_TYPE_GPU) {
+            std::cout << "  Type: GPU" << std::endl;
+          }
+          if (device.getInfo<CL_DEVICE_TYPE>() == CL_DEVICE_TYPE_CPU) {
+            std::cout << "  Type: CPU" << std::endl;
+          }
+          std::cout << "  Vendor: " << device.getInfo<CL_DEVICE_VENDOR>() << std::endl;
+          std::cout << "  Max Compute Units: " << device.getInfo<CL_DEVICE_MAX_COMPUTE_UNITS>() << std::endl;
+          std::cout << "  Global Memory: " << device.getInfo<CL_DEVICE_GLOBAL_MEM_SIZE>()<< std::endl;
+          std::cout << "  Max Clock Frequency: " << device.getInfo<CL_DEVICE_MAX_CLOCK_FREQUENCY>() << std::endl;
+          std::cout << "  Max Allocatable Memory: " << device.getInfo<CL_DEVICE_MAX_MEM_ALLOC_SIZE>() << std::endl;
+          std::cout << "  Local Memory: " << device.getInfo<CL_DEVICE_LOCAL_MEM_SIZE>() << std::endl;
+          std::cout << "  Available: " << device.getInfo<CL_DEVICE_AVAILABLE>() << std::endl;
         }
-        if (device.getInfo<CL_DEVICE_TYPE>() == CL_DEVICE_TYPE_CPU) {
-          std::cout << "  Type: CPU" << std::endl;
-        }
-        std::cout << "  Vendor: " << device.getInfo<CL_DEVICE_VENDOR>() << std::endl;
-        std::cout << "  Max Compute Units: " << device.getInfo<CL_DEVICE_MAX_COMPUTE_UNITS>() << std::endl;
-        std::cout << "  Global Memory: " << device.getInfo<CL_DEVICE_GLOBAL_MEM_SIZE>()<< std::endl;
-        std::cout << "  Max Clock Frequency: " << device.getInfo<CL_DEVICE_MAX_CLOCK_FREQUENCY>() << std::endl;
-        std::cout << "  Max Allocatable Memory: " << device.getInfo<CL_DEVICE_MAX_MEM_ALLOC_SIZE>() << std::endl;
-        std::cout << "  Local Memory: " << device.getInfo<CL_DEVICE_LOCAL_MEM_SIZE>() << std::endl;
-        std::cout << "  Available: " << device.getInfo<CL_DEVICE_AVAILABLE>() << std::endl;
       }
     }
 

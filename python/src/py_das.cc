@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2024 Fredrik Lingvall
+* Copyright (C) 2024,2025 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -39,15 +39,15 @@ std::unique_ptr<DAS<double>> das=nullptr;
 
 PYBIND11_MODULE(das_f, m)
 {
-  m.doc() = "H = das_f(Y,Gt,Gr,Ro,dt,delay,cp,method,err_level,device)\n\
+  m.doc() = "H = das_f(Y,Gt,Gr,Ro,dt,delay,cp,method,err_level,device,verbose)\n\
 \n\
 das is a part of the DREAM Toolbox available at\n\
 https://github.com/frli8848/DREAM.\n\
 \n\
-Copyright 2006-2024 Fredrik Lingvall.";
+Copyright 2006-2025 Fredrik Lingvall.";
 
   m.def("das", &py_das<float>,
-        "Im = das(Y,Gt,Gr,Ro,dt,delay,cp,method,err_level,device)",
+        "Im = das(Y,Gt,Gr,Ro,dt,delay,cp,method,err_level,device,verbose)",
         py::arg("Y"),
         py::arg("Gt"),
         py::arg("Gr"),
@@ -57,22 +57,23 @@ Copyright 2006-2024 Fredrik Lingvall.";
         py::arg("cp"),
         py::arg("method"),
         py::arg("err_level"),
-        py::arg("device"));
+        py::arg("device"),
+        py::arg("verbose"));
 }
 
 #else
 
 PYBIND11_MODULE(das, m)
 {
-  m.doc() = "H = das(Y,Gt,Gr,Ro,dt,delay,cp,method,err_level,device)\n\
+  m.doc() = "H = das(Y,Gt,Gr,Ro,dt,delay,cp,method,err_level,device,verbose)\n\
 \n\
 das is a part of the DREAM Toolbox available at\n\
 https://github.com/frli8848/DREAM.\n\
 \n\
-Copyright 2006-2024 Fredrik Lingvall.";
+Copyright 2006-2025 Fredrik Lingvall.";
 
   m.def("das", &py_das<double>,
-        "Im = das(Y,Gt,Gr,Ro,dt,delay,cp,method,err_level,device)",
+        "Im = das(Y,Gt,Gr,Ro,dt,delay,cp,method,err_level,device,verbose)",
         py::arg("Y"),
         py::arg("Gt"),
         py::arg("Gr"),
@@ -82,6 +83,7 @@ Copyright 2006-2024 Fredrik Lingvall.";
         py::arg("cp"),
         py::arg("method"),
         py::arg("err_level"),
-        py::arg("device"));
+        py::arg("device"),
+        py::arg("vebose"));
 }
 #endif

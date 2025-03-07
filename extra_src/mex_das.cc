@@ -46,7 +46,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
   // Check for proper number of arguments
 
-  if ((nrhs < 8) || (nrhs > 10)) {
+  if ((nrhs < 8) || (nrhs > 11)) {
     dream_err_msg("das requires 8 to 10 input arguments!");
   }
 
@@ -252,6 +252,26 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   }
 
   //
+  // Verbose status printouts
+  //
+
+  bool verbose = false;
+
+  if (nrhs == 11) {
+
+    if (!mxIsChar(prhs[10])) {
+      dream_err_msg("Argument 11 must be a string");
+    }
+
+    std::string verbose_str = ap.get_string_arg(prhs, 10);
+
+    if (verbose_str == "verbose") {
+      verbose = true;
+    }
+  }
+
+
+  //
   // Init DAS and output arg.
   //
 
@@ -291,7 +311,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       }
 
       try {
-        das_f = std::make_unique<DAS<float>>(das_type, a_scan_len, No, num_t_elements, num_r_elements, use_gpu);
+        das_f = std::make_unique<DAS<float>>(das_type, a_scan_len, No, num_t_elements, num_r_elements, use_gpu, verbose);
       }
 
       catch (std::runtime_error &err) {

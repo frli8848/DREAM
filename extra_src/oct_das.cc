@@ -138,10 +138,17 @@ Compute device:\n\
 A string which can be one of 'cpu' or 'gpu'.\n\
 @end table\n\
 \n\
+Verbose status printouts:\n\
+\n\
+@table @code\n\
+@item 'verbose'\n\
+A string which when it is 'verbose' will printout OpenCL device info.\n\
+@end table\n\
+\n\
 das is an oct-function that is a part of the DREAM Toolbox available at\n\
 @url{https://github.com/frli8848/DREAM}.\n\
 \n\
-Copyright @copyright{} 2008-2024 Fredrik Lingvall.\n\
+Copyright @copyright{} 2008-2025 Fredrik Lingvall.\n\
 @end deftypefn")
 {
   octave_value_list oct_retval;
@@ -154,8 +161,8 @@ Copyright @copyright{} 2008-2024 Fredrik Lingvall.\n\
   // Check for proper number of arguments
   //
 
-  if ((nrhs < 8) || (nrhs > 10)) {
-    error("das requires 8 to 10 input arguments!");
+  if ((nrhs < 8) || (nrhs > 11)) {
+    error("das requires 8 to 11 input arguments!");
     return oct_retval;
   }
 
@@ -387,6 +394,26 @@ Copyright @copyright{} 2008-2024 Fredrik Lingvall.\n\
   }
 
   //
+  // Verbose status printouts
+  //
+
+  bool verbose = false;
+
+  if (nrhs == 11) {
+
+    if (!mxIsChar(10)) {
+      error("Argument 10 must be a string");
+      return oct_retval;
+    }
+
+    std::string verbose_str = args(10).string_value();
+
+    if (verbose_str == "verbose") {
+      verbose = true;
+    }
+  }
+
+  //
   // Init DAS and output arg.
   //
 
@@ -428,7 +455,7 @@ Copyright @copyright{} 2008-2024 Fredrik Lingvall.\n\
       }
 
       try {
-        das_f = std::make_unique<DAS<float>>(das_type, a_scan_len, No, num_t_elements, num_r_elements, use_gpu);
+        das_f = std::make_unique<DAS<float>>(das_type, a_scan_len, No, num_t_elements, num_r_elements, use_gpu, verbose);
       }
 
       catch (std::runtime_error &std_err) {

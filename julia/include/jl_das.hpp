@@ -30,15 +30,16 @@ namespace jl = jlcxx;
 
 template <class T>
 jl::ArrayRef<T, 2> jl_das(jl::ArrayRef<T, 2> jl_Y,
-                               jl::ArrayRef<T,2> jl_Gt,
-                               jl::ArrayRef<T,2> jl_Gr,
-                               jl::ArrayRef<T,2> jl_Ro,
-                               T dt,
-                               jl::ArrayRef<T> jl_delay,
-                               T cp,
-                               std::string das_method_str,
-                               std::string err_level_str,
-                               std::string device_str)
+                          jl::ArrayRef<T,2> jl_Gt,
+                          jl::ArrayRef<T,2> jl_Gr,
+                          jl::ArrayRef<T,2> jl_Ro,
+                          T dt,
+                          jl::ArrayRef<T> jl_delay,
+                          T cp,
+                          std::string das_method_str,
+                          std::string err_level_str,
+                          std::string device_str,
+                          std::string verbose_str)
 {
   ArgParser<T> ap;
 
@@ -139,7 +140,19 @@ jl::ArrayRef<T, 2> jl_das(jl::ArrayRef<T, 2> jl_Y,
   // Compute device
   //
 
-  //FIXME: We have no check for allowed devices names yet!
+  if (device_str != "cpu" && device_str == "gpu") {
+    throw std::runtime_error("Error in das - unkown compute device string!");
+  }
+
+  //
+  // Verbose status printouts
+  //
+
+  bool verbose = false;
+
+  if (verbose_str == "verbose") {
+    verbose = true;
+  }
 
   //
   // Init DAS and output arg.
@@ -186,7 +199,7 @@ jl::ArrayRef<T, 2> jl_das(jl::ArrayRef<T, 2> jl_Y,
   if (init_das) {
 
     try {
-      das = std::make_unique<DAS<T>>(das_type, a_scan_len, No, num_t_elements, num_r_elements, use_gpu);
+      das = std::make_unique<DAS<T>>(das_type, a_scan_len, No, num_t_elements, num_r_elements, use_gpu, verbose);
     }
 
     catch (std::runtime_error &err) {

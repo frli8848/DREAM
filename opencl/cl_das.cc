@@ -33,7 +33,8 @@ DAS<T>::DAS(DASType das_type,
             dream_idx_type No,
             dream_idx_type num_t_elements,
             dream_idx_type num_r_elements, // SAFT if num_r_elements = 0;
-            bool use_gpu)
+            bool use_gpu,
+            bool verbose)
   : m_das_type(das_type)
   , m_a_scan_len(a_scan_len)
   , m_No(No)

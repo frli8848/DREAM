@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2006,2007,2008,2009,2014,2015,2016,2021,2022,2023 Fredrik Lingvall
+* Copyright (C) 2006,2007,2008,2009,2014,2015,2016,2021,2022,2023,2025 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -418,6 +418,10 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
   // We cannot have more threads than the number of observation points.
   if (nthreads > H_N) {
     nthreads = H_N;
+  }
+
+  if (nthreads < 1) {
+    nthreads = 1;
   }
 
   //

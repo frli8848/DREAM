@@ -13,8 +13,7 @@ if findstr(computer,'linux') && exist('OCTAVE_VERSION')
   disp('***************************************************************');
   disp('*');
   disp('* Your are running Octave on a Linux platform!');
-  disp('* You need MPlayer/MEncoder and Gnuplot 4.x ');
-  disp('* to run this script!');
+  disp('* You need ffmpeg installed to run this script!');
   disp('*');
   disp('***************************************************************');
   pause(4);
@@ -33,6 +32,7 @@ GENERATE_EPS = 0;
 MAKE_MOVIE = 1;
 AUTO_SCALE = 0;
 
+mkdir('png');
 
 % 25 MHz
 Ts = 0.04;
@@ -308,7 +308,6 @@ for k=1:3:1100
     axis('ij')
     xlabel('x [mm]');
     ylabel('z [mm]');
-    legend('off');
   else
     h = image(x,z,Im);
     set(gca,'FontSize',16);
@@ -327,15 +326,15 @@ for k=1:3:1100
     if exist('OCTAVE_VERSION')
       print(sprintf ('%s/snapshot_%.5d.png', png_path, k));
 
-      %if k<10
-      %  eval(['print("' png_path 'snapshot_000' num2str(k) '.png", "-dpng");']);
-      %elseif k<100
-      %  eval(['print("' png_path 'snapshot_00' num2str(k) '.png", "-dpng");']);
-      %elseif k<1000
-      %  eval(['print("' png_path 'snapshot_0' num2str(k) '.png", "-dpng");']);
-      %else
-      %  eval(['print("' png_path 'snapshot_' num2str(k) '.png", "-dpng");']);
-      %end
+      if k<10
+        eval(['print("' png_path 'snapshot_000' num2str(k) '.png", "-dpng", "-S640,480");']);
+      elseif k<100
+        eval(['print("' png_path 'snapshot_00' num2str(k) '.png", "-dpng", "-S640,480");']);
+      elseif k<1000
+        eval(['print("' png_path 'snapshot_0' num2str(k) '.png", "-dpng", "-S640,480");']);
+      else
+        eval(['print("' png_path 'snapshot_' num2str(k) '.png", "-dpng", "-S640,480");']);
+      end
     else % Matlab
       % Add a frame to Matlab movie.
       drawnow;
@@ -348,9 +347,8 @@ end % for
 if MAKE_MOVIE
 
   if findstr(computer,'linux') && exist('OCTAVE_VERSION')
-    system(['mencoder -quiet mf://png/*.png -mf w=640:h=480:fps=' ...
-            '25:type=png -ovc lavc -lavcopts vcodec=wmv1 -oac copy -' ...
-            'o snapshots.avi']);
+    system(['ffmpeg -r 1/5 -start_number 0 -i png/snapshot_%04d.png '...
+              '-c:v libx264 -r 30 -pix_fmt yuv420p snapshots.mp4']);
   else
     % Create an AVI movie from MATLAB movie.
     movie2avi(snapshots,'snapshots.avi');
@@ -387,7 +385,6 @@ axis([0 max(us(length(h_e))) -1.2 1.2])
 title('Pulse');
 
 if exist('OCTAVE_VERSION')
-  legend('off');
   xlabel('t [us]');
   ylabel('Normalized Amplitude');
 else
@@ -411,7 +408,6 @@ grid('on')
 axis([0 max(f) 0 1.2])
 
 if exist('OCTAVE_VERSION')
-  legend('off');
   xlabel('f [MHz]');
   ylabel('Normalized Amplitude');
 else

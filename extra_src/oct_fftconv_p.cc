@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2006,2007,2008,2009,2010,2012,2014,2016,2021,2022,2023 Fredrik Lingvall
+* Copyright (C) 2006,2007,2008,2009,2010,2012,2014,2016,2021,2022,2023,2025 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -433,6 +433,10 @@ Copyright @copyright{} 2006-2023 Fredrik Lingvall.\n\
   // nthreads can't be larger then the number of columns in the A matrix.
   if (nthreads > A_N) {
     nthreads = A_N;
+  }
+
+  if (nthreads < 1) {
+    nthreads = 1;
   }
 
   //

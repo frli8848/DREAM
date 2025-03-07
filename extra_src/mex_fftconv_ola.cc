@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2010,2011,2012,2014,2015,2016,2021,2022 Fredrik Lingvall
+* Copyright (C) 2010,2011,2012,2014,2015,2016,2021,2022,2025 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -487,6 +487,10 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     //mexPrintf("Warning: nthreads is larger then number of columns in first arg.\n");
     //mexPrintf("         Setting nthreads = # cols in 1st arg!\n");
     nthreads = A_N;
+  }
+
+  if (nthreads < 1) {
+    nthreads = 1;
   }
 
   //

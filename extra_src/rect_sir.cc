@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2004,2006,2007,2008,2009,2014,2021,2023 Fredrik Lingvall
+* Copyright (C) 2004,2006,2007,2008,2009,2014,2021,2023,2025 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -168,6 +168,10 @@ ErrorLevel RectSir::rect_sir(double *Ro, dream_idx_type No,
   // nthreads can't be larger then the number of observation points.
   if (nthreads > (unsigned int) No) {
     nthreads = (unsigned int) No;
+  }
+
+  if (nthreads < 1) {
+    nthreads = 1;
   }
 
   // Allocate local data.

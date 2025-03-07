@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2010,2011,2012,2014,2015,2016,2021 Fredrik Lingvall
+* Copyright (C) 2010,2011,2012,2014,2015,2016,2021,2025 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -551,6 +551,10 @@ Copyright @copyright{} 2010-2021 Fredrik Lingvall.\n\
     //mexPrintf("Warning: nthreads is larger then number of columns in first arg.\n");
     //mexPrintf("         Setting nthreads = # cols in 1st arg!\n");
     nthreads = A_N;
+  }
+
+  if (nthreads < 1) {
+    nthreads = 1;
   }
 
   //

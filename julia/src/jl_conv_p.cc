@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2024 Fredrik Lingvall
+* Copyright (C) 2024,2025 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -177,6 +177,10 @@ jl::ArrayRef<double, 2> jl_conv_p(jl::ArrayRef<double, 2> jl_A,
   // nthreads can't be larger then the number of columns in the A matrix.
   if (nthreads > A_N) {
     nthreads = A_N;
+  }
+
+  if (nthreads < 1) {
+    nthreads = 1;
   }
 
   //

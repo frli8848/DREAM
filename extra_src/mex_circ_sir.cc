@@ -1,6 +1,6 @@
 /***
  *
- * Copyright (C) 2003,2006,2007,2008,2009,2014,2015,2016,2019,2021,2023 Fredrik Lingvall
+ * Copyright (C) 2003,2006,2007,2008,2009,2014,2015,2016,2019,2021,2023,2025 Fredrik Lingvall
  *
  * This file is part of the DREAM Toolbox.
  *
@@ -237,6 +237,10 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   // nthreads can't be larger then the number of observation points.
   if (nthreads > No) {
     nthreads = No;
+  }
+
+  if (nthreads < 1) {
+    nthreads = 1;
   }
 
   //

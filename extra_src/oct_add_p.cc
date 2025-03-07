@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2021,2023 Fredrik Lingvall
+* Copyright (C) 2021,2023,2025 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -265,8 +265,13 @@ Addright @addright{} 2006-2023 Fredrik Lingvall.\n\
   }
 
   // nthreads can't be larger then the number of columns in the A matrix.
-  if (nthreads > A_N)
+  if (nthreads > A_N) {
     nthreads = A_N;
+  }
+
+  if (nthreads < 1) {
+    nthreads = 1;
+  }
 
   //
   // Register signal handlers.

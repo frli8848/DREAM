@@ -69,7 +69,7 @@ and the Octave builds with`-DBUILD_OCT=on` flag (defaults to `on`).
 
 ## Linux
 
-We have currently build the DREAM Toolbox on two Linux distributions: Ubuntu 22.04 LTS
+We have currently build the DREAM Toolbox on two Linux distributions: Ubuntu 24.04 LTS
 and Gentoo Linux. We assume that a compiler tool chain is already installed, such as, `gcc`
 or `clang`.
 
@@ -83,10 +83,9 @@ on Ubuntu Linux, or
 $ sudo emerge sci-libs/fftw
 
 ```
-on Gentoo Linux. To Install (a resent) Octave version one can do
+on Gentoo Linux. To Install Octave one can do
 
 ```bash
-$ sudo add-apt-repository ppa:devacom/science
 $ sudo apt install octave
 $ sudo apt install liboctave-dev
 ```
@@ -105,10 +104,20 @@ Now, to build optimized Linux binaries do, for example,
 $ git clone https://github.com/frli8848/DREAM.git
 $ cd DREAM
 DREAM $ mkdir build && cd build
-DREAM/build $ cmake -DCMAKE_CXX_FLAGS="-O3 -march=native" -DBUILD_OCT=on -DBUILD_MEX=on ..
+DREAM/build $ cmake -DCMAKE_CXX_FLAGS="-O3 -march=native" -DBUILD_OCT=on ..
 DREAM/build $ make -j8
 ```
-which will build DREAM with both MATLAB and Octave support.
+which will build the DREAM Octave bindings, or
+
+```bash
+$ git clone https://github.com/frli8848/DREAM.git
+$ cd DREAM
+DREAM $ mkdir build && cd build
+DREAM/build $ cmake -DCMAKE_CXX_FLAGS="-O3 -march=native" -DBUILD_OCT=off -DBUILD_OCT=on ..
+DREAM/build $ make -j8
+```
+to build the MATLAB bindings. There is also experimantal bindings for Python and Julia (see the
+corresponding Sections below).
 
 ## macOS
 
@@ -135,7 +144,7 @@ in the Linux build section above.
 ## Windows (mex Files)
 
 First install the MSVC Toolchain (the community version works fine) and we assume that MATLAB is
-already installed. Then install `git`, `cmake` and `Miniconda` or `Anaconda`:
+already installed. Then install `git`, `cmake`, and `Miniconda` (or `Anaconda):
 
 * https://git-scm.com/download/win
 * https://cmake.org/download/
@@ -181,7 +190,7 @@ $ sudo apt install python3-pybind11
 $ sudo apt install python3-numpy
 $ sudo apt install python3-matplotlib
 ```
-Then (clone if needed) configure and build using (`mex` and `oct` builds are optional and can be switched off):
+Then (clone if needed) configure and build using:
 ```bash
 $ git clone https://github.com/frli8848/DREAM.git
 $ cd DREAM
@@ -212,7 +221,7 @@ and a window should appear with the SIR plots.
 
 NB. This is experimental code so expect some rough spots!
 
-First install Julia, where on Ubuntu (22.04 LTS) there is no package so one have to do something like
+First install Julia, where on Ubuntu (24.04 LTS) there is no package so one have to do something like
 ```bash
 $ wget https://julialang-s3.julialang.org/bin/linux/x64/1.9/julia-1.9.4-linux-x86_64.tar.gz
 $ tar xf julia-1.9.4-linux-x86_64.tar.gz
@@ -275,7 +284,7 @@ packages:
  ~ $ cd .julia
  ~/.julia $ rm -fR artifacts clones compiled conda environments logs packages prefs registries scratchspaces dev
 ```
-and then clone the `libcxxwrap-julia` repo in a suitable folder (software for example):
+and then clone the `libcxxwrap-julia` repo in a suitable folder (`software` for example):
 ```bash
  ~ $ cd software
  ~/software $ git clone https://github.com/JuliaInterop/libcxxwrap-julia.git

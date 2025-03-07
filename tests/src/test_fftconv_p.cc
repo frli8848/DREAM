@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2022 Fredrik Lingvall
+* Copyright (C) 2022,2025 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -283,6 +283,10 @@ int fftconv_p(double *Y, std::string &wisdom_str_out, std::string ip_mode,
   // nthreads can't be larger then the number of columns in the A matrix.
   if (nthreads > A_N) {
     nthreads = A_N;
+  }
+
+  if (nthreads < 1) {
+    nthreads = 1;
   }
 
   //

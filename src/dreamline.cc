@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2002,2003,2006,2007,2008,2009,2012,2014,2021,2023,2024 Fredrik Lingvall
+* Copyright (C) 2002,2003,2006,2007,2008,2009,2012,2014,2021,2023,2024,2025 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -186,6 +186,10 @@ SIRError Line::dreamline(double alpha,
   // nthreads can't be larger then the number of observation points.
   if (nthreads > No) {
     nthreads = No;
+  }
+
+  if (nthreads < 1) {
+    nthreads = 1;
   }
 
   // Check if we have attenuation

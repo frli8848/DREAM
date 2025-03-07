@@ -1,6 +1,6 @@
 /***
 *
-* Copyright (C) 2006,2007,2008,2009,2014,2015,2016,2019,2021 Fredrik Lingvall
+* Copyright (C) 2006,2007,2008,2009,2014,2015,2016,2019,2021,2025 Fredrik Lingvall
 *
 * This file is part of the DREAM Toolbox.
 *
@@ -209,8 +209,13 @@ void  mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   }
 
   // nthreads can't be larger then the number of columns in the A matrix.
-  if (nthreads > A_N)
+  if (nthreads > A_N) {
     nthreads = A_N;
+  }
+
+  if (nthreads < 1) {
+    nthreads = 1;
+  }
 
   //
   // Register signal handlers.

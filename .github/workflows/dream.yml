@@ -26,7 +26,7 @@ jobs:
     - name: Install deps
       run: |
         sudo apt -yq update
-        sudo add-apt-repository ppa:devacom/science
+        sudo add-apt-repository ppa:ubuntuhandbook1/octave
         sudo apt install -yq --no-install-recommends octave
         sudo apt install -yq --no-install-recommends liboctave-dev
 

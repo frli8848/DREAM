@@ -43,7 +43,7 @@ jobs:
     - name: Create zip file
       run: |
         mkdir dream-${{ github.event.release.tag_name }}-matlab-linux-x86_64
-        cp -v ${{github.workspace}}/build/*.mexa64 dream-${{ github.event.release.tag_name }}-matlab-linux-x86_64/
+        cp -v ${{github.workspace}}/build/mex/*.mexa64 dream-${{ github.event.release.tag_name }}-matlab-linux-x86_64/
         cp -v ${{github.workspace}}/mex/matlab_help_files/*.m dream-${{ github.event.release.tag_name }}-matlab-linux-x86_64/
         zip -r dream-${{ github.event.release.tag_name }}-matlab-linux-x86_64.zip dream-${{ github.event.release.tag_name }}-matlab-linux-x86_64
 
@@ -86,7 +86,7 @@ jobs:
     - name: Create zip file
       run: |
         mkdir dream-${{ github.event.release.tag_name }}-matlab-macos-x86_64
-        cp -v ${{github.workspace}}/build/*.mexmaci64 dream-${{ github.event.release.tag_name }}-matlab-macos-x86_64/
+        cp -v ${{github.workspace}}/build/mex/*.mexmaci64 dream-${{ github.event.release.tag_name }}-matlab-macos-x86_64/
         cp -v ${{github.workspace}}/mex/matlab_help_files/*.m dream-${{ github.event.release.tag_name }}-matlab-macos-x86_64/
         cp -v /usr/local/miniconda/lib/libfftw3*.dylib dream-${{ github.event.release.tag_name }}-matlab-macos-x86_64/
         zip -r dream-${{ github.event.release.tag_name }}-matlab-macos-x86_64.zip dream-${{ github.event.release.tag_name }}-matlab-macos-x86_64
@@ -140,7 +140,7 @@ jobs:
     - name: Create zip file
       run: |
         mkdir dream-${{ github.event.release.tag_name }}-matlab-windows-x86_64
-        cp -v ${{github.workspace}}/build/Release/*.mexw64 dream-${{ github.event.release.tag_name }}-matlab-windows-x86_64/
+        cp -v ${{github.workspace}}/build/Release/mex/*.mexw64 dream-${{ github.event.release.tag_name }}-matlab-windows-x86_64/
         cp -v ${{github.workspace}}/mex/matlab_help_files/*.m dream-${{ github.event.release.tag_name }}-matlab-windows-x86_64/
         cp -v C:/Users/runneradmin/miniconda3/envs\test/Library/lib/fftw3*.* dream-${{ github.event.release.tag_name }}-matlab-windows-x86_64/
         cp -v C:/Users/runneradmin/miniconda3/envs/test/Library/bin/fftw3*.* dream-${{ github.event.release.tag_name }}-matlab-windows-x86_64/

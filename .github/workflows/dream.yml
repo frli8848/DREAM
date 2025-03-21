@@ -121,6 +121,7 @@ jobs:
     - name: CMake Configure
       run: |
         conda env list
+        conda activate
         conda init
         conda activate base
         conda env list

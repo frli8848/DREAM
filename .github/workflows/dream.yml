@@ -101,17 +101,17 @@ jobs:
     - name: Install deps
       run: |
         sudo curl https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -o miniconda.sh
-        sudo bash echo "1"
+        sudo echo "1"
         sudo mkdir -p ~/miniconda3
-        sudo bash echo "2"
+        sudo echo "2"
         sudo bash miniconda.sh -b -u -p ~/miniconda3
-        sudo bash echo "3"
+        sudo echo "3"
         sudo ls ~/miniconda3/
-        sudo bash echo "4"
+        sudo echo "4"
         sudo ~/miniconda3/conda init --all
-        sudo bash echo "5"
+        sudo echo "5"
         sudo type -a conda
-        sudo bash echo "6"
+        sudo echo "6"
         sudo conda install -c conda-forge octave
 
     - name: CMake Configure

@@ -107,7 +107,7 @@ jobs:
 
 
     - name: CMake Configure
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DBUILD_MEX=off -DBUILD_OCT=on
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_PREFIX_PATH="/Users/runner/miniconda3" -DBUILD_MEX=off -DBUILD_OCT=on
 
     - name: CMake Build
       run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
@@ -130,7 +130,7 @@ jobs:
       uses: matlab-actions/setup-matlab@v2
 
     - name: CMake Configure
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DBUILD_MEX=on -DBUILD_OCT=off
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_PREFIX_PATH="/Users/runner/miniconda3" -DBUILD_MEX=on -DBUILD_OCT=off
 
     - name: CMake Build
       run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}

@@ -104,6 +104,8 @@ jobs:
         sudo conda install -c conda-forge octave
         sudo conda info
         sudo conda list
+        sudo ls /Users/runner/miniconda3/
+        sudo ls /Users/runner/miniconda3/bin
 
 
     - name: CMake Configure

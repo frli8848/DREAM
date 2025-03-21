@@ -115,9 +115,12 @@ jobs:
         sudo echo "---------- 5 ----------------"
         sudo ls /Users/runner/miniconda3/bin/
         sudo echo "---------- 6 ----------------"
+        conda env list
+        sudo echo "---------- 7 ----------------"
 
     - name: CMake Configure
       run: |
+        conda env list
         echo "Workspace: ${{github.workspace}}"
         ls /Users/runner/miniconda3/
         cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_PREFIX_PATH="/Users/runner/miniconda3/" -DBUILD_MEX=off -DBUILD_OCT=on

@@ -108,10 +108,12 @@ jobs:
         sudo echo "3"
         sudo ls ~/miniconda3/
         sudo echo "4"
-        sudo ~/miniconda3/conda init --all
+        sudo ls ~/miniconda3/bin/
         sudo echo "5"
-        sudo type -a conda
+        sudo ~/miniconda3/bin/conda init --all
         sudo echo "6"
+        sudo type -a conda
+        sudo echo "7"
         sudo conda install -c conda-forge octave
 
     - name: CMake Configure

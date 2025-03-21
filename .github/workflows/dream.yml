@@ -122,9 +122,10 @@ jobs:
       run: |
         #conda env list
         #conda activate
-        #conda init
-        #conda activate base
-        #conda env list
+        conda init
+        conda env list
+        conda activate base
+        conda env list
         echo "Workspace: ${{github.workspace}}"
         echo "CONDA_PREFIX: $CONDA_PREFIX"
         ls /Users/runner/miniconda3/

@@ -107,10 +107,8 @@ jobs:
         sudo echo "---------- 1 ----------------"
         sudo ls /Users/runner/miniconda3/
         sudo echo "---------- 2 ----------------"
-        sudo ls /Users/runner/miniconda3/pkgs/
+        sudo ls /Users/runner/miniconda3/envs/
         sudo echo "---------- 3 ----------------"
-        sudo ls /Users/runner/miniconda3/bin/
-        sudo echo "---------- 4 ----------------"
 
     - name: CMake Configure
       run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_PREFIX_PATH="/Users/runner/miniconda3/" -DBUILD_MEX=off -DBUILD_OCT=on

@@ -121,7 +121,9 @@ jobs:
     - name: CMake Configure
       run: |
         conda env list
+        conda init
         conda activate base
+        conda env list
         echo "Workspace: ${{github.workspace}}"
         echo "CONDA_PREFIX: $CONDA_PREFIX"
         ls /Users/runner/miniconda3/

@@ -69,7 +69,9 @@ jobs:
         sudo curl https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -o miniconda.sh
         sudo mkdir -p ~/miniconda3
         sudo bash miniconda.sh -b -u -p ~/miniconda3
+        sudo ls ~/miniconda3/
         sudo ~/miniconda3/conda init --all
+        sudo type -a conda
         sudo conda install -c conda-forge fftw
 
     - name: Setup MATLAB

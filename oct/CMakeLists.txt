@@ -56,7 +56,7 @@ target_link_libraries (oct_dreamline
 )
 
 set_target_properties (oct_dreamline PROPERTIES
-  CXX_STANDARD 14
+  CXX_STANDARD 17
   COMPILE_FLAGS "${DREAM_OCT_FLAGS}"
   INCLUDE_DIRECTORIES "${DREAM_OCT_INCLUDE_DIRS}"
   LINK_FLAGS ${OCT_LD_FLAGS}
@@ -90,7 +90,7 @@ target_link_libraries (oct_dreamrect
 )
 
 set_target_properties (oct_dreamrect PROPERTIES
-  CXX_STANDARD 14
+  CXX_STANDARD 17
   COMPILE_FLAGS "${DREAM_OCT_FLAGS}"
   INCLUDE_DIRECTORIES "${DREAM_OCT_INCLUDE_DIRS}"
   LINK_FLAGS ${OCT_LD_FLAGS}
@@ -118,7 +118,7 @@ target_link_libraries (oct_dreamrect_f
 )
 
 set_target_properties (oct_dreamrect_f PROPERTIES
-  CXX_STANDARD 14
+  CXX_STANDARD 17
   COMPILE_FLAGS "${DREAM_OCT_FLAGS}"
   INCLUDE_DIRECTORIES "${DREAM_OCT_INCLUDE_DIRS}"
   LINK_FLAGS ${OCT_LD_FLAGS}
@@ -152,7 +152,7 @@ target_link_libraries (oct_dreamcirc
 )
 
 set_target_properties (oct_dreamcirc PROPERTIES
-  CXX_STANDARD 14
+  CXX_STANDARD 17
   COMPILE_FLAGS "${DREAM_OCT_FLAGS}"
   INCLUDE_DIRECTORIES "${DREAM_OCT_INCLUDE_DIRS}"
   LINK_FLAGS ${OCT_LD_FLAGS}
@@ -180,7 +180,7 @@ target_link_libraries (oct_dreamcirc_f
 )
 
 set_target_properties (oct_dreamcirc_f PROPERTIES
-  CXX_STANDARD 14
+  CXX_STANDARD 17
   COMPILE_FLAGS "${DREAM_OCT_FLAGS}"
   INCLUDE_DIRECTORIES "${DREAM_OCT_INCLUDE_DIRS}"
   LINK_FLAGS ${OCT_LD_FLAGS}
@@ -208,7 +208,7 @@ target_link_libraries (oct_dreamsphere
 )
 
 set_target_properties (oct_dreamsphere PROPERTIES
-  CXX_STANDARD 14
+  CXX_STANDARD 17
   COMPILE_FLAGS "${DREAM_OCT_FLAGS}"
   INCLUDE_DIRECTORIES "${DREAM_OCT_INCLUDE_DIRS}"
   LINK_FLAGS ${OCT_LD_FLAGS}
@@ -237,7 +237,7 @@ target_link_libraries (oct_dreamcylind
 )
 
 set_target_properties (oct_dreamcylind PROPERTIES
-  CXX_STANDARD 14
+  CXX_STANDARD 17
   COMPILE_FLAGS "${DREAM_OCT_FLAGS}"
   INCLUDE_DIRECTORIES "${DREAM_OCT_INCLUDE_DIRS}"
   LINK_FLAGS ${OCT_LD_FLAGS}
@@ -267,7 +267,7 @@ target_link_libraries (oct_dream_arr_rect
 )
 
 set_target_properties (oct_dream_arr_rect PROPERTIES
-  CXX_STANDARD 14
+  CXX_STANDARD 17
   COMPILE_FLAGS "${DREAM_OCT_FLAGS}"
   INCLUDE_DIRECTORIES "${DREAM_OCT_INCLUDE_DIRS}"
   LINK_FLAGS ${OCT_LD_FLAGS}
@@ -296,7 +296,7 @@ target_link_libraries (oct_dream_arr_circ
 )
 
 set_target_properties (oct_dream_arr_circ PROPERTIES
-  CXX_STANDARD 14
+  CXX_STANDARD 17
   COMPILE_FLAGS "${DREAM_OCT_FLAGS}"
   INCLUDE_DIRECTORIES "${DREAM_OCT_INCLUDE_DIRS}"
   LINK_FLAGS ${OCT_LD_FLAGS}
@@ -326,7 +326,7 @@ target_link_libraries (oct_dream_arr_cylind
 )
 
 set_target_properties (oct_dream_arr_cylind PROPERTIES
-  CXX_STANDARD 14
+  CXX_STANDARD 17
   COMPILE_FLAGS "${DREAM_OCT_FLAGS}"
   INCLUDE_DIRECTORIES "${DREAM_OCT_INCLUDE_DIRS}"
   LINK_FLAGS ${OCT_LD_FLAGS}
@@ -356,7 +356,7 @@ target_link_libraries (oct_dream_arr_annu
 )
 
 set_target_properties (oct_dream_arr_annu PROPERTIES
-  CXX_STANDARD 14
+  CXX_STANDARD 17
   COMPILE_FLAGS "${DREAM_OCT_FLAGS}"
   INCLUDE_DIRECTORIES "${DREAM_OCT_INCLUDE_DIRS}"
   LINK_FLAGS ${OCT_LD_FLAGS}
@@ -388,7 +388,7 @@ target_link_libraries (oct_dream_apodwin
 )
 
 set_target_properties (oct_dream_apodwin PROPERTIES
-  CXX_STANDARD 14
+  CXX_STANDARD 17
   COMPILE_FLAGS "${DREAM_OCT_FLAGS}"
   INCLUDE_DIRECTORIES "${DREAM_OCT_INCLUDE_DIRS}"
   LINK_FLAGS ${OCT_LD_FLAGS}
@@ -415,7 +415,7 @@ target_link_libraries (oct_dream_att
 )
 
 set_target_properties (oct_dream_att PROPERTIES
-  CXX_STANDARD 14
+  CXX_STANDARD 17
   COMPILE_FLAGS "${DREAM_OCT_FLAGS}"
   INCLUDE_DIRECTORIES "${DREAM_OCT_INCLUDE_DIRS}"
   LINK_FLAGS ${OCT_LD_FLAGS}
@@ -443,7 +443,7 @@ target_link_libraries (oct_circ_sir
 )
 
 set_target_properties (oct_circ_sir PROPERTIES
-  CXX_STANDARD 14
+  CXX_STANDARD 17
   COMPILE_FLAGS "${DREAM_OCT_FLAGS}"
   INCLUDE_DIRECTORIES "${DREAM_OCT_INCLUDE_DIRS}"
   LINK_FLAGS ${OCT_LD_FLAGS}
@@ -468,7 +468,7 @@ target_link_libraries (oct_scirc_sir
 )
 
 set_target_properties (oct_scirc_sir PROPERTIES
-  CXX_STANDARD 14
+  CXX_STANDARD 17
   COMPILE_FLAGS "${DREAM_OCT_FLAGS}"
   INCLUDE_DIRECTORIES "${DREAM_OCT_INCLUDE_DIRS}"
   LINK_FLAGS ${OCT_LD_FLAGS}
@@ -498,7 +498,7 @@ target_link_libraries (oct_rect_sir
 )
 
 set_target_properties (oct_rect_sir PROPERTIES
-  CXX_STANDARD 14
+  CXX_STANDARD 17
   COMPILE_FLAGS "${DREAM_OCT_FLAGS}"
   INCLUDE_DIRECTORIES "${DREAM_OCT_INCLUDE_DIRS}"
   LINK_FLAGS ${OCT_LD_FLAGS}
@@ -531,7 +531,7 @@ target_link_libraries (oct_das
 )
 
 set_target_properties (oct_das PROPERTIES
-  CXX_STANDARD 14
+  CXX_STANDARD 17
   COMPILE_FLAGS "${DREAM_OCT_FLAGS}"
   INCLUDE_DIRECTORIES "${DREAM_OCT_INCLUDE_DIRS}"
   LINK_FLAGS ${OCT_LD_FLAGS}
@@ -561,7 +561,7 @@ if (OpenCL_FOUND)
   )
 
   set_target_properties (oct_das_uni PROPERTIES
-    CXX_STANDARD 14
+    CXX_STANDARD 17
     COMPILE_FLAGS "${DREAM_OCT_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_OCT_INCLUDE_DIRS}"
     LINK_FLAGS ${OCT_LD_FLAGS}
@@ -592,7 +592,7 @@ target_link_libraries (oct_conv_p
 )
 
 set_target_properties (oct_conv_p PROPERTIES
-  CXX_STANDARD 14
+  CXX_STANDARD 17
   COMPILE_FLAGS "${DREAM_OCT_FLAGS}"
   INCLUDE_DIRECTORIES "${DREAM_OCT_INCLUDE_DIRS}"
   LINK_FLAGS ${OCT_LD_FLAGS}
@@ -617,7 +617,7 @@ target_link_libraries (oct_fftconv_p
 )
 
 set_target_properties (oct_fftconv_p PROPERTIES
-  CXX_STANDARD 14
+  CXX_STANDARD 17
   COMPILE_FLAGS "${DREAM_OCT_FLAGS}"
   INCLUDE_DIRECTORIES "${DREAM_OCT_INCLUDE_DIRS}"
   LINK_FLAGS ${OCT_LD_FLAGS}
@@ -645,7 +645,7 @@ if(NOT MACOSX)
   )
 
   set_target_properties (oct_sum_fftconv PROPERTIES
-    CXX_STANDARD 14
+    CXX_STANDARD 17
     COMPILE_FLAGS "${DREAM_OCT_FLAGS}"
     INCLUDE_DIRECTORIES "${DREAM_OCT_INCLUDE_DIRS}"
     LINK_FLAGS ${OCT_LD_FLAGS}
@@ -673,7 +673,7 @@ target_link_libraries (oct_fftconv_ola
 )
 
 set_target_properties (oct_fftconv_ola PROPERTIES
-  CXX_STANDARD 14
+  CXX_STANDARD 17
   COMPILE_FLAGS "${DREAM_OCT_FLAGS}"
   INCLUDE_DIRECTORIES "${DREAM_OCT_INCLUDE_DIRS}"
   LINK_FLAGS ${OCT_LD_FLAGS}
@@ -698,7 +698,7 @@ target_link_libraries (oct_add_p
 )
 
 set_target_properties (oct_add_p PROPERTIES
-  CXX_STANDARD 14
+  CXX_STANDARD 17
   COMPILE_FLAGS "${DREAM_OCT_FLAGS}"
   INCLUDE_DIRECTORIES "${DREAM_OCT_INCLUDE_DIRS}"
   LINK_FLAGS ${OCT_LD_FLAGS}
@@ -723,7 +723,7 @@ target_link_libraries (oct_copy_p
 )
 
 set_target_properties (oct_copy_p PROPERTIES
-  CXX_STANDARD 14
+  CXX_STANDARD 17
   COMPILE_FLAGS "${DREAM_OCT_FLAGS}"
   INCLUDE_DIRECTORIES "${DREAM_OCT_INCLUDE_DIRS}"
   LINK_FLAGS ${OCT_LD_FLAGS}
